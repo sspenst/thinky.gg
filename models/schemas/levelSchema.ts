@@ -128,11 +128,12 @@ const LevelSchema = new mongoose.Schema<Level>(
     },
   },
   {
+    timestamps: true,
     collation: {
       locale: 'en_US',
       strength: 2,
     },
-  },
+  }
 );
 
 LevelSchema.index({ slug: 1, gameId: 1 }, { unique: true });

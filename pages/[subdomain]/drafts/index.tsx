@@ -1,4 +1,5 @@
 import LevelCard from '@root/components/cards/levelCard';
+import FormattedDate from '@root/components/formatted/formattedDate';
 import TimeRange from '@root/constants/timeRange';
 import { blueButton } from '@root/helpers/className';
 import { getGameFromId, getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
@@ -6,7 +7,7 @@ import { redirectToLogin } from '@root/helpers/redirectToLogin';
 import classNames from 'classnames';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Link from 'next/link';
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import Page from '../../../components/page/page';
 import { getUserFromToken } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
@@ -37,7 +38,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     isDraft: true,
     userId: reqUser._id,
     gameId: gameId
-  }).sort({ name: 1 });
+  }).sort({ updatedAt: -1 });
 
   return {
     props: {
@@ -52,8 +53,28 @@ export interface CreatePageProps {
   user: User;
 }
 
+type SortOption = 'name' | 'date';
+
 /* istanbul ignore next */
 export default function Create({ levels, user }: CreatePageProps) {
+  const [sortBy, setSortBy] = useState<SortOption>('date');
+
+  const sortedLevels = useMemo(() => {
+    const levelsCopy = [...levels];
+
+    if (sortBy === 'name') {
+      return levelsCopy.sort((a, b) => a.name.localeCompare(b.name));
+    } else {
+      return levelsCopy.sort((a, b) => {
+        // Use updatedAt if available, otherwise fall back to ts (convert from seconds to milliseconds)
+        const aTime = a.updatedAt ? new Date(a.updatedAt).getTime() : (a.ts * 1000);
+        const bTime = b.updatedAt ? new Date(b.updatedAt).getTime() : (b.ts * 1000);
+
+        return bTime - aTime; // Most recent first
+      });
+    }
+  }, [levels, sortBy]);
+
   return (
     <Page title='Drafts'>
       <div className='flex flex-col gap-5 m-5 items-center'>
@@ -96,17 +117,49 @@ export default function Create({ levels, user }: CreatePageProps) {
             Your Collections
           </Link>
         </div>
+        
+        {/* Sort Controls */}
+        <div className='flex items-center gap-2'>
+          <span className='text-sm font-medium'>Sort by:</span>
+          <button
+            onClick={() => setSortBy('name')}
+            className={classNames(
+              'px-3 py-1 rounded-md text-sm transition-colors',
+              sortBy === 'name'
+                ? 'bg-blue-500 text-white'
+                : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+            )}
+          >
+            Name
+          </button>
+          <button
+            onClick={() => setSortBy('date')}
+            className={classNames(
+              'px-3 py-1 rounded-md text-sm transition-colors',
+              sortBy === 'date'
+                ? 'bg-blue-500 text-white'
+                : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+            )}
+          >
+            Last Modified
+          </button>
+        </div>
+        
         <div className='flex flex-wrap justify-center gap-4'>
-          {levels.map(level => {
+          {sortedLevels.map(level => {
             return (
-              <LevelCard
-                href={`/edit/${level._id.toString()}`}
-                id='draft-level'
-                key={`draft-level-${level._id.toString()}`}
-                level={level}
-              />
+              <div key={`draft-level-div-${level._id.toString()}`} className='flex flex-col'>
+                <LevelCard
+                  href={`/edit/${level._id.toString()}`}
+                  id='draft-level'
+                  key={`draft-level-${level._id.toString()}`}
+                  level={level}
+                />
+                <span className='text-center'><FormattedDate prefix='Updated' date={level?.updatedAt} className='italic text-xs' /></span>
+              </div>
             );
           })}
+
         </div>
       </div>
     </Page>

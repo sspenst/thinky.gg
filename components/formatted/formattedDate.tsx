@@ -30,12 +30,13 @@ dayjs.extend(
 
 interface FormattedDateProps {
   className?: string;
+  prefix?: string;
   date?: Date;
   style?: React.CSSProperties;
   ts?: number;
 }
 
-export default function FormattedDate({ className, date, style, ts }: FormattedDateProps) {
+export default function FormattedDate({ className, date, prefix, style, ts }: FormattedDateProps) {
   // convert ts to date
   if (!date) {
     if (!ts) {
@@ -59,6 +60,7 @@ export default function FormattedDate({ className, date, style, ts }: FormattedD
       }}
       suppressHydrationWarning
     >
+      {prefix && prefix + ' '}
       {dayjs(date).fromNow()}
     </span>
     <StyledTooltip id={`date-${ts}`} />
