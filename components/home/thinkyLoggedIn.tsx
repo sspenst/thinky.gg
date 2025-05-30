@@ -223,7 +223,6 @@ export function ThinkyHomePageLoggedIn({ user }: { user: User }) {
                     </h3>
                   </div>
                 </div>
-                
                 <div className='p-4 flex flex-col gap-4'>
                   {/* Game-specific Quick Actions */}
                   <div className='flex flex-col gap-2'>
@@ -236,7 +235,6 @@ export function ThinkyHomePageLoggedIn({ user }: { user: User }) {
                         <span className='text-xl mb-1'>🏠</span>
                         <span className='text-sm font-medium'>Home</span>
                       </Link>
-                      
                       <Link
                         href={getUrl(game.id, '/search')}
                         className='flex flex-col items-center justify-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600 hover:shadow-md transition'
@@ -244,15 +242,13 @@ export function ThinkyHomePageLoggedIn({ user }: { user: User }) {
                         <span className='text-xl mb-1'>🔍</span>
                         <span className='text-sm font-medium'>Browse Levels</span>
                       </Link>
-                      
                       <Link
-                        href={getUrl(game.id, '/create')}
+                        href={getUrl(game.id, '/drafts')}
                         className='flex flex-col items-center justify-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600 hover:shadow-md transition'
                       >
                         <span className='text-xl mb-1'>🎨</span>
                         <span className='text-sm font-medium'>Create</span>
                       </Link>
-                      
                       {!game.disableRanked ? (
                         <Link
                           href={getUrl(game.id, '/ranked')}
