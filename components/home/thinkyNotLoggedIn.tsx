@@ -7,7 +7,7 @@ import { Games } from '@root/constants/Games';
 import Theme from '@root/constants/theme';
 import { AppContext } from '@root/contexts/appContext';
 import useUrl from '@root/hooks/useUrl';
-import { Gamepad2 } from 'lucide-react';
+import { Gamepad2, Play, Share2, Trophy, Users } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { useContext, useRef } from 'react';
@@ -61,7 +61,6 @@ function GameCard({ game, levelData, instructions, leastMoves, theme }: GameCard
         </h3>
         <p className='text-gray-600 dark:text-gray-300 mt-2 max-w-md'>{game.shortDescription}</p>
       </div>
-      
       <div className='p-6 flex flex-col items-center gap-6'>
         <div className='flex h-60 w-60 max-w-full cursor-pointer' onClick={() => {
           router.push(getUrl(game.id));
@@ -75,7 +74,6 @@ function GameCard({ game, levelData, instructions, leastMoves, theme }: GameCard
             levelData={levelData}
           />
         </div>
-        
         <Link
           className='inline-flex items-center justify-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition shadow-md hover:shadow-lg'
           href={user ? getUrl(game.id, '/') : getUrl(game.id, '/tutorial')}
@@ -130,44 +128,58 @@ export default function ThinkyHomePageNotLoggedIn() {
   };
 
   return (
-    <div className='flex flex-col gap-8 max-w-7xl mx-auto px-4 py-6'>
-      {/* Hero Section */}
-      <div className='text-center max-w-4xl mx-auto'>
-        <p className='text-lg text-black dark:text-gray-100 mb-8'>
-          A platform dedicated to <strong>high-quality puzzle games</strong> that challenge your <strong>mind</strong> and <strong>creativity</strong>.
-        </p>
-        <div className='flex flex-wrap justify-center gap-4'>
-          <button
-            onClick={scrollToGames}
-            className='group relative px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition shadow-md hover:shadow-lg overflow-hidden'
-          >
-            <span className='relative z-10 flex items-center gap-2'>
-              <Gamepad2 className='h-5 w-5' />
-              <span>Games</span>
-            </span>
-          </button>
-          <button
-            onClick={scrollToWhatIsThinky}
-            className='group relative px-6 py-3 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-white rounded-lg font-medium transition overflow-hidden'
-          >
-            <span className='relative z-10 flex items-center gap-2'>
-              <svg xmlns='http://www.w3.org/2000/svg' className='h-5 w-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
-                <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z' />
-              </svg>
-              <span>What are Thinky Games?</span>
-            </span>
-          </button>
+    <div className='flex flex-col gap-6 max-w-7xl mx-auto px-4'>
+      {/* Hero Section - Above the fold */}
+      <div className='md:my-10 flex flex-col justify-center items-center text-center'>
+        <div className='max-w-4xl mx-auto'>
+          <p className='text-xl md:text-2xl text-gray-800 dark:text-gray-100 mb-6 max-w-2xl mx-auto drop-shadow-sm mt-0'>
+            Challenge your mind with beautifully crafted puzzle games. Create your own levels and share them with the world.
+          </p>
+          {/* Primary CTA */}
+          <div className='flex flex-col sm:flex-row justify-center gap-4 mb-6'>
+            <Link
+              href={getUrl(Games[GameId.PATHOLOGY].id, user ? '/' : '/tutorial')}
+              className='group relative px-8 py-6 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl font-bold text-lg transition-all shadow-lg hover:shadow-xl transform hover:scale-105'
+            >
+              <span className='relative z-10 flex items-center justify-center gap-3'>
+                <Play className='h-6 w-6' />
+                <span>Start Playing Free</span>
+              </span>
+            </Link>
+          </div>
+          {/* Key features that matter to puzzle players */}
+          <div className='flex flex-wrap justify-center gap-8 text-md text-gray-600 dark:text-gray-100 drop-shadow-sm'>
+            <div className='flex items-center gap-2'>
+              <Trophy className='h-4 w-4' />
+              <span>Levels for all skill levels</span>
+            </div>
+            <div className='flex items-center gap-2'>
+              <Users className='h-4 w-4' />
+              <span>Active Community</span>
+            </div>
+            <div className='flex items-center gap-2'>
+              <Share2 className='h-4 w-4' />
+              <span>Create Your Own Levels</span>
+            </div>
+          </div>
         </div>
-        <div className='mt-4 flex justify-center gap-4'>
+      </div>
+      {/* Quick Access - Account options */}
+      <div className='bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-2xl p-5 text-center shadow-lg border border-white/20'>
+        <h3 className='text-xl font-semibold mb-3'>Join the Community</h3>
+        <p className='text-gray-600 dark:text-gray-300 mb-5'>
+          Create an account to track your achievements, compete on leaderboards, and create your own levels.
+        </p>
+        <div className='flex justify-center gap-4'>
           <Link
             href='/signup'
-            className='px-4 py-2 bg-white hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-800 dark:text-white rounded-lg font-medium transition border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md'
+            className='px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition shadow-md hover:shadow-lg'
           >
-            Sign Up
+            Sign Up Free
           </Link>
           <Link
             href='/login'
-            className='px-4 py-2 bg-white hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-800 dark:text-white rounded-lg font-medium transition border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md'
+            className='px-6 py-3 bg-white hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-800 dark:text-white rounded-lg font-medium transition border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md'
           >
             Log In
           </Link>
@@ -175,7 +187,10 @@ export default function ThinkyHomePageNotLoggedIn() {
       </div>
       {/* Games Section */}
       <div className='w-full' ref={gamesSectionRef}>
-        <h2 className='text-3xl font-bold mb-8 text-center'>Our Games</h2>
+        <h2 className='text-4xl font-bold mb-4 text-center'>Our Two Games</h2>
+        <p className='text-xl text-gray-600 dark:text-gray-200 mb-12 text-center max-w-2xl mx-auto'>
+          Each game offers unique mechanics and hundreds of hand-crafted levels to master.
+        </p>
         <div className='grid grid-cols-1 md:grid-cols-2 gap-8'>
           {Object.values(Games).map(game => {
             if (game.id === GameId.THINKY) {
@@ -197,20 +212,23 @@ export default function ThinkyHomePageNotLoggedIn() {
       </div>
       {/* What is Thinky.gg Section */}
       <div className='w-full' ref={whatIsThinkySectionRef}>
-        <h2 className='text-3xl font-bold mb-8 text-center'>What is Thinky.gg?</h2>
+        <h2 className='text-4xl font-bold mb-4 text-center'>Everything You Need</h2>
+        <p className='text-xl text-gray-600 dark:text-gray-200 mb-12 text-center max-w-2xl mx-auto'>
+          More than just puzzles - it&apos;s a complete platform for puzzle enthusiasts.
+        </p>
         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
           <FeatureCard
-            description='Thinky.gg is home to a collection of carefully crafted puzzle games designed to challenge your problem-solving skills and creativity.'
-            title='Puzzle Games'
+            description='Carefully crafted puzzle games designed to challenge your problem-solving skills and creativity.'
+            title='Premium Puzzles'
             icon='🧩'
           />
           <FeatureCard
-            description='Join thousands of puzzle enthusiasts who create, share, and solve levels together. Compete on leaderboards and discover new challenges.'
-            title='Community'
+            description='Join thousands of puzzle enthusiasts who create, share, and solve levels together. Compete on leaderboards.'
+            title='Thriving Community'
             icon='👥'
           />
           <FeatureCard
-            description='Design your own levels with our intuitive editor and share them with the world. See how others solve your puzzles and get feedback.'
+            description='Design your own levels with our intuitive editor and share them with the world. Get feedback from other players.'
             title='Level Creation'
             icon='🎨'
           />
@@ -221,20 +239,20 @@ export default function ThinkyHomePageNotLoggedIn() {
           />
           <FeatureCard
             description='Play with friends in real-time and solve puzzles together. Challenge each other to beat your best times.'
-            title='Multiplayer'
+            title='Multiplayer Fun'
             icon='🎮'
           />
           <FeatureCard
-            description='Unlock advanced analytics, checkpoint saving, and more with our Pro subscription to enhance your puzzle-solving experience.'
+            description='Unlock advanced analytics, checkpoint saving, and more with our Pro subscription.'
             title='Pro Features'
             icon='⭐'
           />
         </div>
       </div>
-      {/* Call to Action */}
-      <div className='text-center'>
-        <h2 className='text-3xl font-bold mb-4'>Ready to Start?</h2>
-        <p className='text-xl text-gray-600 dark:text-gray-300 mb-8'>
+      {/* Final Call to Action */}
+      <div className='bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-2xl p-12 text-center'>
+        <h2 className='text-4xl font-bold mb-4'>Ready to Challenge Your Mind?</h2>
+        <p className='text-xl mb-8 opacity-90'>
           Join thousands of puzzle enthusiasts and start your journey today.
         </p>
         <div className='flex flex-wrap justify-center gap-4'>
@@ -245,8 +263,8 @@ export default function ThinkyHomePageNotLoggedIn() {
 
             return (
               <Link
-                className='group relative flex items-center gap-3 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition shadow-md hover:shadow-lg overflow-hidden'
-                key={`game-${game.id}`}
+                className='group relative flex items-center gap-3 px-6 py-3 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-lg font-medium transition shadow-md hover:shadow-lg'
+                key={`final-cta-${game.id}`}
                 href={user ? getUrl(game.id, '/') : getUrl(game.id, '/tutorial')}
                 role='button'
               >
