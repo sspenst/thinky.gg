@@ -174,7 +174,7 @@ export function ThinkyHomePageLoggedIn({ user }: { user: User }) {
   return (
     <div className='flex flex-col gap-8 items-center max-w-7xl mx-auto '>
       {/* User Profile Section */}
-      <div className='w-full bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl p-3 shadow-lg text-white'>
+      <div className='w-full bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl p-3 shadow-lg text-white md:mt-8 mt-2'>
         <div className='flex flex-col md:flex-row justify-between items-center gap-4'>
           <div className='flex items-center gap-4'>
             <div className='bg-white/20 p-3 rounded-full'>
