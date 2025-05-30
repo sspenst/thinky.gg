@@ -483,7 +483,7 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
         userConfig: isLoading ? undefined : !user?.config ? null : user.config,
       }}>
         <div className={getFontFromGameId(selectedGame.id)} style={{
-          backgroundColor: 'var(--bg-color)',
+          backgroundColor: router.pathname === '/' && !user ? 'transparent' : 'var(--bg-color)',
           color: 'var(--color)',
         }}>
           {/**
