@@ -117,7 +117,6 @@ export default function Create({ levels, user }: CreatePageProps) {
             Your Collections
           </Link>
         </div>
-        
         {/* Sort Controls */}
         <div className='flex items-center gap-2'>
           <span className='text-sm font-medium'>Sort by:</span>
