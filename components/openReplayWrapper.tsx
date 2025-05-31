@@ -2,6 +2,7 @@
 import OpenReplay from '@openreplay/tracker';
 import { AppContext } from '@root/contexts/appContext';
 import { useRouter } from 'next/router';
+import posthog from 'posthog-js';
 import { useContext, useEffect, useState } from 'react';
 
 // Create a singleton tracker instance to persist across navigation
