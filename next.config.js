@@ -31,14 +31,30 @@ module.exports = {
         source: '/api/notification-push-token',
         destination: '/api/device',
       },
+      {
+        source: '/api/ingest/static/:path*',
+        destination: 'https://us-assets.i.posthog.com/static/:path*',
+      },
+      {
+        source: '/api/ingest/:path*',
+        destination: 'https://us.i.posthog.com/:path*',
+      },
+      {
+        source: '/api/ingest/decide',
+        destination: 'https://us.i.posthog.com/decide',
+      },
     ];
   },
+  // This is required to support PostHog trailing slash API requests
+  skipTrailingSlashRedirect: true,
   publicRuntimeConfig: {
     NEXT_PUBLIC_APP_DOMAIN: process.env.NEXT_PUBLIC_APP_DOMAIN,
     NEXT_PUBLIC_GROWTHBOOK_API_HOST:
       process.env.NEXT_PUBLIC_GROWTHBOOK_API_HOST,
     NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY:
       process.env.NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY,
+    NEXT_PUBLIC_POSTHOG_KEY: process.env.NEXT_PUBLIC_POSTHOG_KEY,
+    NEXT_PUBLIC_POSTHOG_HOST: process.env.NEXT_PUBLIC_POSTHOG_HOST,
   },
   images: {
     remotePatterns: [
