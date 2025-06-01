@@ -54,6 +54,12 @@ jobs:
           load: false
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          build-args: |
+            NEXT_PUBLIC_APP_DOMAIN=${{ secrets.NEXT_PUBLIC_APP_DOMAIN }}
+            NEXT_PUBLIC_GROWTHBOOK_API_HOST=${{ secrets.NEXT_PUBLIC_GROWTHBOOK_API_HOST }}
+            NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY=${{ secrets.NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY }}
+            NEXT_PUBLIC_POSTHOG_KEY=${{ secrets.NEXT_PUBLIC_POSTHOG_KEY }}
+            NEXT_PUBLIC_POSTHOG_HOST=${{ secrets.NEXT_PUBLIC_POSTHOG_HOST }}
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/pathology:latest 
             ${{ secrets.DOCKERHUB_USERNAME }}/pathology:${{ steps.vars.outputs.sha_short }}
