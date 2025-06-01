@@ -446,7 +446,7 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
       // Reset PostHog identity when user logs out
       posthog.reset();
     }
-  }, [user]);
+  }, [user?._id, user?.name, user?.email, user?.roles, user?.ts, user?.lastGame, user?.utm_source, user?.emailConfirmed]);
 
   useEffect(() => {
     const handleRouteChange = (url: string) => {
