@@ -49,7 +49,7 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, le
   }, [fullScreen, setShowHeader]);
 
   return (
-    <div className='grow flex flex-col max-w-full select-none h-full' id='game-layout' style={{
+    <div className='grow flex flex-col max-w-full select-none h-full ph-no-capture' id='game-layout' style={{
       backgroundColor: 'var(--bg-color)',
     }}>
       <div className='flex grow relative'>
