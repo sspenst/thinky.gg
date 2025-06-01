@@ -10,6 +10,7 @@ import DismissToast from '@root/components/toasts/dismissToast';
 import AlertType from '@root/constants/alertType';
 import { DEFAULT_GAME_ID, GameId } from '@root/constants/GameId';
 import { Game, Games } from '@root/constants/Games';
+import Role from '@root/constants/role';
 import MusicContextProvider from '@root/contexts/musicContext';
 import getFontFromGameId from '@root/helpers/getFont';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
@@ -26,6 +27,8 @@ import { Router, useRouter } from 'next/router';
 import { DefaultSeo } from 'next-seo';
 import { ThemeProvider } from 'next-themes';
 import nProgress from 'nprogress';
+import posthog from 'posthog-js';
+import { PostHogProvider } from 'posthog-js/react';
 import React, { useCallback, useEffect, useState } from 'react';
 import CookieConsent from 'react-cookie-consent';
 import toast, { Toaster } from 'react-hot-toast';
@@ -67,6 +70,28 @@ MyApp.getInitialProps = async ({ ctx }: { ctx: NextPageContext }) => {
 };
 
 export default function MyApp({ Component, pageProps, userAgent, initGame }: AppProps & { userAgent: string, initGame: Game }) {
+  // Initialize PostHog analytics
+  useEffect(() => {
+    posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY as string, {
+      api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST as string || '/api/ingest',
+      person_profiles: 'identified_only', // or 'always' to create profiles for anonymous users as well
+      // Enable debug mode in development
+      loaded: (posthog) => {
+        if (process.env.NODE_ENV === 'development') posthog.debug();
+      },
+
+    });
+    console.log('POSTHOG_KEY', process.env.NEXT_PUBLIC_POSTHOG_KEY);
+    console.log('POSTHOG_HOST', process.env.NEXT_PUBLIC_POSTHOG_HOST);
+    const handleRouteChange = () => posthog?.capture('$pageview');
+
+    Router.events.on('routeChangeComplete', handleRouteChange);
+
+    return () => {
+      Router.events.off('routeChangeComplete', handleRouteChange);
+    };
+  }, []);
+
   const deviceInfo = useDeviceCheck(userAgent);
   const forceUpdate = useForceUpdate();
   const [host, setHost] = useState<string>('thinky.gg');
@@ -399,8 +424,29 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
         'user_id': user?._id.toString()
       }
       );
+
+      console.log('IDENTIFYING USER WITH POSTHOG', user.name);
+      // Identify user with PostHog
+      posthog.identify(user._id.toString(), {
+        name: user.name,
+        email: user.email || '',
+        roles: user.roles,
+        created_at: user.ts ? new Date(user.ts * 1000).toISOString() : undefined,
+        last_game: user.lastGame,
+        utm_source: user.utm_source,
+        has_pro: user.roles?.includes(Role.PRO) || false,
+        email_confirmed: user.emailConfirmed,
+        // Add other relevant user properties (be careful not to include sensitive data)
+        // Don't include the entire user object for privacy reasons
+      });
+
+      // Capture a pageview with the identified user
+      posthog.capture('$pageview');
+    } else {
+      // Reset PostHog identity when user logs out
+      posthog.reset();
     }
-  }, [user?._id, user?.name]);
+  }, [user?._id, user?.name, user?.email, user?.roles, user?.ts, user?.lastGame, user?.utm_source, user?.emailConfirmed]);
 
   useEffect(() => {
     const handleRouteChange = (url: string) => {
@@ -438,91 +484,96 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
 
   const isEU = Intl.DateTimeFormat().resolvedOptions().timeZone.startsWith('Europe');
 
-  return (<>
-    <ThemeProvider attribute='class' defaultTheme={Theme.Modern} themes={Object.values(Theme)}>
-      <Head>
-        <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' />
-        <meta name='apple-itunes-app' content='app-id=1668925562, app-argument=thinky.gg' />
-        <link href={selectedGame.favicon} rel='icon' />
-      </Head>
-      <DefaultSeo
-        defaultTitle={selectedGame.seoTitle}
-        description={selectedGame.seoDescription}
-        canonical={`${selectedGame.baseUrl}'`}
-        openGraph={{
-          type: 'website',
-          url: `${selectedGame.baseUrl}'`,
-          siteName: selectedGame.displayName,
-        }}
-        twitter={{
-          handle: '@thinkygg',
-          site: selectedGame.baseUrl,
-          cardType: 'summary_large_image'
-        }}
-      />
-      <AppContext.Provider value={{
-        deviceInfo: deviceInfo,
-        forceUpdate: forceUpdate,
-        game: selectedGame,
-        host: host,
-        multiplayerSocket: multiplayerSocket,
-        mutatePlayLater: mutatePlayLater,
-        mutateUser: mutateUser,
-        notifications: notifications,
-        playLater: playLater,
-        protocol: protocol,
-        setNotifications: setNotifications,
-        setShouldAttemptAuth: setShouldAttemptAuth,
-        setShowNav: setShowNav,
-        setTempCollection: setTempCollection,
-        shouldAttemptAuth: shouldAttemptAuth,
-        showNav: showNav,
-        sounds: sounds,
-        tempCollection,
-        user: isLoading ? undefined : !user ? null : user,
-        userConfig: isLoading ? undefined : !user?.config ? null : user.config,
-      }}>
-        <div className={getFontFromGameId(selectedGame.id)} style={{
-          backgroundColor: router.pathname === '/' && !user ? 'transparent' : 'var(--bg-color)',
-          color: 'var(--color)',
-        }}>
-          {/**
-             * NB: using a portal here to mitigate issues clicking toasts with open modals
-             * ideally we could have a Toaster component as a child of a modal so that clicking the
-             * toast does not close the modal, but react-hot-toast currently does not support this:
-             * https://github.com/timolins/react-hot-toast/issues/158
-             */}
-          <Portal>
-            <Toaster toastOptions={{ duration: 1500 }} />
-            <Confetti />
-            <OpenReplay />
-          </Portal>
-          <MusicContextProvider>
-            <Component {...pageProps} />
-            {isEU && (
-              <CookieConsent
-                buttonClasses='font-semibold'
-                buttonStyle={{ borderRadius: '6px', color: 'white', background: '#4CAF50' }}
-                buttonText='I understand'
-                contentStyle={{ flex: '1' }}
-                cookieName='cookie_consent'
-                location='top'
-                style={{
-                  background: '#2B373B',
-                  display: 'flex',
-                  alignItems: 'center',
-                  marginTop: 48,
-                  opacity: '0.9',
-                }}
-              >
-                <div className='text-xs'>
-                  We use cookies to improve your browsing experience. View our&nbsp;<a className='hover:underline text-blue-300' href='https://docs.google.com/document/d/e/2PACX-1vSNgV3NVKlsgSOEsnUltswQgE8atWe1WCLUY5fQUVjEdu_JZcVlRkZcpbTOewwe3oBNa4l7IJlOnUIB/pub' rel='noreferrer' target='_blank'>privacy policy</a>.
-                </div>
-              </CookieConsent>
-            )}
-          </MusicContextProvider>
-        </div>
-      </AppContext.Provider>
-    </ThemeProvider>
-  </>);
+  return (
+    <>
+      <PostHogProvider client={posthog}>
+        <ThemeProvider attribute='class' defaultTheme={Theme.Modern} themes={Object.values(Theme)}>
+          <Head>
+            <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' />
+            <meta name='apple-itunes-app' content='app-id=1668925562, app-argument=thinky.gg' />
+            <link href={selectedGame.favicon} rel='icon' />
+          </Head>
+          <DefaultSeo
+            defaultTitle={selectedGame.seoTitle}
+            description={selectedGame.seoDescription}
+            canonical={`${selectedGame.baseUrl}'`}
+            openGraph={{
+              type: 'website',
+              url: `${selectedGame.baseUrl}'`,
+              siteName: selectedGame.displayName,
+            }}
+            twitter={{
+              handle: '@thinkygg',
+              site: selectedGame.baseUrl,
+              cardType: 'summary_large_image'
+            }}
+          />
+          <AppContext.Provider value={{
+            deviceInfo: deviceInfo,
+            forceUpdate: forceUpdate,
+            game: selectedGame,
+            host: host,
+            multiplayerSocket: multiplayerSocket,
+            mutatePlayLater: useCallback(() => {}, []),
+            mutateUser: mutateUser,
+            notifications: notifications,
+            playLater: playLater,
+            protocol: protocol,
+            setNotifications: setNotifications,
+            setShouldAttemptAuth: setShouldAttemptAuth,
+            setShowNav: setShowNav,
+            setTempCollection: setTempCollection,
+            shouldAttemptAuth: shouldAttemptAuth,
+            showNav: showNav,
+            sounds: sounds,
+            tempCollection,
+            user: isLoading ? undefined : !user ? null : user,
+            userConfig: isLoading ? undefined : !user?.config ? null : user.config,
+          }}>
+            <div className={getFontFromGameId(selectedGame.id)} style={{
+              backgroundColor: router.pathname === '/' && !user ? 'transparent' : 'var(--bg-color)',
+              color: 'var(--color)',
+            }}>
+              {/**
+            * NB: using a portal here to mitigate issues clicking toasts with open modals
+            * ideally we could have a Toaster component as a child of a modal so that clicking the
+            * toast does not close the modal, but react-hot-toast currently does not support this:
+            * https://github.com/timolins/react-hot-toast/issues/158
+            */}
+              <Portal>
+                <Toaster toastOptions={{ duration: 1500 }} />
+                <Confetti />
+                <OpenReplay />
+              </Portal>
+              <MusicContextProvider>
+                <Component {...pageProps} />
+                {isEU && (
+                  <CookieConsent
+                    buttonClasses='font-semibold'
+                    buttonStyle={{ borderRadius: '6px', color: 'white', background: '#4CAF50' }}
+                    buttonText='I understand'
+                    contentStyle={{ flex: '1' }}
+                    cookieName='cookie_consent'
+                    location='top'
+                    style={{
+                      background: '#2B373B',
+                      display: 'flex',
+                      alignItems: 'center',
+                      marginTop: 48,
+                      opacity: '0.9',
+                    }}
+                  >
+                    <div className='text-xs'>
+                 We use cookies to improve your browsing experience. View our&nbsp;<a className='hover:underline text-blue-300' href='https://docs.google.com/document/d/e/2PACX-1vSNgV3NVKlsgSOEsnUltswQgE8atWe1WCLUY5fQUVjEdu_JZcVlRkZcpbTOewwe3oBNa4l7IJlOnUIB/pub' rel='noreferrer' target='_blank'>privacy policy</a>.
+                    </div>
+                  </CookieConsent>
+                )}
+              </MusicContextProvider>
+            </div>
+
+          </AppContext.Provider>
+        </ThemeProvider>
+      </PostHogProvider>
+    </>
+  );
 }
