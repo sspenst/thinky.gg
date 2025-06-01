@@ -31,8 +31,6 @@ const CacheSchema = new mongoose.Schema<Cache>({
   },
 });
 
-// Create indexes
-CacheSchema.index({ key: 1 }, { unique: true });
 CacheSchema.index({ expireAt: 1 }, { expireAfterSeconds: 0 }); // TTL index on expireAt
 
 export default CacheSchema;
