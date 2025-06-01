@@ -428,6 +428,7 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
       console.log('IDENTIFYING USER WITH POSTHOG', user.name);
       // Identify user with PostHog
       posthog.identify(user._id.toString(), {
+        id: user._id.toString(),
         name: user.name,
         email: user.email || '',
         roles: user.roles,
