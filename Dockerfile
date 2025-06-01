@@ -14,6 +14,20 @@ ARG NEW_RELIC_APP_NAME=dummy
 # avoid using the db when building pages
 ARG OFFLINE_BUILD=true
 
+# Add ARG declarations for NEXT_PUBLIC environment variables
+ARG NEXT_PUBLIC_APP_DOMAIN
+ARG NEXT_PUBLIC_GROWTHBOOK_API_HOST
+ARG NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY
+ARG NEXT_PUBLIC_POSTHOG_KEY
+ARG NEXT_PUBLIC_POSTHOG_HOST
+
+# Set them as environment variables so they're available during build
+ENV NEXT_PUBLIC_APP_DOMAIN=$NEXT_PUBLIC_APP_DOMAIN
+ENV NEXT_PUBLIC_GROWTHBOOK_API_HOST=$NEXT_PUBLIC_GROWTHBOOK_API_HOST
+ENV NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY=$NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY
+ENV NEXT_PUBLIC_POSTHOG_KEY=$NEXT_PUBLIC_POSTHOG_KEY
+ENV NEXT_PUBLIC_POSTHOG_HOST=$NEXT_PUBLIC_POSTHOG_HOST
+
 # ts-node / tspath is needed for other scripts right now. module-alias is used for socket server production
 # ideally all would use package module alias and we would not need ts-node / tspath. but that's a TODO
 RUN npm config set fund false && \

@@ -47,15 +47,6 @@ module.exports = {
   },
   // This is required to support PostHog trailing slash API requests
   skipTrailingSlashRedirect: true,
-  publicRuntimeConfig: {
-    NEXT_PUBLIC_APP_DOMAIN: process.env.NEXT_PUBLIC_APP_DOMAIN,
-    NEXT_PUBLIC_GROWTHBOOK_API_HOST:
-      process.env.NEXT_PUBLIC_GROWTHBOOK_API_HOST,
-    NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY:
-      process.env.NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY,
-    NEXT_PUBLIC_POSTHOG_KEY: process.env.NEXT_PUBLIC_POSTHOG_KEY,
-    NEXT_PUBLIC_POSTHOG_HOST: process.env.NEXT_PUBLIC_POSTHOG_HOST,
-  },
   images: {
     remotePatterns: [
       {
