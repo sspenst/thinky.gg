@@ -72,7 +72,7 @@ MyApp.getInitialProps = async ({ ctx }: { ctx: NextPageContext }) => {
 export default function MyApp({ Component, pageProps, userAgent, initGame }: AppProps & { userAgent: string, initGame: Game }) {
   // Initialize PostHog analytics
   useEffect(() => {
-    posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY as string, {
+    posthog.init((process.env.NEXT_PUBLIC_POSTHOG_KEY as string) || 'phc_Am38672etY9vtglKkfMa86HVxREbLuh7ExC7Qj1qPBx', {
       api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST as string || '/api/ingest',
       person_profiles: 'identified_only', // or 'always' to create profiles for anonymous users as well
       // Enable debug mode in development
