@@ -9,7 +9,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const levelOfDay = await getLevelOfDay(gameId);
 
   context.params = {
-    username: levelOfDay?.userId.name,
+    username: levelOfDay?.userId?.name,
     slugName: levelOfDay?.slug.split('/').pop(),
   };
 
