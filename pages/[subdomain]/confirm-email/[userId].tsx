@@ -10,6 +10,15 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const { token, userId } = context.query;
   const decodedToken = typeof token === 'string' ? decodeURIComponent(token) : null;
 
+  // Early return if token is not a string to prevent null token matches
+  if (!decodedToken) {
+    return {
+      props: {
+        emailConfirmed: false,
+      },
+    };
+  }
+
   const user = await UserModel.findOneAndUpdate<User>(
     {
       emailConfirmationToken: decodedToken,

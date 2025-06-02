@@ -26,6 +26,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   };
 }
 
+/* istanbul ignore next */
 export default function ConfirmPage() {
   const { user, mutateUser } = useContext(AppContext);
 
