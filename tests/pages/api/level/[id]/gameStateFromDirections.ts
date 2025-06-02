@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import { GameState } from '@root/helpers/gameStateHelpers';
 import Position from '@root/models/position';
 
