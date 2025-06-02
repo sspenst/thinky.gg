@@ -88,7 +88,6 @@ export default function useTour(path: TourPath, cb?: (data: CallBackProps) => vo
     setTour(
       <ReactJoyride
         callback={(data: CallBackProps) => {
-
           if (!tourType) {
             return;
           }
