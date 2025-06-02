@@ -3,7 +3,6 @@ import MathematicalBackground from '@root/components/backgrounds/MathematicalBac
 import { ThinkyHomePageLoggedIn } from '@root/components/home/thinkyLoggedIn';
 import ThinkyHomePageNotLoggedIn from '@root/components/home/thinkyNotLoggedIn';
 import Page from '@root/components/page/page';
-import Dimensions from '@root/constants/dimensions';
 import dbConnect from '@root/lib/dbConnect';
 import { getUserFromToken } from '@root/lib/withAuth';
 import { ReqUser } from '@root/models/db/user';
