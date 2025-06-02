@@ -5,9 +5,11 @@ import { blueButton } from '@root/helpers/className';
 import { getGameFromId, getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { redirectToLogin } from '@root/helpers/redirectToLogin';
 import classNames from 'classnames';
+import debounce from 'debounce';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Link from 'next/link';
-import React, { useMemo, useState } from 'react';
+import { useRouter } from 'next/router';
+import React, { useCallback, useMemo, useState } from 'react';
 import Page from '../../../components/page/page';
 import { getUserFromToken } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
@@ -19,6 +21,10 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
   const gameId = getGameIdFromReq(context.req);
   const game = getGameFromId(gameId);
+  const pageParam = context.query?.page ? parseInt(context.query.page as string) : 1;
+  const page = isNaN(pageParam) ? 1 : pageParam;
+  const levelsPerPage = 5;
+  const search = (context.query?.search as string) || '';
 
   if (game.isNotAGame) {
     return {
@@ -33,17 +39,36 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     return redirectToLogin(context);
   }
 
-  const levels = await LevelModel.find<Level>({
+  // Build search query
+  const searchQuery: any = {
     isDeleted: { $ne: true },
     isDraft: true,
     userId: reqUser._id,
     gameId: gameId
-  }).sort({ updatedAt: -1 });
+  };
+
+  // Add name search filter if search term is provided
+  if (search) {
+    searchQuery.name = { $regex: search, $options: 'i' };
+  }
+
+  // Get total count of draft levels with search filter
+  const totalCount = await LevelModel.countDocuments(searchQuery);
+
+  // Get paginated levels with search filter
+  const levels = await LevelModel.find<Level>(searchQuery)
+    .sort({ updatedAt: -1 })
+    .skip((page - 1) * levelsPerPage)
+    .limit(levelsPerPage);
 
   return {
     props: {
       levels: JSON.parse(JSON.stringify(levels)),
       user: JSON.parse(JSON.stringify(reqUser)),
+      page: page,
+      totalCount: totalCount,
+      levelsPerPage: levelsPerPage,
+      search: search,
     },
   };
 }
@@ -51,15 +76,39 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 export interface CreatePageProps {
   levels: Level[];
   user: User;
+  page: number;
+  totalCount: number;
+  levelsPerPage: number;
+  search: string;
 }
 
 type SortOption = 'name' | 'date';
 
 /* istanbul ignore next */
-export default function Create({ levels, user }: CreatePageProps) {
+export default function Create({ levels, user, page, totalCount, levelsPerPage, search }: CreatePageProps) {
   const [sortBy, setSortBy] = useState<SortOption>('date');
+  const [searchText, setSearchText] = useState(search);
+  const router = useRouter();
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const setSearchTextDebounce = useCallback(
+    debounce((searchTerm: string) => {
+      const query: any = {
+        page: 1,
+      };
+
+      if (searchTerm) {
+        query.search = searchTerm;
+      }
+
+      router.push({
+        pathname: '/drafts',
+        query: query,
+      });
+    }, 500), []);
 
   const sortedLevels = useMemo(() => {
+    // Since levels are already paginated from the server, we only sort the current page
     const levelsCopy = [...levels];
 
     if (sortBy === 'name') {
@@ -74,6 +123,8 @@ export default function Create({ levels, user }: CreatePageProps) {
       });
     }
   }, [levels, sortBy]);
+
+  const totalPages = Math.ceil(totalCount / levelsPerPage);
 
   return (
     <Page title='Drafts'>
@@ -117,6 +168,23 @@ export default function Create({ levels, user }: CreatePageProps) {
             Your Collections
           </Link>
         </div>
+        {/* Search */}
+        <div className='flex justify-center'>
+          <div className='p-2'>
+            <input
+              aria-label='Search draft levels'
+              id='search-drafts'
+              onChange={e => {
+                setSearchText(e.target.value);
+                setSearchTextDebounce(e.target.value);
+              }}
+              placeholder={`Search ${totalCount} draft level${totalCount !== 1 ? 's' : ''}...`}
+              type='search'
+              value={searchText}
+              className='px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+            />
+          </div>
+        </div>
         {/* Sort Controls */}
         <div className='flex items-center gap-2'>
           <span className='text-sm font-medium'>Sort by:</span>
@@ -158,8 +226,41 @@ export default function Create({ levels, user }: CreatePageProps) {
               </div>
             );
           })}
-
         </div>
+        {/* Pagination */}
+        {totalCount > levelsPerPage && (
+          <div className='flex justify-center flex-row'>
+            {page > 1 && (
+              <Link
+                className='ml-2 underline'
+                href={{
+                  pathname: '/drafts',
+                  query: {
+                    ...(page !== 2 && { page: page - 1 }),
+                    ...(searchText && { search: searchText }),
+                  }
+                }}
+              >
+                Previous
+              </Link>
+            )}
+            <div id='page-number' className='ml-2'>{page} of {totalPages}</div>
+            {totalCount > (page * levelsPerPage) && (
+              <Link
+                className='ml-2 underline'
+                href={{
+                  pathname: '/drafts',
+                  query: {
+                    page: page + 1,
+                    ...(searchText && { search: searchText }),
+                  }
+                }}
+              >
+                Next
+              </Link>
+            )}
+          </div>
+        )}
       </div>
     </Page>
   );
