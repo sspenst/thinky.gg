@@ -65,7 +65,7 @@ describe('pages/drafts page', () => {
     expect(ret).toBeDefined();
     expect(ret.props).toBeDefined();
     expect(ret.props.page).toBe(1);
-    expect(ret.props.levelsPerPage).toBe(20);
+    expect(ret.props.levelsPerPage).toBe(50);
     expect(ret.props.totalCount).toBeDefined();
     expect(ret.props.levels).toBeDefined();
     expect(Array.isArray(ret.props.levels)).toBe(true);
@@ -89,7 +89,7 @@ describe('pages/drafts page', () => {
     expect(ret).toBeDefined();
     expect(ret.props).toBeDefined();
     expect(ret.props.page).toBe(2);
-    expect(ret.props.levelsPerPage).toBe(20);
+    expect(ret.props.levelsPerPage).toBe(50);
     expect(ret.props.totalCount).toBeDefined();
     expect(ret.props.levels).toBeDefined();
   });
@@ -121,7 +121,7 @@ describe('pages/drafts page', () => {
     // Create some test draft levels for pagination testing
     const testLevels = [];
 
-    for (let i = 0; i < 25; i++) {
+    for (let i = 0; i < 60; i++) {
       testLevels.push({
         name: `Test Draft Level ${i}`,
         isDraft: true,
@@ -156,8 +156,8 @@ describe('pages/drafts page', () => {
       const retPage1 = await getServerSideProps(contextPage1 as unknown as GetServerSidePropsContext) as any;
 
       expect(retPage1.props.page).toBe(1);
-      expect(retPage1.props.levels.length).toBeLessThanOrEqual(20);
-      expect(retPage1.props.totalCount).toBeGreaterThanOrEqual(25);
+      expect(retPage1.props.levels.length).toBeLessThanOrEqual(50);
+      expect(retPage1.props.totalCount).toBeGreaterThanOrEqual(60);
 
       // Test page 2
       const contextPage2 = {
@@ -174,7 +174,7 @@ describe('pages/drafts page', () => {
       const retPage2 = await getServerSideProps(contextPage2 as unknown as GetServerSidePropsContext) as any;
 
       expect(retPage2.props.page).toBe(2);
-      expect(retPage2.props.levels.length).toBeLessThanOrEqual(20);
+      expect(retPage2.props.levels.length).toBeLessThanOrEqual(50);
 
       // Test page 2 should have remaining levels
       const contextPage3 = {
@@ -191,7 +191,7 @@ describe('pages/drafts page', () => {
       const retPage3 = await getServerSideProps(contextPage3 as unknown as GetServerSidePropsContext) as any;
 
       expect(retPage3.props.page).toBe(3);
-      expect(retPage3.props.levels.length).toBeLessThanOrEqual(20);
+      expect(retPage3.props.levels.length).toBeLessThanOrEqual(50);
     } finally {
       // Clean up test levels
       await LevelModel.deleteMany({
@@ -241,7 +241,7 @@ describe('pages/drafts page', () => {
     expect(typeof ret.props.page).toBe('number');
     expect(typeof ret.props.totalCount).toBe('number');
     expect(typeof ret.props.levelsPerPage).toBe('number');
-    expect(ret.props.levelsPerPage).toBe(20);
+    expect(ret.props.levelsPerPage).toBe(50);
     expect(ret.props.totalCount).toBeGreaterThanOrEqual(0);
     expect(ret.props.page).toBeGreaterThan(0);
     expect(typeof ret.props.search).toBe('string');
@@ -476,7 +476,7 @@ describe('pages/drafts page', () => {
     // Create multiple test levels that match search
     const testLevels = [];
 
-    for (let i = 0; i < 25; i++) {
+    for (let i = 0; i < 60; i++) {
       testLevels.push({
         name: `Searchable Level ${i}`,
         isDraft: true,
@@ -513,8 +513,8 @@ describe('pages/drafts page', () => {
 
       expect(retPage1.props.search).toBe('searchable');
       expect(retPage1.props.page).toBe(1);
-      expect(retPage1.props.levels.length).toBeLessThanOrEqual(20);
-      expect(retPage1.props.totalCount).toBe(25);
+      expect(retPage1.props.levels.length).toBeLessThanOrEqual(50);
+      expect(retPage1.props.totalCount).toBe(60);
 
       // Test page 2 with search
       const contextPage2 = {
@@ -533,8 +533,8 @@ describe('pages/drafts page', () => {
 
       expect(retPage2.props.search).toBe('searchable');
       expect(retPage2.props.page).toBe(2);
-      expect(retPage2.props.levels.length).toBeLessThanOrEqual(20);
-      expect(retPage2.props.totalCount).toBe(25);
+      expect(retPage2.props.levels.length).toBeLessThanOrEqual(50);
+      expect(retPage2.props.totalCount).toBe(60);
     } finally {
       // Clean up test levels
       await LevelModel.deleteMany({
