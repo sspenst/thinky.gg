@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import { DEFAULT_GAME_ID, GameId } from '@root/constants/GameId';
 import { getTokenCookieValue } from '@root/lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '@root/lib/withAuth';

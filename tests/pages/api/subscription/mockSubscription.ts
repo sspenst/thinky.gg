@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import Stripe from 'stripe';
 
 const mockSubscription: Stripe.Subscription = {
