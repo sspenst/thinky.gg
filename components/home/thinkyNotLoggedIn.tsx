@@ -7,7 +7,7 @@ import { Games } from '@root/constants/Games';
 import Theme from '@root/constants/theme';
 import { AppContext } from '@root/contexts/appContext';
 import useUrl from '@root/hooks/useUrl';
-import { Gamepad2, Play, Share2, Trophy, Users } from 'lucide-react';
+import { Play, Share2, Trophy, Users } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { useContext, useRef } from 'react';
@@ -116,15 +116,6 @@ export default function ThinkyHomePageNotLoggedIn() {
       leastMoves: 14,
       theme: Theme.Winter,
     },
-  };
-  const router = useRouter();
-
-  const scrollToGames = () => {
-    gamesSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  const scrollToWhatIsThinky = () => {
-    whatIsThinkySectionRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   return (

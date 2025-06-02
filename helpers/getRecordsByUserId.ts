@@ -1,13 +1,10 @@
 import { GameId } from '@root/constants/GameId';
-import GraphType from '@root/constants/graphType';
 import Record from '@root/models/db/record';
 import User from '@root/models/db/user';
 import { PipelineStage, Types } from 'mongoose';
 import Level from '../models/db/level';
-import Review from '../models/db/review';
-import { GraphModel, LevelModel, RecordModel, ReviewModel, UserModel } from '../models/mongoose';
+import { LevelModel, RecordModel } from '../models/mongoose';
 import { getEnrichLevelsPipelineSteps } from './enrich';
-import { logger } from './logger';
 
 export interface LevelWithRecordHistory extends Level {
   records: Record[];

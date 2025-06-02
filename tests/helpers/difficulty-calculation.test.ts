@@ -36,7 +36,6 @@ import TestId from '../../constants/testId';
 import dbConnect, { dbDisconnect } from '../../lib/dbConnect';
 import { initLevel } from '../../lib/initializeLocalDb';
 import Level from '../../models/db/level';
-import Stat from '../../models/db/stat';
 import { LevelModel, PlayAttemptModel, StatModel, UserModel } from '../../models/mongoose';
 import { AttemptContext } from '../../models/schemas/playAttemptSchema';
 

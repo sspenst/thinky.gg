@@ -4,9 +4,8 @@ import cleanUser from '@root/lib/cleanUser';
 import { LEVEL_SEARCH_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import { PipelineStage, QueryOptions, Types } from 'mongoose';
 import GraphType from '../constants/graphType';
-import Review from '../models/db/review';
 import User from '../models/db/user';
-import { GraphModel, LevelModel, ReviewModel, UserModel } from '../models/mongoose';
+import { GraphModel, LevelModel, ReviewModel } from '../models/mongoose';
 import { getEnrichLevelsPipelineSteps } from './enrich';
 import { logger } from './logger';
 
