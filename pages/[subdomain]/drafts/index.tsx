@@ -27,6 +27,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const page = isNaN(pageParam) ? 1 : pageParam;
   const levelsPerPage = 50;
   const search = (context.query?.search as string) || '';
+  const sortBy = (context.query?.sortBy as string) || 'date';
 
   if (game.isNotAGame) {
     return {
@@ -57,22 +58,54 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   // Get total count of draft levels with search filter
   const totalCount = await LevelModel.countDocuments(searchQuery);
 
-  // Get paginated levels with search filter
-  const levels = await LevelModel.find<Level>(searchQuery)
-    .sort({ updatedAt: -1 })
-    .skip((page - 1) * levelsPerPage)
-    .limit(levelsPerPage);
+  // Build sort criteria based on sortBy parameter
+  if (sortBy === 'name') {
+    // Simple sort by name - no need for aggregation
+    const levels = await LevelModel.find<Level>(searchQuery)
+      .sort({ name: 1, _id: 1 })
+      .skip((page - 1) * levelsPerPage)
+      .limit(levelsPerPage);
 
-  return {
-    props: {
-      levels: JSON.parse(JSON.stringify(levels)),
-      user: JSON.parse(JSON.stringify(reqUser)),
-      page: page,
-      totalCount: totalCount,
-      levelsPerPage: levelsPerPage,
-      search: search,
-    },
-  };
+    return {
+      props: {
+        levels: JSON.parse(JSON.stringify(levels)),
+        user: JSON.parse(JSON.stringify(reqUser)),
+        page: page,
+        totalCount: totalCount,
+        levelsPerPage: levelsPerPage,
+        search: search,
+        sortBy: sortBy,
+      },
+    };
+  } else {
+    // Date sorting with updatedAt fallback to ts
+    const levels = await LevelModel.aggregate<Level>([
+      { $match: searchQuery },
+      {
+        $addFields: {
+          sortDate: {
+            $ifNull: ['$updatedAt', { $toDate: { $multiply: ['$ts', 1000] } }]
+          }
+        }
+      },
+      { $sort: { sortDate: -1, _id: -1 } },
+      { $skip: (page - 1) * levelsPerPage },
+      { $limit: levelsPerPage },
+      { $unset: 'sortDate' }
+    ]);
+
+    return {
+      props: {
+        levels: JSON.parse(JSON.stringify(levels)),
+        user: JSON.parse(JSON.stringify(reqUser)),
+        page: page,
+        totalCount: totalCount,
+        levelsPerPage: levelsPerPage,
+        search: search,
+        sortBy: sortBy,
+      },
+    };
+  }
 }
 
 export interface CreatePageProps {
@@ -82,6 +115,7 @@ export interface CreatePageProps {
   totalCount: number;
   levelsPerPage: number;
   search: string;
+  sortBy: string;
 }
 
 type SortOption = 'name' | 'date';
@@ -89,13 +123,16 @@ type SortOption = 'name' | 'date';
 interface RouterQuery extends ParsedUrlQueryInput {
   page?: string;
   search?: string;
+  sortBy?: string;
 }
 
 /* istanbul ignore next */
-export default function Create({ levels, user, page, totalCount, levelsPerPage, search }: CreatePageProps) {
-  const [sortBy, setSortBy] = useState<SortOption>('date');
+export default function Create({ levels, user, page, totalCount, levelsPerPage, search, sortBy }: CreatePageProps) {
   const [searchText, setSearchText] = useState(search);
   const router = useRouter();
+
+  // Use the server-provided sortBy value directly
+  const currentSort = sortBy as SortOption;
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const setSearchTextDebounce = useCallback(
@@ -109,28 +146,39 @@ export default function Create({ levels, user, page, totalCount, levelsPerPage, 
         query.search = searchTerm;
       }
 
+      // Preserve current sort
+      if (currentSort !== 'date') {
+        query.sortBy = currentSort;
+      }
+
       router.push({
         pathname: '/drafts',
         query: query,
       });
-    }, 500), []);
+    }, 500), [currentSort]);
 
-  const sortedLevels = useMemo(() => {
-    // Since levels are already paginated from the server, we only sort the current page
-    const levelsCopy = [...levels];
+  const handleSortChange = (newSortBy: SortOption) => {
+    const query: RouterQuery = {
+      page: '1', // Reset to page 1 when changing sort
+    };
 
-    if (sortBy === 'name') {
-      return levelsCopy.sort((a, b) => a.name.localeCompare(b.name));
-    } else {
-      return levelsCopy.sort((a, b) => {
-        // Use updatedAt if available, otherwise fall back to ts (convert from seconds to milliseconds)
-        const aTime = a.updatedAt ? new Date(a.updatedAt).getTime() : (a.ts * 1000);
-        const bTime = b.updatedAt ? new Date(b.updatedAt).getTime() : (b.ts * 1000);
-
-        return bTime - aTime; // Most recent first
-      });
+    if (searchText) {
+      query.search = searchText;
     }
-  }, [levels, sortBy]);
+
+    if (newSortBy !== 'date') {
+      query.sortBy = newSortBy;
+    }
+
+    router.push({
+      pathname: '/drafts',
+      query: query,
+    });
+  };
+
+  // Since sorting is now done server-side, we don't need client-side sorting
+  // Just use the levels as returned from the server
+  const sortedLevels = levels;
 
   const totalPages = Math.ceil(totalCount / levelsPerPage);
 
@@ -197,10 +245,10 @@ export default function Create({ levels, user, page, totalCount, levelsPerPage, 
         <div className='flex items-center gap-2'>
           <span className='text-sm font-medium'>Sort by:</span>
           <button
-            onClick={() => setSortBy('name')}
+            onClick={() => handleSortChange('name')}
             className={classNames(
               'px-3 py-1 rounded-md text-sm transition-colors',
-              sortBy === 'name'
+              currentSort === 'name'
                 ? 'bg-blue-500 text-white'
                 : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
             )}
@@ -208,10 +256,10 @@ export default function Create({ levels, user, page, totalCount, levelsPerPage, 
             Name
           </button>
           <button
-            onClick={() => setSortBy('date')}
+            onClick={() => handleSortChange('date')}
             className={classNames(
               'px-3 py-1 rounded-md text-sm transition-colors',
-              sortBy === 'date'
+              currentSort === 'date'
                 ? 'bg-blue-500 text-white'
                 : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
             )}
@@ -246,6 +294,7 @@ export default function Create({ levels, user, page, totalCount, levelsPerPage, 
                   query: {
                     ...(page !== 2 && { page: page - 1 }),
                     ...(searchText && { search: searchText }),
+                    ...(currentSort && { sortBy: currentSort }),
                   }
                 }}
               >
@@ -261,6 +310,7 @@ export default function Create({ levels, user, page, totalCount, levelsPerPage, 
                   query: {
                     page: page + 1,
                     ...(searchText && { search: searchText }),
+                    ...(currentSort && { sortBy: currentSort }),
                   }
                 }}
               >
