@@ -4,7 +4,7 @@ import TestId from '../../../constants/testId';
 import { logger } from '../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../lib/getTokenCookie';
-import { CacheModel, LevelModel } from '../../../models/mongoose';
+import { CacheModel } from '../../../models/mongoose';
 import { getServerSideProps } from '../../../pages/[subdomain]/search/index';
 
 beforeAll(async () => {

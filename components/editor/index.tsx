@@ -209,7 +209,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
     }
   }
 
-  function onClick(index: number, rightClick: boolean, isDragging?: boolean) {
+  function onClick(index: number, rightClick: boolean) {
     setIsDirty(true);
     setLevel(prevLevel => {
       if (!prevLevel) {

@@ -2,7 +2,6 @@ import { DEFAULT_GAME_ID } from '@root/constants/GameId';
 import NotificationType from '@root/constants/notificationType';
 import TestId from '@root/constants/testId';
 import dbConnect, { dbDisconnect } from '@root/lib/dbConnect';
-import Device from '@root/models/db/device';
 import Notification from '@root/models/db/notification';
 import User from '@root/models/db/user';
 import { DeviceModel } from '@root/models/mongoose';

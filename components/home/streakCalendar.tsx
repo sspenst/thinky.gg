@@ -100,7 +100,6 @@ export function StreakCalendar() {
           )}
         </button>
       </div>
-      
       {isExpanded && (
         <div className='w-full mt-4'>
           <div id='cal-heatmap' ref={heatmapRef} className='overflow-x-auto flex justify-center' />

@@ -254,7 +254,7 @@ const MathematicalBackground: React.FC<MathematicalBackgroundProps> = ({ classNa
       particles.rotation.x = Math.sin(time * 0.3) * 0.2 + scrollSin * 0.1; // Reduced from 0.15
 
       // Animate puzzle elements
-      puzzleElements.children.forEach((sprite, index) => {
+      puzzleElements.children.forEach((sprite) => {
         const s = sprite as any;
 
         sprite.position.copy(s.initialPosition);
