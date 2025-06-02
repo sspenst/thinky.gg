@@ -294,7 +294,7 @@ export default function Create({ levels, user, page, totalCount, levelsPerPage, 
                   query: {
                     ...(page !== 2 && { page: page - 1 }),
                     ...(searchText && { search: searchText }),
-                    ...(currentSort && { sortBy: currentSort }),
+                    ...(currentSort !== 'date' && { sortBy: currentSort }),
                   }
                 }}
               >
@@ -310,7 +310,7 @@ export default function Create({ levels, user, page, totalCount, levelsPerPage, 
                   query: {
                     page: page + 1,
                     ...(searchText && { search: searchText }),
-                    ...(currentSort && { sortBy: currentSort }),
+                    ...(currentSort !== 'date' && { sortBy: currentSort }),
                   }
                 }}
               >
