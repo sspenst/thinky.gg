@@ -1,7 +1,9 @@
 import TestId from '@root/constants/testId';
+import { logger } from '@root/helpers/logger';
 import dbConnect, { dbDisconnect } from '@root/lib/dbConnect';
 import { getTokenCookieValue } from '@root/lib/getTokenCookie';
 import { GetServerSidePropsContext } from 'next';
+import { Logger } from 'winston';
 import { getServerSideProps } from '../../../pages/[subdomain]/confirm-email/index';
 
 beforeAll(async () => {
@@ -81,6 +83,8 @@ describe('pages/[subdomain]/confirm-email', () => {
     });
 
     test('getServerSideProps with invalid token should redirect to home', async () => {
+      jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
+
       const context = {
         req: {
           ...mockReq,
