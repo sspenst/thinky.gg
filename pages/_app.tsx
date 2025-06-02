@@ -10,7 +10,6 @@ import DismissToast from '@root/components/toasts/dismissToast';
 import AlertType from '@root/constants/alertType';
 import { DEFAULT_GAME_ID, GameId } from '@root/constants/GameId';
 import { Game, Games } from '@root/constants/Games';
-import Role from '@root/constants/role';
 import MusicContextProvider from '@root/contexts/musicContext';
 import getFontFromGameId from '@root/helpers/getFont';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';

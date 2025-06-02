@@ -25,7 +25,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const game = getGameFromId(gameId);
   const pageParam = context.query?.page ? parseInt(context.query.page as string) : 1;
   const page = isNaN(pageParam) ? 1 : pageParam;
-  const levelsPerPage = 5;
+  const levelsPerPage = 20;
   const search = (context.query?.search as string) || '';
 
   if (game.isNotAGame) {
