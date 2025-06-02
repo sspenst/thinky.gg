@@ -6,9 +6,11 @@ import { getGameFromId, getGameIdFromReq } from '@root/helpers/getGameIdFromReq'
 import { redirectToLogin } from '@root/helpers/redirectToLogin';
 import classNames from 'classnames';
 import debounce from 'debounce';
+import { FilterQuery } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import { ParsedUrlQueryInput } from 'querystring';
 import React, { useCallback, useMemo, useState } from 'react';
 import Page from '../../../components/page/page';
 import { getUserFromToken } from '../../../lib/withAuth';
@@ -40,7 +42,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   }
 
   // Build search query
-  const searchQuery: any = {
+  const searchQuery: FilterQuery<Level> = {
     isDeleted: { $ne: true },
     isDraft: true,
     userId: reqUser._id,
@@ -84,6 +86,11 @@ export interface CreatePageProps {
 
 type SortOption = 'name' | 'date';
 
+interface RouterQuery extends ParsedUrlQueryInput {
+  page?: string;
+  search?: string;
+}
+
 /* istanbul ignore next */
 export default function Create({ levels, user, page, totalCount, levelsPerPage, search }: CreatePageProps) {
   const [sortBy, setSortBy] = useState<SortOption>('date');
@@ -93,9 +100,10 @@ export default function Create({ levels, user, page, totalCount, levelsPerPage, 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const setSearchTextDebounce = useCallback(
     debounce((searchTerm: string) => {
-      const query: any = {
-        page: 1,
-      };
+      const query: RouterQuery = {};
+
+      // Always set page to 1 when searching
+      query.page = '1';
 
       if (searchTerm) {
         query.search = searchTerm;

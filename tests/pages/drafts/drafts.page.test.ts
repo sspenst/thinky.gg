@@ -6,7 +6,6 @@ import TestId from '../../../constants/testId';
 import { logger } from '../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../lib/getTokenCookie';
-import Level from '../../../models/db/level';
 import { LevelModel } from '../../../models/mongoose';
 import { getServerSideProps } from '../../../pages/[subdomain]/drafts';
 
