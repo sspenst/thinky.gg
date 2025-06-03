@@ -2,12 +2,14 @@
 import MathematicalBackground from '@root/components/backgrounds/MathematicalBackground';
 import { ThinkyHomePageLoggedIn } from '@root/components/home/thinkyLoggedIn';
 import ThinkyHomePageNotLoggedIn from '@root/components/home/thinkyNotLoggedIn';
+import ThinkyHomePageNotLoggedInVariant from '@root/components/home/thinkyNotLoggedInVariant';
 import Page from '@root/components/page/page';
 import dbConnect from '@root/lib/dbConnect';
 import { getUserFromToken } from '@root/lib/withAuth';
 import { ReqUser } from '@root/models/db/user';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { NextSeo, SoftwareAppJsonLd } from 'next-seo';
+import { useFeatureFlagEnabled } from 'posthog-js/react';
 import React, { useEffect } from 'react';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
@@ -28,6 +30,9 @@ interface ThinkyHomeRouterProps {
 }
 
 export default function ThinkyHomeRouter({ user }: ThinkyHomeRouterProps) {
+  // Feature flag for homepage A/B test
+  const isNewHomepageLanding = useFeatureFlagEnabled('new-homepage-landing');
+
   useEffect(() => {
     if (!user) {
       document.body.classList.add('mathematical-background-active');
@@ -74,12 +79,14 @@ export default function ThinkyHomeRouter({ user }: ThinkyHomeRouterProps) {
           >
           Thinky.gg
           </span>
-          {user ?
+          {user ? (
             <div>
               <ThinkyHomePageLoggedIn user={user} />
             </div>
-            : <ThinkyHomePageNotLoggedIn />
-          }
+          ) : (
+            // A/B test: render variant or original based on feature flag
+            isNewHomepageLanding ? <ThinkyHomePageNotLoggedInVariant /> : <ThinkyHomePageNotLoggedIn />
+          )}
         </div>
       </Page>
     </>
