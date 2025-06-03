@@ -13,13 +13,14 @@ env:
   NEW_RELIC_APP_NAME: dummy
   INTERNAL_JOB_TOKEN_SECRET_EMAILDIGEST: cocomelon
   SITEMAP_PRIV_KEY: sitto
+  APP_DOMAIN: thinky-test-env.gg
   STRIPE_SECRET: fake-stripe-secret
   STRIPE_CUSTOMER_PORTAL: fake-stripe-customer-portal
   STRIPE_PAYMENT_LINK: fake-stripe-payment-link
   STRIPE_PAYMENT_YEARLY_LINK: fake-stripe-payment-yearly-link
   STRIPE_WEBHOOK_SECRET: fake-stripe-webhook-secret
   STRIPE_SECRET_KEY: fake-stripe-secret-key
-  
+
 
 jobs:
   setup:
