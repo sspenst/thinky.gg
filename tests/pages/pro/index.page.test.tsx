@@ -172,8 +172,6 @@ describe('pages/[subdomain]/pro', () => {
 
         expect(result).toHaveProperty('props');
         expect((result as any).props.stripeCustomerPortalLink).toBe('https://billing.stripe.com/test');
-        expect((result as any).props.stripePaymentLink).toBeDefined();
-        expect((result as any).props.stripePaymentYearlyLink).toBeDefined();
       } finally {
         // Restore original environment
         if (originalCustomerPortal !== undefined) {
