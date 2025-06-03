@@ -106,7 +106,7 @@ describe('pages/[subdomain]/pro', () => {
 
       expect(result).toEqual({
         redirect: {
-          destination: 'https://electricspring.com/pro', // Actual redirect destination
+          destination: `https://${process.env.NEXT_PUBLIC_APP_DOMAIN}/pro`, // Actual redirect destination
           permanent: false,
         },
       });
@@ -129,7 +129,7 @@ describe('pages/[subdomain]/pro', () => {
 
       expect(result).toEqual({
         redirect: {
-          destination: 'https://electricspring.com/pro', // Actual redirect destination
+          destination: `https://${process.env.NEXT_PUBLIC_APP_DOMAIN}/pro`, // Actual redirect destination
           permanent: false,
         },
       });
