@@ -14,6 +14,7 @@ env:
   INTERNAL_JOB_TOKEN_SECRET_EMAILDIGEST: cocomelon
   SITEMAP_PRIV_KEY: sitto
   STRIPE_SECRET: fake-stripe-secret
+  STRIPE_CUSTOMER_PORTAL: fake-stripe-customer-portal
 
 jobs:
   setup:
