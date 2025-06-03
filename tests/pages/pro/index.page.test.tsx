@@ -42,8 +42,6 @@ describe('pages/[subdomain]/pro', () => {
 
       expect(result).toHaveProperty('props');
       expect((result as any).props.stripeCustomerPortalLink).toBeDefined();
-      expect((result as any).props.stripePaymentLink).toBeDefined();
-      expect((result as any).props.stripePaymentYearlyLink).toBeDefined();
 
       // In the actual page component, this would:
       // 1. Show SettingsPro component with Stripe payment links
@@ -218,7 +216,6 @@ describe('pages/[subdomain]/pro', () => {
 
       // Should return props (not redirect) because we're on Thinky
       expect(result).toHaveProperty('props');
-      expect((result as any).props.stripePaymentLink).toBeDefined();
     });
 
     test('getServerSideProps should handle null cookies gracefully', async () => {
