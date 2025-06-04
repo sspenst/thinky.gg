@@ -21,6 +21,7 @@ import Review from './db/review';
 import Stat from './db/stat';
 import { StripeEvent } from './db/stripeEvent';
 import User from './db/user';
+import UserAuth from './db/userAuth';
 import UserConfig from './db/userConfig';
 import AchievementSchema from './schemas/achievementSchema';
 import CacheSchema from './schemas/cacheSchema';
@@ -43,12 +44,14 @@ import ReportSchema from './schemas/reportSchema';
 import ReviewSchema from './schemas/reviewSchema';
 import StatSchema from './schemas/statSchema';
 import StripeEventSchema from './schemas/stripeEventSchema';
+import UserAuthSchema from './schemas/userAuthSchema';
 import UserConfigSchema from './schemas/userConfigSchema';
 import UserSchema from './schemas/userSchema';
 
 // NB: need to initialize some models before they are referenced by other models
 // (eg User before Collection since Collection has a User ref)
 export const UserModel = mongoose.models.User || mongoose.model<User>('User', UserSchema);
+export const UserAuthModel = mongoose.models.UserAuth || mongoose.model<UserAuth>('UserAuth', UserAuthSchema);
 export const CollectionModel = mongoose.models.Collection || mongoose.model<Collection>('Collection', CollectionSchema);
 export const CommentModel = mongoose.models.Comment || mongoose.model<Comment>('Comment', CommentSchema);
 export const LevelModel = mongoose.models.Level || mongoose.model<Level>('Level', LevelSchema);

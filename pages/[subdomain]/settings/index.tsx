@@ -1,11 +1,12 @@
 import SettingsAccount from '@root/components/settings/settingsAccount';
 import SettingsAccountGuest from '@root/components/settings/settingsAccountGuest';
+import SettingsConnections from '@root/components/settings/settingsConnections';
 import SettingsDelete from '@root/components/settings/settingsDelete';
 import SettingsNotifications from '@root/components/settings/settingsNotifications';
 import isGuest from '@root/helpers/isGuest';
 import User from '@root/models/db/user';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import Page from '../../../components/page/page';
 import SettingsGeneral from '../../../components/settings/settingsGeneral';
@@ -35,7 +36,7 @@ interface SettingsProps {
   user: User;
 }
 
-type TabType = 'general' | 'account' | 'security' | 'notifications' | 'danger';
+type TabType = 'general' | 'account' | 'connections' | 'notifications' | 'danger';
 
 /* istanbul ignore next */
 export default function Settings({ user }: SettingsProps) {
@@ -44,6 +45,24 @@ export default function Settings({ user }: SettingsProps) {
   const [currentPassword, setCurrentPassword] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [password2, setPassword2] = useState<string>('');
+
+  // Handle URL hash for direct tab linking
+  useEffect(() => {
+    const hash = window.location.hash.substring(1) as TabType;
+    const validTabs = guest
+      ? ['account', 'connections', 'notifications', 'danger']
+      : ['general', 'account', 'connections', 'notifications', 'danger'];
+
+    if (hash && validTabs.includes(hash)) {
+      setActiveTab(hash);
+    }
+  }, [guest]);
+
+  // Update URL hash when tab changes
+  const handleTabChange = (tabId: TabType) => {
+    setActiveTab(tabId);
+    window.history.pushState(null, '', `#${tabId}`);
+  };
 
   function updateUser(
     body: string,
@@ -120,15 +139,15 @@ export default function Settings({ user }: SettingsProps) {
         </svg>
       )
     },
-    ...(!guest ? [{
-      id: 'security' as TabType,
-      name: 'Security',
+    {
+      id: 'connections' as TabType,
+      name: 'Connections',
       icon: (
         <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-          <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z' />
+          <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1' />
         </svg>
       )
-    }] : []),
+    },
     {
       id: 'notifications' as TabType,
       name: 'Notifications',
@@ -164,7 +183,7 @@ export default function Settings({ user }: SettingsProps) {
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
+                  onClick={() => handleTabChange(tab.id)}
                   className={`group inline-flex items-center py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
                     activeTab === tab.id
                       ? 'border-blue-500 text-blue-600 dark:text-blue-400 dark:border-blue-400'
@@ -197,67 +216,9 @@ export default function Settings({ user }: SettingsProps) {
                 )}
               </div>
             )}
-            {activeTab === 'security' && !guest && (
+            {activeTab === 'connections' && !guest && (
               <div>
-                <div className='flex items-center mb-6'>
-                  <div className='w-10 h-10 bg-red-100 dark:bg-red-900 rounded-lg flex items-center justify-center mr-3'>
-                    <svg className='w-5 h-5 text-red-600 dark:text-red-400' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                      <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z' />
-                    </svg>
-                  </div>
-                  <div>
-                    <h2 className='text-xl font-semibold text-gray-900 dark:text-white'>Security</h2>
-                    <p className='text-sm text-gray-600 dark:text-gray-400'>Update your password to keep your account secure</p>
-                  </div>
-                </div>
-                <form className='space-y-4 max-w-md' onSubmit={updatePassword}>
-                  <div>
-                    <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2' htmlFor='currentPassword'>
-                      Current Password
-                    </label>
-                    <input
-                      onChange={e => setCurrentPassword(e.target.value)}
-                      className='w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-colors'
-                      id='currentPassword'
-                      value={currentPassword}
-                      type='password'
-                      placeholder='Enter current password'
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
-                      New Password
-                    </label>
-                    <input
-                      onChange={e => setPassword(e.target.value)}
-                      className='w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-colors'
-                      type='password'
-                      value={password}
-                      placeholder='Enter new password'
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
-                      Confirm New Password
-                    </label>
-                    <input
-                      onChange={e => setPassword2(e.target.value)}
-                      className='w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-colors'
-                      type='password'
-                      value={password2}
-                      placeholder='Re-enter new password'
-                      required
-                    />
-                  </div>
-                  <button
-                    className='w-full bg-red-600 hover:bg-red-700 text-white font-medium py-3 px-4 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800'
-                    type='submit'
-                  >
-                    Update Password
-                  </button>
-                </form>
+                <SettingsConnections user={user} />
               </div>
             )}
             {activeTab === 'notifications' && (

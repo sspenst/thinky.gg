@@ -42,3 +42,62 @@ export default async function queueDiscordWebhook(id: DiscordChannel, content: s
     },
   }, dedupeHash, options);
 }
+
+/**
+ * Queue a Discord webhook with user mentions
+ * @param id Discord channel ID
+ * @param content Message content
+ * @param mentionUserIds Array of Discord user IDs to mention
+ * @param options Save options
+ */
+export async function queueDiscordWebhookWithMentions(
+  id: DiscordChannel,
+  content: string,
+  mentionUserIds: string[] = [],
+  options?: SaveOptions
+) {
+  if (isLocal()) {
+    return Promise.resolve();
+  }
+
+  const tokenToIdMap = {
+    [DiscordChannel.DevPriv]: process.env.DISCORD_WEBHOOK_TOKEN_DEV_PRIV,
+    [DiscordChannel.General]: process.env.DISCORD_WEBHOOK_TOKEN_GENERAL,
+    [DiscordChannel.NewUsers]: process.env.DISCORD_WEBHOOK_TOKEN_NEW_USERS,
+    [DiscordChannel.Pathology]: process.env.DISCORD_WEBHOOK_TOKEN_PATHOLOGY,
+    [DiscordChannel.PathologyLevels]: process.env.DISCORD_WEBHOOK_TOKEN_PATHOLOGY_LEVELS,
+    [DiscordChannel.PathologyMultiplayer]: process.env.DISCORD_WEBHOOK_TOKEN_PATHOLOGY_MULTIPLAYER,
+    [DiscordChannel.PathologyNotifs]: process.env.DISCORD_WEBHOOK_TOKEN_PATHOLOGY_NOTIFS,
+    [DiscordChannel.Sokopath]: process.env.DISCORD_WEBHOOK_TOKEN_SOKOPATH,
+    [DiscordChannel.SokopathLevels]: process.env.DISCORD_WEBHOOK_TOKEN_SOKOPATH_LEVELS,
+    [DiscordChannel.SokopathMultiplayer]: process.env.DISCORD_WEBHOOK_TOKEN_SOKOPATH_MULTIPLAYER,
+    [DiscordChannel.SokopathNotifs]: process.env.DISCORD_WEBHOOK_TOKEN_SOKOPATH_NOTIFS,
+  } as Record<string, string | undefined>;
+
+  const token = tokenToIdMap[id as string];
+
+  if (!token) {
+    return Promise.resolve();
+  }
+
+  // Add mentions to content if any
+  let finalContent = content;
+
+  if (mentionUserIds.length > 0) {
+    const mentions = mentionUserIds.map(id => `<@${id}>`).join(' ');
+
+    finalContent = `${mentions} ${content}`;
+  }
+
+  const dedupeHash = crypto.createHash('sha256').update(finalContent).digest('hex');
+
+  return queueFetch(`https://discord.com/api/webhooks/${id}/${token}?wait=true`, {
+    method: 'POST',
+    body: JSON.stringify({
+      content: finalContent,
+    }),
+    headers: {
+      'Content-Type': 'application/json'
+    },
+  }, dedupeHash, options);
+}

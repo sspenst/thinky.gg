@@ -10,10 +10,11 @@ import type { NextApiResponse } from 'next';
 import DiscordChannel from '../../../constants/discordChannel';
 import NotificationType from '../../../constants/notificationType';
 import { ValidNumber, ValidObjectId, ValidType } from '../../../helpers/apiWrapper';
-import queueDiscordWebhook from '../../../helpers/discordWebhook';
+import { queueDiscordWebhookWithMentions } from '../../../helpers/discordWebhook';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
 import { clearNotifications, createNewReviewOnYourLevelNotification } from '../../../helpers/notificationHelper';
+import { getDiscordUserId } from '../../../helpers/userAuthHelpers';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import Review from '../../../models/db/review';
@@ -24,7 +25,7 @@ export function getScoreEmojis(score: number) {
   return '<:fullstar:1045889520001892402>'.repeat(Math.floor(score)) + (Math.floor(score) !== score ? '<:halfstar:1045889518701654046>' : '');
 }
 
-function generateDiscordWebhook(
+async function generateDiscordWebhook(
   lastTs: number | undefined,
   level: Level,
   req: NextApiRequestWithAuth,
@@ -53,7 +54,11 @@ function generateDiscordWebhook(
   const discordChannel = game.id === GameId.SOKOPATH ? DiscordChannel.SokopathNotifs : DiscordChannel.PathologyNotifs;
   const discordTxt = `${score ? getScoreEmojis(score) + ' - ' : ''}**${req.user?.name}** wrote a review for ${level.userId.name}'s [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}):\n${contentCleaned}`;
 
-  return queueDiscordWebhook(discordChannel, discordTxt);
+  // Get level creator's Discord ID and mention them if they have Discord connected
+  const levelCreatorDiscordId = await getDiscordUserId(level.userId._id);
+  const mentionIds = levelCreatorDiscordId ? [levelCreatorDiscordId] : [];
+
+  return queueDiscordWebhookWithMentions(discordChannel, discordTxt, mentionIds);
 }
 
 export default withAuth({
