@@ -155,10 +155,47 @@ export async function getUserByProviderId(
 ): Promise<UserAuth | null> {
   await dbConnect();
 
-  return UserAuthModel.findOne({
-    provider: provider,
-    providerId: providerId
-  }).lean<UserAuth>();
+  const result = await UserAuthModel.aggregate([
+    {
+      $match: {
+        provider: provider,
+        providerId: providerId
+      }
+    },
+    {
+      $lookup: {
+        from: 'users',
+        localField: 'userId',
+        foreignField: '_id',
+        as: 'user'
+      }
+    },
+    {
+      $unwind: {
+        path: '$user',
+        preserveNullAndEmptyArrays: true
+      }
+    },
+    {
+      $project: {
+        _id: 1,
+        userId: 1,
+        provider: 1,
+        providerId: 1,
+        providerUsername: 1,
+        providerEmail: 1,
+        providerAvatarUrl: 1,
+        accessToken: 1,
+        refreshToken: 1,
+        connectedAt: 1,
+        updatedAt: 1,
+        'user.name': 1,
+        'user.email': 1
+      }
+    }
+  ]);
+
+  return result[0] || null;
 }
 
 /**

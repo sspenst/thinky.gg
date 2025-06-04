@@ -1,4 +1,5 @@
 import { Types } from 'mongoose';
+import User from './user';
 
 export enum AuthProvider {
   DISCORD = 'discord',
@@ -9,7 +10,7 @@ export enum AuthProvider {
 
 interface UserAuth {
   _id: Types.ObjectId;
-  userId: Types.ObjectId;
+  userId: Types.ObjectId & User;
   provider: AuthProvider;
   providerId: string;
   providerUsername?: string;
