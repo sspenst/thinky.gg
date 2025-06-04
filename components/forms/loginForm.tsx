@@ -44,10 +44,14 @@ export default function LoginForm() {
         setShouldAttemptAuth(true);
         sessionStorage.clear();
         // check if we have a redirect url as query param
-        const redirectUrl = decodeURIComponent(router.query.redirect as string);
+        const urlParams = new URLSearchParams(window.location.search);
+        const redirectUrl = urlParams.get('redirect');
 
         if (redirectUrl && redirectUrl !== 'undefined') {
-          router.push(redirectUrl);
+          // Split the URL into subdomain and path
+          const endPath = redirectUrl.split('/').pop();
+
+          router.push('/' + (endPath ?? '/'));
         } else {
           router.push('/');
         }
