@@ -21,7 +21,6 @@ import Notification from '@root/models/db/notification';
 import { NextPageContext } from 'next';
 import type { AppProps } from 'next/app';
 import Head from 'next/head';
-import Link from 'next/link';
 import { Router, useRouter } from 'next/router';
 import { DefaultSeo } from 'next-seo';
 import { ThemeProvider } from 'next-themes';
@@ -348,7 +347,7 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
       socketConn.off('killSocket');
       socketConn.disconnect();
     };
-  }, [selectedGame.id, user?._id]);
+  }, [selectedGame.id, user?._id, user?.disableStreakPopup]);
 
   useEffect(() => {
   // check if redirect_type querystring parameter is set, and if it is equal to "patholoygg" console log hello
@@ -365,13 +364,13 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
       }
     }
 
-    if (redirectType === 'pathologygg') {
+    if (redirectType === 'bot-not-allowed') {
       setTimeout(() => {
         toast.dismiss();
         toast.success(
           <div className='flex'>
             <div className='flex flex-col gap-3'>
-              <span>Welcome to Thinky.gg!</span><span>We&apos;ve redirected you from pathology.gg.</span><span>Please login again and update your bookmarks.</span><span>Click <Link className='underline' href='https://thinky.gg'>here</Link> to learn more.</span>
+              Bots are not allowed to play Thinky.gg levels.
             </div>
             <DismissToast />
           </div>,
