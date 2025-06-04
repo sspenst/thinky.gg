@@ -1,6 +1,7 @@
 /* istanbul ignore file */
 import { AppContext } from '@root/contexts/appContext';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
+import isBot from '@root/helpers/isBot';
 import { CollectionType } from '@root/models/constants/collection';
 import Collection, { EnrichedCollection } from '@root/models/db/collection';
 import { getCollection } from '@root/pages/api/collection-by-id/[id]';
@@ -55,6 +56,15 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   if (!level) {
     return {
       notFound: true,
+    };
+  }
+
+  if (reqUser && isBot(reqUser)) {
+    return {
+      redirect: {
+        destination: '/?redirect_type=bot-not-allowed',
+        permanent: false,
+      },
     };
   }
 
