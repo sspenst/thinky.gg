@@ -1,4 +1,5 @@
 import User from '@root/models/db/user';
+import { Bot } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import React from 'react';
@@ -24,6 +25,10 @@ export function RoleIcon({ id, role, size = 18 }: RoleIconProps) {
   case (Role.CURATOR):
     // TODO: curator icon
     tooltip = 'Curator';
+    break;
+  case (Role.BOT):
+    tooltip = 'Approved Bot';
+    icon = <Bot stroke='green' size={size} />;
     break;
   case (Role.PRO):
     icon = <Image alt='pro' src='/pro.svg' width={size} height={size} style={{ minWidth: size, minHeight: size }} />;
