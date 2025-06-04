@@ -15,9 +15,8 @@ import MultiplayerProfile from '@root/models/db/multiplayerProfile';
 import User from '@root/models/db/user';
 import { AchievementModel, CommentModel, LevelModel, MultiplayerMatchModel, MultiplayerProfileModel, ReviewModel, UserConfigModel, UserModel } from '@root/models/mongoose';
 import { Types } from 'mongoose';
-import { queueDiscordWebhookWithMentions } from './discordWebhook';
+import queueDiscordWebhook from './discordWebhook';
 import { getRecordsByUserId } from './getRecordsByUserId';
-import { getDiscordUserId } from './userAuthHelpers';
 
 const AchievementCategoryFetch = {
   // no game ID as this is a global
@@ -143,11 +142,8 @@ export async function refreshAchievements(gameId: GameId, userId: Types.ObjectId
           const message = `${userLinkDiscord} just unlocked the ${achievementLinkDiscord} ${achievementInfo.emoji} achievement!`;
           const discordChannel = game.id === GameId.SOKOPATH ? DiscordChannel.Sokopath : DiscordChannel.Pathology;
 
-          // Get user's Discord ID and mention them if they have Discord connected
-          const discordUserId = await getDiscordUserId(userId);
-          const mentionIds = discordUserId ? [discordUserId] : [];
-
-          achievementsCreatedPromises.push(queueDiscordWebhookWithMentions(discordChannel, message, mentionIds));
+          // Pass the username for potential Discord mention lookup
+          achievementsCreatedPromises.push(queueDiscordWebhook(discordChannel, message, undefined, userName ? [userName] : []));
         }
       }
     }

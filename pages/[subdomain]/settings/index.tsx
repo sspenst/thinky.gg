@@ -7,7 +7,6 @@ import isGuest from '@root/helpers/isGuest';
 import User from '@root/models/db/user';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import React, { useEffect, useState } from 'react';
-import toast from 'react-hot-toast';
 import Page from '../../../components/page/page';
 import SettingsGeneral from '../../../components/settings/settingsGeneral';
 import { getUserFromToken } from '../../../lib/withAuth';
@@ -42,9 +41,6 @@ type TabType = 'general' | 'account' | 'connections' | 'notifications' | 'danger
 export default function Settings({ user }: SettingsProps) {
   const guest = isGuest(user);
   const [activeTab, setActiveTab] = useState<TabType>(guest ? 'account' : 'general');
-  const [currentPassword, setCurrentPassword] = useState<string>('');
-  const [password, setPassword] = useState<string>('');
-  const [password2, setPassword2] = useState<string>('');
 
   // Handle URL hash for direct tab linking
   useEffect(() => {
@@ -63,62 +59,6 @@ export default function Settings({ user }: SettingsProps) {
     setActiveTab(tabId);
     window.history.pushState(null, '', `#${tabId}`);
   };
-
-  function updateUser(
-    body: string,
-    property: string,
-  ) {
-    toast.dismiss();
-    const toastId = toast.loading(`Updating ${property}...`);
-
-    fetch('/api/user', {
-      method: 'PUT',
-      body: body,
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-    }).then(res => {
-      if (res.status !== 200) {
-        throw res.text();
-      } else {
-        toast.success(`Updated ${property}`, { id: toastId });
-      }
-    }).catch(async err => {
-      console.error(err);
-      toast.error(JSON.parse(await err)?.error || `Error updating ${property}`, { id: toastId });
-    });
-  }
-
-  function updatePassword(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-
-    if (password.length < 8 || password.length > 50) {
-      toast.dismiss();
-      toast.error('Password must be at least 8 characters');
-
-      return;
-    }
-
-    if (password !== password2) {
-      toast.error('Password does not match');
-
-      return;
-    }
-
-    updateUser(
-      JSON.stringify({
-        currentPassword: currentPassword,
-        password: password,
-      }),
-      'password',
-    );
-
-    // Clear form after successful submission
-    setCurrentPassword('');
-    setPassword('');
-    setPassword2('');
-  }
 
   const tabs = [
     ...(!guest ? [{
@@ -179,12 +119,12 @@ export default function Settings({ user }: SettingsProps) {
           </div>
           {/* Tabs */}
           <div className='border-b border-gray-200 dark:border-gray-700 mb-8'>
-            <nav className='flex space-x-8' aria-label='Tabs'>
+            <nav className='flex flex-wrap gap-x-2 gap-y-1 sm:gap-x-8 sm:gap-y-0' aria-label='Tabs'>
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => handleTabChange(tab.id)}
-                  className={`group inline-flex items-center py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                  className={`group inline-flex items-center py-4 px-2 sm:px-1 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${
                     activeTab === tab.id
                       ? 'border-blue-500 text-blue-600 dark:text-blue-400 dark:border-blue-400'
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
@@ -193,20 +133,21 @@ export default function Settings({ user }: SettingsProps) {
                   <span className={`mr-2 ${activeTab === tab.id ? 'text-blue-500 dark:text-blue-400' : 'text-gray-400 group-hover:text-gray-500'}`}>
                     {tab.icon}
                   </span>
-                  {tab.name}
+                  <span className='hidden sm:inline'>{tab.name}</span>
+                  <span className='sm:hidden'>{tab.name.split(' ')[0]}</span>
                 </button>
               ))}
             </nav>
           </div>
           {/* Tab Content */}
-          <div className='bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8'>
+          <div className='bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-8 overflow-hidden'>
             {activeTab === 'general' && (
               <div className='flex justify-center'>
                 <SettingsGeneral user={user} />
               </div>
             )}
             {activeTab === 'account' && (
-              <div>
+              <div className='min-w-0'>
                 {guest ? (
                   <div className='flex justify-center'>
                     <SettingsAccountGuest />
@@ -217,7 +158,7 @@ export default function Settings({ user }: SettingsProps) {
               </div>
             )}
             {activeTab === 'connections' && !guest && (
-              <div>
+              <div className='min-w-0'>
                 <SettingsConnections user={user} />
               </div>
             )}
@@ -227,14 +168,14 @@ export default function Settings({ user }: SettingsProps) {
               </div>
             )}
             {activeTab === 'danger' && (
-              <div>
+              <div className='min-w-0'>
                 <div className='flex items-center mb-6'>
                   <div className='w-10 h-10 bg-red-100 dark:bg-red-900 rounded-lg flex items-center justify-center mr-3'>
                     <svg className='w-5 h-5 text-red-600 dark:text-red-400' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
                       <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.854-.833-2.624 0L3.228 16.5c-.77.833.192 2.5 1.732 2.5z' />
                     </svg>
                   </div>
-                  <div>
+                  <div className='min-w-0 flex-1'>
                     <h2 className='text-xl font-semibold text-gray-900 dark:text-white'>Danger Zone</h2>
                     <p className='text-sm text-gray-600 dark:text-gray-400'>Irreversible and destructive actions</p>
                   </div>

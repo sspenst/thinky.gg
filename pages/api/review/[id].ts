@@ -10,11 +10,10 @@ import type { NextApiResponse } from 'next';
 import DiscordChannel from '../../../constants/discordChannel';
 import NotificationType from '../../../constants/notificationType';
 import { ValidNumber, ValidObjectId, ValidType } from '../../../helpers/apiWrapper';
-import { queueDiscordWebhookWithMentions } from '../../../helpers/discordWebhook';
+import queueDiscordWebhook from '../../../helpers/discordWebhook';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
 import { clearNotifications, createNewReviewOnYourLevelNotification } from '../../../helpers/notificationHelper';
-import { getDiscordUserId } from '../../../helpers/userAuthHelpers';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import Review from '../../../models/db/review';
@@ -54,11 +53,8 @@ async function generateDiscordWebhook(
   const discordChannel = game.id === GameId.SOKOPATH ? DiscordChannel.SokopathNotifs : DiscordChannel.PathologyNotifs;
   const discordTxt = `${score ? getScoreEmojis(score) + ' - ' : ''}**${req.user?.name}** wrote a review for ${level.userId.name}'s [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}):\n${contentCleaned}`;
 
-  // Get level creator's Discord ID and mention them if they have Discord connected
-  const levelCreatorDiscordId = await getDiscordUserId(level.userId._id);
-  const mentionIds = levelCreatorDiscordId ? [levelCreatorDiscordId] : [];
-
-  return queueDiscordWebhookWithMentions(discordChannel, discordTxt, mentionIds);
+  // Pass the level creator's username for potential Discord mention
+  return queueDiscordWebhook(discordChannel, discordTxt, undefined, [level.userId.name]);
 }
 
 export default withAuth({

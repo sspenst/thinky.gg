@@ -110,7 +110,7 @@ export default function SignupForm({ recaptchaPublicKey }: SignupFormProps) {
 
         setOauthData({ provider: 'google', ...data });
         // Clean username by removing leading periods and other invalid starting characters
-        const username = (data.googleUsername || '').replace(/^[^a-zA-Z0-9]+/, '') || `user${Date.now()}`;
+        const username = (data.googleUsername || '').replace(/^[^a-zA-Z0-9]+| /, '') || `user${Date.now()}`;
 
         setUsername(username);
         setEmail(data.googleEmail || '');
@@ -305,7 +305,7 @@ export default function SignupForm({ recaptchaPublicKey }: SignupFormProps) {
         )}
         {/* Show OAuth provider info if processing OAuth signup */}
         {oauthData && (
-          <div className='bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4'>
+          <div className='bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6'>
             <div className='flex items-center gap-3'>
               <div className='w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center'>
                 {oauthData.provider === 'discord' ? (
@@ -321,116 +321,196 @@ export default function SignupForm({ recaptchaPublicKey }: SignupFormProps) {
                   </svg>
                 )}
               </div>
-              <div>
+              <div className='flex-1'>
                 <p className='text-sm font-medium text-blue-900 dark:text-blue-100'>
                   Signing up with {oauthData.provider === 'discord' ? 'Discord' : 'Google'}
                 </p>
                 <p className='text-xs text-blue-700 dark:text-blue-300'>
-                  Complete your account setup below
+                  Email: {oauthData.provider === 'discord' ? oauthData.discordEmail : oauthData.googleEmail}
+                </p>
+                <p className='text-xs text-blue-700 dark:text-blue-300'>
+                  Just choose your username below to complete signup
                 </p>
               </div>
             </div>
           </div>
         )}
         {/* Traditional Signup Form */}
-        <form className='flex flex-col gap-6' onSubmit={(e) => {
-          e.preventDefault();
-          onSubmit(null);
-        }}>
-          <StepWizard className='w-full' instance={setWizard}>
-            <div className='flex flex-col gap-6'>
-              <div>
-                <div className='flex justify-between gap-2 flex-wrap mb-2'>
-                  <label className='text-sm font-medium' htmlFor='username'>Username</label>
-                  {username.length >= 3 &&
-                    <div className='flex items-center text-sm gap-2'>
-                      {isExistsLoading ? <LoadingSpinner size={20} /> :
-                        isValidUsername && !usernameExists ?
-                          <div className='text-sm text-green-600 dark:text-green-400'>
-                            Username is available
-                          </div>
-                          :
-                          <div className='text-red-500 text-sm'>
-                            {!isValidUsername ? 'Username is not valid' : 'Username is not available'}
-                          </div>
-                      }
-                    </div>
-                  }
-                </div>
-                <input required onChange={e => handleUsernameChange(e)} value={username} className='w-full' id='username' type='text' placeholder='Username' />
+        {oauthData ? (
+          // Simplified OAuth signup - just username and terms
+          <form className='flex flex-col gap-6' onSubmit={(e) => {
+            e.preventDefault();
+            onSubmit(null);
+          }}>
+            <div>
+              <div className='flex justify-between gap-2 flex-wrap mb-2'>
+                <label className='text-sm font-medium' htmlFor='username'>Choose your username</label>
+                {username.length >= 3 &&
+                  <div className='flex items-center text-sm gap-2'>
+                    {isExistsLoading ? <LoadingSpinner size={20} /> :
+                      isValidUsername && !usernameExists ?
+                        <div className='text-sm text-green-600 dark:text-green-400'>
+                          Username is available
+                        </div>
+                        :
+                        <div className='text-red-500 text-sm'>
+                          {!isValidUsername ? 'Username is not valid' : 'Username is not available'}
+                        </div>
+                    }
+                  </div>
+                }
               </div>
-              <button
-                className='bg-blue-500 enabled:hover:bg-blue-600 text-white w-full font-medium py-2 px-3 rounded disabled:opacity-50'
-                disabled={isExistsLoading || !isValidUsername || usernameExists}
-                onClick={() => (wizard as StepWizardChildProps)?.nextStep()}
-                type='button'
-              >
-                Continue
-              </button>
+              <input
+                required
+                onChange={e => handleUsernameChange(e)}
+                value={username}
+                className='w-full'
+                id='username'
+                type='text'
+                placeholder='Username'
+              />
             </div>
-            <div className='flex flex-col gap-6'>
-              <div className='flex gap-2'>
+            <div className='flex gap-3'>
+              <input type='checkbox' id='terms_agree_checkbox' required />
+              <label htmlFor='terms_agree_checkbox' className='text-xs'>
+                I agree to the <a className='underline' href={TERMS_OF_SERVICE_URL} rel='noreferrer' target='_blank'>terms of service</a> and reviewed the <a className='underline' href='https://docs.google.com/document/d/e/2PACX-1vSNgV3NVKlsgSOEsnUltswQgE8atWe1WCLUY5fQUVjEdu_JZcVlRkZcpbTOewwe3oBNa4l7IJlOnUIB/pub' rel='noreferrer' target='_blank'>privacy policy</a>.
+              </label>
+            </div>
+            <div className='flex justify-center'>
+              {recaptchaPublicKey && showRecaptcha ?
+                <ReCAPTCHA
+                  onChange={(token) => onSubmit(token)}
+                  ref={recaptchaRef}
+                  sitekey={recaptchaPublicKey}
+                />
+                :
+                <button
+                  className={classNames(blueButton, 'w-full')}
+                  type='submit'
+                  disabled={isExistsLoading || !isValidUsername || usernameExists}
+                >
+                  Complete Signup
+                </button>
+              }
+            </div>
+            <div className='flex flex-col gap-4 items-center'>
+              <Link
+                className='font-medium text-sm text-blue-500 hover:text-blue-400'
+                href='/play-as-guest'
+              >
+                Play as guest
+              </Link>
+              <div className='text-center text-sm'>
                 <span>
-                  Welcome, <span className='font-bold'>{username}</span>
+                  {'Already have an account? '}
                 </span>
-                <button onClick={() => (wizard as StepWizardChildProps)?.previousStep()}>
-                  <svg xmlns='http://www.w3.org/2000/svg' className='w-5 h-5 gray hover-color' viewBox='1 1 22 22' strokeWidth='1.5' stroke='currentColor' fill='none' strokeLinecap='round' strokeLinejoin='round'>
-                    <path stroke='none' d='M0 0h24v24H0z' fill='none' />
-                    <path d='M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4' />
-                    <path d='M13.5 6.5l4 4' />
-                  </svg>
+                <Link
+                  className='font-medium text-sm text-blue-500 hover:text-blue-400'
+                  href='/login'
+                >
+                  Log in
+                </Link>
+              </div>
+            </div>
+          </form>
+        ) : (
+          // Traditional signup form with email and password
+          <form className='flex flex-col gap-6' onSubmit={(e) => {
+            e.preventDefault();
+            onSubmit(null);
+          }}>
+            <StepWizard className='w-full' instance={setWizard}>
+              <div className='flex flex-col gap-6'>
+                <div>
+                  <div className='flex justify-between gap-2 flex-wrap mb-2'>
+                    <label className='text-sm font-medium' htmlFor='username'>Username</label>
+                    {username.length >= 3 &&
+                      <div className='flex items-center text-sm gap-2'>
+                        {isExistsLoading ? <LoadingSpinner size={20} /> :
+                          isValidUsername && !usernameExists ?
+                            <div className='text-sm text-green-600 dark:text-green-400'>
+                              Username is available
+                            </div>
+                            :
+                            <div className='text-red-500 text-sm'>
+                              {!isValidUsername ? 'Username is not valid' : 'Username is not available'}
+                            </div>
+                        }
+                      </div>
+                    }
+                  </div>
+                  <input required onChange={e => handleUsernameChange(e)} value={username} className='w-full' id='username' type='text' placeholder='Username' />
+                </div>
+                <button
+                  className='bg-blue-500 enabled:hover:bg-blue-600 text-white w-full font-medium py-2 px-3 rounded disabled:opacity-50'
+                  disabled={isExistsLoading || !isValidUsername || usernameExists}
+                  onClick={() => (wizard as StepWizardChildProps)?.nextStep()}
+                  type='button'
+                >
+                  Continue
                 </button>
               </div>
-              <div>
-                <label className='block text-sm font-medium mb-2' htmlFor='email'>Email</label>
-                <input required onChange={e => setEmail(e.target.value)} value={email} className='w-full' id='email' type='email' placeholder='Email' />
-              </div>
-              {/* Only show password field for non-OAuth signups */}
-              {!oauthData && (
+              <div className='flex flex-col gap-6'>
+                <div className='flex gap-2'>
+                  <span>
+                    Welcome, <span className='font-bold'>{username}</span>
+                  </span>
+                  <button onClick={() => (wizard as StepWizardChildProps)?.previousStep()}>
+                    <svg xmlns='http://www.w3.org/2000/svg' className='w-5 h-5 gray hover-color' viewBox='1 1 22 22' strokeWidth='1.5' stroke='currentColor' fill='none' strokeLinecap='round' strokeLinejoin='round'>
+                      <path stroke='none' d='M0 0h24v24H0z' fill='none' />
+                      <path d='M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4' />
+                      <path d='M13.5 6.5l4 4' />
+                    </svg>
+                  </button>
+                </div>
+                <div>
+                  <label className='block text-sm font-medium mb-2' htmlFor='email'>Email</label>
+                  <input required onChange={e => setEmail(e.target.value)} value={email} className='w-full' id='email' type='email' placeholder='Email' />
+                </div>
                 <div>
                   <label className='block text-sm font-medium mb-2' htmlFor='password'>Password</label>
                   <input required onChange={e => setPassword(e.target.value)} className='w-full' id='password' type='password' placeholder='Password' />
                 </div>
-              )}
-              <div className='flex gap-3'>
-                <input type='checkbox' id='terms_agree_checkbox' required />
-                <label htmlFor='terms_agree_checkbox' className='text-xs'>
-                  I agree to the <a className='underline' href={TERMS_OF_SERVICE_URL} rel='noreferrer' target='_blank'>terms of service</a> and reviewed the <a className='underline' href='https://docs.google.com/document/d/e/2PACX-1vSNgV3NVKlsgSOEsnUltswQgE8atWe1WCLUY5fQUVjEdu_JZcVlRkZcpbTOewwe3oBNa4l7IJlOnUIB/pub' rel='noreferrer' target='_blank'>privacy policy</a>.
-                </label>
+                <div className='flex gap-3'>
+                  <input type='checkbox' id='terms_agree_checkbox' required />
+                  <label htmlFor='terms_agree_checkbox' className='text-xs'>
+                    I agree to the <a className='underline' href={TERMS_OF_SERVICE_URL} rel='noreferrer' target='_blank'>terms of service</a> and reviewed the <a className='underline' href='https://docs.google.com/document/d/e/2PACX-1vSNgV3NVKlsgSOEsnUltswQgE8atWe1WCLUY5fQUVjEdu_JZcVlRkZcpbTOewwe3oBNa4l7IJlOnUIB/pub' rel='noreferrer' target='_blank'>privacy policy</a>.
+                  </label>
+                </div>
+                <div className='flex justify-center'>
+                  {recaptchaPublicKey && showRecaptcha ?
+                    <ReCAPTCHA
+                      onChange={(token) => onSubmit(token)}
+                      ref={recaptchaRef}
+                      sitekey={recaptchaPublicKey}
+                    />
+                    :
+                    <button className={classNames(blueButton, 'w-full')} type='submit'>Sign up</button>
+                  }
+                </div>
               </div>
-              <div className='flex justify-center'>
-                {recaptchaPublicKey && showRecaptcha ?
-                  <ReCAPTCHA
-                    onChange={(token) => onSubmit(token)}
-                    ref={recaptchaRef}
-                    sitekey={recaptchaPublicKey}
-                  />
-                  :
-                  <button className={classNames(blueButton, 'w-full')} type='submit'>Sign up</button>
-                }
-              </div>
-            </div>
-          </StepWizard>
-          <div className='flex flex-col gap-4 items-center'>
-            <Link
-              className='font-medium text-sm text-blue-500 hover:text-blue-400'
-              href='/play-as-guest'
-            >
-              Play as guest
-            </Link>
-            <div className='text-center text-sm'>
-              <span>
-                {'Already have an account? '}
-              </span>
+            </StepWizard>
+            <div className='flex flex-col gap-4 items-center'>
               <Link
                 className='font-medium text-sm text-blue-500 hover:text-blue-400'
-                href='/login'
+                href='/play-as-guest'
               >
-                Log in
+                Play as guest
               </Link>
+              <div className='text-center text-sm'>
+                <span>
+                  {'Already have an account? '}
+                </span>
+                <Link
+                  className='font-medium text-sm text-blue-500 hover:text-blue-400'
+                  href='/login'
+                >
+                  Log in
+                </Link>
+              </div>
             </div>
-          </div>
-        </form>
+          </form>
+        )}
       </div>
     </FormTemplate>
   );

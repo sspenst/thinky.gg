@@ -47,8 +47,10 @@ export default function SettingsConnections({ user }: SettingsConnectionsProps) 
     const urlParams = new URLSearchParams(window.location.search);
     const discordConnected = urlParams.get('discord_connected');
     const discordError = urlParams.get('discord_error');
+    const discordAlreadyConnected = urlParams.get('discord_already_connected');
     const googleConnected = urlParams.get('google_connected');
     const googleError = urlParams.get('google_error');
+    const googleAlreadyConnected = urlParams.get('google_already_connected');
 
     if (discordConnected === 'true') {
       toast.success('Discord account connected successfully!');
@@ -59,6 +61,10 @@ export default function SettingsConnections({ user }: SettingsConnectionsProps) 
         .then(data => setAuthProviders(data.authProviders || []))
         .catch(console.error)
         .finally(() => setAuthProvidersLoading(false));
+    } else if (discordAlreadyConnected === 'true') {
+      toast('Discord account is already connected to your account.', { icon: 'ℹ️' });
+    } else if (discordError === 'already_linked') {
+      toast.error('This Discord account is already linked to another user account.', { duration: 5000 });
     } else if (discordError === 'true') {
       toast.error('Failed to connect Discord account. Please try again.');
     } else if (googleConnected === 'true') {
@@ -70,12 +76,16 @@ export default function SettingsConnections({ user }: SettingsConnectionsProps) 
         .then(data => setAuthProviders(data.authProviders || []))
         .catch(console.error)
         .finally(() => setAuthProvidersLoading(false));
+    } else if (googleAlreadyConnected === 'true') {
+      toast('Google account is already connected to your account.', { icon: 'ℹ️' });
+    } else if (googleError === 'already_linked') {
+      toast.error('This Google account is already linked to another user account.', { duration: 5000 });
     } else if (googleError === 'true') {
       toast.error('Failed to connect Google account. Please try again.');
     }
 
     // Remove the query parameters from the URL while preserving the hash
-    if (discordConnected || discordError || googleConnected || googleError) {
+    if (discordConnected || discordError || discordAlreadyConnected || googleConnected || googleError || googleAlreadyConnected) {
       const newUrl = window.location.pathname + window.location.hash;
 
       window.history.replaceState({}, '', newUrl);

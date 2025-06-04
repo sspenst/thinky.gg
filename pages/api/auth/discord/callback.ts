@@ -103,7 +103,25 @@ const handleDiscordCallback = apiWrapper({
         return;
       }
 
-      // Link Discord account to existing user using new UserAuth model
+      // Check if this Discord account is already linked to ANY user
+      const existingAuth = await getUserByProviderId(AuthProvider.DISCORD, discordUser.id);
+
+      if (existingAuth) {
+        // Discord account is already linked
+        if (existingAuth.userId.toString() === user._id.toString()) {
+          // Already linked to current user - show "already connected" message
+          res.redirect(`${origin}/settings?discord_already_connected=true#connections`);
+
+          return;
+        } else {
+          // Linked to different user - show error
+          res.redirect(`${origin}/settings?discord_error=already_linked#connections`);
+
+          return;
+        }
+      }
+
+      // Discord account is not linked to anyone - proceed with linking
       const avatarUrl = discordUser.avatar
         ? `https://cdn.discordapp.com/avatars/${discordUser.id}/${discordUser.avatar}.png`
         : undefined;

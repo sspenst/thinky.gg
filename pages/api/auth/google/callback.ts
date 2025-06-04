@@ -102,7 +102,25 @@ const handleGoogleCallback = apiWrapper({
         return;
       }
 
-      // Link Google account to existing user
+      // Check if this Google account is already linked to ANY user
+      const existingAuth = await getUserByProviderId(AuthProvider.GOOGLE, googleUser.id);
+
+      if (existingAuth) {
+        // Google account is already linked
+        if (existingAuth.userId.toString() === user._id.toString()) {
+          // Already linked to current user - show "already connected" message
+          res.redirect(`${origin}/settings?google_already_connected=true#connections`);
+
+          return;
+        } else {
+          // Linked to different user - show error
+          res.redirect(`${origin}/settings?google_error=already_linked#connections`);
+
+          return;
+        }
+      }
+
+      // Google account is not linked to anyone - proceed with linking
       await upsertUserAuthProvider(user._id, AuthProvider.GOOGLE, {
         providerId: googleUser.id,
         providerUsername: googleUser.name,
