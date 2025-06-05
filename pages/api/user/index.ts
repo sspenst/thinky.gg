@@ -152,6 +152,8 @@ export default withAuth({
 
       if (setObj['email']) {
         newUser.emailConfirmationToken = getEmailConfirmationToken();
+        // also need to set emailConfirmed to false
+        newUser.emailConfirmed = false;
         await newUser.save();
 
         const error = await sendEmailConfirmationEmail(req, newUser);
