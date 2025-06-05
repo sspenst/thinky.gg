@@ -3,10 +3,7 @@ import * as crypto from 'crypto';
 import { SaveOptions } from 'mongoose';
 import DiscordChannel from '../constants/discordChannel';
 import isLocal from '../lib/isLocal';
-import User from '../models/db/user';
-import { UserModel } from '../models/mongoose';
 import { queueFetch } from '../pages/api/internal-jobs/worker';
-import { getDiscordUserIds } from './userAuthHelpers';
 
 export default async function queueDiscordWebhook(
   id: DiscordChannel,
@@ -38,57 +35,19 @@ export default async function queueDiscordWebhook(
     return Promise.resolve();
   }
 
-  let finalContent = content;
+  // Create the webhook payload with raw content and usernames to mention
+  // The worker will process the mentions when it actually sends the webhook
+  const webhookPayload = {
+    content: content,
+    // Include mentionUsernames in the payload so the worker can process them
+    _thinkyMentionUsernames: mentionUsernames || [],
+  };
 
-  // Handle mentions if usernames are provided
-  if (mentionUsernames && mentionUsernames.length > 0) {
-    try {
-      // Get user IDs for the mentioned usernames
-      const users = await UserModel.find(
-        { name: { $in: mentionUsernames } },
-        { _id: 1, name: 1 }
-      ).lean<Pick<User, '_id' | 'name'>[]>();
-
-      if (users.length > 0) {
-        // Get Discord user IDs for these users
-        const userIds = users.map(user => user._id);
-        const discordUserIds = await getDiscordUserIds(userIds);
-
-        // Create a map of username -> Discord user ID
-        const discordIdMap = new Map<string, string>();
-
-        users.forEach((user, index) => {
-          if (discordUserIds[index]) {
-            discordIdMap.set(user.name, discordUserIds[index]);
-          }
-        });
-
-        // Replace usernames in the content with Discord mentions
-        mentionUsernames.forEach(username => {
-          const discordId = discordIdMap.get(username);
-
-          if (discordId) {
-            // Replace all occurrences of the username with Discord mention
-            // Use word boundaries to avoid partial matches
-            const regex = new RegExp(`\\b${username.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'g');
-
-            finalContent = finalContent.replace(regex, `<@${discordId}>`);
-          }
-        });
-      }
-    } catch (error) {
-      // If Discord lookup fails, just use the original content
-      console.error('Failed to lookup Discord users for mentions:', error);
-    }
-  }
-
-  const dedupeHash = crypto.createHash('sha256').update(finalContent).digest('hex');
+  const dedupeHash = crypto.createHash('sha256').update(content + JSON.stringify(mentionUsernames)).digest('hex');
 
   return queueFetch(`https://discord.com/api/webhooks/${id}/${token}?wait=true`, {
     method: 'POST',
-    body: JSON.stringify({
-      content: finalContent,
-    }),
+    body: JSON.stringify(webhookPayload),
     headers: {
       'Content-Type': 'application/json'
     },
