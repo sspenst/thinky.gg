@@ -3,6 +3,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper, { ValidType } from '../../../helpers/apiWrapper';
 import dbConnect from '../../../lib/dbConnect';
 import getTokenCookie from '../../../lib/getTokenCookie';
+import { captureEvent } from '../../../lib/posthogServer';
 import User from '../../../models/db/user';
 import { UserModel } from '../../../models/mongoose';
 
@@ -37,6 +38,11 @@ export default apiWrapper({ POST: {
   }
 
   const cookie = getTokenCookie(user._id.toString(), req.headers.host);
+
+  // Track successful email/password login
+  captureEvent(user._id.toString(), 'User Logged In', {
+    login_method: 'email',
+  });
 
   return res.setHeader('Set-Cookie', cookie).status(200).json({ success: true });
 });
