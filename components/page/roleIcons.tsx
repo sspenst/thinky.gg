@@ -15,6 +15,7 @@ interface RoleIconProps {
 export function RoleIcon({ id, role, size = 18 }: RoleIconProps) {
   let icon = null;
   let tooltip = '';
+  let link = null;
   const tooltipId = `role-icon-tooltip-${id}-${role}`;
 
   switch (role) {
@@ -33,14 +34,23 @@ export function RoleIcon({ id, role, size = 18 }: RoleIconProps) {
   case (Role.PRO):
     icon = <Image alt='pro' src='/pro.svg' width={size} height={size} style={{ minWidth: size, minHeight: size }} />;
     tooltip = 'Pro Subscriber';
+    link = '/pro';
     break;
   }
 
   if (!icon) {
     return null;
+  }
+
+  if (!link) {
+    return (
+      <span data-tooltip-id={tooltipId} data-tooltip-content={tooltip}>
+        {icon}
+      </span>
+    );
   } else {
     return (
-      <Link href='/pro'>
+      <Link href={link}>
         <span data-tooltip-id={tooltipId} data-tooltip-content={tooltip}>
           {icon}
         </span>
