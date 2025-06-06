@@ -2,7 +2,7 @@ import TestId from '@root/constants/testId';
 import { cleanupOrphanedUserAuthRecords, findOrphanedUserAuthRecords } from '@root/helpers/cleanupOrphanedUserAuth';
 import dbConnect, { dbDisconnect } from '@root/lib/dbConnect';
 import { AuthProvider } from '@root/models/db/userAuth';
-import { UserAuthModel, UserModel } from '@root/models/mongoose';
+import { UserAuthModel } from '@root/models/mongoose';
 import { Types } from 'mongoose';
 
 beforeAll(async () => {

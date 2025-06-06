@@ -5,7 +5,7 @@ import { getUserByProviderId } from '@root/helpers/userAuthHelpers';
 import dbConnect, { dbDisconnect } from '@root/lib/dbConnect';
 import { getTokenCookieValue } from '@root/lib/getTokenCookie';
 import { AuthProvider } from '@root/models/db/userAuth';
-import { UserAuthModel, UserModel } from '@root/models/mongoose';
+import { UserAuthModel } from '@root/models/mongoose';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
