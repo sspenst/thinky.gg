@@ -15,8 +15,8 @@ interface RoleIconProps {
 export function RoleIcon({ id, role, size = 18 }: RoleIconProps) {
   let icon = null;
   let tooltip = '';
-  let link = null;
   const tooltipId = `role-icon-tooltip-${id}-${role}`;
+  let link = null;
 
   switch (role) {
   case (Role.ADMIN):
@@ -40,9 +40,7 @@ export function RoleIcon({ id, role, size = 18 }: RoleIconProps) {
 
   if (!icon) {
     return null;
-  }
-
-  if (!link) {
+  } else if (!link) {
     return (
       <span data-tooltip-id={tooltipId} data-tooltip-content={tooltip}>
         {icon}
