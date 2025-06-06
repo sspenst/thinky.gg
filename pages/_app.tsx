@@ -72,7 +72,7 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
   useEffect(() => {
     // Don't initialize PostHog for localhost
     if (window.location.hostname === 'localhost') {
-      return;
+      //return;
     }
 
     posthog.init((process.env.NEXT_PUBLIC_POSTHOG_KEY as string) || 'phc_Am38672etY9vtglKkfMa86HVxREbLuh7ExC7Qj1qPBx', {
