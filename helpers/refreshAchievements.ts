@@ -142,7 +142,8 @@ export async function refreshAchievements(gameId: GameId, userId: Types.ObjectId
           const message = `${userLinkDiscord} just unlocked the ${achievementLinkDiscord} ${achievementInfo.emoji} achievement!`;
           const discordChannel = game.id === GameId.SOKOPATH ? DiscordChannel.Sokopath : DiscordChannel.Pathology;
 
-          achievementsCreatedPromises.push(queueDiscordWebhook(discordChannel, message));
+          // Pass the username for potential Discord mention lookup
+          achievementsCreatedPromises.push(queueDiscordWebhook(discordChannel, message, undefined, userName ? [userName] : []));
         }
       }
     }

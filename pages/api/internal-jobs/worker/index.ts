@@ -7,6 +7,7 @@ import genLevelImage from '@root/helpers/genLevelImage';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import isGuest from '@root/helpers/isGuest';
 import { createNewLevelNotifications } from '@root/helpers/notificationHelper';
+import { processDiscordMentions } from '@root/helpers/processDiscordMentions';
 import { refreshAchievements } from '@root/helpers/refreshAchievements';
 import { USER_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import Level from '@root/models/db/level';
@@ -191,7 +192,37 @@ async function processQueueMessage(queueMessage: QueueMessage) {
     const { url, options } = JSON.parse(queueMessage.message) as { url: string, options: RequestInit };
 
     try {
-      const response = await fetch(url, options);
+      let processedOptions = options;
+
+      // Check if this is a Discord webhook request that needs mention processing
+      if (url.includes('discord.com/api/webhooks') && options.body) {
+        try {
+          const body = JSON.parse(options.body as string);
+
+          // Check if this webhook has mentions to process
+          if (body._thinkyMentionUsernames && Array.isArray(body._thinkyMentionUsernames)) {
+            const mentionUsernames = body._thinkyMentionUsernames;
+
+            // Process Discord mentions - this is where the DB queries happen now
+            const processedContent = await processDiscordMentions(body.content, mentionUsernames);
+
+            // Create new body without the internal mention field
+            const newBody = {
+              content: processedContent,
+            };
+
+            processedOptions = {
+              ...options,
+              body: JSON.stringify(newBody),
+            };
+          }
+        } catch (bodyParseError) {
+          // If body parsing fails, just use original options
+          console.error('Failed to parse Discord webhook body for mention processing:', bodyParseError);
+        }
+      }
+
+      const response = await fetch(url, processedOptions);
 
       log = `${url}: ${response.status} ${response.statusText}`;
 
