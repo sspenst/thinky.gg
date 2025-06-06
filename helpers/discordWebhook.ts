@@ -5,7 +5,12 @@ import DiscordChannel from '../constants/discordChannel';
 import isLocal from '../lib/isLocal';
 import { queueFetch } from '../pages/api/internal-jobs/worker';
 
-export default async function queueDiscordWebhook(id: DiscordChannel, content: string, options?: SaveOptions) {
+export default async function queueDiscordWebhook(
+  id: DiscordChannel,
+  content: string,
+  options?: SaveOptions,
+  mentionUsernames?: string[]
+) {
   if (isLocal()) {
     return Promise.resolve();
   }
@@ -30,13 +35,19 @@ export default async function queueDiscordWebhook(id: DiscordChannel, content: s
     return Promise.resolve();
   }
 
-  const dedupeHash = crypto.createHash('sha256').update(content).digest('hex');
+  // Create the webhook payload with raw content and usernames to mention
+  // The worker will process the mentions when it actually sends the webhook
+  const webhookPayload = {
+    content: content,
+    // Include mentionUsernames in the payload so the worker can process them
+    _thinkyMentionUsernames: mentionUsernames || [],
+  };
+
+  const dedupeHash = crypto.createHash('sha256').update(content + JSON.stringify(mentionUsernames)).digest('hex');
 
   return queueFetch(`https://discord.com/api/webhooks/${id}/${token}?wait=true`, {
     method: 'POST',
-    body: JSON.stringify({
-      content: content,
-    }),
+    body: JSON.stringify(webhookPayload),
     headers: {
       'Content-Type': 'application/json'
     },

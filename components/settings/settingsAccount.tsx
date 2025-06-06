@@ -351,7 +351,9 @@ export default function SettingsAccount({ user }: SettingsAccountProps) {
                 </div>
               </div>
               <p className={`text-sm mt-1 ${user.emailConfirmed && email === user.email ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                {user.emailConfirmed && email === user.email ? 'Email confirmed' : 'Email not confirmed'}
+                {email === user.email
+                  ? (user.emailConfirmed ? 'Email confirmed' : 'Email not confirmed')
+                  : 'Email will need confirmation'}
               </p>
             </div>
             <button

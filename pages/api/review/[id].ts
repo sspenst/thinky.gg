@@ -53,7 +53,8 @@ function generateDiscordWebhook(
   const discordChannel = game.id === GameId.SOKOPATH ? DiscordChannel.SokopathNotifs : DiscordChannel.PathologyNotifs;
   const discordTxt = `${score ? getScoreEmojis(score) + ' - ' : ''}**${req.user?.name}** wrote a review for ${level.userId.name}'s [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}):\n${contentCleaned}`;
 
-  return queueDiscordWebhook(discordChannel, discordTxt);
+  // Pass the level creator's username for potential Discord mention
+  return queueDiscordWebhook(discordChannel, discordTxt, undefined, [level.userId.name]);
 }
 
 export default withAuth({

@@ -18,7 +18,7 @@ import cliProgress from 'cli-progress';
 import dotenv from 'dotenv';
 import { Types } from 'mongoose';
 import dbConnect from '../../lib/dbConnect';
-import { AchievementModel, CollectionModel, CommentModel, GraphModel, ImageModel, KeyValueModel, LevelModel, MultiplayerMatchModel, NotificationModel, PlayAttemptModel, RecordModel, ReviewModel, StatModel, UserConfigModel, UserModel } from '../../models/mongoose';
+import { AchievementModel, CollectionModel, CommentModel, GraphModel, ImageModel, KeyValueModel, LevelModel, MultiplayerMatchModel, NotificationModel, PlayAttemptModel, RecordModel, ReviewModel, StatModel, UserAuthModel, UserConfigModel, UserModel } from '../../models/mongoose';
 
 'use strict';
 
@@ -211,6 +211,7 @@ async function deleteUser(userName: string) {
       { userId: user._id },
     ] }),
     UserConfigModel.deleteOne({ userId: user._id }),
+    UserAuthModel.deleteMany({ userId: user._id }),
     UserModel.deleteOne({ _id: user._id }), // TODO, should make this soft delete...
   ]);
 

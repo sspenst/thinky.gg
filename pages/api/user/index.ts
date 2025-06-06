@@ -18,7 +18,7 @@ import clearTokenCookie from '../../../lib/clearTokenCookie';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
-import { AchievementModel, CollectionModel, CommentModel, DeviceModel, GraphModel, KeyValueModel, LevelModel, MultiplayerProfileModel, NotificationModel, UserConfigModel, UserModel } from '../../../models/mongoose';
+import { AchievementModel, CollectionModel, CommentModel, DeviceModel, GraphModel, KeyValueModel, LevelModel, MultiplayerProfileModel, NotificationModel, UserAuthModel, UserConfigModel, UserModel } from '../../../models/mongoose';
 import { getSubscriptions, SubscriptionData } from '../subscription';
 import { getUserConfig } from '../user-config';
 
@@ -152,6 +152,8 @@ export default withAuth({
 
       if (setObj['email']) {
         newUser.emailConfirmationToken = getEmailConfirmationToken();
+        // also need to set emailConfirmed to false
+        newUser.emailConfirmed = false;
         await newUser.save();
 
         const error = await sendEmailConfirmationEmail(req, newUser);
@@ -305,6 +307,7 @@ export default withAuth({
             { userId: req.user._id },
           ] }, { session: session }),
           UserConfigModel.deleteMany({ userId: req.user._id }, { session: session }),
+          UserAuthModel.deleteMany({ userId: req.user._id }, { session: session }),
           UserModel.deleteOne({ _id: req.user._id }, { session: session }), // TODO, should make this soft delete...
         ]);
       });

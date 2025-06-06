@@ -1,12 +1,13 @@
 import SettingsAccount from '@root/components/settings/settingsAccount';
 import SettingsAccountGuest from '@root/components/settings/settingsAccountGuest';
+import SettingsConnections from '@root/components/settings/settingsConnections';
 import SettingsDelete from '@root/components/settings/settingsDelete';
 import SettingsNotifications from '@root/components/settings/settingsNotifications';
 import isGuest from '@root/helpers/isGuest';
 import User from '@root/models/db/user';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
-import React, { useState } from 'react';
-import toast from 'react-hot-toast';
+import { useActiveFeatureFlags, useFeatureFlagEnabled } from 'posthog-js/react';
+import React, { useEffect, useState } from 'react';
 import Page from '../../../components/page/page';
 import SettingsGeneral from '../../../components/settings/settingsGeneral';
 import { getUserFromToken } from '../../../lib/withAuth';
@@ -35,71 +36,37 @@ interface SettingsProps {
   user: User;
 }
 
-type TabType = 'general' | 'account' | 'security' | 'notifications' | 'danger';
+type TabType = 'general' | 'account' | 'connections' | 'notifications' | 'danger';
 
 /* istanbul ignore next */
 export default function Settings({ user }: SettingsProps) {
   const guest = isGuest(user);
+
+  // Feature flag for OAuth providers
+  const isOAuthEnabled = useFeatureFlagEnabled('oauth-providers');
+
   const [activeTab, setActiveTab] = useState<TabType>(guest ? 'account' : 'general');
-  const [currentPassword, setCurrentPassword] = useState<string>('');
-  const [password, setPassword] = useState<string>('');
-  const [password2, setPassword2] = useState<string>('');
 
-  function updateUser(
-    body: string,
-    property: string,
-  ) {
-    toast.dismiss();
-    const toastId = toast.loading(`Updating ${property}...`);
+  const allFeatureFlags = useActiveFeatureFlags();
 
-    fetch('/api/user', {
-      method: 'PUT',
-      body: body,
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-    }).then(res => {
-      if (res.status !== 200) {
-        throw res.text();
-      } else {
-        toast.success(`Updated ${property}`, { id: toastId });
-      }
-    }).catch(async err => {
-      console.error(err);
-      toast.error(JSON.parse(await err)?.error || `Error updating ${property}`, { id: toastId });
-    });
-  }
+  console.log('All', allFeatureFlags);
+  // Handle URL hash for direct tab linking
+  useEffect(() => {
+    const hash = window.location.hash.substring(1) as TabType;
+    const validTabs = guest
+      ? ['account', ...(isOAuthEnabled ? ['connections'] : []), 'notifications', 'danger']
+      : ['general', 'account', ...(isOAuthEnabled ? ['connections'] : []), 'notifications', 'danger'];
 
-  function updatePassword(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-
-    if (password.length < 8 || password.length > 50) {
-      toast.dismiss();
-      toast.error('Password must be at least 8 characters');
-
-      return;
+    if (hash && validTabs.includes(hash)) {
+      setActiveTab(hash);
     }
+  }, [guest, isOAuthEnabled]);
 
-    if (password !== password2) {
-      toast.error('Password does not match');
-
-      return;
-    }
-
-    updateUser(
-      JSON.stringify({
-        currentPassword: currentPassword,
-        password: password,
-      }),
-      'password',
-    );
-
-    // Clear form after successful submission
-    setCurrentPassword('');
-    setPassword('');
-    setPassword2('');
-  }
+  // Update URL hash when tab changes
+  const handleTabChange = (tabId: TabType) => {
+    setActiveTab(tabId);
+    window.history.pushState(null, '', `#${tabId}`);
+  };
 
   const tabs = [
     ...(!guest ? [{
@@ -120,12 +87,13 @@ export default function Settings({ user }: SettingsProps) {
         </svg>
       )
     },
-    ...(!guest ? [{
-      id: 'security' as TabType,
-      name: 'Security',
+    // Only show connections tab if OAuth is enabled
+    ...(isOAuthEnabled ? [{
+      id: 'connections' as TabType,
+      name: 'Connections',
       icon: (
         <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-          <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z' />
+          <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1' />
         </svg>
       )
     }] : []),
@@ -160,12 +128,12 @@ export default function Settings({ user }: SettingsProps) {
           </div>
           {/* Tabs */}
           <div className='border-b border-gray-200 dark:border-gray-700 mb-8'>
-            <nav className='flex space-x-8' aria-label='Tabs'>
+            <nav className='flex flex-wrap gap-x-2 gap-y-1 sm:gap-x-8 sm:gap-y-0' aria-label='Tabs'>
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`group inline-flex items-center py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                  onClick={() => handleTabChange(tab.id)}
+                  className={`group inline-flex items-center py-4 px-2 sm:px-1 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${
                     activeTab === tab.id
                       ? 'border-blue-500 text-blue-600 dark:text-blue-400 dark:border-blue-400'
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
@@ -174,20 +142,21 @@ export default function Settings({ user }: SettingsProps) {
                   <span className={`mr-2 ${activeTab === tab.id ? 'text-blue-500 dark:text-blue-400' : 'text-gray-400 group-hover:text-gray-500'}`}>
                     {tab.icon}
                   </span>
-                  {tab.name}
+                  <span className='hidden sm:inline'>{tab.name}</span>
+                  <span className='sm:hidden'>{tab.name.split(' ')[0]}</span>
                 </button>
               ))}
             </nav>
           </div>
           {/* Tab Content */}
-          <div className='bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8'>
+          <div className='bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-8 overflow-hidden'>
             {activeTab === 'general' && (
               <div className='flex justify-center'>
                 <SettingsGeneral user={user} />
               </div>
             )}
             {activeTab === 'account' && (
-              <div>
+              <div className='min-w-0'>
                 {guest ? (
                   <div className='flex justify-center'>
                     <SettingsAccountGuest />
@@ -197,67 +166,9 @@ export default function Settings({ user }: SettingsProps) {
                 )}
               </div>
             )}
-            {activeTab === 'security' && !guest && (
-              <div>
-                <div className='flex items-center mb-6'>
-                  <div className='w-10 h-10 bg-red-100 dark:bg-red-900 rounded-lg flex items-center justify-center mr-3'>
-                    <svg className='w-5 h-5 text-red-600 dark:text-red-400' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                      <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z' />
-                    </svg>
-                  </div>
-                  <div>
-                    <h2 className='text-xl font-semibold text-gray-900 dark:text-white'>Security</h2>
-                    <p className='text-sm text-gray-600 dark:text-gray-400'>Update your password to keep your account secure</p>
-                  </div>
-                </div>
-                <form className='space-y-4 max-w-md' onSubmit={updatePassword}>
-                  <div>
-                    <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2' htmlFor='currentPassword'>
-                      Current Password
-                    </label>
-                    <input
-                      onChange={e => setCurrentPassword(e.target.value)}
-                      className='w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-colors'
-                      id='currentPassword'
-                      value={currentPassword}
-                      type='password'
-                      placeholder='Enter current password'
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
-                      New Password
-                    </label>
-                    <input
-                      onChange={e => setPassword(e.target.value)}
-                      className='w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-colors'
-                      type='password'
-                      value={password}
-                      placeholder='Enter new password'
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
-                      Confirm New Password
-                    </label>
-                    <input
-                      onChange={e => setPassword2(e.target.value)}
-                      className='w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-colors'
-                      type='password'
-                      value={password2}
-                      placeholder='Re-enter new password'
-                      required
-                    />
-                  </div>
-                  <button
-                    className='w-full bg-red-600 hover:bg-red-700 text-white font-medium py-3 px-4 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800'
-                    type='submit'
-                  >
-                    Update Password
-                  </button>
-                </form>
+            {activeTab === 'connections' && !guest && isOAuthEnabled && (
+              <div className='min-w-0'>
+                <SettingsConnections user={user} />
               </div>
             )}
             {activeTab === 'notifications' && (
@@ -266,14 +177,14 @@ export default function Settings({ user }: SettingsProps) {
               </div>
             )}
             {activeTab === 'danger' && (
-              <div>
+              <div className='min-w-0'>
                 <div className='flex items-center mb-6'>
                   <div className='w-10 h-10 bg-red-100 dark:bg-red-900 rounded-lg flex items-center justify-center mr-3'>
                     <svg className='w-5 h-5 text-red-600 dark:text-red-400' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
                       <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.854-.833-2.624 0L3.228 16.5c-.77.833.192 2.5 1.732 2.5z' />
                     </svg>
                   </div>
-                  <div>
+                  <div className='min-w-0 flex-1'>
                     <h2 className='text-xl font-semibold text-gray-900 dark:text-white'>Danger Zone</h2>
                     <p className='text-sm text-gray-600 dark:text-gray-400'>Irreversible and destructive actions</p>
                   </div>

@@ -6,8 +6,10 @@ import Role from '@root/constants/role';
 import { generatePassword } from '@root/helpers/generatePassword';
 import getEmailConfirmationToken from '@root/helpers/getEmailConfirmationToken';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
+import { upsertUserAuthProvider } from '@root/helpers/userAuthHelpers';
 import dbConnect from '@root/lib/dbConnect';
 import sendEmailConfirmationEmail from '@root/lib/sendEmailConfirmationEmail';
+import { AuthProvider } from '@root/models/db/userAuth';
 import UserConfig from '@root/models/db/userConfig';
 import mongoose, { QueryOptions, Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
@@ -22,7 +24,7 @@ import sendPasswordResetEmail from '../../../lib/sendPasswordResetEmail';
 import User from '../../../models/db/user';
 import { UserConfigModel, UserModel } from '../../../models/mongoose';
 
-async function createUser({ gameId, email, name, password, tutorialCompletedAt, utm_source, roles }: {gameId: GameId, email: string, name: string, password: string, tutorialCompletedAt: number, utm_source: string, roles: Role[]}, queryOptions: QueryOptions): Promise<[User, UserConfig]> {
+async function createUser({ gameId, email, name, password, tutorialCompletedAt, utm_source, roles, emailConfirmed }: {gameId: GameId, email: string, name: string, password: string, tutorialCompletedAt: number, utm_source: string, roles: Role[], emailConfirmed?: boolean}, queryOptions: QueryOptions): Promise<[User, UserConfig]> {
   const id = new Types.ObjectId();
   const disallowedEmailNotifications = [
     NotificationType.NEW_FOLLOWER,
@@ -38,8 +40,8 @@ async function createUser({ gameId, email, name, password, tutorialCompletedAt, 
       disallowedEmailNotifications: disallowedEmailNotifications,
       disallowedPushNotifications: [],
       email: email,
-      emailConfirmationToken: getEmailConfirmationToken(),
-      emailConfirmed: false,
+      emailConfirmationToken: emailConfirmed ? undefined : getEmailConfirmationToken(),
+      emailConfirmed: emailConfirmed || false,
       emailDigest: EmailDigestSettingType.DAILY,
       name: name,
       password: password,
@@ -70,11 +72,12 @@ export default apiWrapper({ POST: {
     password: ValidType('string'),
     recaptchaToken: ValidType('string', false),
     tutorialCompletedAt: ValidNumber(false),
+    oauthData: ValidType('object', false),
   },
 } }, async (req: NextApiRequestWrapper, res: NextApiResponse) => {
   await dbConnect();
 
-  const { email, guest, name, password, recaptchaToken, tutorialCompletedAt, utm_source } = req.body;
+  const { email, guest, name, password, recaptchaToken, tutorialCompletedAt, utm_source, oauthData } = req.body;
 
   const RECAPTCHA_SECRET = process.env.RECAPTCHA_SECRET || '';
 
@@ -109,7 +112,7 @@ export default apiWrapper({ POST: {
   } else {
     trimmedEmail = email.trim();
     trimmedName = name.trim();
-    passwordValue = password;
+    passwordValue = oauthData ? generatePassword() : password;
   }
 
   const [userWithEmail, userWithUsername] = await Promise.all([UserModel.findOne<User>({ email: trimmedEmail }, '+email +password'), UserModel.findOne<User>({ name: trimmedName })]);
@@ -151,6 +154,7 @@ export default apiWrapper({ POST: {
         tutorialCompletedAt: tutorialCompletedAt,
         roles: guest ? [Role.GUEST] : [],
         utm_source: utm_source,
+        emailConfirmed: guest || !!oauthData,
       }, { session: session });
 
       if (!user) {
@@ -159,8 +163,40 @@ export default apiWrapper({ POST: {
 
       id = user._id;
 
+      // Handle OAuth data if present
+      if (oauthData && !guest) {
+        try {
+          if (oauthData.provider === 'discord') {
+            const avatarUrl = oauthData.discordAvatarHash
+              ? `https://cdn.discordapp.com/avatars/${oauthData.discordId}/${oauthData.discordAvatarHash}.png`
+              : undefined;
+
+            await upsertUserAuthProvider(user._id, AuthProvider.DISCORD, {
+              providerId: oauthData.discordId,
+              providerUsername: oauthData.discordUsername,
+              providerEmail: oauthData.discordEmail,
+              providerAvatarUrl: avatarUrl,
+              accessToken: oauthData.access_token,
+              refreshToken: oauthData.refresh_token,
+            });
+          } else if (oauthData.provider === 'google') {
+            await upsertUserAuthProvider(user._id, AuthProvider.GOOGLE, {
+              providerId: oauthData.googleId,
+              providerUsername: oauthData.googleUsername,
+              providerEmail: oauthData.googleEmail,
+              providerAvatarUrl: oauthData.googleAvatarUrl,
+              accessToken: oauthData.access_token,
+              refreshToken: oauthData.refresh_token,
+            });
+          }
+        } catch (oauthError) {
+          logger.error('Error creating OAuth record during signup:', oauthError);
+          // Don't fail the entire signup if OAuth linking fails
+        }
+      }
+
       await Promise.all([
-        !guest && sendEmailConfirmationEmail(req, user),
+        !guest && !oauthData && sendEmailConfirmationEmail(req, user),
         queueDiscordWebhook(DiscordChannel.NewUsers, `**${trimmedName}** just registered! Welcome them on their [profile](${req.headers.origin}${getProfileSlug(user)})!`, { session: session }),
       ]);
     });
