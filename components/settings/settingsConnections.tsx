@@ -129,6 +129,18 @@ export default function SettingsConnections({ user }: SettingsConnectionsProps) 
     const providerData = getProviderData(provider);
     const isConnected = !!providerData;
 
+    // Define explicit button styles for each provider
+    const getButtonStyles = (providerName: string) => {
+      switch (providerName.toLowerCase()) {
+      case 'discord':
+        return 'bg-purple-600 hover:bg-purple-700 focus:ring-purple-500';
+      case 'google':
+        return 'bg-red-600 hover:bg-red-700 focus:ring-red-500';
+      default:
+        return 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500';
+      }
+    };
+
     if (authProvidersLoading) {
       return (
         <div className='bg-gray-50 dark:bg-gray-700 rounded-lg p-6'>
@@ -186,7 +198,7 @@ export default function SettingsConnections({ user }: SettingsConnectionsProps) 
             </p>
             <button
               onClick={() => connectProvider(provider)}
-              className={`inline-flex items-center ${color.replace('bg-', 'bg-').replace('-100', '-600').replace('-900', '-600')} hover:${color.replace('bg-', 'bg-').replace('-100', '-700').replace('-900', '-700')} text-white font-medium py-3 px-6 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800`}
+              className={`inline-flex items-center ${getButtonStyles(name)} text-white font-medium py-3 px-6 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800`}
             >
               {icon}
               <span className='ml-2'>Connect with {name}</span>

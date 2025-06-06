@@ -240,8 +240,18 @@ export default function SignupForm({ recaptchaPublicKey }: SignupFormProps) {
       }
     }).catch(async err => {
       console.error(err);
+
+      // Track signup error
+      let errorMessage;
+
+      try {
+        errorMessage = JSON.parse(await err)?.error || 'Unknown error';
+      } catch {
+        errorMessage = 'Network error';
+      }
+
       toast.dismiss();
-      toast.error(JSON.parse(await err)?.error);
+      toast.error(errorMessage);
     });
   }
 

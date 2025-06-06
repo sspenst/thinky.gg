@@ -71,6 +71,7 @@ export default function LoginForm() {
     toast.dismiss();
     toast.loading('Logging in');
     event.preventDefault();
+
     fetch('/api/login', {
       method: 'POST',
       body: JSON.stringify({
@@ -111,7 +112,9 @@ export default function LoginForm() {
       }
     }).catch(async err => {
       try {
-        setErrorMessage(JSON.parse(await err)?.error);
+        const errorData = JSON.parse(await err);
+
+        setErrorMessage(errorData?.error);
       } catch {
         console.error(err);
       } finally {
