@@ -8,6 +8,7 @@ import sendEmailConfirmationEmail from '@root/lib/sendEmailConfirmationEmail';
 import type { NextApiResponse } from 'next';
 import { ValidType } from '../../../helpers/apiWrapper';
 import dbConnect from '../../../lib/dbConnect';
+import { captureEvent } from '../../../lib/posthogServer';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { UserModel } from '../../../models/mongoose';
 
@@ -63,6 +64,12 @@ export default withAuth({
   }
 
   await user.save();
+
+  // Track guest conversion with PostHog (server-side)
+  captureEvent(user._id.toString(), 'Guest Account Converted', {
+    new_username: trimmedName,
+    game_id: req.gameId,
+  });
 
   await Promise.all([
     sendEmailConfirmationEmail(req, user),

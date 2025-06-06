@@ -11,9 +11,6 @@ All events are tracked server-side for maximum reliability and accuracy. We focu
 1. **User Registered** - Tracked in `/api/signup`
    - `registration_method`: 'email', 'oauth', or 'guest'
    - `oauth_provider`: 'discord' or 'google' (if OAuth)
-   - `email_confirmation_required`: boolean
-   - `username_length`: number
-   - `email_domain`: string
    - `utm_source`: string
    - `game_id`: string
 
@@ -21,142 +18,128 @@ All events are tracked server-side for maximum reliability and accuracy. We focu
    - `login_method`: 'email' or 'oauth'
    - `oauth_provider`: 'discord' or 'google' (if OAuth)
 
-3. **OAuth Account Linked** - Tracked in OAuth callback endpoints
+3. **OAuth Account Linked** - Tracked in OAuth callbacks
    - `provider`: 'discord' or 'google'
    - `provider_username`: string
-   - `is_linking`: true (vs. registration)
+   - `is_linking`: true
 
-## Funnel Setup Instructions
+4. **Guest Account Converted** - Tracked in `/api/guest-convert`
+   - `new_username`: string
+   - `game_id`: string
+
+## Automatic Tracking
+
+- **Page Views**: Automatically tracked by PostHog
+- **Feature Flags**: Native PostHog integration tracks which users see which features
+
+## Funnel Examples
 
 ### 1. Registration Conversion Funnel
+```
+Page View → User Registered
+```
 
-**Purpose**: Track conversion from page views to successful account creation
+Filter by:
+- `registration_method` = 'oauth' vs 'email'
+- `oauth_provider` to compare Discord vs Google
+- `utm_source` for attribution analysis
 
-**Steps**:
-1. **Step 1**: `$pageview` on `/signup`
-2. **Step 2**: `User Registered` with any `registration_method`
+### 2. OAuth vs Email Signup Comparison
+```
+User Registered (registration_method = 'oauth')
+vs
+User Registered (registration_method = 'email')
+```
 
-**Breakdown by**: `registration_method`
+### 3. Guest Conversion Funnel
+```
+User Registered (registration_method = 'guest') → Guest Account Converted
+```
 
-**Key Metrics**:
-- Overall signup conversion rate
-- OAuth vs email signup preferences
-- Guest account creation rate
+### 4. OAuth Login Return Rate
+```
+User Registered (registration_method = 'oauth') → User Logged In (login_method = 'oauth')
+```
 
-### 2. OAuth vs Email Registration Comparison
-
-**Purpose**: Compare conversion rates between OAuth and traditional email signup
-
-Create separate funnels:
-
-**OAuth Funnel**:
-1. `$pageview` on `/signup`
-2. `User Registered` where `registration_method = 'oauth'`
-
-**Email Funnel**:
-1. `$pageview` on `/signup` 
-2. `User Registered` where `registration_method = 'email'`
-
-### 3. Login Method Analysis
-
-**Purpose**: Track login method preferences and success rates
-
-**Funnel**:
-1. `$pageview` on `/login`
-2. `User Logged In` with any `login_method`
-
-**Breakdown by**: `login_method`
-
-### 4. OAuth Account Linking Funnel
-
-**Purpose**: Track how many users link OAuth accounts after registration
-
-**Funnel**:
-1. `$pageview` on `/settings`
-2. `OAuth Account Linked`
-
-**Breakdown by**: `provider`
-
-## Feature Flag Integration
-
-Use PostHog's native feature flag filtering for A/B testing:
-
-```sql
--- Example: Filter events by oauth-providers feature flag
-SELECT * FROM events 
-WHERE event = 'User Registered' 
-AND feature_flags->>'oauth-providers' = 'true'
+### 5. Feature Flag Impact Analysis
+```
+User Registered
+WHERE feature_flags->>'oauth-providers' = 'true'
+vs
+User Registered  
+WHERE feature_flags->>'oauth-providers' = 'false'
 ```
 
 ## Sample Queries
 
-### Registration Method Distribution
+### OAuth Conversion Rate
 ```sql
 SELECT 
-    properties.registration_method,
-    count(*) as registrations
+  oauth_provider,
+  COUNT(*) as total_registrations
 FROM events 
-WHERE event = 'User Registered'
-    AND timestamp >= now() - interval '30 days'
-GROUP BY properties.registration_method
+WHERE event = 'User Registered' 
+  AND properties ->> 'registration_method' = 'oauth'
+  AND timestamp >= '2024-01-01'
+GROUP BY oauth_provider
 ```
 
-### OAuth Provider Popularity
+### Guest to Full Account Conversion Rate
+```sql
+-- Guest registrations
+SELECT COUNT(*) as guest_signups
+FROM events 
+WHERE event = 'User Registered' 
+  AND properties ->> 'registration_method' = 'guest'
+  AND timestamp >= '2024-01-01'
+
+-- Guest conversions  
+SELECT COUNT(*) as guest_conversions
+FROM events 
+WHERE event = 'Guest Account Converted'
+  AND timestamp >= '2024-01-01'
+```
+
+### Feature Flag A/B Test Results
 ```sql
 SELECT 
-    properties.oauth_provider,
-    count(*) as registrations
-FROM events 
+  feature_flags->>'oauth-providers' as oauth_enabled,
+  COUNT(*) as registrations,
+  COUNT(CASE WHEN properties->>'registration_method' = 'oauth' THEN 1 END) as oauth_registrations
+FROM events e
 WHERE event = 'User Registered'
-    AND properties.registration_method = 'oauth'
-    AND timestamp >= now() - interval '30 days'
-GROUP BY properties.oauth_provider
+  AND timestamp >= '2024-01-01'
+GROUP BY feature_flags->>'oauth-providers'
 ```
 
-### Conversion Rate by UTM Source
-```sql
-SELECT 
-    properties.utm_source,
-    count(*) as registrations,
-    count(*) * 100.0 / sum(count(*)) over() as percentage
-FROM events 
-WHERE event = 'User Registered'
-    AND timestamp >= now() - interval '30 days'
-GROUP BY properties.utm_source
-ORDER BY registrations DESC
-```
+## Dashboard Setup
 
-## Dashboard Recommendations
+1. **Registration Overview**
+   - Total registrations by method (email, OAuth, guest)
+   - OAuth provider breakdown
+   - Daily/weekly trends
 
-### Key Metrics Dashboard
-- Total registrations (last 7/30 days)
-- Registration method breakdown (pie chart)
-- OAuth provider distribution
-- Login method preferences
-- Account linking rates
+2. **OAuth Performance**
+   - OAuth vs email conversion rates
+   - Discord vs Google performance
+   - OAuth account linking events
 
-### Conversion Funnel Dashboard
-- Signup page views → Registrations
-- OAuth signup conversion rate
-- Email signup conversion rate
-- Login success rates
+3. **Guest Conversion**
+   - Guest signup to conversion rate
+   - Time between guest signup and conversion
+   - Guest conversion trends
 
-### A/B Testing Dashboard
-- Registration rates with/without OAuth (using feature flags)
-- Conversion comparison by feature flag status
-- User engagement by registration method
+4. **Feature Flag Impact**
+   - Registration rates with/without OAuth enabled
+   - A/B test results and statistical significance
 
-## Benefits of Backend Tracking
+## Key Metrics to Track
 
-1. **Reliability**: Cannot be blocked by ad blockers or privacy tools
-2. **Accuracy**: Tracks actual outcomes, not just attempts
-3. **Privacy**: Server-side tracking is less intrusive
-4. **Simplicity**: Fewer events to manage and analyze
-5. **Data Quality**: Consistent event structure and timing
+- **Registration Conversion Rate**: Page views → Registrations
+- **OAuth Adoption Rate**: OAuth registrations / Total registrations  
+- **Guest Conversion Rate**: Guest conversions / Guest registrations
+- **Provider Performance**: Discord vs Google registration rates
+- **Feature Flag Impact**: Registration lift with OAuth enabled
+- **Return User Rate**: Users who log in after registering
 
-## Notes
-
-- Page views are automatically tracked by PostHog
-- All conversion events include user identification for proper attribution
-- Feature flag states are automatically included in user profiles
-- Server-side tracking ensures data consistency across sessions 
+This backend-focused approach provides reliable, actionable data for optimizing your conversion funnel and measuring the impact of OAuth integration. 

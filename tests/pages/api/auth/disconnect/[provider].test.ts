@@ -7,7 +7,6 @@ import { AuthProvider } from '@root/models/db/userAuth';
 import { UserAuthModel } from '@root/models/mongoose';
 import { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
-import * as userAuthHelpers from '../../../../../helpers/userAuthHelpers';
 import handler from '../../../../../pages/api/auth/disconnect/[provider]';
 
 beforeAll(async () => {
