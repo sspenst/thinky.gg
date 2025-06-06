@@ -3,6 +3,7 @@ import { blueButton } from '@root/helpers/className';
 import classNames from 'classnames';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import { useFeatureFlagEnabled } from 'posthog-js/react';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import ReCAPTCHA from 'react-google-recaptcha';
 import toast from 'react-hot-toast';
@@ -44,6 +45,9 @@ export default function SignupForm({ recaptchaPublicKey }: SignupFormProps) {
   const [wizard, setWizard] = useState<StepWizardProps>();
   const [usernameExists, setUsernameExists] = useState<boolean>(false);
   const [isExistsLoading, setIsExistsLoading] = useState<boolean>(false);
+
+  // Feature flag for OAuth providers
+  const isOAuthEnabled = useFeatureFlagEnabled('oauth-providers');
 
   const checkUsername = async (username: string) => {
     const res = await fetch(`/api/user/exists?name=${username}`);
@@ -263,8 +267,8 @@ export default function SignupForm({ recaptchaPublicKey }: SignupFormProps) {
   return (
     <FormTemplate title='Create your Thinky.gg account'>
       <div className='flex flex-col gap-6'>
-        {/* Show OAuth buttons only if not already processing OAuth data */}
-        {!oauthData && (
+        {/* Show OAuth buttons only if not already processing OAuth data and feature flag is enabled */}
+        {!oauthData && isOAuthEnabled && (
           <>
             {/* OAuth Signup Buttons */}
             <div className='space-y-3'>
