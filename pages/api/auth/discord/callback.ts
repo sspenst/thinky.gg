@@ -4,6 +4,7 @@ import { logger } from '../../../../helpers/logger';
 import { getUserByProviderId, upsertUserAuthProvider } from '../../../../helpers/userAuthHelpers';
 import dbConnect from '../../../../lib/dbConnect';
 import getTokenCookie from '../../../../lib/getTokenCookie';
+import { captureEvent } from '../../../../lib/posthogServer';
 import { AuthProvider } from '../../../../models/db/userAuth';
 import { UserModel } from '../../../../models/mongoose';
 
@@ -135,6 +136,13 @@ const handleDiscordCallback = apiWrapper({
         refreshToken: refresh_token,
       });
 
+      // Track Discord account linking
+      captureEvent(user._id.toString(), 'OAuth Account Linked', {
+        provider: 'discord',
+        provider_username: discordUser.username,
+        is_linking: true,
+      });
+
       // Redirect to settings with success message
       res.redirect(`${origin}/settings?discord_connected=true#connections`);
     } else {
@@ -149,6 +157,12 @@ const handleDiscordCallback = apiWrapper({
           const tokenCookie = getTokenCookie(user._id.toString(), req.headers?.host);
 
           res.setHeader('Set-Cookie', tokenCookie);
+
+          // Track Discord OAuth login
+          captureEvent(user._id.toString(), 'User Logged In', {
+            login_method: 'oauth',
+            oauth_provider: 'discord',
+          });
 
           // Check for redirect URL in session storage (handled by frontend)
           res.redirect(`${origin}/?discord_login=success`);

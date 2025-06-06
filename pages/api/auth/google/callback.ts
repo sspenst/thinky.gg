@@ -4,6 +4,7 @@ import { logger } from '../../../../helpers/logger';
 import { getUserByProviderId, upsertUserAuthProvider } from '../../../../helpers/userAuthHelpers';
 import dbConnect from '../../../../lib/dbConnect';
 import getTokenCookie from '../../../../lib/getTokenCookie';
+import { captureEvent } from '../../../../lib/posthogServer';
 import { AuthProvider } from '../../../../models/db/userAuth';
 import { UserModel } from '../../../../models/mongoose';
 
@@ -130,6 +131,13 @@ const handleGoogleCallback = apiWrapper({
         refreshToken: refresh_token,
       });
 
+      // Track Google account linking
+      captureEvent(user._id.toString(), 'OAuth Account Linked', {
+        provider: 'google',
+        provider_username: googleUser.name,
+        is_linking: true,
+      });
+
       // Redirect to settings with success message
       res.redirect(`${origin}/settings?google_connected=true#connections`);
     } else {
@@ -144,6 +152,12 @@ const handleGoogleCallback = apiWrapper({
           const tokenCookie = getTokenCookie(user._id.toString(), req.headers?.host);
 
           res.setHeader('Set-Cookie', tokenCookie);
+
+          // Track Google OAuth login
+          captureEvent(user._id.toString(), 'User Logged In', {
+            login_method: 'oauth',
+            oauth_provider: 'google',
+          });
 
           // Check for redirect URL in session storage (handled by frontend)
           res.redirect(`${origin}/?google_login=success`);

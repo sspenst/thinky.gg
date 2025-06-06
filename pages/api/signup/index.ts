@@ -8,6 +8,7 @@ import getEmailConfirmationToken from '@root/helpers/getEmailConfirmationToken';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import { upsertUserAuthProvider } from '@root/helpers/userAuthHelpers';
 import dbConnect from '@root/lib/dbConnect';
+import { captureEvent } from '@root/lib/posthogServer';
 import sendEmailConfirmationEmail from '@root/lib/sendEmailConfirmationEmail';
 import { AuthProvider } from '@root/models/db/userAuth';
 import UserConfig from '@root/models/db/userConfig';
@@ -143,10 +144,11 @@ export default apiWrapper({ POST: {
 
   const session = await mongoose.startSession();
   let id = new Types.ObjectId();
+  let user: User | null = null;
 
   try {
     await session.withTransaction(async () => {
-      const [user] = await createUser({
+      const [createdUser] = await createUser({
         email: trimmedEmail,
         gameId: req.gameId,
         name: trimmedName,
@@ -157,11 +159,12 @@ export default apiWrapper({ POST: {
         emailConfirmed: guest || !!oauthData,
       }, { session: session });
 
-      if (!user) {
+      if (!createdUser) {
         throw new Error('Error creating user');
       }
 
-      id = user._id;
+      user = createdUser;
+      id = createdUser._id;
 
       // Handle OAuth data if present
       if (oauthData && !guest) {
@@ -171,7 +174,7 @@ export default apiWrapper({ POST: {
               ? `https://cdn.discordapp.com/avatars/${oauthData.discordId}/${oauthData.discordAvatarHash}.png`
               : undefined;
 
-            await upsertUserAuthProvider(user._id, AuthProvider.DISCORD, {
+            await upsertUserAuthProvider(createdUser._id, AuthProvider.DISCORD, {
               providerId: oauthData.discordId,
               providerUsername: oauthData.discordUsername,
               providerEmail: oauthData.discordEmail,
@@ -180,7 +183,7 @@ export default apiWrapper({ POST: {
               refreshToken: oauthData.refresh_token,
             });
           } else if (oauthData.provider === 'google') {
-            await upsertUserAuthProvider(user._id, AuthProvider.GOOGLE, {
+            await upsertUserAuthProvider(createdUser._id, AuthProvider.GOOGLE, {
               providerId: oauthData.googleId,
               providerUsername: oauthData.googleUsername,
               providerEmail: oauthData.googleEmail,
@@ -196,11 +199,23 @@ export default apiWrapper({ POST: {
       }
 
       await Promise.all([
-        !guest && !oauthData && sendEmailConfirmationEmail(req, user),
-        queueDiscordWebhook(DiscordChannel.NewUsers, `**${trimmedName}** just registered! Welcome them on their [profile](${req.headers.origin}${getProfileSlug(user)})!`, { session: session }),
+        !guest && !oauthData && sendEmailConfirmationEmail(req, createdUser),
+        queueDiscordWebhook(DiscordChannel.NewUsers, `**${trimmedName}** just registered! Welcome them on their [profile](${req.headers.origin}${getProfileSlug(createdUser)})!`, { session: session }),
       ]);
     });
     session.endSession();
+
+    // Track user registration with PostHog (server-side)
+    if (user) {
+      const registrationMethod = guest ? 'guest' : (oauthData ? 'oauth' : 'email');
+
+      captureEvent(id.toString(), 'User Registered', {
+        registration_method: registrationMethod,
+        oauth_provider: oauthData?.provider,
+        utm_source: utm_source,
+        game_id: req.gameId,
+      });
+    }
 
     return res.setHeader('Set-Cookie', getTokenCookie(id.toString(), req.headers?.host))
       .status(200).json({
