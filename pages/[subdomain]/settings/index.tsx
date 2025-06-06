@@ -6,7 +6,7 @@ import SettingsNotifications from '@root/components/settings/settingsNotificatio
 import isGuest from '@root/helpers/isGuest';
 import User from '@root/models/db/user';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
-import { useActiveFeatureFlags, useFeatureFlagEnabled } from 'posthog-js/react';
+import { useFeatureFlagEnabled } from 'posthog-js/react';
 import React, { useEffect, useState } from 'react';
 import Page from '../../../components/page/page';
 import SettingsGeneral from '../../../components/settings/settingsGeneral';
@@ -47,9 +47,6 @@ export default function Settings({ user }: SettingsProps) {
 
   const [activeTab, setActiveTab] = useState<TabType>(guest ? 'account' : 'general');
 
-  const allFeatureFlags = useActiveFeatureFlags();
-
-  console.log('All', allFeatureFlags);
   // Handle URL hash for direct tab linking
   useEffect(() => {
     const hash = window.location.hash.substring(1) as TabType;
