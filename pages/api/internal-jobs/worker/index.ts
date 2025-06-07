@@ -76,6 +76,7 @@ export async function queuePushNotification(notificationId: Types.ObjectId, opti
 
 export async function bulkQueuePushNotification(notificationIds: Types.ObjectId[], session: ClientSession) {
   const queueMessages = [];
+  const now = new Date();
 
   for (const notificationId of notificationIds) {
     const message = JSON.stringify({ notificationId: notificationId.toString() });
@@ -86,6 +87,11 @@ export async function bulkQueuePushNotification(notificationIds: Types.ObjectId[
       message: message,
       state: QueueMessageState.PENDING,
       type: QueueMessageType.PUSH_NOTIFICATION,
+      runAt: now,
+      createdAt: now,
+      updatedAt: now,
+      processingAttempts: 0,
+      isProcessing: false,
     });
 
     queueMessages.push({
@@ -94,6 +100,11 @@ export async function bulkQueuePushNotification(notificationIds: Types.ObjectId[
       message: message,
       state: QueueMessageState.PENDING,
       type: QueueMessageType.EMAIL_NOTIFICATION,
+      runAt: now,
+      createdAt: now,
+      updatedAt: now,
+      processingAttempts: 0,
+      isProcessing: false,
     });
   }
 
