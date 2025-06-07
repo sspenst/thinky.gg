@@ -3,7 +3,7 @@ import * as crypto from 'crypto';
 import { SaveOptions } from 'mongoose';
 import DiscordChannel from '../constants/discordChannel';
 import isLocal from '../lib/isLocal';
-import { queueFetch } from '../pages/api/internal-jobs/worker';
+import { queueDiscord } from '../pages/api/internal-jobs/worker';
 
 export default async function queueDiscordWebhook(
   id: DiscordChannel,
@@ -35,21 +35,14 @@ export default async function queueDiscordWebhook(
     return Promise.resolve();
   }
 
-  // Create the webhook payload with raw content and usernames to mention
-  // The worker will process the mentions when it actually sends the webhook
-  const webhookPayload = {
-    content: content,
-    // Include mentionUsernames in the payload so the worker can process them
-    _thinkyMentionUsernames: mentionUsernames || [],
-  };
+  const dedupeHash = crypto.createHash('sha256').update(content + JSON.stringify(mentionUsernames || [])).digest('hex');
 
-  const dedupeHash = crypto.createHash('sha256').update(content + JSON.stringify(mentionUsernames)).digest('hex');
-
-  return queueFetch(`https://discord.com/api/webhooks/${id}/${token}?wait=true`, {
-    method: 'POST',
-    body: JSON.stringify(webhookPayload),
-    headers: {
-      'Content-Type': 'application/json'
-    },
-  }, dedupeHash, options);
+  return queueDiscord(
+    id as string,
+    token,
+    content,
+    mentionUsernames,
+    dedupeHash,
+    options
+  );
 }
