@@ -175,11 +175,30 @@ export async function queueCalcCreatorCounts(gameId: GameId, userId: Types.Objec
 }
 
 export async function queueGenLevelImage(levelId: Types.ObjectId, postToDiscord: boolean, options?: QueryOptions) {
-  await queue(
-    levelId.toString() + '-queueGenLevelImage-' + postToDiscord,
-    QueueMessageType.GEN_LEVEL_IMAGE,
-    JSON.stringify({ levelId: levelId.toString(), postToDiscord: postToDiscord }),
-    options,
+  return queue(`${levelId.toString()}-queueGenLevelImage-${postToDiscord}`, QueueMessageType.GEN_LEVEL_IMAGE, JSON.stringify({
+    levelId: levelId.toString(),
+    postToDiscord,
+  }), options);
+}
+
+export async function queueDiscord(
+  channelId: string,
+  token: string,
+  content: string,
+  mentionUsernames?: string[],
+  dedupeKey?: string,
+  options?: QueryOptions
+) {
+  return queue(
+    dedupeKey || `discord-${channelId}-${Date.now()}`,
+    QueueMessageType.DISCORD_NOTIFICATION,
+    JSON.stringify({
+      channelId,
+      token,
+      content,
+      mentionUsernames: mentionUsernames || [],
+    }),
+    options
   );
 }
 
@@ -192,37 +211,7 @@ async function processQueueMessage(queueMessage: QueueMessage) {
     const { url, options } = JSON.parse(queueMessage.message) as { url: string, options: RequestInit };
 
     try {
-      let processedOptions = options;
-
-      // Check if this is a Discord webhook request that needs mention processing
-      if (url.includes('discord.com/api/webhooks') && options.body) {
-        try {
-          const body = JSON.parse(options.body as string);
-
-          // Check if this webhook has mentions to process
-          if (body._thinkyMentionUsernames && Array.isArray(body._thinkyMentionUsernames)) {
-            const mentionUsernames = body._thinkyMentionUsernames;
-
-            // Process Discord mentions - this is where the DB queries happen now
-            const processedContent = await processDiscordMentions(body.content, mentionUsernames);
-
-            // Create new body without the internal mention field
-            const newBody = {
-              content: processedContent,
-            };
-
-            processedOptions = {
-              ...options,
-              body: JSON.stringify(newBody),
-            };
-          }
-        } catch (bodyParseError) {
-          // If body parsing fails, just use original options
-          console.error('Failed to parse Discord webhook body for mention processing:', bodyParseError);
-        }
-      }
-
-      const response = await fetch(url, processedOptions);
+      const response = await fetch(url, options);
 
       log = `${url}: ${response.status} ${response.statusText}`;
 
@@ -233,6 +222,42 @@ async function processQueueMessage(queueMessage: QueueMessage) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
       log = `${url}: ${e.message}`;
+      error = true;
+    }
+  } else if (queueMessage.type === QueueMessageType.DISCORD_NOTIFICATION) {
+    const { channelId, token, content, mentionUsernames } = JSON.parse(queueMessage.message) as {
+      channelId: string;
+      token: string;
+      content: string;
+      mentionUsernames: string[];
+    };
+
+    try {
+      // Process Discord mentions if usernames are provided
+      const processedContent = mentionUsernames.length > 0
+        ? await processDiscordMentions(content, mentionUsernames)
+        : content;
+
+      // Send Discord webhook
+      const webhookUrl = `https://discord.com/api/webhooks/${channelId}/${token}?wait=true`;
+      const response = await fetch(webhookUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          content: processedContent,
+        }),
+      });
+
+      log = `Discord webhook ${channelId}: ${response.status} ${response.statusText}`;
+
+      if (!response.ok) {
+        error = true;
+      }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (e: any) {
+      log = `Discord webhook ${channelId}: ${e.message}`;
       error = true;
     }
   } else if (queueMessage.type === QueueMessageType.PUSH_NOTIFICATION || queueMessage.type === QueueMessageType.EMAIL_NOTIFICATION) {
