@@ -73,7 +73,7 @@ describe('helpers/processDiscordMentions.ts', () => {
     const content = 'Hello BBB and test!'; // 'test' user has no Discord connected
     const result = await processDiscordMentions(content, ['BBB', 'test']);
 
-    expect(result).toBe('Hello <@discord123> and test!');
+    expect(result).toBe('Hello <@discord123> and [test](https://thinky.gg/profile/test)!');
   });
 
   test('Should handle usernames not found in database', async () => {
@@ -102,5 +102,26 @@ describe('helpers/processDiscordMentions.ts', () => {
     const result = await processDiscordMentions(content, ['BBB']);
 
     expect(result).toBe('BBBCool is not the same as <@discord123>');
+  });
+
+  test('Should link to Thinky profile for users without Discord', async () => {
+    const content = 'Thanks test for the great level!';
+    const result = await processDiscordMentions(content, ['test']);
+
+    expect(result).toBe('Thanks [test](https://thinky.gg/profile/test) for the great level!');
+  });
+
+  test('Should handle mix of Discord and non-Discord users correctly', async () => {
+    const content = 'Congratulations BBB and test and Curator!';
+    const result = await processDiscordMentions(content, ['BBB', 'test', 'Curator']);
+
+    expect(result).toBe('Congratulations <@discord123> and [test](https://thinky.gg/profile/test) and <@discord456>!');
+  });
+
+  test('Should handle multiple mentions of non-Discord user', async () => {
+    const content = 'test made a level, thanks test!';
+    const result = await processDiscordMentions(content, ['test']);
+
+    expect(result).toBe('[test](https://thinky.gg/profile/test) made a level, thanks [test](https://thinky.gg/profile/test)!');
   });
 });
