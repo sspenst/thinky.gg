@@ -118,7 +118,17 @@ export default function SettingsConnections({ user }: SettingsConnectionsProps) 
   }
 
   function connectProvider(provider: AuthProvider) {
-    window.location.href = `/api/auth/${provider}`;
+    // Check if we're likely in a mobile app environment
+    const isMobileApp = /ReactNative|Expo|wv\)/i.test(navigator.userAgent) ||
+                        window.location.protocol === 'file:' ||
+                        'ReactNativeWebView' in window;
+
+    // For Google OAuth in mobile apps, add force_mobile parameter
+    if (provider === AuthProvider.GOOGLE && isMobileApp) {
+      window.location.href = `/api/auth/${provider}?force_mobile=true`;
+    } else {
+      window.location.href = `/api/auth/${provider}`;
+    }
   }
 
   function getProviderData(provider: AuthProvider) {

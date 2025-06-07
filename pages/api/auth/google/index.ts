@@ -32,14 +32,22 @@ export default apiWrapper({
   const redirectUri = process.env.GOOGLE_REDIRECT_URI || `${req.headers.origin}/api/auth/google/callback`;
   const userAgent = req.headers['user-agent'] || '';
 
+  // Log user agent for debugging (remove this after identifying the pattern)
+  console.log('Google OAuth User Agent:', userAgent);
+  console.log('Is mobile detected:', isMobileApp(userAgent));
+  console.log('Query params:', req.query);
+
   if (!clientId) {
     res.status(500).json({ error: 'Google client ID not configured' });
 
     return;
   }
 
-  // Check if user is in mobile app
-  if (isMobileApp(userAgent)) {
+  // Check if user is in mobile app (either by user agent or force_mobile query param)
+  const forceMobile = req.query.force_mobile === 'true';
+
+  if (isMobileApp(userAgent) || forceMobile) {
+    // For mobile app users, we need to handle Google OAuth differently
     // Option 1: Redirect to a page that opens system browser
     res.redirect(`${req.headers.origin}/auth/google-mobile?redirect=${encodeURIComponent(req.headers.origin || '')}`);
 
