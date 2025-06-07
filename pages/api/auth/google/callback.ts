@@ -8,6 +8,21 @@ import { captureEvent } from '../../../../lib/posthogServer';
 import { AuthProvider } from '../../../../models/db/userAuth';
 import { UserModel } from '../../../../models/mongoose';
 
+function createMobileRedirect(path: string, isMobileAuth: boolean): string {
+  if (isMobileAuth) {
+    // Option 1: Deep link back to mobile app
+    return `com.pathology://auth-callback?path=${encodeURIComponent(path)}`;
+
+    // Option 2: Alternative - redirect to a success page that tells user to return to app
+    // Uncomment this and comment out the above if deep links are complex to implement:
+    /*
+    return `${path.split('?')[0]}/auth/google-success?returnPath=${encodeURIComponent(path)}`;
+    */
+  }
+
+  return path;
+}
+
 // Endpoint to handle Google OAuth callback without authentication
 const handleGoogleCallback = apiWrapper({
   GET: {
@@ -31,6 +46,7 @@ const handleGoogleCallback = apiWrapper({
   }
 
   let origin = req.headers.origin;
+  let isMobileAuth = false;
 
   // Fallback to constructing origin from host if origin header is missing
   if (!origin) {
@@ -47,6 +63,11 @@ const handleGoogleCallback = apiWrapper({
 
       if (stateData.origin) {
         origin = stateData.origin;
+      }
+
+      // Check if this is a mobile auth request
+      if (stateData.mobile) {
+        isMobileAuth = true;
       }
     } catch (e) {
       logger.error('Failed to parse Google OAuth state:', e);
@@ -98,7 +119,7 @@ const handleGoogleCallback = apiWrapper({
       const user = await getUserFromToken(token, req);
 
       if (!user) {
-        res.redirect(`${origin}/login?error=session_expired`);
+        res.redirect(createMobileRedirect(`${origin}/login?error=session_expired`, isMobileAuth));
 
         return;
       }
@@ -110,12 +131,12 @@ const handleGoogleCallback = apiWrapper({
         // Google account is already linked
         if (existingAuth.userId.toString() === user._id.toString()) {
           // Already linked to current user - show "already connected" message
-          res.redirect(`${origin}/settings?google_already_connected=true#connections`);
+          res.redirect(createMobileRedirect(`${origin}/settings?google_already_connected=true#connections`, isMobileAuth));
 
           return;
         } else {
           // Linked to different user - show error
-          res.redirect(`${origin}/settings?google_error=already_linked#connections`);
+          res.redirect(createMobileRedirect(`${origin}/settings?google_error=already_linked#connections`, isMobileAuth));
 
           return;
         }
@@ -139,7 +160,7 @@ const handleGoogleCallback = apiWrapper({
       });
 
       // Redirect to settings with success message
-      res.redirect(`${origin}/settings?google_connected=true#connections`);
+      res.redirect(createMobileRedirect(`${origin}/settings?google_connected=true#connections`, isMobileAuth));
     } else {
       // User not logged in - check if Google account is already linked to a user
       const existingAuth = await getUserByProviderId(AuthProvider.GOOGLE, googleUser.id);
@@ -160,7 +181,7 @@ const handleGoogleCallback = apiWrapper({
           });
 
           // Check for redirect URL in session storage (handled by frontend)
-          res.redirect(`${origin}/?google_login=success`);
+          res.redirect(createMobileRedirect(`${origin}/?google_login=success`, isMobileAuth));
 
           return;
         }
@@ -176,11 +197,11 @@ const handleGoogleCallback = apiWrapper({
         refresh_token
       }))}`;
 
-      res.redirect(signupUrl);
+      res.redirect(createMobileRedirect(signupUrl, isMobileAuth));
     }
   } catch (error) {
     logger.error('Google OAuth callback error:', error);
-    res.redirect(`${origin}/login?google_error=true`);
+    res.redirect(createMobileRedirect(`${origin}/login?google_error=true`, isMobileAuth));
   }
 });
 
