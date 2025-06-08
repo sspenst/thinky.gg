@@ -58,7 +58,7 @@ export default function GoogleMobileAuth({ googleAuthUrl, redirectUrl }: GoogleM
 
   const handleOpenBrowser = () => {
     console.log('googleAuthUrl', googleAuthUrl);
-    window.open(googleAuthUrl, '_blank');
+    window.open(googleAuthUrl, 'system');
   };
 
   const handleGoBack = () => {
