@@ -125,7 +125,7 @@ export default function SettingsConnections({ user }: SettingsConnectionsProps) 
 
     // For Google OAuth in mobile apps, add force_mobile parameter
     if (provider === AuthProvider.GOOGLE && isMobileApp) {
-      window.location.href = `/api/auth/${provider}?force_mobile=true`;
+      window.location.href = `/auth/google-mobile?redirect=${encodeURIComponent(window.location.origin)}`;
     } else {
       window.location.href = `/api/auth/${provider}`;
     }
