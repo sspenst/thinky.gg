@@ -30,6 +30,7 @@ export default apiWrapper({
 }, async (req: NextApiRequestWrapper, res: NextApiResponse) => {
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const redirectUri = process.env.GOOGLE_REDIRECT_URI || `${req.headers.origin}/api/auth/google/callback`;
+  const userAgent = req.headers['user-agent'] || '';
 
   if (!clientId) {
     res.status(500).json({ error: 'Google client ID not configured' });
@@ -40,7 +41,7 @@ export default apiWrapper({
   // Check if user is in mobile app (either by user agent or force_mobile query param)
   const forceMobile = req.query?.force_mobile === 'true';
 
-  if (window.ReactNativeWebView || forceMobile) {
+  if (isMobileApp(userAgent) || forceMobile) {
     // For mobile app users, we need to handle Google OAuth differently
     // Option 1: Redirect to a page that opens system browser
     res.redirect(`${req.headers.origin}/auth/google-mobile?redirect=${encodeURIComponent(req.headers.origin || '')}`);
