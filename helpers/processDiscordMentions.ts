@@ -67,8 +67,9 @@ export async function processDiscordMentions(content: string, mentionUsernames: 
 
     users.forEach(user => {
       // Use word boundaries to ensure we only replace whole words
+      // Use negative lookbehind to avoid matching usernames within URLs (e.g., thinky.gg/username/levelname)
       // Use case-insensitive flag to match MongoDB collation behavior (strength: 2)
-      const regex = new RegExp(`\\b${user.name}\\b`, 'gi');
+      const regex = new RegExp(`(?<!/)\\b${user.name}\\b`, 'gi');
 
       if (usersWithDiscord.has(user.name)) {
         // User has Discord connected - use Discord mention

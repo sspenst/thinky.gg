@@ -63,10 +63,10 @@ describe('helpers/processDiscordMentions.ts', () => {
   });
 
   test('Should process Discord mentions for users with Discord connected', async () => {
-    const content = 'Great job BBB and Curator!';
+    const content = 'Great job BBB and Curator! https://thinky.gg/curator/test';
     const result = await processDiscordMentions(content, ['BBB', 'Curator']);
 
-    expect(result).toBe('Great job <@discord123> and <@discord456>!');
+    expect(result).toBe('Great job <@discord123> and <@discord456>! https://thinky.gg/curator/test');
   });
 
   test('Should only process mentions for users with Discord connected', async () => {
