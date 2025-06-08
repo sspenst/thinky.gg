@@ -57,7 +57,8 @@ export default function GoogleMobileAuth({ googleAuthUrl, redirectUrl }: GoogleM
   }, [googleAuthUrl]);
 
   const handleOpenBrowser = () => {
-    window.location.href = googleAuthUrl;
+    console.log('googleAuthUrl', googleAuthUrl);
+    window.open(googleAuthUrl, '_blank');
   };
 
   const handleGoBack = () => {
@@ -94,7 +95,6 @@ export default function GoogleMobileAuth({ googleAuthUrl, redirectUrl }: GoogleM
                 </svg>
                 Open in Browser
               </button>
-              
               <button
                 onClick={handleGoBack}
                 className='w-full text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 font-medium py-3 px-4 rounded-lg transition-colors'
