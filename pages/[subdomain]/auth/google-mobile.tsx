@@ -1,7 +1,7 @@
 import { GetServerSidePropsContext } from 'next';
 import { useRouter } from 'next/router';
 import React, { useEffect } from 'react';
-import Page from '../../components/page/page';
+import Page from '../../../components/page/page';
 
 interface GoogleMobileAuthProps {
   googleAuthUrl: string;
@@ -13,6 +13,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const origin = redirect || `${context.req.headers['x-forwarded-proto'] || 'https'}://${context.req.headers.host}`;
   const redirectUri = process.env.GOOGLE_REDIRECT_URI || `${origin}/api/auth/google/callback`;
+
+  console.log('redirectUri', redirectUri, clientId, origin);
 
   if (!clientId) {
     return {
