@@ -136,7 +136,9 @@ export default function SignupForm({ recaptchaPublicKey }: SignupFormProps) {
 
       window.history.replaceState({}, '', newUrl);
     }
-  }, [validateUsername]);
+
+    // No need for message handling - OAuth completes via deep link and WebView reload
+  }, [validateUsername, cache, mutateUser, setShouldAttemptAuth, router]);
 
   function onSubmit(recaptchaToken: string | null) {
     // Only require password validation for non-OAuth signups
@@ -263,6 +265,19 @@ export default function SignupForm({ recaptchaPublicKey }: SignupFormProps) {
   };
 
   function handleOAuthSignup(provider: 'discord' | 'google') {
+    // Check if we're in a mobile WebView (React Native app)
+    const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    const isWebView = (window as any).ReactNativeWebView !== undefined;
+
+    if (isWebView && provider === 'google') {
+      // Send message to React Native app to handle OAuth
+      (window as any).ReactNativeWebView.postMessage(JSON.stringify({
+        action: 'google_oauth'
+      }));
+
+      return;
+    }
+
     // Store redirect URL in session storage for after OAuth
     const urlParams = new URLSearchParams(window.location.search);
     const redirectUrl = urlParams.get('redirect');

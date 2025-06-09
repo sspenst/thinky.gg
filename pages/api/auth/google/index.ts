@@ -58,7 +58,9 @@ export default apiWrapper({
   }
 
   const scope = 'openid profile email';
-  const state = Buffer.from(JSON.stringify({
+  // Use provided state or create default state
+  const providedState = req.query?.state;
+  const state = providedState || Buffer.from(JSON.stringify({
     origin: req.headers.origin,
     timestamp: Date.now()
   })).toString('base64');

@@ -65,6 +65,8 @@ export default function LoginForm() {
 
       window.history.replaceState({}, '', newUrl);
     }
+
+    // No need for message handling - OAuth completes via deep link and WebView reload
   }, [cache, mutateUser, setShouldAttemptAuth, router]);
 
   function onSubmit(event: React.FormEvent) {
@@ -125,6 +127,19 @@ export default function LoginForm() {
   }
 
   function handleOAuthLogin(provider: 'discord' | 'google') {
+    // Check if we're in a mobile WebView (React Native app)
+    const isWebView = (window as any).ReactNativeWebView !== undefined;
+
+    if (isWebView && provider === 'google') {
+      // Send message to React Native app to handle OAuth
+      (window as any).ReactNativeWebView.postMessage(JSON.stringify({
+        action: 'google_oauth'
+      }));
+
+      return;
+    }
+
+    // For non-WebView or Discord, use regular OAuth flow
     // Store redirect URL in session storage for after OAuth
     const urlParams = new URLSearchParams(window.location.search);
     const redirectUrl = urlParams.get('redirect');
