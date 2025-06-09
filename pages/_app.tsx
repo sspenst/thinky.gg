@@ -78,7 +78,7 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
     posthog.init((process.env.NEXT_PUBLIC_POSTHOG_KEY as string) || 'phc_Am38672etY9vtglKkfMa86HVxREbLuh7ExC7Qj1qPBx', {
       api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST as string || '/api/ingest',
       person_profiles: 'always', // or 'always' to create profiles for anonymous users as well
-
+      capture_pageview: false,
       // Enable debug mode in development
       loaded: (posthog) => {
         if (process.env.NODE_ENV === 'development') posthog.debug();
@@ -442,9 +442,6 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
         // Add other relevant user properties (be careful not to include sensitive data)
         // Don't include the entire user object for privacy reasons
       });
-
-      // Capture a pageview with the identified user
-      posthog.capture('$pageview');
     } else {
       console.log('RESETING POSTHOG');
       // Reset PostHog identity when user logs out
