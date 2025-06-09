@@ -1,8 +1,10 @@
 import Expo
+import FirebaseCore
 import React
 import ReactAppDependencyProvider
-import Firebase
-import GoogleSignIn
+// @generated begin react-native-background-fetch-import - expo prebuild (DO NOT MODIFY) sync-155f1bdadb9170a23dc76767c76a372a649e0f4d
+import TSBackgroundFetch
+// @generated end react-native-background-fetch-import
 
 @UIApplicationMain
 public class AppDelegate: ExpoAppDelegate {
@@ -15,13 +17,6 @@ public class AppDelegate: ExpoAppDelegate {
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
   ) -> Bool {
-    // Configure Firebase only if GoogleService-Info.plist exists
-    if Bundle.main.path(forResource: "GoogleService-Info", ofType: "plist") != nil {
-      FirebaseApp.configure()
-    } else {
-      print("Warning: GoogleService-Info.plist not found in app bundle. Firebase features will be disabled.")
-    }
-    
     let delegate = ReactNativeDelegate()
     let factory = ExpoReactNativeFactory(delegate: delegate)
     delegate.dependencyProvider = RCTAppDependencyProvider()
@@ -32,11 +27,17 @@ public class AppDelegate: ExpoAppDelegate {
 
 #if os(iOS) || os(tvOS)
     window = UIWindow(frame: UIScreen.main.bounds)
+// @generated begin @react-native-firebase/app-didFinishLaunchingWithOptions - expo prebuild (DO NOT MODIFY) sync-10e8520570672fd76b2403b7e1e27f5198a6349a
+FirebaseApp.configure()
+// @generated end @react-native-firebase/app-didFinishLaunchingWithOptions
     factory.startReactNative(
       withModuleName: "main",
       in: window,
       launchOptions: launchOptions)
 #endif
+// @generated begin react-native-background-fetch-didFinishLaunching - expo prebuild (DO NOT MODIFY) sync-de0b35a5cd3526deca6180a2e42acb760afcb929
+    TSBackgroundFetch.sharedInstance().didFinishLaunching();
+// @generated end react-native-background-fetch-didFinishLaunching
 
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
@@ -47,11 +48,6 @@ public class AppDelegate: ExpoAppDelegate {
     open url: URL,
     options: [UIApplication.OpenURLOptionsKey: Any] = [:]
   ) -> Bool {
-    // Handle Google Sign-In URL
-    if GIDSignIn.sharedInstance.handle(url) {
-      return true
-    }
-    
     return super.application(app, open: url, options: options) || RCTLinkingManager.application(app, open: url, options: options)
   }
 
