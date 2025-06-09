@@ -19,7 +19,7 @@
             ]
           },
           "ios": {
-            "deploymentTarget": "13.0"
+            "deploymentTarget": "15.1"
           }
         }
       ],
@@ -44,10 +44,6 @@
       "resizeMode": "contain",
       "backgroundColor": "#13033d"
     },
-    "updates": {
-      "fallbackToCacheTimeout": 0,
-      "url": "https://u.expo.dev/e480f464-4092-46c9-8730-55d2bee70c9b"
-    },
     "assetBundlePatterns": [
       "**/*"
     ],
@@ -55,16 +51,24 @@
       "supportsTablet": true,
       "requireFullScreen": true,
       "googleServicesFile": "./GoogleService-Info.plist",
+      "scheme": "com.googleusercontent.apps.76339697178-33o7fgavak6ficeunfkam80c3f9gcqi4",
       "infoPlist": {
         "UIBackgroundModes": [
+          "fetch",
+          "processing",
+          "remote-notification",
           "fetch",
           "processing",
           "remote-notification"
         ],
         "BGTaskSchedulerPermittedIdentifiers": [
+          "com.transistorsoft.fetch",
           "com.transistorsoft.fetch"
         ],
         "UISupportedInterfaceOrientations": [
+          "UIInterfaceOrientationPortrait",
+          "UIInterfaceOrientationLandscapeLeft",
+          "UIInterfaceOrientationLandscapeRight",
           "UIInterfaceOrientationPortrait",
           "UIInterfaceOrientationLandscapeLeft",
           "UIInterfaceOrientationLandscapeRight"
@@ -77,11 +81,39 @@
       "associatedDomains": [
         "applinks:pathology.gg",
         "applinks:thinky.gg",
+        "applinks:*.thinky.gg",
+        "applinks:pathology.gg",
+        "applinks:thinky.gg",
         "applinks:*.thinky.gg"
       ]
     },
     "android": {
       "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "pathology.gg",
+              "pathPattern": ".*"
+            },
+            {
+              "scheme": "https",
+              "host": "thinky.gg",
+              "pathPattern": ".*"
+            },
+            {
+              "scheme": "https",
+              "host": "*.thinky.gg",
+              "pathPattern": ".*"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        },
         {
           "action": "VIEW",
           "autoVerify": true,
@@ -125,8 +157,6 @@
       }
     },
     "owner": "sspenst",
-    "runtimeVersion": {
-      "policy": "sdkVersion"
-    }
+    "runtimeVersion": "1.0.0"
   }
 }

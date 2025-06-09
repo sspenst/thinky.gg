@@ -1,5 +1,6 @@
 import notifee, { AndroidStyle, Event, EventType } from '@notifee/react-native';
 import messaging, { FirebaseMessagingTypes } from '@react-native-firebase/messaging';
+import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
 import { registerRootComponent } from 'expo';
 import * as Device from 'expo-device';
 import * as Linking from 'expo-linking';
@@ -18,7 +19,7 @@ interface MobileNotification {
   url: string;
 }
 
-const host = 'https://thinky.gg';
+const host = 'http://localhost:3000';
 
 let isDeviceTokenRegistered = false;
 let onMessageUnsubscribe: () => void;
@@ -140,7 +141,7 @@ async function onRemoteMessage(message: FirebaseMessagingTypes.RemoteMessage) {
 
 function App() {
   const linkingUrl = Linking.useURL();
-  const webViewRef = useRef<WebView>();
+  const webViewRef = useRef<WebView>(null);
   const [webViewUrl, setWebViewUrl] = useState(`${host}?platform=${Platform.OS}&version=2.0.3`);
 
   useEffect(() => {
@@ -175,6 +176,57 @@ function App() {
   }, []);
 
   useEffect(() => {
+    // Configure Google Sign-In
+    GoogleSignin.configure({
+      iosClientId: '76339697178-ms4pnsd7ctfnu0sapkm02hpgbdf6hnld.apps.googleusercontent.com', // Correct iOS OAuth client ID
+      webClientId: '76339697178-ms4pnsd7ctfnu0sapkm02hpgbdf6hnld.apps.googleusercontent.com', // Use same iOS client ID for consistency
+      offlineAccess: true,
+      hostedDomain: '',
+      forceCodeForRefreshToken: true,
+    });
+  }, []);
+
+  async function handleGoogleSignIn() {
+    try {
+      await GoogleSignin.hasPlayServices();
+      const userInfo = await GoogleSignin.signIn();
+
+      console.log('Google Sign-In successful:', userInfo);
+
+      // Simple approach: redirect to existing web OAuth callback with user data
+      const googleUserData = encodeURIComponent(JSON.stringify({
+        id: userInfo.data?.user?.id,
+        email: userInfo.data?.user?.email,
+        name: userInfo.data?.user?.name,
+        picture: userInfo.data?.user?.photo,
+        idToken: userInfo.data?.idToken,
+        mobile: true
+      }));
+
+      const callbackUrl = `${host}/api/auth/google/callback?mobile_auth=${googleUserData}`;
+
+      if (webViewRef.current) {
+        webViewRef.current.injectJavaScript(`
+          window.location.href = '${callbackUrl}';
+          true;
+        `);
+      }
+    } catch (error) {
+      console.error('Google Sign-In error:', error);
+
+      if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+        console.log('User cancelled the login flow');
+      } else if (error.code === statusCodes.IN_PROGRESS) {
+        console.log('Sign-In is in progress already');
+      } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+        console.log('Play services not available');
+      } else {
+        console.log('Some other error happened');
+      }
+    }
+  }
+
+  useEffect(() => {
     const onAndroidBackPress = () => {
       if (webViewRef.current) {
         webViewRef.current.goBack();
@@ -186,10 +238,10 @@ function App() {
     };
 
     if (Platform.OS === 'android') {
-      BackHandler.addEventListener('hardwareBackPress', onAndroidBackPress);
+      const backHandler = BackHandler.addEventListener('hardwareBackPress', onAndroidBackPress);
 
       return () => {
-        BackHandler.removeEventListener('hardwareBackPress', onAndroidBackPress);
+        backHandler.remove();
       };
     }
   }, []);
@@ -283,6 +335,11 @@ function App() {
           } else {
             unregisterDeviceToken();
           }
+
+          // Handle Google OAuth request
+          if (data.action === 'google_oauth') {
+            handleGoogleSignIn();
+          }
         }}
         onNavigationStateChange={(navState) => {
           console.log('onNavigationStateChange', navState.url);
@@ -293,6 +350,7 @@ function App() {
           return true;
         }}
         originWhitelist={[
+          'http://localhost:3000*',
           'https://pathology.gg*',
           'https://thinky.gg*',
           'https://*.thinky.gg*',
