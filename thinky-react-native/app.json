@@ -3,7 +3,7 @@
     "name": "Thinky",
     "slug": "thinky",
     "scheme": "com.pathology",
-    "version": "2.0.3",
+    "version": "2.1.0",
     "icon": "../public/logos/thinky/thinky_pfp.png",
     "userInterfaceStyle": "automatic",
     "plugins": [
@@ -56,19 +56,12 @@
         "UIBackgroundModes": [
           "fetch",
           "processing",
-          "remote-notification",
-          "fetch",
-          "processing",
           "remote-notification"
         ],
         "BGTaskSchedulerPermittedIdentifiers": [
-          "com.transistorsoft.fetch",
           "com.transistorsoft.fetch"
         ],
         "UISupportedInterfaceOrientations": [
-          "UIInterfaceOrientationPortrait",
-          "UIInterfaceOrientationLandscapeLeft",
-          "UIInterfaceOrientationLandscapeRight",
           "UIInterfaceOrientationPortrait",
           "UIInterfaceOrientationLandscapeLeft",
           "UIInterfaceOrientationLandscapeRight"
@@ -77,11 +70,8 @@
         "NSPhotoLibraryUsageDescription": "Enabling photo library access will allow you to choose a picture to use as your avatar."
       },
       "bundleIdentifier": "com.pathology",
-      "buildNumber": "17",
+      "buildNumber": "18",
       "associatedDomains": [
-        "applinks:pathology.gg",
-        "applinks:thinky.gg",
-        "applinks:*.thinky.gg",
         "applinks:pathology.gg",
         "applinks:thinky.gg",
         "applinks:*.thinky.gg"
@@ -89,31 +79,6 @@
     },
     "android": {
       "intentFilters": [
-        {
-          "action": "VIEW",
-          "autoVerify": true,
-          "data": [
-            {
-              "scheme": "https",
-              "host": "pathology.gg",
-              "pathPattern": ".*"
-            },
-            {
-              "scheme": "https",
-              "host": "thinky.gg",
-              "pathPattern": ".*"
-            },
-            {
-              "scheme": "https",
-              "host": "*.thinky.gg",
-              "pathPattern": ".*"
-            }
-          ],
-          "category": [
-            "BROWSABLE",
-            "DEFAULT"
-          ]
-        },
         {
           "action": "VIEW",
           "autoVerify": true,
@@ -146,7 +111,7 @@
         "backgroundColor": "#13033d"
       },
       "package": "com.pathology.gg",
-      "versionCode": "8"
+      "versionCode": "9"
     },
     "web": {
       "favicon": "../public/logos/thinky/thinky.png"
@@ -157,6 +122,8 @@
       }
     },
     "owner": "sspenst",
-    "runtimeVersion": "1.0.0"
+    "runtimeVersion": {
+      "policy": "sdkVersion"
+    }
   }
 }

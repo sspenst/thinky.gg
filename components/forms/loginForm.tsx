@@ -128,11 +128,11 @@ export default function LoginForm() {
 
   function handleOAuthLogin(provider: 'discord' | 'google') {
     // Check if we're in a mobile WebView (React Native app)
-    const isWebView = (window as any).ReactNativeWebView !== undefined;
+    const isWebView = window.ReactNativeWebView !== undefined;
 
     if (isWebView && provider === 'google') {
       // Send message to React Native app to handle OAuth
-      (window as any).ReactNativeWebView.postMessage(JSON.stringify({
+      window.ReactNativeWebView.postMessage(JSON.stringify({
         action: 'google_oauth'
       }));
 
