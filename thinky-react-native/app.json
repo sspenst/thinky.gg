@@ -122,8 +122,6 @@
       }
     },
     "owner": "sspenst",
-    "runtimeVersion": {
-      "policy": "sdkVersion"
-    }
+    "runtimeVersion": "2.1.0"
   }
 }
