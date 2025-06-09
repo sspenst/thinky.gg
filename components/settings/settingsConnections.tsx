@@ -118,17 +118,20 @@ export default function SettingsConnections({ user }: SettingsConnectionsProps) 
   }
 
   function connectProvider(provider: AuthProvider) {
-    // Check if we're likely in a mobile app environment
-    const isMobileApp = /ReactNative|Expo|wv\)/i.test(navigator.userAgent) ||
-                        window.location.protocol === 'file:' ||
-                        'ReactNativeWebView' in window;
+    // Check if we're in a mobile WebView (React Native app)
+    const isWebView = window.ReactNativeWebView !== undefined;
 
-    // For Google OAuth in mobile apps, add force_mobile parameter
-    if (provider === AuthProvider.GOOGLE && isMobileApp) {
-      window.location.href = `/auth/google-mobile?redirect=${encodeURIComponent(window.location.origin)}`;
-    } else {
-      window.location.href = `/api/auth/${provider}`;
+    if (isWebView && provider === AuthProvider.GOOGLE) {
+      // Send message to React Native app to handle OAuth
+      window.ReactNativeWebView.postMessage(JSON.stringify({
+        action: 'google_oauth'
+      }));
+
+      return;
     }
+
+    // For non-WebView or other providers, use regular OAuth flow
+    window.location.href = `/api/auth/${provider}`;
   }
 
   function getProviderData(provider: AuthProvider) {

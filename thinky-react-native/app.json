@@ -3,7 +3,7 @@
     "name": "Thinky",
     "slug": "thinky",
     "scheme": "com.pathology",
-    "version": "2.0.3",
+    "version": "2.1.0",
     "icon": "../public/logos/thinky/thinky_pfp.png",
     "userInterfaceStyle": "automatic",
     "plugins": [
@@ -19,7 +19,7 @@
             ]
           },
           "ios": {
-            "deploymentTarget": "13.0"
+            "deploymentTarget": "15.1"
           }
         }
       ],
@@ -44,10 +44,6 @@
       "resizeMode": "contain",
       "backgroundColor": "#13033d"
     },
-    "updates": {
-      "fallbackToCacheTimeout": 0,
-      "url": "https://u.expo.dev/e480f464-4092-46c9-8730-55d2bee70c9b"
-    },
     "assetBundlePatterns": [
       "**/*"
     ],
@@ -55,6 +51,7 @@
       "supportsTablet": true,
       "requireFullScreen": true,
       "googleServicesFile": "./GoogleService-Info.plist",
+      "scheme": "com.googleusercontent.apps.76339697178-33o7fgavak6ficeunfkam80c3f9gcqi4",
       "infoPlist": {
         "UIBackgroundModes": [
           "fetch",
@@ -73,7 +70,7 @@
         "NSPhotoLibraryUsageDescription": "Enabling photo library access will allow you to choose a picture to use as your avatar."
       },
       "bundleIdentifier": "com.pathology",
-      "buildNumber": "17",
+      "buildNumber": "18",
       "associatedDomains": [
         "applinks:pathology.gg",
         "applinks:thinky.gg",
@@ -114,7 +111,7 @@
         "backgroundColor": "#13033d"
       },
       "package": "com.pathology.gg",
-      "versionCode": "8"
+      "versionCode": "9"
     },
     "web": {
       "favicon": "../public/logos/thinky/thinky.png"
