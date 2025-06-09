@@ -77,40 +77,23 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
 
     posthog.init((process.env.NEXT_PUBLIC_POSTHOG_KEY as string) || 'phc_Am38672etY9vtglKkfMa86HVxREbLuh7ExC7Qj1qPBx', {
       api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST as string || '/api/ingest',
-      person_profiles: 'always',
-      // Performance optimizations
-      capture_pageview: false, // We'll handle this manually to avoid duplicates
-      capture_pageleave: false, // Reduce unnecessary events
-      session_recording: {
-        maskAllInputs: true,
-        maskInputOptions: {
-          password: true,
-        }
-      },
-      bootstrap: {
-        distinctID: user?._id?.toString(), // Bootstrap with user ID if available
-      },
+      person_profiles: 'always', // or 'always' to create profiles for anonymous users as well
+
+      // Enable debug mode in development
       loaded: (posthog) => {
         if (process.env.NODE_ENV === 'development') posthog.debug();
-        // Capture initial pageview after PostHog is loaded
-        posthog.capture('$pageview');
       },
     });
     console.log('POSTHOG_KEY', process.env.NEXT_PUBLIC_POSTHOG_KEY);
     console.log('POSTHOG_HOST', process.env.NEXT_PUBLIC_POSTHOG_HOST);
-
-    // Single pageview handler for route changes
-    const handleRouteChange = () => {
-      // Small delay to ensure DOM is updated
-      setTimeout(() => posthog?.capture('$pageview'), 100);
-    };
+    const handleRouteChange = () => posthog?.capture('$pageview');
 
     Router.events.on('routeChangeComplete', handleRouteChange);
 
     return () => {
       Router.events.off('routeChangeComplete', handleRouteChange);
     };
-  }, []); // Remove user dependency to prevent re-initialization
+  }, []);
 
   const deviceInfo = useDeviceCheck(userAgent);
   const forceUpdate = useForceUpdate();
@@ -367,7 +350,7 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
   }, [selectedGame.id, user?._id, user?.disableStreakPopup]);
 
   useEffect(() => {
-    // check if redirect_type querystring parameter is set, and if it is equal to "patholoygg" console log hello
+  // check if redirect_type querystring parameter is set, and if it is equal to "patholoygg" console log hello
     const urlParams = new URLSearchParams(window.location.search);
     const redirectType = urlParams.get('redirect_type');
     const utmSource = urlParams.get('utm_source');
@@ -460,13 +443,14 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
         // Don't include the entire user object for privacy reasons
       });
 
-      // Don't capture pageview here - it's already handled by route change
+      // Capture a pageview with the identified user
+      posthog.capture('$pageview');
     } else {
       console.log('RESETING POSTHOG');
       // Reset PostHog identity when user logs out
       posthog.reset();
     }
-  }, [user?._id, user?.name, user?.email]); // Reduced dependencies to only essential user props
+  }, [user, user?._id, user?.name, user?.email, user?.roles, user?.ts, user?.lastGame, user?.utm_source, user?.emailConfirmed]);
 
   useEffect(() => {
     const handleRouteChange = (url: string) => {
