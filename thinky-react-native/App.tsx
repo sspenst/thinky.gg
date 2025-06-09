@@ -19,7 +19,7 @@ interface MobileNotification {
   url: string;
 }
 
-const host = 'http://localhost:3000';
+const host = 'https://thinky.gg';
 
 let isDeviceTokenRegistered = false;
 let onMessageUnsubscribe: () => void;
