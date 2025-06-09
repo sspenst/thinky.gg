@@ -31,20 +31,12 @@ module.exports = {
         source: '/api/notification-push-token',
         destination: '/api/device',
       },
-      {
-        source: '/api/ingest/static/:path*',
-        destination: 'https://us-assets.i.posthog.com/static/:path*',
-      },
-      {
-        source: '/api/ingest/:path*',
-        destination: 'https://us.i.posthog.com/:path*',
-      },
-      {
-        source: '/api/ingest/decide',
-        destination: 'https://us.i.posthog.com/decide',
-      },
+      // PostHog proxy rules removed - now handled by Nginx for better performance
+      // and to prevent analytics traffic from appearing in application metrics
     ];
   },
+  // PostHog proxy rules removed - now handled by Nginx for better performance
+  // and to prevent analytics traffic from appearing in application metrics
   // This is required to support PostHog trailing slash API requests
   skipTrailingSlashRedirect: true,
   images: {
