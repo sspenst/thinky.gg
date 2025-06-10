@@ -3,7 +3,7 @@
     "name": "Thinky",
     "slug": "thinky",
     "scheme": "com.pathology",
-    "version": "2.1.0",
+    "version": "2.1.1",
     "icon": "../public/logos/thinky/thinky_pfp.png",
     "userInterfaceStyle": "automatic",
     "plugins": [
@@ -122,6 +122,6 @@
       }
     },
     "owner": "sspenst",
-    "runtimeVersion": "2.1.0"
+    "runtimeVersion": "2.1.1"
   }
 }
