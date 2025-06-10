@@ -32,14 +32,8 @@
         <key>CFBundleURLSchemes</key>
         <array>
           <string>com.pathology</string>
-          <string>76339697178-ms4pnsd7ctfnu0sapkm02hpgbdf6hnld.apps.googleusercontent.com</string>
-          <string>com.pathology</string>
-        </array>
-      </dict>
-      <dict>
-        <key>CFBundleURLSchemes</key>
-        <array>
           <string>com.googleusercontent.apps.76339697178-ms4pnsd7ctfnu0sapkm02hpgbdf6hnld</string>
+          <string>com.pathology</string>
         </array>
       </dict>
       <dict>
