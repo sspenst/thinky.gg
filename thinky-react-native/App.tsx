@@ -176,12 +176,16 @@ function App() {
   }, []);
 
   useEffect(() => {
+    const WEB_CLIENT_ID = '76339697178-72a8oftp15lcm5je82jkq8gipcghdi2g.apps.googleusercontent.com';
+    const IOS_CLIENT_ID = '76339697178-ms4pnsd7ctfnu0sapkm02hpgbdf6hnld.apps.googleusercontent.com';
+    // const ANDROID_CLIENT_ID = '76339697178-onaeksgj7qdg893l7vkku2th5m9rfvvv.apps.googleusercontent.com';
+
     // Configure Google Sign-In
     GoogleSignin.configure({
-      iosClientId: '76339697178-ms4pnsd7ctfnu0sapkm02hpgbdf6hnld.apps.googleusercontent.com', // iOS OAuth client ID
-      webClientId: '76339697178-onaeksgj7qdg893l7vkku2th5m9rfvvv.apps.googleusercontent.com', // Android Dev client ID with correct SHA-1
+      iosClientId: IOS_CLIENT_ID, // iOS OAuth client ID
+      webClientId: WEB_CLIENT_ID,
       offlineAccess: true,
-      hostedDomain: '',
+      //hostedDomain: '',
       forceCodeForRefreshToken: true,
     });
   }, []);
