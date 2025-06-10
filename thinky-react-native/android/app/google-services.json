@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "76339697178",
+    "firebase_url": "https://pathology-699c4-default-rtdb.firebaseio.com",
+    "project_id": "pathology-699c4",
+    "storage_bucket": "pathology-699c4.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:76339697178:android:d33b1572ef8552af9063a3",
+        "android_client_info": {
+          "package_name": "com.pathology.gg"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "76339697178-72a8oftp15lcm5je82jkq8gipcghdi2g.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDqSAIwiKr_fxS2ONjPcVDxcG2Tfnc8bfM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "76339697178-72a8oftp15lcm5je82jkq8gipcghdi2g.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "76339697178-ms4pnsd7ctfnu0sapkm02hpgbdf6hnld.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.pathology",
+                "app_store_id": "1668925562"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

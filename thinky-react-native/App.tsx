@@ -178,8 +178,8 @@ function App() {
   useEffect(() => {
     // Configure Google Sign-In
     GoogleSignin.configure({
-      iosClientId: '76339697178-ms4pnsd7ctfnu0sapkm02hpgbdf6hnld.apps.googleusercontent.com', // Correct iOS OAuth client ID
-      webClientId: '76339697178-ms4pnsd7ctfnu0sapkm02hpgbdf6hnld.apps.googleusercontent.com', // Use same iOS client ID for consistency
+      iosClientId: '76339697178-ms4pnsd7ctfnu0sapkm02hpgbdf6hnld.apps.googleusercontent.com', // iOS OAuth client ID
+      webClientId: '76339697178-onaeksgj7qdg893l7vkku2th5m9rfvvv.apps.googleusercontent.com', // Android Dev client ID with correct SHA-1
       offlineAccess: true,
       hostedDomain: '',
       forceCodeForRefreshToken: true,
@@ -188,7 +188,9 @@ function App() {
 
   async function handleGoogleSignIn() {
     try {
+      console.log('Checking Play Services...');
       await GoogleSignin.hasPlayServices();
+      console.log('Play Services OK, attempting sign in...');
       const userInfo = await GoogleSignin.signIn();
 
       console.log('Google Sign-In successful:', userInfo);
