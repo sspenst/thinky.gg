@@ -10,10 +10,10 @@
       [
         "expo-build-properties",
         {
-          "android": {
-            "compileSdkVersion": 33,
-            "targetSdkVersion": 33,
-            "buildToolsVersion": "33.0.0",
+                  "android": {
+          "compileSdkVersion": 35,
+          "targetSdkVersion": 35,
+          "buildToolsVersion": "35.0.0",
             "extraMavenRepos": [
               "$rootDir/../../../node_modules/@notifee/react-native/android/libs"
             ]
@@ -111,7 +111,7 @@
         "backgroundColor": "#13033d"
       },
       "package": "com.pathology.gg",
-      "versionCode": "9"
+      "versionCode": 9
     },
     "web": {
       "favicon": "../public/logos/thinky/thinky.png"
