@@ -20,7 +20,6 @@
     "expo-device": "~7.1.4",
     "expo-linking": "~7.1.5",
     "expo-notifications": "~0.31.3",
-    "expo-permissions": "^14.4.0",
     "expo-screen-orientation": "~8.1.7",
     "expo-splash-screen": "~0.30.9",
     "expo-status-bar": "~2.2.3",
@@ -32,7 +31,6 @@
     "react": "^19.1.0",
     "react-native": "0.79.3",
     "react-native-background-fetch": "^4.2.8",
-    "react-native-push-notification": "^8.1.1",
     "react-native-webview": "^13.15.0"
   },
   "devDependencies": {
@@ -40,7 +38,6 @@
     "@tsconfig/react-native": "^3.0.5",
     "@types/jest": "^29.5.14",
     "@types/react": "^19.1.7",
-    "@types/react-native": "^0.73.0",
     "@types/react-test-renderer": "^19.1.0",
     "typescript": "^5.8.3"
   },
