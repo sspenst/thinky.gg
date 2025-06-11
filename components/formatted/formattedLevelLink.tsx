@@ -35,6 +35,8 @@ export default function FormattedLevelLink({ gameId, id, level, onClick }: Enric
           className='max-w-full'
           height={Dimensions.LevelCanvasHeight / 3}
           src={'/api/level/image/' + level._id + '.png'}
+          // TODO: localhost origin in renderToStaticMarkup doesn't work, should probably not be using renderToStaticMarkup if possible
+          // src={getUrl(GameId.THINKY, `/api/level/image/${level._id}.png`)}
           width={Dimensions.LevelCanvasWidth / 3}
         />
       )}
