@@ -53,6 +53,17 @@ const handleDiscordCallback = apiWrapper({
     }
   }
 
+  // Debug logging to compare login vs settings flow
+  logger.info('Discord OAuth callback:', {
+    hasToken: !!req.cookies?.token,
+    origin: req.headers.origin,
+    host: req.headers.host,
+    constructedOrigin: origin,
+    redirectUri,
+    state,
+    code: code ? 'present' : 'missing',
+  });
+
   try {
     // Exchange code for access token
     const tokenResponse = await fetch('https://discord.com/api/oauth2/token', {
@@ -71,6 +82,15 @@ const handleDiscordCallback = apiWrapper({
     });
 
     if (!tokenResponse.ok) {
+      const errorData = await tokenResponse.text();
+
+      logger.error('Discord token exchange failed:', {
+        status: tokenResponse.status,
+        statusText: tokenResponse.statusText,
+        error: errorData,
+        redirectUri,
+        clientId,
+      });
       throw new Error(`Discord token exchange failed: ${tokenResponse.statusText}`);
     }
 

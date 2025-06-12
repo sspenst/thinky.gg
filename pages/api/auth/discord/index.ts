@@ -1,5 +1,6 @@
 import { NextApiResponse } from 'next';
 import apiWrapper, { NextApiRequestWrapper } from '../../../../helpers/apiWrapper';
+import { logger } from '../../../../helpers/logger';
 
 export default apiWrapper({
   GET: {}
@@ -12,6 +13,17 @@ export default apiWrapper({
 
     return;
   }
+
+  // Debug logging to help diagnose the issue
+  logger.info('Discord OAuth initiation:', {
+    hasToken: !!req.cookies?.token,
+    origin: req.headers.origin,
+    host: req.headers.host,
+    userAgent: req.headers['user-agent'],
+    referer: req.headers.referer,
+    redirectUri,
+    clientId,
+  });
 
   const scope = 'identify email';
   const state = Buffer.from(JSON.stringify({
