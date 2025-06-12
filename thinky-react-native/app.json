@@ -3,7 +3,7 @@
     "name": "Thinky",
     "slug": "thinky",
     "scheme": "com.pathology",
-    "version": "2.1.1",
+    "version": "2.1.2",
     "icon": "../public/logos/thinky/thinky_pfp.png",
     "userInterfaceStyle": "automatic",
     "plugins": [
@@ -111,7 +111,7 @@
         "backgroundColor": "#13033d"
       },
       "package": "com.pathology.gg",
-      "versionCode": 10
+      "versionCode": 11
     },
     "web": {
       "favicon": "../public/logos/thinky/thinky.png"
@@ -122,6 +122,6 @@
       }
     },
     "owner": "sspenst",
-    "runtimeVersion": "2.1.1"
+    "runtimeVersion": "2.1.2"
   }
 }
