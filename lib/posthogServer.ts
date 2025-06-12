@@ -2,9 +2,12 @@
 import { PostHog } from 'posthog-node';
 
 // Initialize PostHog client for server-side tracking
-export const posthogServer = process.env.POSTHOG_PROJECT_API_KEY
-  ? new PostHog(process.env.POSTHOG_PROJECT_API_KEY, {
-    host: process.env.POSTHOG_HOST || 'https://app.posthog.com',
+// Prefer server-side API key, fall back to public key
+const apiKey = process.env.NEXT_PUBLIC_POSTHOG_KEY;
+
+export const posthogServer = apiKey
+  ? new PostHog(apiKey, {
+    host: process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://us.i.posthog.com',
   })
   : null;
 

@@ -23,7 +23,7 @@
     <key>CFBundlePackageType</key>
     <string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
     <key>CFBundleShortVersionString</key>
-    <string>2.1.0</string>
+    <string>2.1.1</string>
     <key>CFBundleSignature</key>
     <string>????</string>
     <key>CFBundleURLTypes</key>
@@ -34,12 +34,6 @@
           <string>com.pathology</string>
           <string>com.googleusercontent.apps.76339697178-ms4pnsd7ctfnu0sapkm02hpgbdf6hnld</string>
           <string>com.pathology</string>
-        </array>
-      </dict>
-      <dict>
-        <key>CFBundleURLSchemes</key>
-        <array>
-          <string>com.googleusercontent.apps.76339697178-33o7fgavak6ficeunfkam80c3f9gcqi4</string>
         </array>
       </dict>
       <dict>

@@ -75,5 +75,5 @@ dist/
 ignore-*
 
 # NOTE! COMMENT THESE TWO OUT WHEN RUNNING EAS BUILD
-google-services.json
-GoogleService-Info.plist
+#google-services.json
+#GoogleService-Info.plist
