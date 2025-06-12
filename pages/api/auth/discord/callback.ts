@@ -82,15 +82,29 @@ const handleDiscordCallback = apiWrapper({
     });
 
     if (!tokenResponse.ok) {
-      const errorData = await tokenResponse.text();
+      let errorData;
 
-      logger.error('Discord token exchange failed:', {
+      try {
+        errorData = await tokenResponse.text();
+      } catch (e) {
+        errorData = 'Failed to read error response';
+      }
+
+      // Log the complete request details for debugging
+      logger.error('Discord token exchange failed - Full details:', {
         status: tokenResponse.status,
         statusText: tokenResponse.statusText,
         error: errorData,
-        redirectUri,
-        clientId,
+        requestBody: {
+          client_id: clientId,
+          grant_type: 'authorization_code',
+          redirect_uri: redirectUri,
+          scope: 'identify email',
+          code_present: !!code,
+        },
+        headers: tokenResponse.headers ? Object.fromEntries(tokenResponse.headers.entries()) : 'unavailable',
       });
+
       throw new Error(`Discord token exchange failed: ${tokenResponse.statusText}`);
     }
 

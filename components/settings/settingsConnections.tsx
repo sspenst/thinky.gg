@@ -21,6 +21,7 @@ export default function SettingsConnections({ user }: SettingsConnectionsProps) 
   const { mutateUser } = useContext(AppContext);
   const [authProviders, setAuthProviders] = useState<AuthProviderData[]>([]);
   const [authProvidersLoading, setAuthProvidersLoading] = useState<boolean>(true);
+  const [connectingProvider, setConnectingProvider] = useState<AuthProvider | null>(null);
 
   // Fetch auth providers
   useEffect(() => {
@@ -90,6 +91,11 @@ export default function SettingsConnections({ user }: SettingsConnectionsProps) 
 
       window.history.replaceState({}, '', newUrl);
     }
+
+    // Reset connecting state when we return from OAuth
+    if (discordConnected || discordError || discordAlreadyConnected || googleConnected || googleError || googleAlreadyConnected) {
+      setConnectingProvider(null);
+    }
   }, []);
 
   function disconnectProvider(provider: AuthProvider) {
@@ -118,6 +124,13 @@ export default function SettingsConnections({ user }: SettingsConnectionsProps) 
   }
 
   function connectProvider(provider: AuthProvider) {
+    // Prevent double clicks
+    if (connectingProvider) {
+      return;
+    }
+
+    setConnectingProvider(provider);
+
     // Check if we're in a mobile WebView (React Native app)
     const isWebView = window.ReactNativeWebView !== undefined;
 
@@ -211,10 +224,21 @@ export default function SettingsConnections({ user }: SettingsConnectionsProps) 
             </p>
             <button
               onClick={() => connectProvider(provider)}
-              className={`inline-flex items-center ${getButtonStyles(name)} text-white font-medium py-3 px-6 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800`}
+              disabled={connectingProvider === provider}
+              className={`inline-flex items-center ${
+                connectingProvider === provider
+                  ? 'bg-gray-400 cursor-not-allowed'
+                  : getButtonStyles(name)
+              } text-white font-medium py-3 px-6 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-50`}
             >
-              {icon}
-              <span className='ml-2'>Connect with {name}</span>
+              {connectingProvider === provider ? (
+                <div className='animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2' />
+              ) : (
+                icon
+              )}
+              <span className='ml-2'>
+                {connectingProvider === provider ? `Connecting to ${name}...` : `Connect with ${name}`}
+              </span>
             </button>
           </div>
         )}
