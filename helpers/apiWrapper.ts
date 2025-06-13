@@ -225,7 +225,7 @@ export default function apiWrapper(
   handler: (req: NextApiRequestWrapper, res: NextApiResponse) => Promise<void>
 ) {
   return async (req: NextApiRequestWrapper, res: NextApiResponse): Promise<unknown> => {
-    await initNewrelicErrorLogging(res);
+    await initNewrelicErrorLogging(req, res);
 
     const validate = parseReq(validator, req);
 
