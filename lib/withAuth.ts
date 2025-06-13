@@ -101,7 +101,7 @@ export default function withAuth(
     req: NextApiRequestWithAuth,
     res: NextApiResponse
   ): Promise<void> => {
-    await initNewrelicErrorLogging(res);
+    await initNewrelicErrorLogging(req, res);
 
     const token = req.cookies?.token;
 
