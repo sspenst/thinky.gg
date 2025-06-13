@@ -88,9 +88,10 @@ interface NavLinkProps {
   icon: React.ReactNode;
   label: React.ReactNode;
   onClick?: (e: React.MouseEvent<HTMLAnchorElement>) => void;
+  special?: boolean;
 }
 
-function NavLink({ hidden, href, icon, label, onClick }: NavLinkProps) {
+function NavLink({ hidden, href, icon, label, onClick, special }: NavLinkProps) {
   const [isActive, setIsActive] = useState(false);
   const router = useRouter();
 
@@ -106,7 +107,7 @@ function NavLink({ hidden, href, icon, label, onClick }: NavLinkProps) {
     <Link
       className={classNames(
         'flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-5',
-        isActive ? 'bg-2 hover-bg-4' : 'bg-1 hover-bg-3',
+        isActive ? 'bg-2 hover-bg-4' : `${special ? 'bg-purple-50 dark:bg-purple-700' : 'bg-1 hover-bg-3'}`,
       )}
       href={href}
       onClick={onClick}

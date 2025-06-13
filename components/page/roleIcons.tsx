@@ -42,18 +42,23 @@ export function RoleIcon({ id, role, size = 18 }: RoleIconProps) {
     return null;
   } else if (!link) {
     return (
-      <span data-tooltip-id={tooltipId} data-tooltip-content={tooltip}>
-        {icon}
-      </span>
-    );
-  } else {
-    return (
-      <Link href={link}>
+      <>
         <span data-tooltip-id={tooltipId} data-tooltip-content={tooltip}>
           {icon}
         </span>
         <StyledTooltip id={tooltipId} />
-      </Link>
+      </>
+    );
+  } else {
+    return (
+      <>
+        <Link href={link}>
+          <span data-tooltip-id={tooltipId} data-tooltip-content={tooltip}>
+            {icon}
+          </span>
+          <StyledTooltip id={tooltipId} />
+        </Link>
+      </>
     );
   }
 }
