@@ -17,6 +17,7 @@ interface ChapterSelectCardBaseProps {
   levelData: string;
   subtitle?: string;
   title: React.ReactNode;
+  compact?: boolean;
 }
 
 export function ChapterSelectCardBase({
@@ -29,12 +30,63 @@ export function ChapterSelectCardBase({
   levelData,
   subtitle,
   title,
+  compact,
 }: ChapterSelectCardBaseProps) {
   const [backgroundImage, setBackgroundImage] = useState<string>();
 
   useEffect(() => {
     setBackgroundImage(getPngDataClient(game.id, levelData));
   }, [game.id, levelData]);
+
+  if (compact) {
+    return (<>
+      <div className='overflow-hidden relative inline-block align-middle max-w-full' style={{
+        width: 280,
+      }}>
+        <div className='wrapper rounded-md overflow-hidden relative w-full' style={{
+          height: Dimensions.OptionHeightSmall,
+        }}>
+          <div
+            className='absolute background rounded-md bg-cover bg-center h-full w-full'
+            style={{
+              backgroundImage: backgroundImage ? 'url("' + backgroundImage + '")' : 'none',
+              opacity: 0.25,
+            }}
+          />
+          <Link
+            className={classNames(
+              'border-2 rounded-md items-center flex justify-center text-center h-full w-full',
+              !disabled ? styles['card-border'] : undefined,
+            )}
+            href={disabled ? '' : href}
+            id={id}
+            passHref
+            style={{
+              borderColor: disabled ? 'var(--color-gray)' : complete ? 'var(--color-complete)' : 'var(--color)',
+              color: complete ? 'var(--color-complete)' : 'var(--color)',
+              textShadow: '1px 1px black',
+            }}
+          >
+            <div className='font-bold break-words p-3 w-full flex flex-col gap-0.5'>
+              <div className='text-xl'>
+                {title}
+              </div>
+              {subtitle &&
+                <div className='text-sm'>
+                  {subtitle}
+                </div>
+              }
+            </div>
+          </Link>
+        </div>
+      </div>
+      {disabled && disabledStr &&
+        <div className='italic -my-3 text-center'>
+          {disabledStr}
+        </div>
+      }
+    </>);
+  }
 
   return (<>
     <div className='overflow-hidden relative inline-block align-middle max-w-full' style={{
@@ -149,13 +201,14 @@ export default function ChapterSelectCard({ chapter, chapterUnlocked, href, titl
   case 4:
     return (
       <ChapterSelectCardBase
-        disabled={!href}
+        disabled={false}
         game={game}
-        href={href ?? '/play'}
+        href={'/campaigns'}
         id='chapter4'
         levelData={'65G9F0G5\nGBJ5GH5I\n50FF25DG\nJ5I5H505'}
-        subtitle={'Coming soon...'}
-        title={titleOverride || 'Chapter 4'}
+        subtitle={'Explore other campaigns'}
+        title={titleOverride || 'Campaigns'}
+        compact
       />
     );
   default:

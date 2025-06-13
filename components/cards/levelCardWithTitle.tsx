@@ -20,21 +20,25 @@ export default function LevelCardWithTitle({ href, id, level, onClick, title, to
   const tooltipId = `recommended-level-${id}`;
 
   return (
-    <section className='flex flex-col items-center gap-3 max-w-full' id={id}>
-      <h2
-        className='px-1 text-xl font-bold'
-        data-tooltip-id={tooltipId}
-        data-tooltip-content={tooltip}
-      >
-        {title}
-      </h2>
-      <LevelCard
-        href={href}
-        id={id}
-        onClick={onClick}
-        level={level}
-      />
-      <StyledTooltip id={tooltipId} />
+    <section className='rounded-xl overflow-hidden transition-all duration-300 shadow-md max-w-full flex flex-col' id={id}>
+      <div className='bg-gradient-to-r from-purple-600 to-blue-600 p-2 text-white'>
+        <h2
+          className='text-xl font-bold text-center'
+          data-tooltip-id={tooltipId}
+          data-tooltip-content={tooltip}
+        >
+          {title}
+        </h2>
+      </div>
+      <div className='bg-white dark:bg-gray-800 p-4 flex flex-col items-center'>
+        <LevelCard
+          href={href}
+          id={id}
+          onClick={onClick}
+          level={level}
+        />
+        <StyledTooltip id={tooltipId} />
+      </div>
     </section>
   );
 }
