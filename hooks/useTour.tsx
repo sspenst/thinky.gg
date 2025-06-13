@@ -96,8 +96,8 @@ export default function useTour(path: TourPath, cb?: (data: CallBackProps) => vo
             putFinishedTour(tourType);
           }
 
-          // Handle scrolling when step changes
-          if (data.type === 'step:after' && data.step?.target) {
+          // Handle scrolling for all steps
+          if ((data.type === 'step:after' || data.type === 'step:before') && data.step?.target) {
             scrollToTarget(data.step.target);
           }
 
