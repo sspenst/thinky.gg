@@ -11,9 +11,10 @@ interface StreakSectionProps {
   gameId: GameId;
   userConfig?: UserConfig;
   hideHeader?: boolean;
+  compact?: boolean;
 }
 
-export default function StreakSection({ gameId, userConfig, hideHeader }: StreakSectionProps) {
+export default function StreakSection({ gameId, userConfig, hideHeader, compact }: StreakSectionProps) {
   const game = getGameFromId(gameId);
   const router = useRouter();
   const { streak, timeToKeepStreak } = userConfig ? getStreak(userConfig) : { streak: 0, timeToKeepStreak: 0 };
@@ -38,6 +39,61 @@ export default function StreakSection({ gameId, userConfig, hideHeader }: Streak
     ((streak - streakRank.min) / (nextRank.min - streakRank.min)) * 100,
     100
   ) : 100;
+
+  if (compact) {
+    return (
+      <div className='flex flex-col w-full'>
+        {!hideHeader && <h4 className='font-medium text-sm text-gray-500 dark:text-gray-400'>Streak</h4>}
+        <div
+          onClick={() => {
+            const game = getGameFromId(gameId);
+
+            router.push(`${game.baseUrl}/search`);
+          }}
+          className={`
+            cursor-pointer w-full rounded-lg overflow-hidden transition-all duration-300
+            ${!hasPlayedToday && streak > 0
+        ? 'ring-2 ring-yellow-400 shadow-lg shadow-yellow-200/50 hover:shadow-xl hover:scale-[1.02]'
+        : 'hover:shadow-md hover:scale-[1.01]'}
+          `}
+        >
+          <div className='bg-gradient-to-r from-purple-600 to-blue-600 p-2 text-white'>
+            <div className='flex items-center justify-between'>
+              <div className='flex items-center gap-2'>
+                <GameLogo gameId={gameId} id={gameId + '-streak'} size={16} />
+                <span className='font-medium text-sm'>{game.displayName} Streak</span>
+              </div>
+              <div className='bg-white/20 px-2 py-0.5 rounded-full text-sm font-medium'>
+                {streak} day{streak === 1 ? '' : 's'}
+              </div>
+            </div>
+          </div>
+          <div className='bg-white dark:bg-gray-800 p-2'>
+            {streak === 0 ? (
+              <div className='flex items-center justify-between text-sm'>
+                <span>Start your streak today!</span>
+                <span>🎯</span>
+              </div>
+            ) : (
+              <div className='flex items-center justify-between'>
+                <div className='flex items-center gap-2'>
+                  <span className='text-lg'>{streakRank.emoji}</span>
+                  <span className='text-sm font-medium'>{streakRank.title}</span>
+                </div>
+                <div className={`text-xs font-medium ${!hasPlayedToday && streak > 0 && timeToKeepStreak > 0 ? 'text-yellow-600 dark:text-yellow-400' : 'text-green-600 dark:text-green-400'}`}>
+                  {!hasPlayedToday && streak > 0 && timeToKeepStreak > 0
+                    ? `Play within ${Math.ceil(timeToKeepStreak / (1000 * 60 * 60))}h`
+                    : hasPlayedToday
+                      ? 'Played today! 🌟'
+                      : 'Start streak!'}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className='flex flex-col w-full'>
