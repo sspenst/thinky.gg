@@ -88,8 +88,6 @@ export default function TutorialPathology() {
     if (tutorialStepIndex > tutorialStepIndexMax) {
       setTutorialStepIndexMax(tutorialStepIndex);
     }
-
-    sessionStorage.setItem('tutorialStep-Pathology', tutorialStepIndex.toString());
   }, [tutorialStepIndex, tutorialStepIndexMax]);
 
   const initializeTooltip = useCallback((tooltips: Tooltip[] | undefined) => {
@@ -181,13 +179,17 @@ export default function TutorialPathology() {
 
     globalTimeout.current = setTimeout(() => {
       setShowNiceJob(false);
+      sessionStorage.setItem('tutorialStep-Pathology', (tutorialStepIndex + 1).toString());
       setTutorialStepIndex(i => i + 1);
     }, 1500);
-  }, []);
+  }, [tutorialStepIndex]);
 
   const prevControl = useCallback((disabled = false) => new Control(
     'control-prev',
-    () => setTutorialStepIndex(i => i - 1),
+    () => {
+      setTutorialStepIndex(i => i - 1);
+      sessionStorage.setItem('tutorialStep-Pathology', (tutorialStepIndex - 1).toString());
+    },
     <div className='flex justify-center'>
       <svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='currentColor' className='bi bi-arrow-left-short' viewBox='0 0 16 16'>
         <path fillRule='evenodd' d='M12 8a.5.5 0 0 1-.5.5H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5H11.5a.5.5 0 0 1 .5.5z' />
@@ -197,11 +199,14 @@ export default function TutorialPathology() {
       </span>
     </div>,
     disabled,
-  ), []);
+  ), [tutorialStepIndex]);
 
   const nextControl = useCallback((disabled = false) => new Control(
     'control-next',
-    () => setTutorialStepIndex(i => i + 1),
+    () => {
+      setTutorialStepIndex(i => i + 1);
+      sessionStorage.setItem('tutorialStep-Pathology', (tutorialStepIndex + 1).toString());
+    },
     <div className='flex justify-center text-black'>
       <span className='pl-2 self-center'>
         Next
@@ -212,7 +217,7 @@ export default function TutorialPathology() {
     </div>,
     disabled,
     !disabled,
-  ), []);
+  ), [tutorialStepIndex]);
 
   const getTutorialSteps = useCallback(() => {
     return [
@@ -245,6 +250,10 @@ export default function TutorialPathology() {
 
           if (manhattanDistance <= 5) {
             msg = manhattanDistance + ' steps left!';
+
+            if (manhattanDistance <= 0) {
+              msg = 'You get the idea!';
+            }
           }
 
           // change the tooltip-1 title to 'Almost there!'
@@ -555,6 +564,8 @@ export default function TutorialPathology() {
     () => {
       if (confirm('Are you sure you want to skip the tutorial?')) {
         setTutorialStepIndex(() => {
+          sessionStorage.setItem('tutorialStep-Pathology', (getTutorialSteps().length - 1).toString());
+
           return getTutorialSteps().length - 1;
         });
       }
