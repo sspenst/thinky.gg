@@ -86,11 +86,6 @@ export default function Home({
     <div className='flex flex-col gap-4 w-full'>
       <div className='grid grid-cols-2 md:grid-cols-4 gap-2'>
         <QuickActionButton
-          href='/'
-          icon='🏠'
-          text='Home'
-        />
-        <QuickActionButton
           href='/search'
           icon='🔍'
           text='Browse Levels'
