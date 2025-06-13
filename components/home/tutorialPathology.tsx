@@ -3,7 +3,6 @@
 import { createPopper, Instance, Placement } from '@popperjs/core';
 import styles from '@root/components/level/Controls.module.css';
 import { directionToVector } from '@root/constants/direction';
-import { GameId } from '@root/constants/GameId';
 import TileType from '@root/constants/tileType';
 import { GameState } from '@root/helpers/gameStateHelpers';
 import classNames from 'classnames';
@@ -16,7 +15,6 @@ import { TimerUtil } from '../../helpers/getTs';
 import Control from '../../models/control';
 import Level from '../../models/db/level';
 import Position from '../../models/position';
-import GameLogo from '../gameLogo';
 import BasicLayout from '../level/basicLayout';
 import Controls from '../level/controls';
 import Game from '../level/game';
@@ -71,8 +69,6 @@ export default function TutorialPathology() {
   const [popperInstance, setPopperInstance] = useState<Instance | null>(null);
   const popperUpdateInterval = useRef<NodeJS.Timeout | null>(null);
   const [showNiceJob, setShowNiceJob] = useState(false);
-  const [tooltipIndex, setTooltipIndex] = useState(0);
-  const [activeTooltips, setActiveTooltips] = useState<number[]>([]);
   const [tooltips, setTooltips] = useState<Tooltip[] | undefined>(undefined);
   const [tutorialStepIndex, setTutorialStepIndex] = useState(0);
   const [tutorialStepIndexMax, setTutorialStepIndexMax] = useState(0);
@@ -86,23 +82,14 @@ export default function TutorialPathology() {
   const MOVABLE_EXPLAIN_END_COVER = '00100\n04232\n01010\n00000';
   const RESTRICTED_MOVABLES = '00000\n060E0\n00000\n0D0I0\n00000';
   const RESTRICTED_MOVABLES_EXPLAIN = '4010010\n070C000\n0010013';
-  const HOLES_EXPLAIN = '000010\n000053\n000010\n000011';
   const HOLES_INTRO = '000010\n080053\n000010\n004011';
-
-  useEffect(() => {
-    const sessionStorageTutorialStep = sessionStorage.getItem('tutorialStep');
-
-    if (sessionStorageTutorialStep) {
-      setTutorialStepIndex(parseInt(sessionStorageTutorialStep));
-    }
-  }, []);
 
   useEffect(() => {
     if (tutorialStepIndex > tutorialStepIndexMax) {
       setTutorialStepIndexMax(tutorialStepIndex);
     }
 
-    sessionStorage.setItem('tutorialStep', tutorialStepIndex.toString());
+    sessionStorage.setItem('tutorialStep-Pathology', tutorialStepIndex.toString());
   }, [tutorialStepIndex, tutorialStepIndexMax]);
 
   const initializeTooltip = useCallback((tooltips: Tooltip[] | undefined) => {
@@ -554,6 +541,15 @@ export default function TutorialPathology() {
     ] as TutorialStep[];
   }, [deviceInfo.isMobile, isLoggedIn, niceJob]);
 
+  useEffect(() => {
+    const sessionStorageTutorialStep = sessionStorage.getItem('tutorialStep-Pathology');
+
+    if (sessionStorageTutorialStep) {
+      const intStep = parseInt(sessionStorageTutorialStep);
+
+      setTutorialStepIndex(Math.max(0, Math.min(intStep, getTutorialSteps().length - 1)));
+    }
+  }, [getTutorialSteps]);
   const skipControl = useCallback(() => new Control(
     'control-skip',
     () => {

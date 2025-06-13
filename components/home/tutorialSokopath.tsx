@@ -1,7 +1,6 @@
 /* istanbul ignore file */
 
 import { createPopper, Instance, Placement } from '@popperjs/core';
-import { GameId } from '@root/constants/GameId';
 import { GameState } from '@root/helpers/gameStateHelpers';
 import classNames from 'classnames';
 import { Types } from 'mongoose';
@@ -12,7 +11,6 @@ import { AppContext } from '../../contexts/appContext';
 import { TimerUtil } from '../../helpers/getTs';
 import Control from '../../models/control';
 import Level from '../../models/db/level';
-import GameLogo from '../gameLogo';
 import BasicLayout from '../level/basicLayout';
 import Controls from '../level/controls';
 import Game from '../level/game';
@@ -74,29 +72,17 @@ export default function TutorialSokopath() {
   const [tutorialStepIndexMax, setTutorialStepIndexMax] = useState(0);
   const isLoggedIn = !!user;
 
-  const BLANK_GRID = '00000\n00000\n00000\n00000\n00000';
-  const GRID_WITH_PLAYER = '00000\n00000\n00400\n00000\n00000';
-  const LEVEL_1_ONLY_END = '00000\n00000\n00030\n00000\n00000';
-  const LEVEL_1_ONLY_BLOCK = '00000\n00000\n00230\n00000\n00000';
   const LEVEL_1 = '00040\n00000\n00230\n00000\n00000';
   const WALL_INTRO = '0000\n0100\n4200\n0030';
   const MOVABLE_EXPLAIN = '41310\n00223\n01010\n00011';
   const MOVABLE_EXPLAIN_END_COVER = '0000\n4K30\n0210\n0400';
 
   useEffect(() => {
-    const sessionStorageTutorialStep = sessionStorage.getItem('tutorialStep');
-
-    if (sessionStorageTutorialStep) {
-      setTutorialStepIndex(parseInt(sessionStorageTutorialStep));
-    }
-  }, []);
-
-  useEffect(() => {
     if (tutorialStepIndex > tutorialStepIndexMax) {
       setTutorialStepIndexMax(tutorialStepIndex);
     }
 
-    sessionStorage.setItem('tutorialStep', tutorialStepIndex.toString());
+    sessionStorage.setItem('tutorialStep-Sokopath', tutorialStepIndex.toString());
   }, [tutorialStepIndex, tutorialStepIndexMax]);
 
   const initializeTooltip = useCallback((tooltip: Tooltip | undefined) => {
@@ -298,6 +284,15 @@ export default function TutorialSokopath() {
     ] as TutorialStep[];
   }, [game.disableCampaign, isLoggedIn, niceJob]);
 
+  useEffect(() => {
+    const sessionStorageTutorialStep = sessionStorage.getItem('tutorialStep-Sokopath');
+
+    if (sessionStorageTutorialStep) {
+      const intStep = parseInt(sessionStorageTutorialStep);
+
+      setTutorialStepIndex(Math.max(0, Math.min(intStep, getTutorialSteps().length - 1)));
+    }
+  }, [getTutorialSteps]);
   const skipControl = useCallback(() => new Control(
     'control-skip',
     () => {
