@@ -81,8 +81,6 @@ export default function TutorialSokopath() {
     if (tutorialStepIndex > tutorialStepIndexMax) {
       setTutorialStepIndexMax(tutorialStepIndex);
     }
-
-    sessionStorage.setItem('tutorialStep-Sokopath', tutorialStepIndex.toString());
   }, [tutorialStepIndex, tutorialStepIndexMax]);
 
   const initializeTooltip = useCallback((tooltip: Tooltip | undefined) => {
@@ -181,12 +179,16 @@ export default function TutorialSokopath() {
     globalTimeout.current = setTimeout(() => {
       setShowNiceJob(false);
       setTutorialStepIndex(i => i + 1);
+      sessionStorage.setItem('tutorialStep-Sokopath', (tutorialStepIndex + 1).toString());
     }, 1500);
-  }, []);
+  }, [tutorialStepIndex]);
 
   const prevControl = useCallback((disabled = false) => new Control(
     'control-prev',
-    () => setTutorialStepIndex(i => i - 1),
+    () => {
+      setTutorialStepIndex(i => i - 1);
+      sessionStorage.setItem('tutorialStep-Sokopath', (tutorialStepIndex - 1).toString());
+    },
     <div className='flex justify-center'>
       <svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='currentColor' className='bi bi-arrow-left-short' viewBox='0 0 16 16'>
         <path fillRule='evenodd' d='M12 8a.5.5 0 0 1-.5.5H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5H11.5a.5.5 0 0 1 .5.5z' />
@@ -196,11 +198,14 @@ export default function TutorialSokopath() {
       </span>
     </div>,
     disabled,
-  ), []);
+  ), [tutorialStepIndex]);
 
   const nextControl = useCallback((disabled = false) => new Control(
     'control-next',
-    () => setTutorialStepIndex(i => i + 1),
+    () => {
+      setTutorialStepIndex(i => i + 1);
+      sessionStorage.setItem('tutorialStep-Sokopath', (tutorialStepIndex + 1).toString());
+    },
     <div className='flex justify-center text-black'>
       <span className='pl-2 self-center'>
         Next
@@ -211,7 +216,7 @@ export default function TutorialSokopath() {
     </div>,
     disabled,
     !disabled,
-  ), []);
+  ), [tutorialStepIndex]);
 
   const getTutorialSteps = useCallback(() => {
     return [
@@ -221,6 +226,10 @@ export default function TutorialSokopath() {
         header: <><div key='tutorial-level-1-header' className='text-3xl fadeIn'>Try to complete your first level!</div><div className='text-xl'>Push the box onto the goal.</div></>,
         key: 'tutorial-level-1',
         level: getLevel(LEVEL_1),
+        isNextButtonDisabled: true,
+        onSolve: () => {
+          setIsNextButtonDisabled(false);
+        },
         onComplete: niceJob,
       },
       {
@@ -229,6 +238,9 @@ export default function TutorialSokopath() {
         header: <div key='tutorial-wall-header' className='text-3xl fadeIn'>Try completing another level.</div>,
         key: 'tutorial-wall',
         level: getLevel(WALL_INTRO),
+        onSolve: () => {
+          setIsNextButtonDisabled(false);
+        },
         onComplete: niceJob,
         tooltip: { canClose: true, target: '.tile-type-1', title: <div>You cannot walk through walls</div> },
       },
@@ -238,6 +250,9 @@ export default function TutorialSokopath() {
         header: <div key='tutorial-movable-explain-header' className='text-3xl fadeIn'>You can only push one box at a time.</div>,
         key: 'tutorial-movable-explain',
         level: getLevel(MOVABLE_EXPLAIN),
+        onSolve: () => {
+          setIsNextButtonDisabled(false);
+        },
         onComplete: niceJob,
       },
       {
@@ -246,6 +261,9 @@ export default function TutorialSokopath() {
         header: <><div key='tutorial-level-1-coverexit' className='text-3xl fadeIn'>Complete the final level of the tutorial!</div></>,
         key: 'tutorial-movable-explain-end-cover',
         level: getLevel(MOVABLE_EXPLAIN_END_COVER),
+        onSolve: () => {
+          setIsNextButtonDisabled(false);
+        },
         onComplete: niceJob,
       },
       {
@@ -298,6 +316,8 @@ export default function TutorialSokopath() {
     () => {
       if (confirm('Are you sure you want to skip the tutorial?')) {
         setTutorialStepIndex(() => {
+          sessionStorage.setItem('tutorialStep-Sokopath', (getTutorialSteps().length - 1).toString());
+
           return getTutorialSteps().length - 1;
         });
       }
@@ -374,7 +394,7 @@ export default function TutorialSokopath() {
       const nextId = document.getElementById('control-next') as HTMLButtonElement;
 
       // if nextId doesn't have class pointer-events-none
-      if (nextId) {
+      if (nextId && !isNextButtonDisabled) {
         if (!nextId.classList.contains('pointer-events-none')) {
           setTimeout(() => {
             nextId.classList.add('bg-orange-300');
@@ -409,6 +429,7 @@ export default function TutorialSokopath() {
       'restart',
       () => {
         setTutorialStepIndex(0);
+        sessionStorage.setItem('tutorialStep-Sokopath', '0');
 
         return;
       },
