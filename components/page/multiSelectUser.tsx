@@ -38,7 +38,7 @@ export default function MultiSelectUser({ className, controlStyles, defaultValue
 
   return <AsyncSelect
     backspaceRemovesValue={true}
-    className={classNames('', className)}
+    className={classNames('text-left text-base', className)}
     components={{
       DropdownIndicator: null,
       IndicatorSeparator: null,
@@ -76,11 +76,11 @@ export default function MultiSelectUser({ className, controlStyles, defaultValue
         ...provided,
         backgroundColor: 'var(--bg-color)',
         borderColor: state.isFocused ? 'rgb(59 130 246)' : 'var(--bg-color-3)',
-        borderRadius: '0.35rem',
+        borderRadius: '0.25rem',
         borderWidth: '1px',
         boxShadow: 'none',
         cursor: 'text',
-        height: 42,
+        height: 44,
         maxWidth: '100%',
         minWidth: '100%',
         '&:hover': {

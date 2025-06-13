@@ -18,6 +18,7 @@ import FormattedUser from '../formatted/formattedUser';
 import GameLogo from '../gameLogo';
 import MultiSelectUser from '../page/multiSelectUser';
 import QuickActionButton from '../quickActionButton';
+import StreakSection from '../streak/streakSection';
 import { StreakCalendar } from './streakCalendar';
 
 interface StreakDisplayProps {
@@ -274,7 +275,7 @@ export function ThinkyHomePageLoggedIn({ user }: { user: User }) {
                   {/* Streak Display */}
                   {userConfig && (
                     <div className='mt-4'>
-                      <StreakDisplay streak={streak} timeToKeepStreak={timeToKeepStreak} gameId={game.id} userConfig={userConfig} />
+                      <StreakSection gameId={game.id} userConfig={userConfig} />
                     </div>
                   )}
                 </div>

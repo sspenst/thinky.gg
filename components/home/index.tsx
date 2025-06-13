@@ -22,6 +22,7 @@ import FormattedReview from '../level/reviews/formattedReview';
 import LoadingSpinner from '../page/loadingSpinner';
 import MultiSelectUser from '../page/multiSelectUser';
 import QuickActionButton from '../quickActionButton';
+import StreakSection from '../streak/streakSection';
 import UpsellFullAccount from './upsellFullAccount';
 
 interface HomeProps {
@@ -82,50 +83,56 @@ export default function Home({
   const { connectedPlayersCount, matches, socket } = multiplayerSocket;
 
   const buttonsSection = (
-    <div className='grid grid-cols-2 gap-2'>
-      {!game.disableRanked && <QuickActionButton
-        href='/ranked'
-        icon='🏆'
-        text='Ranked'
-      />}
-      {!game.disableMultiplayer &&
+    <div className='flex flex-col gap-4 w-full'>
+      <div className='grid grid-cols-2 md:grid-cols-4 gap-2'>
         <QuickActionButton
+          href='/'
+          icon='🏠'
+          text='Home'
+        />
+        <QuickActionButton
+          href='/search'
+          icon='🔍'
+          text='Browse Levels'
+        />
+        <QuickActionButton
+          href='/create'
+          icon='🎨'
+          text='Create'
+        />
+        {!game.disableRanked && <QuickActionButton
+          href='/ranked'
+          icon='🏆'
+          text='Ranked'
+        />}
+        {!game.disableMultiplayer && <QuickActionButton
           href='/multiplayer'
           icon='👥'
           text='Multiplayer'
           subtitle={!socket?.connected ? 'Connecting...' : `${connectedPlayersCount} player${connectedPlayersCount !== 1 ? 's' : ''} online${matches.length > 0 ? ` • ${matches.length} current match${matches.length === 1 ? '' : 'es'}` : ''}`}
+        />}
+        <QuickActionButton
+          href='/users'
+          icon='👥'
+          text='Users'
         />
-      }
-      <QuickActionButton
-        href='/create'
-        icon='🎨'
-        text='Create Level'
-      />
-    </div>
-  );
+        {!game.disableCommunityCampaigns && <QuickActionButton
+          href='/campaigns'
+          icon='📚'
+          text='Community Campaigns'
+        />}
+        <QuickActionButton
+          href='/leaderboards'
+          icon='🏆'
+          text='Leaderboards'
+        />
+        <QuickActionButton
+          href='/tutorial'
+          icon='🎓'
+          text='Tutorial'
+        />
+      </div>
 
-  const buttonsSections2 = (
-    <div className='grid grid-cols-2 md:grid-cols-4 gap-2'>
-      <QuickActionButton
-        href='/users'
-        icon='👥'
-        text='Users'
-      />
-      {!game.disableCommunityCampaigns && <QuickActionButton
-        href='/campaigns'
-        icon='📚'
-        text='Community Campaigns'
-      />}
-      <QuickActionButton
-        href='/leaderboards'
-        icon='🏆'
-        text='Leaderboards'
-      />
-      <QuickActionButton
-        href='/tutorial'
-        icon='🎓'
-        text='Tutorial'
-      />
     </div>
   );
 
@@ -139,6 +146,7 @@ export default function Home({
           {user && buttonsSection}
         </div>
         <div className='flex flex-wrap justify-center gap-6 max-w-full'>
+          {userConfig && <div className='flex flex-col  w-80 justify-center items-center mx-auto'><StreakSection hideHeader gameId={game.id} userConfig={userConfig} /></div>}
           <LevelCardWithTitle
             id='level-of-day'
             level={levelOfDay}
@@ -167,7 +175,6 @@ export default function Home({
             tooltip='Resume your last play. Click to see your play history.'
           />}
         </div>
-        {buttonsSections2}
         <div className='flex items-center justify-center'>
           <div className='flex flex-col'>
             <div className='flex items-center'>
