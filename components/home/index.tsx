@@ -140,8 +140,8 @@ export default function Home({
           {getSuggestedAction()}
           {user && buttonsSection}
         </div>
+        {userConfig && <div className='flex flex-col w-100 max-w-full justify-center items-center mx-auto'><StreakSection hideHeader gameId={game.id} userConfig={userConfig} /></div>}
         <div className='flex flex-wrap justify-center gap-6 max-w-full'>
-          {userConfig && <div className='flex flex-col  w-80 justify-center items-center mx-auto'><StreakSection hideHeader gameId={game.id} userConfig={userConfig} /></div>}
           <LevelCardWithTitle
             id='level-of-day'
             level={levelOfDay}
