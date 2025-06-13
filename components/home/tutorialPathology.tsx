@@ -7,6 +7,7 @@ import { GameId } from '@root/constants/GameId';
 import TileType from '@root/constants/tileType';
 import { GameState } from '@root/helpers/gameStateHelpers';
 import classNames from 'classnames';
+import { ArrowBigDown } from 'lucide-react';
 import { Types } from 'mongoose';
 import Link from 'next/link';
 import React, { JSX, useCallback, useContext, useEffect, useRef, useState } from 'react';
@@ -41,7 +42,7 @@ interface TutorialStep {
   onSolve?: () => void;
   // number of steps back using the previous button
   prevSteps?: number;
-  tooltip?: Tooltip;
+  tooltips?: Tooltip[];
 }
 
 export default function TutorialPathology() {
@@ -70,14 +71,13 @@ export default function TutorialPathology() {
   const [popperInstance, setPopperInstance] = useState<Instance | null>(null);
   const popperUpdateInterval = useRef<NodeJS.Timeout | null>(null);
   const [showNiceJob, setShowNiceJob] = useState(false);
-  const [tooltip, setTooltip] = useState<Tooltip>();
+  const [tooltipIndex, setTooltipIndex] = useState(0);
+  const [activeTooltips, setActiveTooltips] = useState<number[]>([]);
+  const [tooltips, setTooltips] = useState<Tooltip[] | undefined>(undefined);
   const [tutorialStepIndex, setTutorialStepIndex] = useState(0);
   const [tutorialStepIndexMax, setTutorialStepIndexMax] = useState(0);
   const isLoggedIn = !!user;
 
-  const BLANK_GRID = '0000000\n0000000\n0000000\n0000000\n0000000';
-  const GRID_WITH_PLAYER = '0000000\n0000000\n0004000\n0000000\n0000000';
-  const LEVEL_1_ONLY_END = '000000\n000000\n000000\n000030\n000000';
   const LEVEL_1 = '000000\n040000\n000000\n000030\n000000';
   const WALL_INTRO = '00000\n00100\n40100\n00103\n00000';
   const MULTIPLE_ENDS = '0000100\n0400000\n0001003\n0000000\n0100030\n0000000\n0303000';
@@ -105,68 +105,63 @@ export default function TutorialPathology() {
     sessionStorage.setItem('tutorialStep', tutorialStepIndex.toString());
   }, [tutorialStepIndex, tutorialStepIndexMax]);
 
-  const initializeTooltip = useCallback((tooltip: Tooltip | undefined) => {
-    // set opacity of tooltip to 0
-    const tooltipEl = document.getElementById('tooltip');
+  const initializeTooltip = useCallback((tooltips: Tooltip[] | undefined) => {
+    setTooltips(tooltips);
 
-    if (tooltipEl) {
-      tooltipEl.style.opacity = '0';
-      tooltipEl.style.display = 'none';
-    }
-
-    if (tooltip) {
-      // loop every 1ms until DOM has loeaded, then show the tooltip
+    if (tooltips && tooltips.length > 0) {
+      // loop every 1ms until DOM has loaded, then show all tooltips
       const popperI = setInterval(() => {
-        if (!tooltip) {
+        if (!tooltips || tooltips.length === 0) {
           return;
         }
 
-        const tooltipEl = document.getElementById('tooltip');
+        tooltips.forEach((tooltip, index) => {
+          const tooltipEl = document.getElementById(`tooltip-${index}`);
 
-        if (!tooltipEl) {
-          return;
-        }
+          if (!tooltipEl) {
+            return;
+          }
 
-        const target = document.querySelector(tooltip.target);
-        // get y position of target
-        const targetY = target?.getBoundingClientRect().top;
+          const target = document.querySelector(tooltip.target);
+          // get y position of target
+          const targetY = target?.getBoundingClientRect().top;
 
-        if (!targetY) {
-          tooltipEl.style.opacity = '0';
-          tooltipEl.style.display = 'none';
+          if (!targetY) {
+            tooltipEl.style.opacity = '0';
+            tooltipEl.style.display = 'none';
 
-          return;
-        }
+            return;
+          }
 
-        tooltipEl.style.opacity = '0.9';
-        tooltipEl.style.display = 'block';
+          tooltipEl.style.opacity = '0.9';
+          tooltipEl.style.display = 'block';
 
-        const instance = createPopper(target, tooltipEl, {
-          placement: tooltip.dir || 'top',
-          modifiers: [
-            {
-              name: 'flip',
-              options: {
-                boundary: document.querySelector('#tutorial-container'),
-                fallbackPlacements: ['bottom'],
+          const instance = createPopper(target, tooltipEl, {
+            placement: tooltip.dir || 'top',
+            modifiers: [
+              {
+                name: 'flip',
+                options: {
+                  boundary: document.querySelector('#tutorial-container'),
+                  fallbackPlacements: ['bottom'],
+                },
               },
-            },
-            {
-              name: 'offset',
-              options: {
-                offset: [0, 10],
+              {
+                name: 'offset',
+                options: {
+                  offset: [0, 10],
+                },
               },
-            },
-          ]
+            ]
+          });
+
+          setPopperInstance(instance);
         });
 
         clearInterval(popperI);
-        setPopperInstance(instance);
-        setTooltip(tooltip);
       }, 1);
     } else {
       setPopperInstance(null);
-      setTooltip(undefined);
     }
   }, []);
 
@@ -179,7 +174,6 @@ export default function TutorialPathology() {
       tooltipEl.style.display = 'none';
     }
 
-    setTooltip(undefined);
     setPopperInstance(null);
     setShowNiceJob(true);
 
@@ -235,44 +229,23 @@ export default function TutorialPathology() {
 
   const getTutorialSteps = useCallback(() => {
     return [
-      {
-        hasNext: true,
-        header: <>
-          <div className='flex flex-col gap-6 items-center text-3xl fadeIn'>
-            <GameLogo gameId={GameId.PATHOLOGY} id='tutorial' size={32} />
-            <span>Welcome to the Pathology tutorial!</span>
-          </div>
-          <div className='text-xl fadeIn' style={{
-            animationDelay: '1s',
-          }}>In this tutorial you will be walked through the basics of the game.</div>
-        </>,
-      },
-      {
-        editorGrid: true,
-        gameClasses: 'fadeIn',
-        header: <div key='tutorial-blank-grid-header' className='text-3xl fadeIn'><span className='font-medium'>Pathology</span> is a grid-based puzzle game.</div>,
-        key: 'tutorial-blank-grid',
-        level: getLevel(BLANK_GRID),
-      },
-      {
-        editorGrid: true,
-        header: <div key='tutorial-player-intro-header' className='text-2xl'>That square in the middle is the <span className='font-bold'>Player</span> you will be controlling.</div>,
-        key: 'tutorial-player-intro',
-        level: getLevel(GRID_WITH_PLAYER),
-        tooltip: { target: '.tile-type-4', title: <div>Player</div> },
-      },
+
       {
         gameGrid: true,
-        header: <div className='flex gap-2 items-center' key='tutorial-player-intro-header-2'>
-          {deviceInfo.isMobile && <video autoPlay loop muted playsInline className='w-80 h-40' src='https://i.imgur.com/7sYpgCt.mp4' />}
-          <span className='text-2xl'>Try moving around using the arrow keys (or swipe with mobile).</span>
+        header: <div className='flex flex-row items-center gap-4'>
+          <div><div className='text-3xl'>Pathology</div>
+            <div className='text-xl'>Starting at the pink block, reach the white exit block in the <b>shortest</b> number of steps.</div>
+          </div>
+          {deviceInfo.isMobile && <video autoPlay loop muted playsInline className='w-80 h-40 rounded-xl' src='https://i.imgur.com/7sYpgCt.mp4' />}
         </div>,
-        isNextButtonDisabled: true,
-        key: 'tutorial-player-intro',
-        level: getLevel(GRID_WITH_PLAYER),
-        onMove: () => {
-          // set tooltip text to Good!
-          const tooltipEl = document.getElementById('tooltip');
+        key: 'tutorial-level-1',
+        level: getLevel(LEVEL_1, { leastMoves: 5 }),
+        onMove: (gameState: GameState) => {
+          const undoButton = document.getElementById('btn-undo') as HTMLButtonElement;
+
+          // get manhattan distance to the exit
+          const manhattanDistance = Math.abs(gameState.pos.x - 4) + Math.abs(gameState.pos.y - 3);
+          const tooltipEl = document.getElementById('tooltip-0');
 
           if (tooltipEl) {
             tooltipEl.innerHTML = 'Good!';
@@ -280,161 +253,15 @@ export default function TutorialPathology() {
             tooltipEl.classList.add('fadeOut');
           }
 
-          setIsNextButtonDisabled(false);
-        },
-        tooltip: { canClose: true, target: '#player', title: <div className='flex'>
-          {
-            !deviceInfo.isMobile ? (
-              <svg
-                xmlns='http://www.w3.org/2000/svg'
-                xmlnsXlink='http://www.w3.org/1999/xlink'
-                width='100'
-                height='68'
-                version='1'
-              >
-                <defs>
-                  <linearGradient id='shadow'>
-                    <stop offset='0' stopColor='#fff' stopOpacity='1' />
-                    <stop offset='1' stopColor='#000' stopOpacity='1' />
-                  </linearGradient>
-                  <linearGradient
-                    id='shadow1'
-                    x1='50'
-                    x2='50'
-                    y1='1'
-                    y2='15.383'
-                    gradientUnits='userSpaceOnUse'
-                    spreadMethod='pad'
-                    xlinkHref='#shadow'
-                  />
-                  <linearGradient
-                    id='shadow2'
-                    x1='0'
-                    x2='15.829'
-                    y1='34.283'
-                    y2='49.895'
-                    gradientUnits='userSpaceOnUse'
-                    spreadMethod='pad'
-                    xlinkHref='#shadow'
-                  />
-                </defs>
-                <rect
-                  id='up'
-                  width='31'
-                  height='31'
-                  x='34.5'
-                  y='1.5'
-                  fill='url(#shadow1)'
-                  fillOpacity='1'
-                  stroke='#000'
-                  strokeDasharray='none'
-                  strokeDashoffset='0'
-                  strokeLinecap='round'
-                  strokeLinejoin='round'
-                  strokeMiterlimit='4'
-                  strokeOpacity='1'
-                  strokeWidth='1'
-                  rx='5.75'
-                  ry='5.75'
-                />
-                <rect
-                  id='left'
-                  width='31'
-                  height='31'
-                  x='1.5'
-                  y='34.5'
-                  fill='url(#shadow2)'
-                  fillOpacity='1'
-                  stroke='#000'
-                  strokeDasharray='none'
-                  strokeDashoffset='0'
-                  strokeLinecap='round'
-                  strokeLinejoin='round'
-                  strokeMiterlimit='4'
-                  strokeOpacity='1'
-                  strokeWidth='1'
-                  rx='5.75'
-                  ry='5.75'
-                />
-                <use
-                  width='100'
-                  height='66'
-                  x='0'
-                  y='0'
-                  transform='matrix(.99943 0 0 .99942 .028 33.01)'
-                  xlinkHref='#up'
-                />
-                <use
-                  width='100'
-                  height='66'
-                  x='0'
-                  y='0'
-                  transform='matrix(-1 0 0 1 100 0)'
-                  xlinkHref='#left'
-                />
-                <path
-                  id='up_arrow'
-                  fill='#fff'
-                  fillOpacity='0.5'
-                  stroke='none'
-                  strokeDasharray='none'
-                  strokeDashoffset='0'
-                  strokeLinecap='round'
-                  strokeLinejoin='round'
-                  strokeMiterlimit='4'
-                  strokeOpacity='1'
-                  strokeWidth='1'
-                  d='M45.778 9h8.444C58.436 9.445 58 13.5 58 16.655c.074 3.469.587 7.603-3.778 8.345h-8.444C41.453 24.524 42 20.258 42 17.034 41.905 13.63 41.537 9.72 45.778 9zm-1.056 11.708l10.556-.125-5.39-9.07-5.166 9.195z'
-                />
-                <use
-                  width='100'
-                  height='66'
-                  x='0'
-                  y='0'
-                  transform='rotate(-90 50.25 50.25)'
-                  xlinkHref='#up_arrow'
-                />
-                <use
-                  width='100'
-                  height='66'
-                  x='0'
-                  y='0'
-                  transform='matrix(1 0 0 -1 0 67.5)'
-                  xlinkHref='#up_arrow'
-                />
-                <use
-                  width='100'
-                  height='66'
-                  x='0'
-                  y='0'
-                  transform='rotate(90 49.75 50.25)'
-                  xlinkHref='#up_arrow'
-                />
-              </svg>
-            ) : (
-              <div>Swipe up, down, left, or right to move your player</div>
-            )}
-        </div>
-        },
-      },
-      {
-        editorGrid: true,
-        gameClasses: 'fadeIn',
-        header: <>
-          <div className='text-3xl'>This is an exit.</div>
-          <div className='text-xl'>Your goal is to reach it in the specified number of moves.</div>
-        </>,
-        key: 'tutorial-level-1-only-end',
-        level: getLevel(LEVEL_1_ONLY_END, { leastMoves: 5 }),
-        tooltip: { target: '.tile-type-3', title: <div>Exit</div>, dir: 'top' },
-      },
-      {
-        gameGrid: true,
-        header: <div key='tutorial-level-1-header' className='text-3xl fadeIn'>Try solving your first level!</div>,
-        key: 'tutorial-level-1',
-        level: getLevel(LEVEL_1, { leastMoves: 5 }),
-        onMove: (gameState: GameState) => {
-          const undoButton = document.getElementById('btn-undo') as HTMLButtonElement;
+          // fade out all tooltips
+          let msg = 'Wrong way!';
+
+          if (manhattanDistance <= 5) {
+            msg = manhattanDistance + ' steps left!';
+          }
+
+          // change the tooltip-1 title to 'Almost there!'
+          const tooltipEl2 = document.getElementById('tooltip-1');
 
           // NB: advanced undo notification for the very first level
           // notify the user to undo if they have gone past the exit (too far right or down)
@@ -444,13 +271,163 @@ export default function TutorialPathology() {
 
             return pos.equals(new Position(-1, 0)) || pos.equals(new Position(0, -1));
           })) {
+            msg = 'Wrong way!';
             undoButton?.classList.add(styles['highlight-red']);
           } else {
             undoButton?.classList.remove(styles['highlight-red']);
           }
+
+          if (tooltipEl2) {
+            tooltipEl2.innerHTML = msg;
+
+            // add fade out class
+            if (manhattanDistance <= 0) {
+              tooltipEl2.classList.add('fadeOut');
+            }
+          }
         },
         onSolve: niceJob,
-        tooltip: { canClose: true, target: '.tile-type-3', title: <div>Move the Player here in 5 moves</div>, dir: 'bottom' },
+        tooltips: [
+          {
+            target: '#player',
+            title: <div className='flex'>
+              {
+                /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(typeof window !== 'undefined' ? navigator.userAgent : '') === false ? (
+                  <svg
+                    xmlns='http://www.w3.org/2000/svg'
+                    xmlnsXlink='http://www.w3.org/1999/xlink'
+                    width='100'
+                    height='68'
+                    version='1'
+                  >
+                    <defs>
+                      <linearGradient id='shadow'>
+                        <stop offset='0' stopColor='#fff' stopOpacity='1' />
+                        <stop offset='1' stopColor='#000' stopOpacity='1' />
+                      </linearGradient>
+                      <linearGradient
+                        id='shadow1'
+                        x1='50'
+                        x2='50'
+                        y1='1'
+                        y2='15.383'
+                        gradientUnits='userSpaceOnUse'
+                        spreadMethod='pad'
+                        xlinkHref='#shadow'
+                      />
+                      <linearGradient
+                        id='shadow2'
+                        x1='0'
+                        x2='15.829'
+                        y1='34.283'
+                        y2='49.895'
+                        gradientUnits='userSpaceOnUse'
+                        spreadMethod='pad'
+                        xlinkHref='#shadow'
+                      />
+                    </defs>
+                    <rect
+                      id='up'
+                      width='31'
+                      height='31'
+                      x='34.5'
+                      y='1.5'
+                      fill='url(#shadow1)'
+                      fillOpacity='1'
+                      stroke='#000'
+                      strokeDasharray='none'
+                      strokeDashoffset='0'
+                      strokeLinecap='round'
+                      strokeLinejoin='round'
+                      strokeMiterlimit='4'
+                      strokeOpacity='1'
+                      strokeWidth='1'
+                      rx='5.75'
+                      ry='5.75'
+                    />
+                    <rect
+                      id='left'
+                      width='31'
+                      height='31'
+                      x='1.5'
+                      y='34.5'
+                      fill='url(#shadow2)'
+                      fillOpacity='1'
+                      stroke='#000'
+                      strokeDasharray='none'
+                      strokeDashoffset='0'
+                      strokeLinecap='round'
+                      strokeLinejoin='round'
+                      strokeMiterlimit='4'
+                      strokeOpacity='1'
+                      strokeWidth='1'
+                      rx='5.75'
+                      ry='5.75'
+                    />
+                    <use
+                      width='100'
+                      height='66'
+                      x='0'
+                      y='0'
+                      transform='matrix(.99943 0 0 .99942 .028 33.01)'
+                      xlinkHref='#up'
+                    />
+                    <use
+                      width='100'
+                      height='66'
+                      x='0'
+                      y='0'
+                      transform='matrix(-1 0 0 1 100 0)'
+                      xlinkHref='#left'
+                    />
+                    <path
+                      id='up_arrow'
+                      fill='#fff'
+                      fillOpacity='0.5'
+                      stroke='none'
+                      strokeDasharray='none'
+                      strokeDashoffset='0'
+                      strokeLinecap='round'
+                      strokeLinejoin='round'
+                      strokeMiterlimit='4'
+                      strokeOpacity='1'
+                      strokeWidth='1'
+                      d='M45.778 9h8.444C58.436 9.445 58 13.5 58 16.655c.074 3.469.587 7.603-3.778 8.345h-8.444C41.453 24.524 42 20.258 42 17.034 41.905 13.63 41.537 9.72 45.778 9zm-1.056 11.708l10.556-.125-5.39-9.07-5.166 9.195z'
+                    />
+                    <use
+                      width='100'
+                      height='66'
+                      x='0'
+                      y='0'
+                      transform='rotate(-90 50.25 50.25)'
+                      xlinkHref='#up_arrow'
+                    />
+                    <use
+                      width='100'
+                      height='66'
+                      x='0'
+                      y='0'
+                      transform='matrix(1 0 0 -1 0 67.5)'
+                      xlinkHref='#up_arrow'
+                    />
+                    <use
+                      width='100'
+                      height='66'
+                      x='0'
+                      y='0'
+                      transform='rotate(90 49.75 50.25)'
+                      xlinkHref='#up_arrow'
+                    />
+                  </svg>
+                ) : (
+                  <div>Your player</div>
+                )}
+            </div>,
+            dir: 'bottom',
+            canClose: true,
+          },
+          { canClose: true, target: '.tile-type-3', title: <div>Move the Player here in 5 moves</div>, dir: 'bottom' },
+        ],
       },
       {
         gameClasses: 'fadeIn',
@@ -459,7 +436,19 @@ export default function TutorialPathology() {
         key: 'tutorial-wall',
         level: getLevel(WALL_INTRO, { leastMoves: 7 }),
         onSolve: niceJob,
-        tooltip: { canClose: true, target: '.tile-type-1', title: <div>You are not able to go through walls</div> },
+        tooltips: [
+          { canClose: true, target: '.tile-type-1', title: <div>You are not able to go through walls</div> },
+        ],
+        onMove: (gameState: GameState) => {
+          const tooltipEl = document.getElementById('tooltip-0');
+          const manhattanDistance = Math.abs(gameState.pos.x - 4) + Math.abs(gameState.pos.y - 3);
+
+          if (tooltipEl && manhattanDistance <= 0) {
+            // add fade out class
+            tooltipEl.classList.add('fadeOut');
+            tooltipEl.innerHTML = 'Good!';
+          }
+        },
       },
       {
         gameClasses: 'fadeIn',
@@ -499,7 +488,9 @@ export default function TutorialPathology() {
         header: <div key='tutorial-restricted-movables-header' className='text-3xl fadeIn'>Blocks can only be pushed <span className='underline'>from sides with borders.</span></div>,
         key: 'tutorial-restricted-movables',
         level: getLevel(RESTRICTED_MOVABLES),
-        tooltip: { canClose: true, target: '.tile-type-D', title: <div>Can only be pushed down and to the left</div>, dir: 'bottom' },
+        tooltips: [
+          { canClose: true, target: '.tile-type-D', title: <div>Can only be pushed down and to the left</div>, dir: 'bottom' },
+        ],
       },
       {
         gameClasses: 'fadeIn',
@@ -510,21 +501,26 @@ export default function TutorialPathology() {
         onSolve: niceJob,
       },
       {
-        editorGrid: true,
-        gameClasses: 'fadeIn',
-        header: <div key='tutorial-holes-explain-header' className='fadeIn'>
-          <div className='text-3xl mb-6'>Lastly, this is a hole.</div>
-          <div className='text-xl'>Holes can be filled with any block to create a bridge.</div>
-        </div>,
-        key: 'tutorial-holes-explain',
-        level: getLevel(HOLES_EXPLAIN, { leastMoves: 9 }),
-        tooltip: { target: '.tile-type-5', title: <div>Hole</div> },
-      },
-      {
         gameGrid: true,
-        header: <div key='tutorial-holes-intro' className='text-3xl fadeIn'>Use this block to cross over the hole!</div>,
+        header: <div key='tutorial-holes-intro' className='text-3xl fadeIn'>
+          <div>
+            <div className='text-3xl mb-2'>Lastly, holes.</div>
+            <div className='text-xl'>Holes can be filled with any block to create a bridge.</div>
+          </div>
+        </div>,
         key: 'tutorial-holes-intro',
         level: getLevel(HOLES_INTRO, { leastMoves: 9 }),
+        tooltips: [
+          { target: '.tile-type-5', title: <div className='flex flex-col items-center'>Hole <ArrowBigDown /></div> },
+        ],
+        onMove: (gameState: GameState) => {
+          const tooltipEl = document.getElementById('tooltip-0');
+
+          if (tooltipEl) {
+            // add fade out class
+            tooltipEl.classList.add('fadeOut');
+          }
+        },
         onSolve: niceJob,
       },
       {
@@ -611,7 +607,6 @@ export default function TutorialPathology() {
   }, [mutateUser]);
 
   useEffect(() => {
-    setTooltip(undefined);
     setPopperInstance(null);
 
     const tutorialSteps = getTutorialSteps();
@@ -619,7 +614,7 @@ export default function TutorialPathology() {
 
     setIsNextButtonDisabled(!!tutorialStep.isNextButtonDisabled);
     setIsPrevButtonDisabled(false);
-    initializeTooltip(tutorialStep.tooltip);
+    initializeTooltip(tutorialStep.tooltips);
 
     // mark tutorial as completed on the last step
     if (tutorialSteps.length - 1 === tutorialStepIndex) {
@@ -696,6 +691,16 @@ export default function TutorialPathology() {
             Nice job!
           </div>
         }
+        <div className={classNames('w-full text-center', { 'invisible': showNiceJob })}>
+          <div className='flex flex-col items-center gap-4 p-4'>
+            {tutorialStep.header}
+          </div>
+          {!tutorialStep.editorGrid && !tutorialStep.gameGrid &&
+            <div>
+              <Controls controls={controls} />
+            </div>
+          }
+        </div>
         {tutorialStep.editorGrid && tutorialStep.level && (
           <div key={'div-' + tutorialStep.key} className={classNames('grow flex flex-col', tutorialStep.gameClasses)}>
             <BasicLayout
@@ -726,7 +731,7 @@ export default function TutorialPathology() {
                   restartButton?.classList.remove(styles['highlight-red']);
                 }
 
-                if (tutorialStep.key !== 'tutorial-player-intro') {
+                if (tutorialStep.key !== 'tutorial-level-1') {
                   const undoButton = document.getElementById('btn-undo') as HTMLButtonElement;
 
                   // show undo notification if they have made too many moves
@@ -745,34 +750,32 @@ export default function TutorialPathology() {
             />
           </div>
         )}
-        <div className={classNames('w-full text-center', { 'invisible': showNiceJob })}>
-          <div className='flex flex-col items-center gap-6 p-8'>
-            {tutorialStep.header}
-          </div>
-          {!tutorialStep.editorGrid && !tutorialStep.gameGrid &&
-            <div>
-              <Controls controls={controls} />
-            </div>
-          }
-        </div>
-        <div
-          className='bg-white rounded-lg text-black p-3 font-bold justify-center opacity-90 z-30 fadeIn'
-          id='tooltip'
-          key={'tooltip-' + tutorialStepIndex}
-          role='tooltip'
-          style={{
-            animationDelay: '0.5s',
-            display: tooltip ? 'block' : 'none',
-          }}
-        >
-          {!!tooltip &&
+        {tooltips && tooltips.map((tooltip, index) => (
+          <div
+            key={`tooltip-${tutorialStepIndex}-${index}`}
+            className='bg-white rounded-lg text-black p-3 font-bold justify-center opacity-90 z-30 fadeIn'
+            id={`tooltip-${index}`}
+            role='tooltip'
+            style={{
+              animationDelay: '0.5s',
+              display: 'block',
+            }}
+          >
             <div className='flex'>
-              {tooltip?.title}
-              {tooltip?.canClose && <DismissToast onClick={() => setTooltip(undefined)} />}
+              {tooltip.title}
+              {tooltip.canClose && <DismissToast onClick={() => {
+                const newTooltips = tooltips.filter((_, i) => i !== index);
+
+                if (newTooltips.length === 0) {
+                  setTooltips(undefined);
+                } else {
+                  setTooltips(newTooltips);
+                }
+              }} />}
             </div>
-          }
-          <div id='arrow' data-popper-arrow />
-        </div>
+            <div id='arrow' data-popper-arrow />
+          </div>
+        ))}
       </div>
     </Page>
   );

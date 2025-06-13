@@ -230,32 +230,6 @@ export default function TutorialSokopath() {
   const getTutorialSteps = useCallback(() => {
     return [
       {
-        hasNext: true,
-        header: <>
-          <div className='flex flex-col gap-6 items-center text-3xl fadeIn'>
-            <GameLogo gameId={GameId.SOKOPATH} id='tutorial' size={32} />
-            <span>Welcome to the Sokopath tutorial!</span>
-          </div>
-          <div className='text-xl fadeIn' style={{
-            animationDelay: '1s',
-          }}>In this tutorial you will be walked through the basics of the game.</div>
-        </>,
-      },
-      {
-        editorGrid: true,
-        gameClasses: 'fadeIn',
-        header: <div key='tutorial-blank-grid-header' className='text-3xl fadeIn'><span className='font-medium'>Sokopath</span> is a grid-based puzzle game.</div>,
-        key: 'tutorial-blank-grid',
-        level: getLevel(BLANK_GRID),
-      },
-      {
-        editorGrid: true,
-        header: <div key='tutorial-player-intro-header' className='text-2xl'>That character in the middle is the <span className='font-bold'>Player</span> you will be controlling.</div>,
-        key: 'tutorial-player-intro',
-        level: getLevel(GRID_WITH_PLAYER),
-        tooltip: { target: '.tile-type-4', title: <div>Player</div> },
-      },
-      {
         gameGrid: true,
         header: <div key='tutorial-player-intro-header' className='text-2xl'>Try moving around using the arrow keys (or swipe with mobile).</div>,
         isNextButtonDisabled: true,
