@@ -229,169 +229,7 @@ export default function TutorialSokopath() {
 
   const getTutorialSteps = useCallback(() => {
     return [
-      {
-        gameGrid: true,
-        header: <div key='tutorial-player-intro-header' className='text-2xl'>Try moving around using the arrow keys (or swipe with mobile).</div>,
-        isNextButtonDisabled: true,
-        key: 'tutorial-player-intro',
-        level: getLevel(GRID_WITH_PLAYER),
-        onMove: () => setIsNextButtonDisabled(false),
-        tooltip: { canClose: true, target: '#player', title: <div className='flex'>
-          {
-            /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(typeof window !== 'undefined' ? navigator.userAgent : '') === false ? (
-              <svg
-                xmlns='http://www.w3.org/2000/svg'
-                xmlnsXlink='http://www.w3.org/1999/xlink'
-                width='100'
-                height='68'
-                version='1'
-              >
-                <defs>
-                  <linearGradient id='shadow'>
-                    <stop offset='0' stopColor='#fff' stopOpacity='1' />
-                    <stop offset='1' stopColor='#000' stopOpacity='1' />
-                  </linearGradient>
-                  <linearGradient
-                    id='shadow1'
-                    x1='50'
-                    x2='50'
-                    y1='1'
-                    y2='15.383'
-                    gradientUnits='userSpaceOnUse'
-                    spreadMethod='pad'
-                    xlinkHref='#shadow'
-                  />
-                  <linearGradient
-                    id='shadow2'
-                    x1='0'
-                    x2='15.829'
-                    y1='34.283'
-                    y2='49.895'
-                    gradientUnits='userSpaceOnUse'
-                    spreadMethod='pad'
-                    xlinkHref='#shadow'
-                  />
-                </defs>
-                <rect
-                  id='up'
-                  width='31'
-                  height='31'
-                  x='34.5'
-                  y='1.5'
-                  fill='url(#shadow1)'
-                  fillOpacity='1'
-                  stroke='#000'
-                  strokeDasharray='none'
-                  strokeDashoffset='0'
-                  strokeLinecap='round'
-                  strokeLinejoin='round'
-                  strokeMiterlimit='4'
-                  strokeOpacity='1'
-                  strokeWidth='1'
-                  rx='5.75'
-                  ry='5.75'
-                />
-                <rect
-                  id='left'
-                  width='31'
-                  height='31'
-                  x='1.5'
-                  y='34.5'
-                  fill='url(#shadow2)'
-                  fillOpacity='1'
-                  stroke='#000'
-                  strokeDasharray='none'
-                  strokeDashoffset='0'
-                  strokeLinecap='round'
-                  strokeLinejoin='round'
-                  strokeMiterlimit='4'
-                  strokeOpacity='1'
-                  strokeWidth='1'
-                  rx='5.75'
-                  ry='5.75'
-                />
-                <use
-                  width='100'
-                  height='66'
-                  x='0'
-                  y='0'
-                  transform='matrix(.99943 0 0 .99942 .028 33.01)'
-                  xlinkHref='#up'
-                />
-                <use
-                  width='100'
-                  height='66'
-                  x='0'
-                  y='0'
-                  transform='matrix(-1 0 0 1 100 0)'
-                  xlinkHref='#left'
-                />
-                <path
-                  id='up_arrow'
-                  fill='#fff'
-                  fillOpacity='0.5'
-                  stroke='none'
-                  strokeDasharray='none'
-                  strokeDashoffset='0'
-                  strokeLinecap='round'
-                  strokeLinejoin='round'
-                  strokeMiterlimit='4'
-                  strokeOpacity='1'
-                  strokeWidth='1'
-                  d='M45.778 9h8.444C58.436 9.445 58 13.5 58 16.655c.074 3.469.587 7.603-3.778 8.345h-8.444C41.453 24.524 42 20.258 42 17.034 41.905 13.63 41.537 9.72 45.778 9zm-1.056 11.708l10.556-.125-5.39-9.07-5.166 9.195z'
-                />
-                <use
-                  width='100'
-                  height='66'
-                  x='0'
-                  y='0'
-                  transform='rotate(-90 50.25 50.25)'
-                  xlinkHref='#up_arrow'
-                />
-                <use
-                  width='100'
-                  height='66'
-                  x='0'
-                  y='0'
-                  transform='matrix(1 0 0 -1 0 67.5)'
-                  xlinkHref='#up_arrow'
-                />
-                <use
-                  width='100'
-                  height='66'
-                  x='0'
-                  y='0'
-                  transform='rotate(90 49.75 50.25)'
-                  xlinkHref='#up_arrow'
-                />
-              </svg>
-            ) : (
-              <div>Swipe up, down, left, or right to move your player</div>
-            )}
-        </div>
-        },
-      },
-      {
-        editorGrid: true,
-        gameClasses: 'fadeIn',
-        header: <>
-          <div className='text-3xl'>This is a goal.</div>
-          <div className='text-xl'>Some levels have multiple goals.</div>
-        </>,
-        key: 'tutorial-level-1-only-end',
-        level: getLevel(LEVEL_1_ONLY_END),
-        tooltip: { target: '.tile-type-3', title: <div>Exit</div>, dir: 'top' },
-      },
-      {
-        editorGrid: true,
-        header: <>
-          <div className='text-3xl'>This is a box.</div>
-          <div className='text-xl'>Your goal is to push boxes onto goals.</div>
-        </>,
-        key: 'tutorial-level-1-only-block',
-        level: getLevel(LEVEL_1_ONLY_BLOCK),
-        tooltip: { target: '.tile-type-2', title: <div>Box</div>, dir: 'top' },
-      },
+
       {
         gameGrid: true,
         header: <><div key='tutorial-level-1-header' className='text-3xl fadeIn'>Try to complete your first level!</div><div className='text-xl'>Push the box onto the goal.</div></>,
@@ -406,7 +244,7 @@ export default function TutorialSokopath() {
         key: 'tutorial-wall',
         level: getLevel(WALL_INTRO),
         onComplete: niceJob,
-        tooltip: { canClose: true, target: '.tile-type-1', title: <div>You are not able to go through walls</div> },
+        tooltip: { canClose: true, target: '.tile-type-1', title: <div>You cannot walk through walls</div> },
       },
       {
         gameClasses: 'fadeIn',
@@ -633,6 +471,16 @@ export default function TutorialSokopath() {
             Nice job!
           </div>
         }
+        <div className={classNames('w-full text-center', { 'invisible': showNiceJob })}>
+          <div className='flex flex-col items-center gap-4 p-4'>
+            {tutorialStep.header}
+          </div>
+          {!tutorialStep.editorGrid && !tutorialStep.gameGrid &&
+            <div>
+              <Controls controls={controls} />
+            </div>
+          }
+        </div>
         {tutorialStep.editorGrid && tutorialStep.level && (
           <div key={'div-' + tutorialStep.key} className={classNames('grow flex flex-col', tutorialStep.gameClasses)}>
             <BasicLayout
@@ -663,16 +511,6 @@ export default function TutorialSokopath() {
             />
           </div>
         )}
-        <div className={classNames('w-full text-center', { 'invisible': showNiceJob })}>
-          <div className='flex flex-col items-center gap-6 p-8'>
-            {tutorialStep.header}
-          </div>
-          {!tutorialStep.editorGrid && !tutorialStep.gameGrid &&
-            <div>
-              <Controls controls={controls} />
-            </div>
-          }
-        </div>
         <div
           className='bg-white rounded-lg text-black p-3 font-bold justify-center opacity-90 z-30 fadeIn'
           id='tooltip'
