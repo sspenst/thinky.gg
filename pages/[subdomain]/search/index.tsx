@@ -135,7 +135,7 @@ const timeRangeStrings = {
   [TimeRange[TimeRange.All]]: 'All Time',
 };
 const statFilterStrings = {
-  [StatFilter.All]: 'All Levels',
+  [StatFilter.All]: 'Filter by...',
   [StatFilter.HideSolved]: 'Hide Solved',
   [StatFilter.HideCompleted]: 'Hide Completed',
   [StatFilter.Solved]: 'Solved',
@@ -256,47 +256,67 @@ interface StatFilterMenuProps {
 
 /* istanbul ignore next */
 function StatFilterMenu({ onStatFilterClick, query }: StatFilterMenuProps) {
+  const { game } = useContext(AppContext);
+
   if (query.sortBy !== 'completed') {
     statFilterStrings[StatFilter.Completed] = 'Completed';
     statFilterStrings[StatFilter.Unoptimized] = 'Unoptimized';
     statFilterStrings[StatFilter.Unattempted] = 'Unattempted';
   }
 
+  const quickFilter = game.type === GameType.SHORTEST_PATH ? StatFilter.HideSolved : StatFilter.HideCompleted;
+  const quickFilterLabel = game.type === GameType.SHORTEST_PATH ? 'Hide Solved' : 'Hide Completed';
+
   return (
-    <Menu as='div' className='relative inline-block text-left'>
-      <MenuButton
-        className='flex items-center justify-center rounded px-3 py-2 text-sm font-medium gap-2 border border-gray-300 hover:bg-gray-700 transition-colors'
-      >
-        <span>{query.statFilter && query.statFilter in statFilterStrings ? statFilterStrings[query.statFilter] : statFilterStrings[StatFilter.All]}</span>
-        <svg className='h-4 w-4' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor'>
-          <path fillRule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z' clipRule='evenodd' />
-        </svg>
-      </MenuButton>
-      <Transition
-        as={Fragment}
-        enter='transition ease-out duration-100'
-        enterFrom='transform opacity-0 scale-95'
-        enterTo='transform opacity-100 scale-100'
-        leave='transition ease-in duration-75'
-        leaveFrom='transform opacity-100 scale-100'
-        leaveTo='transform opacity-0 scale-95'
-      >
-        <MenuItems className='absolute right-0 z-10 mt-1 rounded overflow-hidden border shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none border-color-1' style={{ backgroundColor: 'var(--bg-color)' }}>
-          <div>
-            {Object.keys(statFilterStrings).map(statFilterKey => (
-              <MenuItem key={`filter-completions-${statFilterKey}`}>
-                <button
-                  className='p-3 text-sm w-36 hover:bg-gray-700 text-left'
-                  onClick={() => onStatFilterClick(statFilterKey as StatFilter)}
-                >
-                  {statFilterStrings[statFilterKey]}
-                </button>
-              </MenuItem>
-            ))}
-          </div>
-        </MenuItems>
-      </Transition>
-    </Menu>
+    <div className='flex items-center gap-2'>
+      <label className='flex items-center gap-2 cursor-pointer px-3 py-2 border border-gray-300 rounded transition-colors'>
+        <input
+          checked={query.statFilter === quickFilter}
+          onChange={() => {
+            onStatFilterClick(query.statFilter === quickFilter ? StatFilter.All : quickFilter);
+          }}
+          type='checkbox'
+          className='rounded border-gray-300 text-blue-600 focus:ring-0 focus:ring-offset-0'
+        />
+        <span className='text-sm font-medium whitespace-nowrap'>{quickFilterLabel}</span>
+      </label>
+      <Menu as='div' className='relative inline-block text-left'>
+        <MenuButton
+          className='flex items-center justify-center rounded px-3 py-2 text-sm font-medium gap-2 border border-gray-300 hover:bg-gray-700 transition-colors'
+        >
+          <span>{query.statFilter && query.statFilter !== quickFilter && query.statFilter in statFilterStrings ? statFilterStrings[query.statFilter] : 'Filter by...'}</span>
+          <svg className='h-4 w-4' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor'>
+            <path fillRule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z' clipRule='evenodd' />
+          </svg>
+        </MenuButton>
+        <Transition
+          as={Fragment}
+          enter='transition ease-out duration-100'
+          enterFrom='transform opacity-0 scale-95'
+          enterTo='transform opacity-100 scale-100'
+          leave='transition ease-in duration-75'
+          leaveFrom='transform opacity-100 scale-100'
+          leaveTo='transform opacity-0 scale-95'
+        >
+          <MenuItems className='absolute right-0 z-10 mt-1 rounded overflow-hidden border shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none border-color-1' style={{ backgroundColor: 'var(--bg-color)' }}>
+            <div>
+              {Object.entries(statFilterStrings)
+                .filter(([key]) => key !== quickFilter) // Exclude the quick filter from dropdown
+                .map(([statFilterKey, label]) => (
+                  <MenuItem key={`filter-completions-${statFilterKey}`}>
+                    <button
+                      className='p-3 text-sm w-36 hover:bg-gray-700 text-left'
+                      onClick={() => onStatFilterClick(statFilterKey as StatFilter)}
+                    >
+                      {label}
+                    </button>
+                  </MenuItem>
+                ))}
+            </div>
+          </MenuItems>
+        </Transition>
+      </Menu>
+    </div>
   );
 }
 
