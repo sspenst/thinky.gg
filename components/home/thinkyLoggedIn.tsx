@@ -17,6 +17,7 @@ import { getStreakRankIndex, STREAK_RANK_GROUPS } from '../counters/AnimateCount
 import FormattedUser from '../formatted/formattedUser';
 import GameLogo from '../gameLogo';
 import MultiSelectUser from '../page/multiSelectUser';
+import QuickActionButton from '../quickActionButton';
 import { StreakCalendar } from './streakCalendar';
 
 interface StreakDisplayProps {
@@ -224,61 +225,49 @@ export function ThinkyHomePageLoggedIn({ user }: { user: User }) {
                   <div className='flex flex-col gap-2'>
                     <h4 className='font-medium text-sm text-gray-500 dark:text-gray-400'>Quick Actions</h4>
                     <div className='grid grid-cols-2 gap-2'>
-                      <Link
+                      <QuickActionButton
                         href={getUrl(game.id)}
-                        className='flex flex-col items-center justify-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600 hover:shadow-md transition'
-                      >
-                        <span className='text-xl mb-1'>🏠</span>
-                        <span className='text-sm font-medium'>Home</span>
-                      </Link>
-                      <Link
+                        icon='🏠'
+                        text='Home'
+                      />
+                      <QuickActionButton
                         href={getUrl(game.id, '/search')}
-                        className='flex flex-col items-center justify-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600 hover:shadow-md transition'
-                      >
-                        <span className='text-xl mb-1'>🔍</span>
-                        <span className='text-sm font-medium'>Browse Levels</span>
-                      </Link>
-                      <Link
+                        icon='🔍'
+                        text='Browse Levels'
+                      />
+                      <QuickActionButton
                         href={getUrl(game.id, '/drafts')}
-                        className='flex flex-col items-center justify-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600 hover:shadow-md transition'
-                      >
-                        <span className='text-xl mb-1'>🎨</span>
-                        <span className='text-sm font-medium'>Create</span>
-                      </Link>
+                        icon='🎨'
+                        text='Create'
+                      />
                       {!game.disableRanked ? (
-                        <Link
+                        <QuickActionButton
                           href={getUrl(game.id, '/ranked')}
-                          className='flex flex-col items-center justify-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600 hover:shadow-md transition'
-                        >
-                          <span className='text-xl mb-1'>🏆</span>
-                          <span className='text-sm font-medium'>Ranked</span>
-                        </Link>
+                          icon='🏆'
+                          text='Ranked'
+                        />
                       ) : (
-                        <div className='flex flex-col items-center justify-center p-3 bg-gray-100 dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600 opacity-60 cursor-not-allowed'>
-                          <span className='text-xl mb-1'>🏆</span>
-                          <span className='text-sm font-medium'>Coming Soon</span>
-                        </div>
+                        <QuickActionButton
+                          href='#'
+                          icon='🏆'
+                          text='Coming Soon'
+                          disabled
+                        />
                       )}
                       {levelOfDay && (
-                        <Link
+                        <QuickActionButton
                           href={getUrl(game.id, '/level-of-the-day')}
-                          className='flex flex-col items-center justify-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600 hover:shadow-md transition'
-                        >
-                          <span className='text-xl mb-1'>📅</span>
-                          <span className='text-sm font-medium'>Level of the Day</span>
-                          <span className='text-xs text-gray-500 dark:text-gray-400'>
-                            {levelOfDay.userId?.name}
-                          </span>
-                        </Link>
+                          icon='📅'
+                          text='Level of the Day'
+                          subtitle={levelOfDay.userId?.name}
+                        />
                       )}
                       {!game.disableMultiplayer && (
-                        <Link
+                        <QuickActionButton
                           href={getUrl(game.id, '/multiplayer')}
-                          className='flex flex-col items-center justify-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600 hover:shadow-md transition'
-                        >
-                          <span className='text-xl mb-1'>👥</span>
-                          <span className='text-sm font-medium'>Multiplayer</span>
-                        </Link>
+                          icon='👥'
+                          text='Multiplayer'
+                        />
                       )}
                     </div>
                   </div>
@@ -297,7 +286,7 @@ export function ThinkyHomePageLoggedIn({ user }: { user: User }) {
       {/* Global Quick Actions Section */}
       <div className='w-full'>
         <div className='grid grid-cols-2 md:grid-cols-3 gap-4'>
-          <div className='flex flex-col items-center justify-center p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition'>
+          <div className='flex flex-col items-center justify-center p-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition'>
             <span className='text-2xl mb-2'>👥</span>
             <span className='font-medium mb-2'>Users</span>
             <MultiSelectUser
@@ -310,14 +299,14 @@ export function ThinkyHomePageLoggedIn({ user }: { user: User }) {
           </div>
           <Link
             href='/pro'
-            className='flex flex-col items-center justify-center p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition'
+            className='flex flex-col items-center justify-center p-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition'
           >
             <span className='text-2xl mb-2'>⭐</span>
             <span className='font-medium'>Pro Features</span>
           </Link>
           <Link
             href='/settings'
-            className='flex flex-col items-center justify-center p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition'
+            className='flex flex-col items-center justify-center p-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition'
           >
             <span className='text-2xl mb-2'>⚙️</span>
             <span className='font-medium'>Settings</span>
