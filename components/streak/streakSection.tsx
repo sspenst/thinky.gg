@@ -40,7 +40,7 @@ export default function StreakSection({ gameId, userConfig, hideHeader }: Streak
   ) : 100;
 
   return (
-    <div className='flex flex-col gap-4 w-full'>
+    <div className='flex flex-col w-full'>
       {!hideHeader && <h4 className='font-medium text-sm text-gray-500 dark:text-gray-400'>Streak</h4>}
       <div
         onClick={() => {
@@ -82,7 +82,7 @@ export default function StreakSection({ gameId, userConfig, hideHeader }: Streak
                   <span className='text-2xl'>{streakRank.emoji}</span>
                 </div>
                 <div>
-                  <div className='font-medium'>{streakRank.title}</div>
+                  <div className='font-medium text-left'>{streakRank.title}</div>
                   {nextRank && (
                     <div className='text-sm text-gray-500 dark:text-gray-400'>
                       Next rank: {nextRank.title}
