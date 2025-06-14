@@ -773,6 +773,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
                     ...query,
                     isRanked: query.isRanked === 'true' ? 'false' : 'true',
                     page: '1',
+                    timeRange: TimeRange[TimeRange.All],
                   });
                 }}
                 type='checkbox'
