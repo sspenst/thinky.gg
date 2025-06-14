@@ -89,7 +89,7 @@ const DefaultQuery = {
   sortBy: 'reviewScore',
   sortDir: 'desc',
   statFilter: StatFilter.All,
-  timeRange: TimeRange[TimeRange.All],
+  timeRange: TimeRange[TimeRange.Month],
 } as SearchQuery;
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
@@ -365,7 +365,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
     if (hasAdvancedFilters && !showAdvancedFilters && query === searchQuery) {
       setShowAdvancedFilters(true);
     }
-  }, [searchQuery]); // Only depend on searchQuery (initial load)
+  }, [query, searchQuery, showAdvancedFilters]); // Only depend on searchQuery (initial load)
 
   const fetchLevels = useCallback((query: SearchQuery) => {
     // TODO: check if query is identical, in which case do nothing
@@ -578,7 +578,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
     fetchLevels({
       ...query,
       page: '1',
-      timeRange: query.timeRange === timeRangeKey ? TimeRange[TimeRange.All] : timeRangeKey,
+      timeRange: query.timeRange === timeRangeKey ? TimeRange[TimeRange.Month] : timeRangeKey,
     });
   }, [fetchLevels, query]);
 
@@ -806,194 +806,187 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
       {showAdvancedFilters && (
         <div className='p-3 border-t border-gray-200'>
           <h3 className='text-lg font-semibold mb-3'>Advanced Filters</h3>
-          <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-            {/* Steps Range */}
-            <div className='space-y-2'>
-              <label className='block text-sm font-medium'>Steps Range</label>
-              <div className='flex items-center gap-2'>
-                <input
-                  className='w-20 text-sm px-2 py-1 border border-gray-300 rounded'
-                  placeholder='Min'
-                  max='2500'
-                  min='1'
-                  onChange={(e: React.FormEvent<HTMLInputElement>) => {
-                    queryHelper({
-                      minSteps: (e.target as HTMLInputElement).value,
-                      page: '1',
-                    });
-                  }}
-                  step='1'
-                  type='number'
-                  value={query.minSteps}
-                />
-                <span className='text-gray-500'>to</span>
-                <input
-                  className='w-20 text-sm px-2 py-1 border border-gray-300 rounded'
-                  placeholder='Max'
-                  max='2500'
-                  min='1'
-                  onChange={(e: React.FormEvent<HTMLInputElement>) => {
-                    queryHelper({
-                      maxSteps: (e.target as HTMLInputElement).value,
-                      page: '1',
-                    });
-                  }}
-                  step='1'
-                  type='number'
-                  value={query.maxSteps}
-                />
+          <form onSubmit={(e) => {
+            e.preventDefault();
+            const formData = new FormData(e.currentTarget);
+
+            queryHelper({
+              minSteps: formData.get('minSteps') as string,
+              maxSteps: formData.get('maxSteps') as string,
+              minDimension1: formData.get('minDimension1') as string,
+              minDimension2: formData.get('minDimension2') as string,
+              maxDimension1: formData.get('maxDimension1') as string,
+              maxDimension2: formData.get('maxDimension2') as string,
+              page: '1',
+            });
+          }}>
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+              {/* Steps Range */}
+              <div className='space-y-2'>
+                <label className='block text-sm font-medium'>Steps Range</label>
+                <div className='flex items-center gap-2'>
+                  <input
+                    className='w-20 text-sm px-2 py-1 border border-gray-300 rounded'
+                    placeholder='Min'
+                    max='2500'
+                    min='1'
+                    name='minSteps'
+                    step='1'
+                    type='number'
+                    defaultValue={query.minSteps}
+                  />
+                  <span className='text-gray-500'>to</span>
+                  <input
+                    className='w-20 text-sm px-2 py-1 border border-gray-300 rounded'
+                    placeholder='Max'
+                    max='2500'
+                    min='1'
+                    name='maxSteps'
+                    step='1'
+                    type='number'
+                    defaultValue={query.maxSteps}
+                  />
+                </div>
               </div>
+              {/* Pro Features */}
+              {isPro(reqUser) ? (
+                <>
+                  {/* Dimensions */}
+                  <div className='space-y-2'>
+                    <label className='block text-sm font-medium flex items-center gap-2'>
+                      Dimensions
+                      <Image alt='pro' src='/pro.svg' width='16' height='16' />
+                    </label>
+                    <div className='flex items-center gap-2 text-sm'>
+                      <input
+                        className='w-12 px-2 py-1 border border-gray-300 rounded text-center'
+                        placeholder='Min W'
+                        max='40'
+                        min='1'
+                        name='minDimension1'
+                        step='1'
+                        type='number'
+                        defaultValue={query.minDimension1}
+                      />
+                      <span>×</span>
+                      <input
+                        className='w-12 px-2 py-1 border border-gray-300 rounded text-center'
+                        placeholder='Min H'
+                        max='40'
+                        min='1'
+                        name='minDimension2'
+                        step='1'
+                        type='number'
+                        defaultValue={query.minDimension2}
+                      />
+                      <span className='text-gray-500'>to</span>
+                      <input
+                        className='w-12 px-2 py-1 border border-gray-300 rounded text-center'
+                        placeholder='Max W'
+                        max='40'
+                        min='1'
+                        name='maxDimension1'
+                        step='1'
+                        type='number'
+                        defaultValue={query.maxDimension1}
+                      />
+                      <span>×</span>
+                      <input
+                        className='w-12 px-2 py-1 border border-gray-300 rounded text-center'
+                        placeholder='Max H'
+                        max='40'
+                        min='1'
+                        name='maxDimension2'
+                        step='1'
+                        type='number'
+                        defaultValue={query.maxDimension2}
+                      />
+                    </div>
+                  </div>
+                  {/* Block Types */}
+                  <div className='space-y-2'>
+                    <label className='block text-sm font-medium flex items-center gap-2'>
+                      Block Types
+                      <Image alt='pro' src='/pro.svg' width='16' height='16' />
+                    </label>
+                    <div className='flex items-center gap-2'>
+                      <FilterButton
+                        element={
+                          <span style={{
+                            backgroundColor: 'var(--level-block)',
+                            borderColor: 'var(--level-block-border)',
+                            borderWidth: 2,
+                            display: 'block',
+                            height: 16,
+                            width: 16,
+                          }} />
+                        }
+                        first={true}
+                        onClick={onBlockFilterClick}
+                        proRequired={false}
+                        selected={(Number(query.blockFilter) & BlockFilterMask.BLOCK) !== BlockFilterMask.NONE}
+                        transparent={true}
+                        value={BlockFilterMask.BLOCK.toString()}
+                      />
+                      <FilterButton
+                        element={
+                          <span style={{
+                            backgroundColor: 'var(--level-block)',
+                            borderColor: 'var(--level-block-border)',
+                            borderWidth: '2px 0',
+                            display: 'block',
+                            height: 16,
+                            width: 16,
+                          }} />
+                        }
+                        onClick={onBlockFilterClick}
+                        proRequired={false}
+                        selected={(Number(query.blockFilter) & BlockFilterMask.RESTRICTED) !== BlockFilterMask.NONE}
+                        transparent={true}
+                        value={BlockFilterMask.RESTRICTED.toString()}
+                      />
+                      <FilterButton
+                        element={
+                          <span style={{
+                            backgroundColor: 'var(--level-hole)',
+                            borderColor: 'var(--level-hole-border)',
+                            borderWidth: 2,
+                            display: 'block',
+                            height: 16,
+                            width: 16,
+                          }} />
+                        }
+                        last={true}
+                        onClick={onBlockFilterClick}
+                        proRequired={false}
+                        selected={(Number(query.blockFilter) & BlockFilterMask.HOLE) !== BlockFilterMask.NONE}
+                        transparent={true}
+                        value={BlockFilterMask.HOLE.toString()}
+                      />
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className='text-center py-4'>
+                  <div className='flex items-center justify-center gap-2 text-gray-500 mb-2'>
+                    <Image alt='pro' src='/pro.svg' width='20' height='20' />
+                    <span className='text-sm'>More filters available with Pro</span>
+                  </div>
+                  <Link href='/pro' className='text-blue-600 hover:text-blue-800 underline text-sm'>
+                    Upgrade to Pro
+                  </Link>
+                </div>
+              )}
             </div>
-            {/* Pro Features */}
-            {isPro(reqUser) ? (
-              <>
-                {/* Dimensions */}
-                <div className='space-y-2'>
-                  <label className='block text-sm font-medium flex items-center gap-2'>
-                    Dimensions
-                    <Image alt='pro' src='/pro.svg' width='16' height='16' />
-                  </label>
-                  <div className='flex items-center gap-2 text-sm'>
-                    <input
-                      className='w-12 px-2 py-1 border border-gray-300 rounded text-center'
-                      placeholder='Min W'
-                      max='40'
-                      min='1'
-                      onChange={(e: React.FormEvent<HTMLInputElement>) => {
-                        queryHelper({
-                          minDimension1: (e.target as HTMLInputElement).value,
-                          page: '1',
-                        });
-                      }}
-                      step='1'
-                      type='number'
-                      value={query.minDimension1}
-                    />
-                    <span>×</span>
-                    <input
-                      className='w-12 px-2 py-1 border border-gray-300 rounded text-center'
-                      placeholder='Min H'
-                      max='40'
-                      min='1'
-                      onChange={(e: React.FormEvent<HTMLInputElement>) => {
-                        queryHelper({
-                          minDimension2: (e.target as HTMLInputElement).value,
-                          page: '1',
-                        });
-                      }}
-                      step='1'
-                      type='number'
-                      value={query.minDimension2}
-                    />
-                    <span className='text-gray-500'>to</span>
-                    <input
-                      className='w-12 px-2 py-1 border border-gray-300 rounded text-center'
-                      placeholder='Max W'
-                      max='40'
-                      min='1'
-                      onChange={(e: React.FormEvent<HTMLInputElement>) => {
-                        queryHelper({
-                          maxDimension1: (e.target as HTMLInputElement).value,
-                          page: '1',
-                        });
-                      }}
-                      step='1'
-                      type='number'
-                      value={query.maxDimension1}
-                    />
-                    <span>×</span>
-                    <input
-                      className='w-12 px-2 py-1 border border-gray-300 rounded text-center'
-                      placeholder='Max H'
-                      max='40'
-                      min='1'
-                      onChange={(e: React.FormEvent<HTMLInputElement>) => {
-                        queryHelper({
-                          maxDimension2: (e.target as HTMLInputElement).value,
-                          page: '1',
-                        });
-                      }}
-                      step='1'
-                      type='number'
-                      value={query.maxDimension2}
-                    />
-                  </div>
-                </div>
-                {/* Block Types */}
-                <div className='space-y-2'>
-                  <label className='block text-sm font-medium flex items-center gap-2'>
-                    Block Types
-                    <Image alt='pro' src='/pro.svg' width='16' height='16' />
-                  </label>
-                  <div className='flex items-center gap-2'>
-                    <FilterButton
-                      element={
-                        <span style={{
-                          backgroundColor: 'var(--level-block)',
-                          borderColor: 'var(--level-block-border)',
-                          borderWidth: 2,
-                          display: 'block',
-                          height: 16,
-                          width: 16,
-                        }} />
-                      }
-                      first={true}
-                      onClick={onBlockFilterClick}
-                      proRequired={false}
-                      selected={(Number(query.blockFilter) & BlockFilterMask.BLOCK) !== BlockFilterMask.NONE}
-                      transparent={true}
-                      value={BlockFilterMask.BLOCK.toString()}
-                    />
-                    <FilterButton
-                      element={
-                        <span style={{
-                          backgroundColor: 'var(--level-block)',
-                          borderColor: 'var(--level-block-border)',
-                          borderWidth: '2px 0',
-                          display: 'block',
-                          height: 16,
-                          width: 16,
-                        }} />
-                      }
-                      onClick={onBlockFilterClick}
-                      proRequired={false}
-                      selected={(Number(query.blockFilter) & BlockFilterMask.RESTRICTED) !== BlockFilterMask.NONE}
-                      transparent={true}
-                      value={BlockFilterMask.RESTRICTED.toString()}
-                    />
-                    <FilterButton
-                      element={
-                        <span style={{
-                          backgroundColor: 'var(--level-hole)',
-                          borderColor: 'var(--level-hole-border)',
-                          borderWidth: 2,
-                          display: 'block',
-                          height: 16,
-                          width: 16,
-                        }} />
-                      }
-                      last={true}
-                      onClick={onBlockFilterClick}
-                      proRequired={false}
-                      selected={(Number(query.blockFilter) & BlockFilterMask.HOLE) !== BlockFilterMask.NONE}
-                      transparent={true}
-                      value={BlockFilterMask.HOLE.toString()}
-                    />
-                  </div>
-                </div>
-              </>
-            ) : (
-              <div className='text-center py-4'>
-                <div className='flex items-center justify-center gap-2 text-gray-500 mb-2'>
-                  <Image alt='pro' src='/pro.svg' width='20' height='20' />
-                  <span className='text-sm'>More filters available with Pro</span>
-                </div>
-                <Link href='/pro' className='text-blue-600 hover:text-blue-800 underline text-sm'>
-                  Upgrade to Pro
-                </Link>
-              </div>
-            )}
-          </div>
+            <div className='mt-4 flex justify-end'>
+              <button
+                type='submit'
+                className='px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors'
+              >
+                Apply Filters
+              </button>
+            </div>
+          </form>
         </div>
       )}
       {/* Active Filters */}
