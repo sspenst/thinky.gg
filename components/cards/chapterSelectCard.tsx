@@ -203,11 +203,11 @@ export default function ChapterSelectCard({ chapter, chapterUnlocked, href, titl
       <ChapterSelectCardBase
         disabled={false}
         game={game}
-        href={'/campaigns'}
+        href={'/ranked'}
         id='chapter4'
-        levelData={'65G9F0G5\nGBJ5GH5I\n50FF25DG\nJ5I5H505'}
-        subtitle={'Explore other campaigns'}
-        title={titleOverride || 'Campaigns'}
+        levelData={'65G9F3G5\nG1J5GH3I\n53FF251G\nJ1I5H505'}
+        subtitle={'Show Your Mastery'}
+        title={titleOverride || 'Ranked Levels'}
         compact
       />
     );
