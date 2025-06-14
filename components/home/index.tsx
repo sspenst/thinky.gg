@@ -397,7 +397,7 @@ export default function Home({
             id='last-level-played'
             level={lastLevelPlayed}
             title={
-              <div className='flex items-center gap-2'>
+              <div className='flex justify-center items-center gap-2'>
                 <Link className='font-bold hover:underline' href='/play-history'>
                   Last Played
                 </Link>
