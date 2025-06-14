@@ -6,7 +6,6 @@ import SettingsNotifications from '@root/components/settings/settingsNotificatio
 import isGuest from '@root/helpers/isGuest';
 import User from '@root/models/db/user';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
-import { useFeatureFlagEnabled } from 'posthog-js/react';
 import React, { useEffect, useState } from 'react';
 import Page from '../../../components/page/page';
 import SettingsGeneral from '../../../components/settings/settingsGeneral';
@@ -42,22 +41,19 @@ type TabType = 'general' | 'account' | 'connections' | 'notifications' | 'danger
 export default function Settings({ user }: SettingsProps) {
   const guest = isGuest(user);
 
-  // Feature flag for OAuth providers
-  const isOAuthEnabled = useFeatureFlagEnabled('oauth-providers');
-
   const [activeTab, setActiveTab] = useState<TabType>(guest ? 'account' : 'general');
 
   // Handle URL hash for direct tab linking
   useEffect(() => {
     const hash = window.location.hash.substring(1) as TabType;
     const validTabs = guest
-      ? ['account', ...(isOAuthEnabled ? ['connections'] : []), 'notifications', 'danger']
-      : ['general', 'account', ...(isOAuthEnabled ? ['connections'] : []), 'notifications', 'danger'];
+      ? ['account', 'connections', 'notifications', 'danger']
+      : ['general', 'account', 'connections', 'notifications', 'danger'];
 
     if (hash && validTabs.includes(hash)) {
       setActiveTab(hash);
     }
-  }, [guest, isOAuthEnabled]);
+  }, [guest]);
 
   // Update URL hash when tab changes
   const handleTabChange = (tabId: TabType) => {
@@ -85,7 +81,7 @@ export default function Settings({ user }: SettingsProps) {
       )
     },
     // Only show connections tab if OAuth is enabled
-    ...(isOAuthEnabled ? [{
+    {
       id: 'connections' as TabType,
       name: 'Connections',
       icon: (
@@ -93,7 +89,7 @@ export default function Settings({ user }: SettingsProps) {
           <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1' />
         </svg>
       )
-    }] : []),
+    },
     {
       id: 'notifications' as TabType,
       name: 'Notifications',
@@ -163,7 +159,7 @@ export default function Settings({ user }: SettingsProps) {
                 )}
               </div>
             )}
-            {activeTab === 'connections' && !guest && isOAuthEnabled && (
+            {activeTab === 'connections' && !guest && (
               <div className='min-w-0'>
                 <SettingsConnections user={user} />
               </div>
