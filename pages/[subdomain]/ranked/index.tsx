@@ -1,6 +1,7 @@
 import FormattedDifficulty, { difficultyList, getDifficultyColor } from '@root/components/formatted/formattedDifficulty';
 import Page from '@root/components/page/page';
 import { ProfileQueryType } from '@root/constants/profileQueryType';
+import TimeRange from '@root/constants/timeRange';
 import { getEnrichUserConfigPipelineStage } from '@root/helpers/enrich';
 import { getGameFromId, getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { redirectToLogin } from '@root/helpers/redirectToLogin';
@@ -123,6 +124,7 @@ export default function RankedPage({ levelsByDifficulty, rankedSolvesByDifficult
                     query: {
                       difficultyFilter: difficulty.name,
                       isRanked: true,
+                      timeRange: TimeRange[TimeRange.All],
                     },
                   }}
                   key={`${difficulty.name}-levels-solved`}
