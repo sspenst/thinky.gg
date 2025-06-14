@@ -93,6 +93,7 @@ export default function RankedPage({ levelsByDifficulty, rankedSolvesByDifficult
             pathname: '/search',
             query: {
               isRanked: true,
+              timeRange: TimeRange[TimeRange.All],
             },
           }}
         >
