@@ -1,17 +1,16 @@
 import { GameId } from '@root/constants/GameId';
 import { Game, Games } from '@root/constants/Games';
 import { DeviceInfo, ScreenSize } from '@root/hooks/useDeviceCheck';
+import { MultiplayerSocket } from '@root/hooks/useMultiplayerSocket';
 import Collection from '@root/models/db/collection';
 import Notification from '@root/models/db/notification';
 import { createContext } from 'react';
 import { KeyedMutator } from 'swr';
 import { ReqUser } from '../models/db/user';
 import UserConfig from '../models/db/userConfig';
-import { MultiplayerSocket } from '../pages/_app';
 
 interface AppContextInterface {
   deviceInfo: DeviceInfo;
-  forceUpdate: () => void;
   game: Game;
   host: string | undefined;
   multiplayerSocket: MultiplayerSocket;
@@ -43,7 +42,6 @@ export const AppContext = createContext<AppContextInterface>({
     isMac: false,
     screenSize: ScreenSize.SM,
   },
-  forceUpdate: () => {},
   game: Games[GameId.THINKY],
   host: undefined,
   multiplayerSocket: {

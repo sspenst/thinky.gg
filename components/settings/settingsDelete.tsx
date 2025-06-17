@@ -4,7 +4,7 @@ import React, { useContext } from 'react';
 import toast from 'react-hot-toast';
 
 export default function SettingsDelete() {
-  const { forceUpdate, mutateUser, setShouldAttemptAuth } = useContext(AppContext);
+  const { mutateUser, setShouldAttemptAuth } = useContext(AppContext);
   const router = useRouter();
 
   async function deleteAccount() {
@@ -28,7 +28,6 @@ export default function SettingsDelete() {
         mutateUser(undefined);
         setShouldAttemptAuth(false);
         router.push('/');
-        forceUpdate();
       }
     }
   }
