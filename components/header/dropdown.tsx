@@ -18,7 +18,7 @@ import DismissToast from '../toasts/dismissToast';
 import MusicIcon from './musicIcon';
 
 export default function Dropdown() {
-  const { forceUpdate, game, mutateUser, setShouldAttemptAuth, user } = useContext(AppContext);
+  const { game, mutateUser, setShouldAttemptAuth, user } = useContext(AppContext);
   const [isMusicModalOpen, setIsMusicModalOpen] = useState(false);
   const [isThemeOpen, setIsThemeOpen] = useState(false);
   const router = useRouter();
@@ -55,7 +55,6 @@ export default function Dropdown() {
       setShouldAttemptAuth(false);
       router.push('/');
       router.reload();
-      forceUpdate();
     });
   }
 
