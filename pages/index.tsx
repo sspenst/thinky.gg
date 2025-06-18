@@ -9,6 +9,7 @@ import { getUserFromToken } from '@root/lib/withAuth';
 import { ReqUser } from '@root/models/db/user';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { NextSeo, SoftwareAppJsonLd } from 'next-seo';
+import posthog from 'posthog-js';
 import { useFeatureFlagEnabled } from 'posthog-js/react';
 import React, { useEffect } from 'react';
 
@@ -32,6 +33,18 @@ interface ThinkyHomeRouterProps {
 export default function ThinkyHomeRouter({ user }: ThinkyHomeRouterProps) {
   // Feature flag for homepage A/B test
   const isNewHomepageLanding = useFeatureFlagEnabled('new-homepage-landing');
+
+  // Track feature flag exposure explicitly
+  useEffect(() => {
+    if (!user) {
+      // Only track for non-logged-in users since that's who sees the A/B test
+      posthog.capture('homepage_ab_test_exposure', {
+        feature_flag: 'new-homepage-landing',
+        variant: isNewHomepageLanding ? 'variant' : 'control',
+        user_logged_in: false,
+      });
+    }
+  }, [isNewHomepageLanding, user]);
 
   useEffect(() => {
     if (!user) {

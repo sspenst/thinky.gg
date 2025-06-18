@@ -16,7 +16,6 @@ export function usePostHogAnalytics(user: User | null | undefined) {
     posthog.init((process.env.NEXT_PUBLIC_POSTHOG_KEY as string) || 'phc_Am38672etY9vtglKkfMa86HVxREbLuh7ExC7Qj1qPBx', {
       api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST as string || '/api/ingest',
       person_profiles: 'always', // or 'always' to create profiles for anonymous users as well
-      capture_pageview: false,
       // Enable debug mode in development
       loaded: (posthog) => {
         if (process.env.NODE_ENV === 'development') posthog.debug();
