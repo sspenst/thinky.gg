@@ -20,6 +20,8 @@ export function usePostHogAnalytics(user: User | null | undefined) {
       // Enable debug mode in development
       loaded: (posthog) => {
         if (process.env.NODE_ENV === 'development') posthog.debug();
+        // Manually capture initial pageview to ensure it's tracked
+        posthog.capture('$pageview');
       },
     });
     console.log('POSTHOG_KEY', process.env.NEXT_PUBLIC_POSTHOG_KEY);
