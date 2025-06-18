@@ -652,6 +652,14 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
                 placeholder='Level name...'
                 type='search'
                 defaultValue={query.search}
+                onChange={(e) => {
+                  // Auto-switch to "All Time" when user starts typing
+                  if (e.target.value && query.timeRange !== TimeRange[TimeRange.All]) {
+                    queryHelper({
+                      timeRange: TimeRange[TimeRange.All],
+                    });
+                  }
+                }}
                 className='w-full pl-10 pr-3 py-2 text-base border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent'
               />
             </div>
