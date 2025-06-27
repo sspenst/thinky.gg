@@ -46,6 +46,11 @@ module.exports = {
         hostname: 'i.imgur.com',
         pathname: '**',
       },
+      // {
+      //   protocol: 'http',
+      //   hostname: 'localhost',
+      //   pathname: '**',
+      // }
     ],
   },
   eslint: {
