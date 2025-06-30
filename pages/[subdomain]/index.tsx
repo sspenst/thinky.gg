@@ -27,6 +27,34 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     };
   }
 
+  // Check for Discord embedded app parameters
+  const { query } = context;
+
+  const hasDiscordParams = query.frame_id || query.channel_id || query.guild_id || query.user_id || query.user_token || query.session_id || query.instance_id;
+
+  console.log('Home page getServerSideProps - hasDiscordParams:', hasDiscordParams);
+
+  if (hasDiscordParams) {
+    console.log('Home page getServerSideProps - redirecting to discord-play');
+    // Redirect to discord-play page with the parameters
+    const params = new URLSearchParams();
+
+    if (query.frame_id) params.append('frame_id', query.frame_id as string);
+    if (query.channel_id) params.append('channel_id', query.channel_id as string);
+    if (query.guild_id) params.append('guild_id', query.guild_id as string);
+    if (query.user_id) params.append('user_id', query.user_id as string);
+    if (query.user_token) params.append('user_token', query.user_token as string);
+    if (query.session_id) params.append('session_id', query.session_id as string);
+    if (query.instance_id) params.append('instance_id', query.instance_id as string);
+
+    return {
+      redirect: {
+        destination: `/discord-play?${params.toString()}`,
+        permanent: false,
+      },
+    };
+  }
+
   return {
     props: {
       // pass user here instead of using page context so that the page doesn't flash before retrieving user

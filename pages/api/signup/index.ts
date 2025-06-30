@@ -20,10 +20,10 @@ import queueDiscordWebhook from '../../../helpers/discordWebhook';
 import getProfileSlug from '../../../helpers/getProfileSlug';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
-import getTokenCookie from '../../../lib/getTokenCookie';
+import getTokenCookie, { getTokenCookieForDiscordEmbed } from '../../../lib/getTokenCookie';
 import sendPasswordResetEmail from '../../../lib/sendPasswordResetEmail';
 import User from '../../../models/db/user';
-import { UserConfigModel, UserModel } from '../../../models/mongoose';
+import { UserAuthModel, UserConfigModel, UserModel } from '../../../models/mongoose';
 
 async function createUser({ gameId, email, name, password, tutorialCompletedAt, utm_source, roles, emailConfirmed }: {gameId: GameId, email: string, name: string, password: string, tutorialCompletedAt: number, utm_source: string, roles: Role[], emailConfirmed?: boolean}, queryOptions: QueryOptions): Promise<[User, UserConfig]> {
   const id = new Types.ObjectId();
@@ -82,7 +82,29 @@ export default apiWrapper({ POST: {
 
   const RECAPTCHA_SECRET = process.env.RECAPTCHA_SECRET || '';
 
-  if (RECAPTCHA_SECRET && RECAPTCHA_SECRET.length > 0) {
+  let shouldSkipRecaptcha = false;
+  let tokenFunction = getTokenCookie;
+
+  if (oauthData) {
+    // For OAuth signups, verify the user doesn't already exist in UserAuth
+    const existingAuth = await UserAuthModel.findOne({
+      provider: oauthData.provider,
+      providerId: oauthData.discordId
+    });
+
+    if (existingAuth) {
+      return res.status(400).json({ error: 'This Discord account is already linked to a Thinky.gg account' });
+    }
+
+    // Skip recaptcha for OAuth signups since they're already verified
+    shouldSkipRecaptcha = true;
+  }
+
+  if (oauthData && oauthData.provider === 'discord') {
+    tokenFunction = getTokenCookieForDiscordEmbed;
+  }
+
+  if (RECAPTCHA_SECRET && RECAPTCHA_SECRET.length > 0 && !shouldSkipRecaptcha) {
     if (!recaptchaToken) {
       return res.status(400).json({ error: 'Please fill out recaptcha' });
     }
@@ -217,7 +239,7 @@ export default apiWrapper({ POST: {
       });
     }
 
-    return res.setHeader('Set-Cookie', getTokenCookie(id.toString(), req.headers?.host))
+    return res.setHeader('Set-Cookie', tokenFunction(id.toString(), req.headers?.host))
       .status(200).json({
         success: true,
         ...(guest ? { name: trimmedName, temporaryPassword: passwordValue } : {}),

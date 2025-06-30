@@ -5,6 +5,22 @@ import posthog from 'posthog-js';
 import { useEffect } from 'react';
 import User from '../models/db/user';
 
+function isDiscordEmbed() {
+  if (typeof window === 'undefined') return false;
+  const url = new URL(window.location.href);
+
+  // Check for Discord embed params
+  return (
+    url.searchParams.has('frame_id') ||
+    url.searchParams.has('channel_id') ||
+    url.searchParams.has('guild_id') ||
+    url.searchParams.has('user_id') ||
+    url.searchParams.has('user_token') ||
+    url.searchParams.has('session_id') ||
+    url.searchParams.has('instance_id')
+  );
+}
+
 export function usePostHogAnalytics(user: User | null | undefined) {
   // Initialize PostHog analytics
   useEffect(() => {
@@ -13,8 +29,12 @@ export function usePostHogAnalytics(user: User | null | undefined) {
       //return;
     }
 
+    const apiHost = isDiscordEmbed()
+      ? '/.proxy/api/ingest'
+      : (process.env.NEXT_PUBLIC_POSTHOG_HOST as string || '/api/ingest');
+
     posthog.init((process.env.NEXT_PUBLIC_POSTHOG_KEY as string) || 'phc_Am38672etY9vtglKkfMa86HVxREbLuh7ExC7Qj1qPBx', {
-      api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST as string || '/api/ingest',
+      api_host: apiHost,
       person_profiles: 'always', // or 'always' to create profiles for anonymous users as well
       // Enable debug mode in development
       loaded: (posthog) => {
@@ -24,7 +44,7 @@ export function usePostHogAnalytics(user: User | null | undefined) {
       },
     });
     console.log('POSTHOG_KEY', process.env.NEXT_PUBLIC_POSTHOG_KEY);
-    console.log('POSTHOG_HOST', process.env.NEXT_PUBLIC_POSTHOG_HOST);
+    console.log('POSTHOG_HOST', apiHost);
     const handleRouteChange = () => posthog?.capture('$pageview');
 
     Router.events.on('routeChangeComplete', handleRouteChange);

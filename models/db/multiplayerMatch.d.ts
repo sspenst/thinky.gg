@@ -31,6 +31,8 @@ interface MultiplayerMatch {
   type: MultiplayerMatchType;
   updatedAt: Date;
   winners: User[] | Types.ObjectId[];
+  // Generic metadata field for extensible integrations
+  metadata?: Record<string, any>;
 }
 
 export default MultiplayerMatch;

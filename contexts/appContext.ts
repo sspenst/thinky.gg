@@ -29,6 +29,11 @@ interface AppContextInterface {
   tempCollection?: Collection;
   user: ReqUser | undefined | null;
   userConfig: UserConfig | undefined | null;
+  userHook: {
+    isLoading: boolean;
+    mutateUser: KeyedMutator<ReqUser>;
+    user: ReqUser | undefined | null;
+  };
 }
 
 export const AppContext = createContext<AppContextInterface>({
@@ -66,4 +71,9 @@ export const AppContext = createContext<AppContextInterface>({
   tempCollection: undefined,
   user: undefined,
   userConfig: undefined,
+  userHook: {
+    isLoading: false,
+    mutateUser: () => Promise.resolve(undefined),
+    user: undefined,
+  },
 });

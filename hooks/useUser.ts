@@ -12,6 +12,6 @@ export default function useUser() {
     error,
     isLoading,
     mutateUser: mutate,
-    user: data,
+    user: error ? null : data,
   };
 }

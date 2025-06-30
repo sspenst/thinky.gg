@@ -105,6 +105,11 @@ const MultiplayerMatchSchema = new mongoose.Schema<MultiplayerMatch>(
       ref: 'User',
       default: [],
     },
+    // Generic metadata field for extensible integrations
+    metadata: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {},
+    },
   },
   {
     timestamps: true,
