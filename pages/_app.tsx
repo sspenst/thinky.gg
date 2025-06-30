@@ -43,8 +43,9 @@ MyApp.getInitialProps = async ({ ctx }: { ctx: NextPageContext }) => {
 
 export default function MyApp({ Component, pageProps, userAgent, initGame }: AppProps & { userAgent: string, initGame: Game }) {
   const deviceInfo = useDeviceCheck(userAgent);
+  const userHook = useUser();
+  const { isLoading: isLoadingUser, mutateUser, user } = userHook;
 
-  const { isLoading, mutateUser, user } = useUser();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const router = useRouter();
   const [showNav, setShowNav] = useState(true);
@@ -116,8 +117,9 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
             showNav: showNav,
             sounds: sounds,
             tempCollection,
-            user: isLoading ? undefined : !user ? null : user,
-            userConfig: isLoading ? undefined : !user?.config ? null : user.config,
+            user: isLoadingUser ? undefined : !user ? null : user,
+            userConfig: isLoadingUser ? undefined : !user?.config ? null : user.config,
+            userHook: userHook
           }}>
             <div className={getFontFromGameId(selectedGame.id)} style={{
               backgroundColor: router.pathname === '/' && !user ? 'transparent' : 'var(--bg-color)',

@@ -348,6 +348,7 @@ async function createMatch(req: NextApiRequestWithAuth) {
   const rated: boolean = req.body.rated;
   const reqUser = req.user;
   const type: MultiplayerMatchType = req.body.type;
+  const metadata: Record<string, any> | undefined = req.body.metadata;
   const session = await mongoose.startSession();
   let match: MultiplayerMatch | null = null;
   let errorCode = 500, errorMessage = 'Error creating match';
@@ -373,7 +374,7 @@ async function createMatch(req: NextApiRequestWithAuth) {
       const matchId = SlugUtil.makeId(11);
       const matchUrl = `${req.headers.origin}/match/${matchId}`;
 
-      const matchCreate = await MultiplayerMatchModel.create([{
+      const matchCreateData: any = {
         createdBy: reqUser._id,
         gameId: req.gameId,
         matchId: matchId,
@@ -390,7 +391,14 @@ async function createMatch(req: NextApiRequestWithAuth) {
         rated: rated,
         state: MultiplayerMatchState.OPEN,
         type: type,
-      }], { session: session });
+      };
+
+      // Add metadata if provided
+      if (metadata && Object.keys(metadata).length > 0) {
+        matchCreateData.metadata = metadata;
+      }
+
+      const matchCreate = await MultiplayerMatchModel.create([matchCreateData], { session: session });
 
       match = matchCreate[0] as MultiplayerMatch;
 
@@ -631,6 +639,7 @@ export default withAuth(
         type: ValidEnum(Object.values(MultiplayerMatchType)),
         private: ValidType('boolean'),
         rated: ValidType('boolean'),
+        metadata: ValidType('object', false),
       }
     },
   },

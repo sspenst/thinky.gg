@@ -67,8 +67,15 @@ export async function middleware(req: NextRequest) {
 
   const folder = url.pathname.split('/')[1];
 
-  // don't redirect api calls or invalid subdomains
-  if (folder === 'api' || (subdomain !== null && !validSubdomains.has(subdomain))) {
+  // Special exception for discord-play - never redirect or rewrite
+
+  // don't redirect api calls
+  if (folder === 'api') {
+    return;
+  }
+
+  // don't redirect invalid subdomains (but allow noSubdomainPages)
+  if (subdomain !== null && !validSubdomains.has(subdomain) && !noSubdomainPages.has(folder)) {
     return;
   }
 
