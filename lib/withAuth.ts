@@ -14,6 +14,7 @@ import dbConnect from './dbConnect';
 import getTokenCookie from './getTokenCookie';
 import initNewrelicErrorLogging from './initNewrelicErrorLogging';
 import isLocal from './isLocal';
+import { getValidatedJwtSecret } from './envValidation';
 
 export interface NextApiRequestWithAuth extends NextApiRequestWrapper {
   gameId: GameId;
@@ -30,14 +31,12 @@ export async function getUserFromToken(
     throw new Error('token not defined');
   }
 
-  if (!process.env.JWT_SECRET) {
-    throw new Error('JWT_SECRET not defined');
-  }
+  const jwtSecret = getValidatedJwtSecret();
 
   let verifiedSignature: JwtPayload | undefined;
 
   try {
-    verifiedSignature = jwt.verify(token, process.env.JWT_SECRET) as JwtPayload;
+    verifiedSignature = jwt.verify(token, jwtSecret) as JwtPayload;
   } catch (err) {
     logger.error(err);
 

@@ -81,8 +81,42 @@ export default async function dbConnect({ ignoreInitializeLocalDb }: DBConnectPr
           return;
         }
 
+        // Prevent multiple concurrent reconnection attempts
+        if (cached.promise) {
+          logger.warn('Reconnection already in progress, skipping duplicate attempt');
+          return;
+        }
+
         logger.warn('Mongoose connection disconnected. Attempting to reconnect...');
-        mongoose.connect(uri, options);
+        
+        // Implement exponential backoff for reconnection attempts
+        const reconnectWithBackoff = (retryCount = 0, maxRetries = 5) => {
+          if (retryCount >= maxRetries) {
+            logger.error('Max reconnection attempts reached, stopping auto-reconnect');
+            cached.autoReconnect = false;
+            return;
+          }
+
+          const delay = Math.min(1000 * Math.pow(2, retryCount), 30000); // Cap at 30 seconds
+          
+          setTimeout(() => {
+            // Check if we're still disconnected before attempting reconnection
+            if (mongoose.connection.readyState === 0) {
+              cached.promise = mongoose.connect(uri, options)
+                .then(() => {
+                  logger.info('Successfully reconnected to database');
+                  cached.promise = null;
+                })
+                .catch((error) => {
+                  logger.error('Reconnection attempt failed:', error);
+                  cached.promise = null;
+                  reconnectWithBackoff(retryCount + 1, maxRetries);
+                });
+            }
+          }, delay);
+        };
+
+        reconnectWithBackoff();
       });
 
       mongoose.connection.on('error', (err) => {

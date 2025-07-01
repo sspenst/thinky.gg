@@ -1,6 +1,7 @@
 import { serialize } from 'cookie';
 import jwt from 'jsonwebtoken';
 import cookieOptions from './cookieOptions';
+import { getValidatedJwtSecret } from './envValidation';
 
 export default function getTokenCookie(userId: string, host: string | undefined) {
   return serialize(
@@ -11,13 +12,12 @@ export default function getTokenCookie(userId: string, host: string | undefined)
 }
 
 export function getTokenCookieValue(userId: string) {
-  if (!process.env.JWT_SECRET) {
-    throw new Error('JWT_SECRET not defined');
-  }
+  // Use validated JWT secret instead of direct environment access
+  const jwtSecret = getValidatedJwtSecret();
 
   return jwt.sign(
     { userId },
-    process.env.JWT_SECRET,
+    jwtSecret,
     { expiresIn: '7d' }
   );
 }

@@ -19,19 +19,20 @@ export default apiWrapper({ POST: {
 
   // trim whitespaces from name
   const trimmedName = name.trim();
-  let user = await UserModel.findOne({ name: trimmedName }, '_id password').lean<User>();
+  
+  // Use a single query with $or to find user by name or email
+  const user = await UserModel.findOne({
+    $or: [
+      { name: trimmedName },
+      { email: trimmedName }
+    ]
+  }, '_id password').lean<User>();
 
-  if (!user) {
-    user = await UserModel.findOne({ email: trimmedName }, '_id password').lean<User>();
-  }
+  // Always perform bcrypt comparison to prevent timing attacks, even if user doesn't exist
+  const hashedPassword = user?.password || '$2b$10$invalidHashToPreventTimingAttack';
+  const isValidPassword = await bcrypt.compare(password, hashedPassword);
 
-  if (!user || user.password === undefined) {
-    return res.status(401).json({
-      error: 'Incorrect email or password',
-    });
-  }
-
-  if (!(await bcrypt.compare(password, user.password))) {
+  if (!user || user.password === undefined || !isValidPassword) {
     return res.status(401).json({
       error: 'Incorrect email or password',
     });
