@@ -20,6 +20,34 @@ import Level, { EnrichedLevel } from '../../models/db/level';
 import { ICON_PRO_16, ICON_REDO, ICON_UNDO } from '../icons/gameIcons';
 import GameLayout from './gameLayout';
 
+// Constants
+const STATS_THROTTLE_MS = 15 * 1000; // 15 seconds
+const SESSION_STORAGE_DEBOUNCE_MS = 100;
+const TOAST_DURATION_MS = 3000;
+const CHECKPOINT_TOAST_DURATION_MS = 1500;
+const MIN_SWIPE_TIME_MS = 500;
+const MAX_SWIPE_VELOCITY = 0.3;
+const MIN_TOUCH_THRESHOLD = 0.5;
+const TILE_MARGIN_RATIO = 40;
+
+// Touch movement keys
+const MOVEMENT_KEYS = {
+  UP: 'ArrowUp',
+  DOWN: 'ArrowDown',
+  LEFT: 'ArrowLeft',
+  RIGHT: 'ArrowRight',
+} as const;
+
+// Game control keys
+const CONTROL_KEYS = {
+  RESTART: 'KeyR',
+  UNDO: ['Backspace', 'KeyU', 'KeyZ'],
+  REDO: 'KeyY',
+  NEXT: 'KeyN',
+  PREV: 'KeyP',
+  BEST_CHECKPOINT: 'KeyB',
+} as const;
+
 interface SessionCheckpoint {
   _id: Types.ObjectId;
   directions: Direction[];
@@ -44,6 +72,321 @@ export interface GameProps {
   nextLevel?: EnrichedLevel;
   prevLevel?: EnrichedLevel;
 }
+
+// Custom hook for stats tracking
+function useStatsTracking({
+  disableStats,
+  levelId,
+  matchId,
+  mutateUser,
+  mutateCheckpoints,
+  mutateCollection,
+  mutateLevel,
+  mutateProStatsLevel,
+  mutateReviews,
+  onStatsSuccess,
+}: {
+  disableStats?: boolean;
+  levelId: string;
+  matchId?: string;
+  mutateUser: () => void;
+  mutateCheckpoints: () => void;
+  mutateCollection?: () => void;
+  mutateLevel?: () => void;
+  mutateProStatsLevel?: () => void;
+  mutateReviews?: () => void;
+  onStatsSuccess?: () => void;
+}) {
+  const lastDirections = useRef<Direction[]>([]);
+
+  const trackStats = useCallback((directions: Direction[], maxRetries: number = 3) => {
+    if (disableStats) {
+      return;
+    }
+
+    // Skip if directions are identical to last tracked directions
+    if (directions.length === lastDirections.current.length && 
+        directions.every((direction, index) => direction === lastDirections.current[index])) {
+      return;
+    }
+
+    NProgress.start();
+
+    const requestBody = {
+      directions,
+      levelId,
+      matchId,
+    };
+
+    fetch('/api/stats', {
+      method: 'PUT',
+      body: JSON.stringify(requestBody),
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    })
+    .then(async res => {
+      if (res.status === 200) {
+        // Update all relevant data
+        mutateUser();
+        mutateCheckpoints();
+        mutateCollection?.();
+        mutateLevel?.();
+        mutateProStatsLevel?.();
+        mutateReviews?.();
+        onStatsSuccess?.();
+        
+        lastDirections.current = directions;
+      } else if (res.status === 500) {
+        throw res.text();
+      } else {
+        const error = JSON.parse(await res.text())?.error;
+        toast.dismiss();
+        toast.error(`Error updating stats: ${error}`, { duration: TOAST_DURATION_MS });
+      }
+    })
+    .catch(async err => {
+      const error = JSON.parse(await err)?.error;
+      console.error(`Error updating stats: { directions: ${directions}, levelId: ${levelId} }`, error);
+      
+      toast.dismiss();
+      toast.error(`Error updating stats: ${error}`, { duration: TOAST_DURATION_MS });
+
+      if (maxRetries > 0) {
+        trackStats(directions, maxRetries - 1);
+      }
+    })
+    .finally(() => {
+      NProgress.done();
+    });
+  }, [disableStats, levelId, matchId, mutateUser, mutateCheckpoints, mutateCollection, mutateLevel, mutateProStatsLevel, mutateReviews, onStatsSuccess]);
+
+  return { trackStats };
+}
+
+// Custom hook for session checkpoint management
+function useSessionCheckpoint(levelId: Types.ObjectId, levelData: string, enabled: boolean) {
+  const sessionCheckpointRestored = useRef(false);
+
+  const saveSessionToSessionStorage = useCallback(debounce(SESSION_STORAGE_DEBOUNCE_MS, (gameState: GameState) => {
+    if (typeof window.sessionStorage === 'undefined') {
+      return;
+    }
+
+    window.sessionStorage.setItem('sessionCheckpoint', JSON.stringify({
+      _id: levelId,
+      directions: gameState.moves.map(move => move.direction),
+    } as SessionCheckpoint));
+  }), [levelId]);
+
+  const restoreSessionCheckpoint = useCallback((): GameState | null => {
+    if (!enabled || sessionCheckpointRestored.current || typeof window.sessionStorage === 'undefined') {
+      return null;
+    }
+
+    const sessionCheckpointStr = window.sessionStorage.getItem('sessionCheckpoint');
+    if (!sessionCheckpointStr) {
+      return null;
+    }
+
+    try {
+      const sessionCheckpoint = JSON.parse(sessionCheckpointStr) as SessionCheckpoint;
+
+      if (sessionCheckpoint._id !== levelId || !isValidDirections(sessionCheckpoint.directions)) {
+        return null;
+      }
+
+      const newGameState = directionsToGameState(sessionCheckpoint.directions, levelData);
+      if (newGameState) {
+        sessionCheckpointRestored.current = true;
+      }
+
+      return newGameState;
+    } catch (error) {
+      console.error('Error parsing session checkpoint:', error);
+      return null;
+    }
+  }, [enabled, levelId, levelData]);
+
+  return {
+    saveSessionToSessionStorage,
+    restoreSessionCheckpoint,
+  };
+}
+
+// Helper functions for checkpoint management
+const createCheckpointToast = (index: number, isDelete: boolean = false) => {
+  const action = isDelete ? 'Deleting' : 'Saving';
+  toast.dismiss();
+  toast.loading(`${action} checkpoint ${index}...`);
+};
+
+const showCheckpointSuccessToast = (index: number, isDelete: boolean = false) => {
+  const action = isDelete ? 'Deleted' : 'Saved';
+  toast.dismiss();
+  toast.success(`${action} checkpoint ${index}`);
+};
+
+const showCheckpointErrorToast = (error?: string, isDelete: boolean = false) => {
+  const action = isDelete ? 'deleting' : 'saving';
+  toast.dismiss();
+  toast.error(error || `Error ${action} checkpoint`);
+};
+
+const createProUpgradeToast = (feature: string, gameName: string) => {
+  toast.dismiss();
+  toast.error(
+    <div>Upgrade to <Link href='/pro' className='text-blue-500'>{gameName} Pro</Link> to unlock {feature}!</div>,
+    {
+      duration: TOAST_DURATION_MS,
+      icon: feature === 'checkpoints' ? <Image alt='pro' src='/pro.svg' width='16' height='16' /> : ICON_PRO_16,
+    }
+  );
+};
+
+// Custom hook for touch handling
+function useTouchHandling(
+  levelId: Types.ObjectId,
+  levelWidth: number,
+  levelHeight: number,
+  preventKeyDownEvent: boolean,
+  handleKeyDown: (code: string) => void
+) {
+  const touchXDown = useRef<number>(0);
+  const touchYDown = useRef<number>(0);
+  const validTouchStart = useRef<boolean>(false);
+  const lastTouchTimestamp = useRef<number>(Date.now());
+  const lastMovetimestamp = useRef(Date.now());
+  const isSwiping = useRef<boolean>(false);
+
+  const moveByDXDY = useCallback((dx: number, dy: number) => {
+    const timeSince = Date.now() - lastMovetimestamp.current;
+
+    if (timeSince < 0) {
+      return; // Rate limiting
+    }
+
+    lastMovetimestamp.current = Date.now();
+    const code = Math.abs(dx) > Math.abs(dy) 
+      ? (dx < 0 ? MOVEMENT_KEYS.LEFT : MOVEMENT_KEYS.RIGHT)
+      : (dy < 0 ? MOVEMENT_KEYS.UP : MOVEMENT_KEYS.DOWN);
+
+    handleKeyDown(code);
+  }, [handleKeyDown]);
+
+  const handleTouchStartEvent = useCallback((event: TouchEvent) => {
+    if (preventKeyDownEvent) {
+      return;
+    }
+
+    // Must start the touch event within the game layout
+    const isValid = event.composedPath().some(e => (e as HTMLElement).id === `grid-${levelId.toString()}`);
+    validTouchStart.current = isValid;
+
+    if (isValid) {
+      touchXDown.current = event.touches[0].clientX;
+      touchYDown.current = event.touches[0].clientY;
+      isSwiping.current = false;
+      lastTouchTimestamp.current = Date.now();
+      event.preventDefault();
+    }
+  }, [levelId, preventKeyDownEvent]);
+
+  const handleTouchMoveEvent = useCallback((event: TouchEvent) => {
+    if (!validTouchStart.current || preventKeyDownEvent) {
+      return;
+    }
+
+    const timeSince = Date.now() - lastTouchTimestamp.current;
+
+    if (timeSince > MIN_SWIPE_TIME_MS) {
+      isSwiping.current = false;
+    }
+
+    if (!isSwiping.current && touchXDown.current !== undefined && touchYDown.current !== undefined) {
+      const { clientX, clientY } = event.changedTouches[0];
+      const dx = clientX - touchXDown.current;
+      const dy = clientY - touchYDown.current;
+      const containerDiv = document.getElementById(`grid-${levelId.toString()}`);
+
+      const maxHeight = containerDiv?.offsetHeight || 0;
+      const maxWidth = containerDiv?.offsetWidth || 0;
+      const tileSize = levelWidth / levelHeight > maxWidth / maxHeight
+        ? Math.floor(maxWidth / levelWidth) 
+        : Math.floor(maxHeight / levelHeight);
+
+      const tileMargin = Math.round(tileSize / TILE_MARGIN_RATIO) || 1;
+      const dragDistance = Math.sqrt(dx * dx + dy * dy);
+
+      if (dragDistance / timeSince > MAX_SWIPE_VELOCITY) {
+        // Fast drag detected - likely a swipe, don't move on drag
+        touchXDown.current = clientX;
+        touchYDown.current = clientY;
+        isSwiping.current = true;
+        return;
+      }
+
+      if (Math.abs(dx) < tileSize - tileMargin && Math.abs(dy) < tileSize - tileMargin) {
+        return;
+      }
+
+      if (timeSince > 0) {
+        touchXDown.current = clientX;
+        touchYDown.current = clientY;
+        moveByDXDY(dx, dy);
+      }
+    }
+  }, [levelId, levelHeight, levelWidth, moveByDXDY, preventKeyDownEvent]);
+
+  const handleTouchEndEvent = useCallback((event: TouchEvent) => {
+    if (!validTouchStart.current || preventKeyDownEvent) {
+      return;
+    }
+
+    const timeSince = Date.now() - lastTouchTimestamp.current;
+
+    if (timeSince <= MIN_SWIPE_TIME_MS && touchXDown.current !== undefined && touchYDown.current !== undefined) {
+      // Handle swipe gestures
+      const { clientX, clientY } = event.changedTouches[0];
+      const dx = clientX - touchXDown.current;
+      const dy = clientY - touchYDown.current;
+
+      if (Math.abs(dx) <= MIN_TOUCH_THRESHOLD && Math.abs(dy) <= MIN_TOUCH_THRESHOLD) {
+        // Reset touch state on tap
+        validTouchStart.current = false;
+        return;
+      }
+
+      moveByDXDY(dx, dy);
+      touchXDown.current = clientX;
+      touchYDown.current = clientY;
+    }
+
+    // Reset touch state
+    validTouchStart.current = false;
+    isSwiping.current = false;
+  }, [moveByDXDY, preventKeyDownEvent]);
+
+  // Cleanup function for touch states
+  const resetTouchStates = useCallback(() => {
+    validTouchStart.current = false;
+    isSwiping.current = false;
+    touchXDown.current = 0;
+    touchYDown.current = 0;
+  }, []);
+
+  return {
+    handleTouchStartEvent,
+    handleTouchMoveEvent,
+    handleTouchEndEvent,
+    resetTouchStates,
+    moveByDXDY,
+    isSwiping,
+  };
+}
+
+// Helper function to create game controls (moved inside component to fix JSX context)
 
 export default function Game({
   disableAutoUndo,
@@ -76,44 +419,44 @@ export default function Game({
 
   const [gameState, setGameState] = useState<GameState>(initGameState(level.data));
 
-  const lastDirections = useRef<Direction[]>([]);
   // keeping track of the game state before restarting or loading a checkpoint
   const oldGameState = useRef<GameState>(undefined);
-  const sessionCheckpointRestored = useRef(false);
   const shiftKeyDown = useRef(false);
 
   const { checkpoints, mutateCheckpoints } = useCheckpoints(level._id, disableCheckpoints || user === null || !isPro(user));
   const pro = isPro(user);
 
+  // Use the stats tracking hook
+  const { trackStats } = useStatsTracking({
+    disableStats,
+    levelId: level._id.toString(),
+    matchId,
+    mutateUser,
+    mutateCheckpoints,
+    mutateCollection,
+    mutateLevel,
+    mutateProStatsLevel,
+    mutateReviews,
+    onStatsSuccess,
+  });
+
+  // Use the session checkpoint hook
+  const { saveSessionToSessionStorage, restoreSessionCheckpoint } = useSessionCheckpoint(
+    level._id,
+    level.data,
+    enableSessionCheckpoint || false
+  );
+
+  // Restore session checkpoint on component mount
   useEffect(() => {
-    if (!enableSessionCheckpoint || sessionCheckpointRestored.current || typeof window.sessionStorage === 'undefined') {
-      return;
+    const restoredGameState = restoreSessionCheckpoint();
+    if (restoredGameState) {
+      setGameState(restoredGameState);
     }
+  }, [restoreSessionCheckpoint]);
 
-    const sessionCheckpointStr = window.sessionStorage.getItem('sessionCheckpoint');
-
-    if (!sessionCheckpointStr) {
-      return;
-    }
-
-    const sessionCheckpoint = JSON.parse(sessionCheckpointStr) as SessionCheckpoint;
-
-    if (sessionCheckpoint._id !== level._id || !isValidDirections(sessionCheckpoint.directions)) {
-      return;
-    }
-
-    const newGameState = directionsToGameState(sessionCheckpoint.directions, level.data);
-
-    if (!newGameState) {
-      return;
-    }
-
-    setGameState(newGameState);
-  }, [enableSessionCheckpoint, level._id, level.data]);
-
-  const SECOND = 1000;
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const fetchPlayAttempt = useCallback(throttle(15 * SECOND, async () => {
+  const fetchPlayAttempt = useCallback(throttle(STATS_THROTTLE_MS, async () => {
     if (shouldAttemptAuth) {
       await fetch('/api/play-attempt', {
         body: JSON.stringify({
@@ -128,83 +471,9 @@ export default function Game({
     }
   }), []);
 
-  const trackStats = useCallback((directions: Direction[], levelId: string, maxRetries: number) => {
-    if (disableStats) {
-      return;
-    }
-
-    // if directions array is identical to lastDirections array, don't PUT stats
-    if (directions.length === lastDirections.current.length && directions.every((direction, index) => direction === lastDirections.current[index])) {
-      return;
-    }
-
-    NProgress.start();
-
-    fetch('/api/stats', {
-      method: 'PUT',
-      body: JSON.stringify({
-        directions: directions,
-        levelId: levelId,
-        matchId: matchId,
-      }),
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-    }).then(async res => {
-      if (res.status === 200) {
-        mutateUser();
-        mutateCheckpoints();
-
-        if (mutateCollection) {
-          mutateCollection();
-        }
-
-        if (mutateLevel) {
-          mutateLevel();
-        }
-
-        if (mutateProStatsLevel) {
-          mutateProStatsLevel();
-        }
-
-        if (mutateReviews) {
-          mutateReviews();
-        }
-
-        if (onStatsSuccess) {
-          onStatsSuccess();
-        }
-
-        lastDirections.current = directions;
-      } else if (res.status === 500) {
-        throw res.text();
-      } else {
-        // NB: don't retry if we get a 400 or 404 response since the request is already invalid
-        const error = JSON.parse(await res.text())?.error;
-
-        toast.dismiss();
-        toast.error(`Error updating stats: ${error}`, { duration: 3000 });
-      }
-    }).catch(async err => {
-      const error = JSON.parse(await err)?.error;
-
-      console.error(`Error updating stats: { directions: ${directions}, levelId: ${levelId} }`, error);
-      toast.dismiss();
-      toast.error(`Error updating stats: ${error}`, { duration: 3000 });
-
-      if (maxRetries > 0) {
-        trackStats(directions, levelId, maxRetries - 1);
-      }
-    }).finally(() => {
-      NProgress.done();
-    });
-  }, [disableStats, matchId, mutateCheckpoints, mutateCollection, mutateLevel, mutateProStatsLevel, mutateReviews, mutateUser, onStatsSuccess]);
-
   const saveCheckpoint = useCallback((index: number) => {
     if (index !== BEST_CHECKPOINT_INDEX) {
-      toast.dismiss();
-      toast.loading(`Saving checkpoint ${index}...`);
+      createCheckpointToast(index);
     }
 
     fetch('/api/level/' + level._id + '/checkpoints', {
@@ -219,28 +488,24 @@ export default function Game({
     }).then(async res => {
       if (res.status === 200) {
         if (index !== BEST_CHECKPOINT_INDEX) {
-          toast.dismiss();
-          toast.success(`Saved checkpoint ${index}`);
+          showCheckpointSuccessToast(index);
         }
-
         mutateCheckpoints();
       } else {
         throw res.text();
       }
     }).catch(async err => {
       console.error(err);
-
       if (index !== BEST_CHECKPOINT_INDEX) {
-        toast.dismiss();
-        toast.error(JSON.parse(await err)?.error || 'Error saving checkpoint');
+        const error = JSON.parse(await err)?.error;
+        showCheckpointErrorToast(error);
       }
     });
   }, [gameState, level._id, mutateCheckpoints]);
 
   const deleteCheckpoint = useCallback((index: number) => {
     if (index !== BEST_CHECKPOINT_INDEX) {
-      toast.dismiss();
-      toast.loading(`Deleting checkpoint ${index}...`);
+      createCheckpointToast(index, true);
     }
 
     fetch(`/api/level/${level._id}/checkpoints?index=${index}`, {
@@ -248,18 +513,16 @@ export default function Game({
     }).then(async res => {
       if (res.status === 200) {
         if (index !== BEST_CHECKPOINT_INDEX) {
-          toast.dismiss();
-          toast.success(`Deleted checkpoint ${index}`);
+          showCheckpointSuccessToast(index, true);
         }
-
         mutateCheckpoints();
       } else {
         throw res.text();
       }
     }).catch(async err => {
       console.error(err);
-      toast.dismiss();
-      toast.error(JSON.parse(await err)?.error || 'Error deleting checkpoint');
+      const error = JSON.parse(await err)?.error;
+      showCheckpointErrorToast(error, true);
     });
   }, [level._id, mutateCheckpoints]);
 
@@ -329,18 +592,6 @@ export default function Game({
     }
   }, [checkpoints, gameState, level.data]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const saveSessionToSessionStorage = useCallback(debounce(100, (gs: GameState) => {
-    if (typeof window.sessionStorage === 'undefined') {
-      return;
-    }
-
-    window.sessionStorage.setItem('sessionCheckpoint', JSON.stringify({
-      _id: level._id,
-      directions: gs.moves.map(move => move.direction),
-    } as SessionCheckpoint));
-  }), [level._id]);
-
   const handleKeyDown = useCallback((code: string) => {
     if (code === 'KeyN') {
       if (onNext) {
@@ -372,15 +623,7 @@ export default function Game({
       }
 
       if (!pro) {
-        toast.dismiss();
-        toast.error(
-          <div>Upgrade to <Link href='/pro' className='text-blue-500'>{game.displayName} Pro</Link> to unlock checkpoints!</div>,
-          {
-            duration: 3000,
-            icon: <Image alt='pro' src='/pro.svg' width='16' height='16' />,
-          }
-        );
-
+        createProUpgradeToast('checkpoints', game.displayName);
         return;
       }
 
@@ -450,15 +693,7 @@ export default function Game({
       const redo = undoKey || code === 'KeyY';
 
       if (redo && !pro) {
-        toast.dismiss();
-        toast.error(
-          <div>Upgrade to <Link href='/pro' className='text-blue-500'>{game.displayName} Pro</Link> to unlock redo!</div>,
-          {
-            duration: 3000,
-            icon: ICON_PRO_16,
-          }
-        );
-
+        createProUpgradeToast('redo', game.displayName);
         return prevGameState;
       }
 
@@ -488,7 +723,7 @@ export default function Game({
         }
 
         // track stats upon reaching an exit
-        trackStats(newGameState.moves.map(move => move.direction), level._id.toString(), 3);
+        trackStats(newGameState.moves.map(move => move.direction));
       } else if (!disablePlayAttempts) {
         // track play attempts upon making a successful move
         fetchPlayAttempt();
@@ -498,12 +733,15 @@ export default function Game({
     });
   }, [disableAutoUndo, disableCheckpoints, disablePlayAttempts, enableSessionCheckpoint, fetchPlayAttempt, game.displayName, isComplete, level._id, level.data, level.leastMoves, loadCheckpoint, onComplete, onMove, onNext, onPrev, onSolve, pro, saveCheckpoint, saveSessionToSessionStorage, trackStats]);
 
-  const touchXDown = useRef<number>(0);
-  const touchYDown = useRef<number>(0);
-  const validTouchStart = useRef<boolean>(false);
-  const lastTouchTimestamp = useRef<number>(Date.now());
-  const lastMovetimestamp = useRef(Date.now());
-  const isSwiping = useRef<boolean>(false);
+  const { handleTouchStartEvent, handleTouchMoveEvent, handleTouchEndEvent, resetTouchStates, moveByDXDY, isSwiping } = useTouchHandling(
+    level._id,
+    level.width,
+    level.height,
+    preventKeyDownEvent,
+    handleKeyDown
+  );
+
+  // Keyboard event handlers
   const handleKeyDownEvent = useCallback((event: KeyboardEvent) => {
     if (preventKeyDownEvent) {
       return;
@@ -511,8 +749,8 @@ export default function Game({
 
     const { code } = event;
 
-    // prevent arrow keys from scrolling the sidebar
-    if (code === 'ArrowUp' || code === 'ArrowDown') {
+    // Prevent arrow keys from scrolling the sidebar
+    if (code === MOVEMENT_KEYS.UP || code === MOVEMENT_KEYS.DOWN) {
       event.preventDefault();
     }
 
@@ -531,120 +769,7 @@ export default function Game({
     shiftKeyDown.current = false;
   }, []);
 
-  const handleTouchStartEvent = useCallback((event: TouchEvent) => {
-    if (preventKeyDownEvent) {
-      return;
-    }
-
-    // NB: must start the touch event within the game layout
-    const isValid = event.composedPath().some(e => (e as HTMLElement).id === `grid-${level._id.toString()}`);
-
-    validTouchStart.current = isValid;
-
-    if (isValid) {
-      // store the mouse x and y position
-      touchXDown.current = event.touches[0].clientX;
-      touchYDown.current = event.touches[0].clientY;
-      isSwiping.current = false;
-      lastTouchTimestamp.current = Date.now();
-      event.preventDefault();
-    }
-  }, [level._id, preventKeyDownEvent]);
-
-  const moveByDXDY = useCallback((dx: number, dy: number) => {
-    const timeSince = Date.now() - lastMovetimestamp.current;
-
-    if (timeSince < 0) {
-      // max move rate
-      return;
-    }
-
-    lastMovetimestamp.current = Date.now();
-    const code = Math.abs(dx) > Math.abs(dy) ? dx < 0 ?
-      'ArrowLeft' : 'ArrowRight' : dy < 0 ? 'ArrowUp' : 'ArrowDown';
-
-    handleKeyDown(code);
-  }, [handleKeyDown, lastMovetimestamp]);
-
-  const handleTouchMoveEvent = useCallback((event: TouchEvent) => {
-    if (!validTouchStart.current || preventKeyDownEvent) {
-      return;
-    }
-
-    const timeSince = Date.now() - lastTouchTimestamp.current;
-
-    if (timeSince > 500) {
-      isSwiping.current = false;
-    }
-
-    if (!isSwiping.current && touchXDown !== undefined && touchYDown !== undefined) {
-      const { clientX, clientY } = event.changedTouches[0];
-      const dx: number = clientX - touchXDown.current;
-      const dy: number = clientY - touchYDown.current;
-      const containerDiv = document.getElementById(`grid-${level._id.toString()}`);
-
-      const maxHeight = containerDiv?.offsetHeight || 0;
-      const maxWidth = containerDiv?.offsetWidth || 0;
-      const tileSize = level.width / level.height > maxWidth / maxHeight ?
-        Math.floor(maxWidth / level.width) : Math.floor(maxHeight / level.height);
-
-      const tileMargin = Math.round(tileSize / 40) || 1;
-
-      // drag distance
-      const dragDistance = Math.sqrt(dx * dx + dy * dy);
-
-      if (dragDistance / timeSince > 0.3) {
-        // if the user drags really fast and it was sudden, don't move on drag because it is likely a swipe
-        touchXDown.current = clientX;
-        touchYDown.current = clientY;
-        isSwiping.current = true;
-
-        return;
-      }
-
-      if (Math.abs(dx) < tileSize - tileMargin && Math.abs(dy) < tileSize - tileMargin) {
-        return;
-      }
-
-      if (timeSince > 0) {
-        touchXDown.current = clientX;
-        touchYDown.current = clientY;
-        moveByDXDY(dx, dy);
-      }
-    }
-  }, [level._id, level.height, level.width, moveByDXDY, preventKeyDownEvent]);
-
-  const handleTouchEndEvent = useCallback((event: TouchEvent) => {
-    if (!validTouchStart.current || preventKeyDownEvent) {
-      return;
-    }
-
-    const timeSince = Date.now() - lastTouchTimestamp.current;
-
-    if (timeSince <= 500 && touchXDown !== undefined && touchYDown !== undefined) {
-      // for swipe control instead of drag
-      const { clientX, clientY } = event.changedTouches[0];
-
-      const dx: number = clientX - touchXDown.current;
-      const dy: number = clientY - touchYDown.current;
-
-      if (Math.abs(dx) <= 0.5 && Math.abs(dy) <= 0.5) {
-        // Reset touch state on tap
-        validTouchStart.current = false;
-
-        return;
-      }
-
-      moveByDXDY(dx, dy);
-      touchXDown.current = clientX;
-      touchYDown.current = clientY;
-    }
-
-    // Reset touch state
-    validTouchStart.current = false;
-    isSwiping.current = false;
-  }, [moveByDXDY, preventKeyDownEvent]);
-
+  // Event listener setup
   useEffect(() => {
     window.addEventListener('blur', handleBlurEvent);
     document.addEventListener('keydown', handleKeyDownEvent);
@@ -663,50 +788,50 @@ export default function Game({
     };
   }, [handleBlurEvent, handleKeyDownEvent, handleKeyUpEvent, handleTouchMoveEvent, handleTouchStartEvent, handleTouchEndEvent]);
 
+  // Reset touch states on unmount
   useEffect(() => {
     return () => {
-      // Reset all touch states on unmount
-      validTouchStart.current = false;
-      isSwiping.current = false;
-      touchXDown.current = 0;
-      touchYDown.current = 0;
+      resetTouchStates();
     };
-  }, []);
+  }, [resetTouchStates]);
 
   const [controls, setControls] = useState<Control[]>([]);
   const isMobile = deviceInfo.isMobile;
 
+  // Update controls when dependencies change
   useEffect(() => {
-    const _controls: Control[] = [];
+    const controls: Control[] = [];
 
+    // Previous level control
     if (onPrev) {
-      const leftArrow = <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
-        <path strokeLinecap='round' strokeLinejoin='round' d='M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18' />
-      </svg>;
+      const leftArrow = (
+        <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
+          <path strokeLinecap='round' strokeLinejoin='round' d='M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18' />
+        </svg>
+      );
       const prevTxt = isMobile ? leftArrow : <div><span className='underline'>P</span>rev Level</div>;
-
-      _controls.push(new Control('btn-prev', () => onPrev(), prevTxt ));
+      controls.push(new Control('btn-prev', () => onPrev(), prevTxt));
     }
 
-    const restartIcon = (<svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
-      <path strokeLinecap='round' strokeLinejoin='round' d='M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99' />
-    </svg>);
+    // Restart control
+    const restartIcon = (
+      <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
+        <path strokeLinecap='round' strokeLinejoin='round' d='M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99' />
+      </svg>
+    );
     const restartTxt = isMobile ? restartIcon : <div><span className='underline'>R</span>estart</div>;
-
     const undoTxt = isMobile ? ICON_UNDO : <div><span className='underline'>U</span>ndo</div>;
-
     const redoTxt = isMobile ? ICON_REDO : <div>Redo (<span className='underline'>Y</span>)</div>;
 
-    _controls.push(
-      new Control('btn-restart', () => handleKeyDown('KeyR'), restartTxt),
+    controls.push(
+      new Control('btn-restart', () => handleKeyDown(CONTROL_KEYS.RESTART), restartTxt),
       new Control('btn-undo', () => handleKeyDown('Backspace'), undoTxt, false, false, () => {
         handleKeyDown('Backspace');
-
         return true;
       }),
       new Control(
         'btn-redo',
-        () => handleKeyDown('KeyY'),
+        () => handleKeyDown(CONTROL_KEYS.REDO),
         <span className='flex gap-2 justify-center select-none'>
           {!pro && <Image className='pointer-events-none z-0' alt='pro' src='/pro.svg' width='16' height='16' />}
           {redoTxt}
@@ -714,52 +839,53 @@ export default function Game({
         gameState.redoStack.length === 0,
         false,
         () => {
-          handleKeyDown('KeyY');
-
+          handleKeyDown(CONTROL_KEYS.REDO);
           return true;
         },
       ),
     );
 
+    // Next level control
     if (onNext) {
-      const rightArrow = <span className='truncate'><svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
-        <path strokeLinecap='round' strokeLinejoin='round' d='M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3' />
-      </svg></span>;
+      const rightArrow = (
+        <span className='truncate'>
+          <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
+            <path strokeLinecap='round' strokeLinejoin='round' d='M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3' />
+          </svg>
+        </span>
+      );
       const nextTxt = isMobile ? rightArrow : <div><span className='underline'>N</span>ext Level</div>;
-
-      _controls.push(new Control('btn-next', () => onNext(), nextTxt));
+      controls.push(new Control('btn-next', () => onNext(), nextTxt));
     }
 
-    if (extraControls) {
-      setControls(_controls.concat(extraControls));
-    } else {
-      setControls(_controls);
-    }
-  }, [extraControls, gameState.redoStack.length, handleKeyDown, isMobile, onNext, onPrev, pro, setControls]);
+    const finalControls = extraControls ? controls.concat(extraControls) : controls;
+    setControls(finalControls);
+  }, [extraControls, gameState.redoStack.length, handleKeyDown, isMobile, onNext, onPrev, pro]);
 
-  function onCellClick(x: number, y: number) {
+  // Cell click handler
+  const onCellClick = useCallback((x: number, y: number) => {
     if (isSwiping.current) {
       return;
     }
 
     const playerPosition = gameState.pos;
 
-    // let's move the player to the cell clicked
-    const dist = Math.abs(x - playerPosition.x + y - playerPosition.y);
-    let breaker = 0;
-
-    // if you are not on the same row and column as the player, don't move
+    // Only move if on the same row or column as the player
     if (x !== playerPosition.x && y !== playerPosition.y) {
       return;
     }
 
-    while (breaker < dist) {
-      moveByDXDY(x - playerPosition.x, y - playerPosition.y);
-      validTouchStart.current = false;
-      breaker++;
-    }
-  }
+    // Move the player to the clicked cell
+    const distance = Math.abs(x - playerPosition.x + y - playerPosition.y);
+    let stepCount = 0;
 
+    while (stepCount < distance) {
+      moveByDXDY(x - playerPosition.x, y - playerPosition.y);
+      stepCount++;
+    }
+  }, [gameState.pos, isSwiping, moveByDXDY]);
+
+  // Scrub handler for timeline control
   const handleScrub = useCallback((moveIndex: number) => {
     setGameState(prevGameState => {
       const newGameState = cloneGameState(prevGameState);
@@ -773,7 +899,6 @@ export default function Game({
       for (let i = 0; i < moveIndex; i++) {
         if (newGameState.redoStack.length > 0) {
           const direction = newGameState.redoStack[newGameState.redoStack.length - 1];
-
           makeMove(newGameState, direction, false);
         }
       }
@@ -795,7 +920,7 @@ export default function Game({
         disableCheckpoints={disableCheckpoints}
         gameState={gameState}
         level={level}
-        onCellClick={(x, y) => onCellClick(x, y)}
+        onCellClick={onCellClick}
         onScrub={disableScrubber ? undefined : handleScrub}
         isPro={pro}
         nextLevel={nextLevel}
