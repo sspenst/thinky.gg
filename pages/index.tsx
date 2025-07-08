@@ -34,6 +34,8 @@ export default function ThinkyHomeRouter({ user }: ThinkyHomeRouterProps) {
   // Feature flag for homepage A/B test
   const isNewHomepageLanding = useFeatureFlagEnabled('new-homepage-landing');
 
+  const featureFlagStillLoading = isNewHomepageLanding === undefined;
+
   // Track feature flag exposure explicitly
   useEffect(() => {
     if (!user) {
@@ -98,7 +100,14 @@ export default function ThinkyHomeRouter({ user }: ThinkyHomeRouterProps) {
             </div>
           ) : (
             // A/B test: render variant or original based on feature flag
-            isNewHomepageLanding ? <ThinkyHomePageNotLoggedInVariant /> : <ThinkyHomePageNotLoggedIn />
+            // if featureFlagStillLoading, show a loading spinner
+            featureFlagStillLoading ? (
+              <div className='flex justify-center items-center h-32'>
+                <svg className='animate-spin h-8 w-8 text-gray-400' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'>
+                  <circle cx='12' cy='12' r='10' stroke='currentColor' strokeWidth='4' strokeLinecap='round' strokeDasharray='60' strokeDashoffset='20' />
+                </svg>
+              </div>
+            ) : isNewHomepageLanding ? <ThinkyHomePageNotLoggedInVariant /> : <ThinkyHomePageNotLoggedIn />
           )}
         </div>
       </Page>
