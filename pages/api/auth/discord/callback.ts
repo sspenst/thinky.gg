@@ -133,6 +133,9 @@ const handleDiscordCallback = apiWrapper({
       const user = await getUserFromToken(token, req);
 
       if (!user) {
+        // clear token cookie
+        res.setHeader('Set-Cookie', 'token=; Max-Age=0; Path=/; HttpOnly; SameSite=Strict');
+
         res.redirect(`${origin}/login?error=session_expired`);
 
         return;
