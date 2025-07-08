@@ -171,7 +171,7 @@ export default function SettingsAccount({ user }: SettingsAccountProps) {
     });
   }, [user.email]);
 
-  function updateUser(body: string, property: string) {
+  const updateUser = useCallback((body: string, property: string) => {
     toast.dismiss();
     const toastId = toast.loading(`Updating ${property}...`);
 
@@ -194,7 +194,7 @@ export default function SettingsAccount({ user }: SettingsAccountProps) {
       console.error(err);
       toast.error(JSON.parse(await err)?.error || `Error updating ${property}`, { id: toastId });
     });
-  }
+  }, [mutateUser, multiplayerSocket]);
 
   function resendEmailConfirmation(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
