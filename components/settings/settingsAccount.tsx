@@ -122,6 +122,32 @@ export default function SettingsAccount({ user }: SettingsAccountProps) {
   // Check if user has OAuth providers (for showing the "don't know password" option)
   const hasOAuthProviders = authProviders.length > 0;
 
+  // Helper function to update user data
+  const updateUser = useCallback((body: string, property: string) => {
+    toast.dismiss();
+    const toastId = toast.loading(`Updating ${property}...`);
+
+    fetch('/api/user', {
+      method: 'PUT',
+      body: body,
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    }).then(res => {
+      if (res.status !== 200) {
+        throw res.text();
+      } else {
+        toast.success(`Updated ${property}`, { id: toastId });
+        mutateUser();
+        multiplayerSocket.socket?.emit('refresh');
+      }
+    }).catch(async err => {
+      console.error(err);
+      toast.error(JSON.parse(await err)?.error || `Error updating ${property}`, { id: toastId });
+    });
+  }, [mutateUser, multiplayerSocket]);
+
   // Helper function to refresh auth providers
   const refreshAuthProviders = useCallback(() => {
     setAuthProvidersLoading(true);
@@ -170,31 +196,6 @@ export default function SettingsAccount({ user }: SettingsAccountProps) {
       toast.error(JSON.parse(await err)?.error || 'Error sending password reset email', { id: toastId });
     });
   }, [user.email]);
-
-  const updateUser = useCallback((body: string, property: string) => {
-    toast.dismiss();
-    const toastId = toast.loading(`Updating ${property}...`);
-
-    fetch('/api/user', {
-      method: 'PUT',
-      body: body,
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-    }).then(res => {
-      if (res.status !== 200) {
-        throw res.text();
-      } else {
-        toast.success(`Updated ${property}`, { id: toastId });
-        mutateUser();
-        multiplayerSocket.socket?.emit('refresh');
-      }
-    }).catch(async err => {
-      console.error(err);
-      toast.error(JSON.parse(await err)?.error || `Error updating ${property}`, { id: toastId });
-    });
-  }, [mutateUser, multiplayerSocket]);
 
   function resendEmailConfirmation(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
