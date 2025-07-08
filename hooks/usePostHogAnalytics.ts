@@ -18,7 +18,7 @@ export function usePostHogAnalytics(user: User | null | undefined) {
       person_profiles: 'always', // or 'always' to create profiles for anonymous users as well
       // Enable debug mode in development
       loaded: (posthog) => {
-        if (process.env.NODE_ENV === 'development') posthog.debug();
+        //if (process.env.NODE_ENV === 'development') posthog.debug();
         // Manually capture initial pageview to ensure it's tracked
         posthog.capture('$pageview');
       },
