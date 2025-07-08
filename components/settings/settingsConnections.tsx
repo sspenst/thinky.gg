@@ -107,17 +107,29 @@ export default function SettingsConnections({ user }: SettingsConnectionsProps) 
     fetch(`/api/auth/disconnect/${provider}`, {
       method: 'DELETE',
       credentials: 'include',
-    }).then(res => {
+    }).then(async res => {
       if (res.status === 200) {
         toast.success(`${provider.charAt(0).toUpperCase() + provider.slice(1)} disconnected`, { id: toastId });
         // Remove from local state
         setAuthProviders(prev => prev.filter(p => p.provider !== provider));
         mutateUser();
       } else {
-        throw new Error('Failed to disconnect');
+        const errorData = await res.json();
+
+        if (errorData.requiresPassword) {
+          toast.error(errorData.error, {
+            id: toastId,
+            duration: 6000,
+            icon: '⚠️'
+          });
+        } else {
+          throw new Error(errorData.error || 'Failed to disconnect');
+        }
       }
-    }).catch(() => {
-      toast.error(`Failed to disconnect ${provider}`, { id: toastId });
+    }).catch((err) => {
+      const errorMessage = err.message || `Failed to disconnect ${provider}`;
+
+      toast.error(errorMessage, { id: toastId });
     }).finally(() => {
       setAuthProvidersLoading(false);
     });

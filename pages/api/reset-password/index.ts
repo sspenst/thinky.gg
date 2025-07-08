@@ -1,5 +1,6 @@
 import { Types } from 'mongoose';
 import type { NextApiRequest, NextApiResponse } from 'next';
+import PrivateTagType from '../../../constants/privateTagType';
 import apiWrapper, { ValidObjectId, ValidType } from '../../../helpers/apiWrapper';
 import { logger } from '../../../helpers/logger';
 import dbConnect from '../../../lib/dbConnect';
@@ -39,6 +40,12 @@ export default apiWrapper({ POST: {
   }
 
   user.password = password;
+
+  // Add HAS_PASSWORD tag to indicate user has set a password they know
+  await UserModel.updateOne(
+    { _id: user._id },
+    { $addToSet: { privateTags: PrivateTagType.HAS_PASSWORD } }
+  );
 
   await user.save();
 

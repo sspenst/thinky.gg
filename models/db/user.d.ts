@@ -1,6 +1,7 @@
 import { EmailDigestSettingType } from '@root/constants/emailDigest';
 import { GameId } from '@root/constants/GameId';
 import { Types } from 'mongoose';
+import PrivateTagType from '../../constants/privateTagType';
 import Role from '../../constants/role';
 import MultiplayerProfile from './multiplayerProfile';
 import Notification from './notification';
@@ -27,6 +28,7 @@ interface User {
   mobileDeviceTokens: string[];
   name: string;
   password?: string;
+  privateTags?: PrivateTagType[];
   roles: Role[];
   stripeCustomerId: string;
   stripeGiftSubscriptions: string[]; // gift subscriptions this user has given out

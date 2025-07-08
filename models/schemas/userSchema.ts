@@ -1,6 +1,7 @@
 import { EmailDigestSettingType } from '@root/constants/emailDigest';
 import { GameId } from '@root/constants/GameId';
 import NotificationType from '@root/constants/notificationType';
+import PrivateTagType from '@root/constants/privateTagType';
 import bcrypt from 'bcryptjs';
 import mongoose, { Types } from 'mongoose';
 import { PASSWORD_SALTROUNDS } from '../../constants/passwordSaltRounds';
@@ -115,6 +116,12 @@ const UserSchema = new mongoose.Schema<User>({
     required: true,
     minlength: 8,
     maxlength: 64,
+  },
+  privateTags: {
+    type: [String],
+    enum: PrivateTagType,
+    default: [],
+    select: false,
   },
   roles: {
     type: [String],

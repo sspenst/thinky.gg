@@ -1,6 +1,7 @@
 import { enrichReqUser } from '@root/helpers/enrich';
 import getEmailConfirmationToken from '@root/helpers/getEmailConfirmationToken';
 import isGuest from '@root/helpers/isGuest';
+import { getUserAuthProviders } from '@root/helpers/userAuthHelpers';
 import sendEmailConfirmationEmail from '@root/lib/sendEmailConfirmationEmail';
 import Collection from '@root/models/db/collection';
 import MultiplayerProfile from '@root/models/db/multiplayerProfile';
@@ -8,6 +9,7 @@ import User from '@root/models/db/user';
 import bcrypt from 'bcryptjs';
 import mongoose, { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
+import PrivateTagType from '../../../constants/privateTagType';
 import TestId from '../../../constants/testId';
 import { ValidType } from '../../../helpers/apiWrapper';
 import { generateCollectionSlug, generateLevelSlug } from '../../../helpers/generateSlug';
@@ -32,6 +34,7 @@ export default withAuth({
       hideStatus: ValidType('boolean', false),
       name: ValidType('string', false),
       password: ValidType('string', false),
+
     }
   },
   DELETE: {},
@@ -73,6 +76,13 @@ export default withAuth({
     if (password) {
       const user = await UserModel.findById(req.user._id, '+password');
 
+      // Regular password change - requires current password
+      if (!currentPassword) {
+        return res.status(400).json({
+          error: 'Current password is required',
+        });
+      }
+
       if (!(await bcrypt.compare(currentPassword, user.password))) {
         return res.status(401).json({
           error: 'Incorrect email or password',
@@ -80,6 +90,13 @@ export default withAuth({
       }
 
       user.password = password;
+
+      // Add HAS_PASSWORD tag to indicate user has set a password they know
+      await UserModel.updateOne(
+        { _id: user._id },
+        { $addToSet: { privateTags: PrivateTagType.HAS_PASSWORD } }
+      );
+
       await user.save();
 
       return res.status(200).json({ updated: true });

@@ -2,6 +2,7 @@ import { EmailDigestSettingType } from '@root/constants/emailDigest';
 import { GameId } from '@root/constants/GameId';
 import { Games } from '@root/constants/Games';
 import NotificationType from '@root/constants/notificationType';
+import PrivateTagType from '@root/constants/privateTagType';
 import Role from '@root/constants/role';
 import { generatePassword } from '@root/helpers/generatePassword';
 import getEmailConfirmationToken from '@root/helpers/getEmailConfirmationToken';
@@ -25,7 +26,7 @@ import sendPasswordResetEmail from '../../../lib/sendPasswordResetEmail';
 import User from '../../../models/db/user';
 import { UserConfigModel, UserModel } from '../../../models/mongoose';
 
-async function createUser({ gameId, email, name, password, tutorialCompletedAt, utm_source, roles, emailConfirmed }: {gameId: GameId, email: string, name: string, password: string, tutorialCompletedAt: number, utm_source: string, roles: Role[], emailConfirmed?: boolean}, queryOptions: QueryOptions): Promise<[User, UserConfig]> {
+async function createUser({ gameId, email, name, password, tutorialCompletedAt, utm_source, roles, emailConfirmed, privateTags }: {gameId: GameId, email: string, name: string, password: string, tutorialCompletedAt: number, utm_source: string, roles: Role[], emailConfirmed?: boolean, privateTags?: PrivateTagType[]}, queryOptions: QueryOptions): Promise<[User, UserConfig]> {
   const id = new Types.ObjectId();
   const disallowedEmailNotifications = [
     NotificationType.NEW_FOLLOWER,
@@ -46,6 +47,7 @@ async function createUser({ gameId, email, name, password, tutorialCompletedAt, 
       emailDigest: EmailDigestSettingType.DAILY,
       name: name,
       password: password,
+      privateTags: privateTags || [],
       roles: roles,
       score: 0,
       ts: TimerUtil.getTs(),
@@ -157,6 +159,7 @@ export default apiWrapper({ POST: {
         roles: guest ? [Role.GUEST] : [],
         utm_source: utm_source,
         emailConfirmed: guest || !!oauthData,
+        privateTags: (!guest && !oauthData) ? [PrivateTagType.HAS_PASSWORD] : [],
       }, { session: session });
 
       if (!createdUser) {
