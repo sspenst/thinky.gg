@@ -40,7 +40,7 @@ export default function ThinkyHomeRouter({ user }: ThinkyHomeRouterProps) {
       // Only track for non-logged-in users since that's who sees the A/B test
       posthog.capture('homepage_ab_test_exposure', {
         feature_flag: 'new-homepage-landing',
-        variant: isNewHomepageLanding ? 'variant' : 'control',
+        variant: isNewHomepageLanding ? 'test' : 'control',
         user_logged_in: false,
       });
     }
