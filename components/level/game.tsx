@@ -4,11 +4,12 @@ import { directionsToGameState, isValidDirections } from '@root/helpers/checkpoi
 import { areEqualGameStates, cloneGameState, GameState, initGameState, makeMove, undo } from '@root/helpers/gameStateHelpers';
 import isPro from '@root/helpers/isPro';
 import useCheckpoints, { BEST_CHECKPOINT_INDEX } from '@root/hooks/useCheckpoints';
+import { ScreenSize } from '@root/hooks/useDeviceCheck';
 import { Types } from 'mongoose';
 import Image from 'next/image';
 import Link from 'next/link';
 import NProgress from 'nprogress';
-import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { debounce, throttle } from 'throttle-debounce';
 import { AppContext } from '../../contexts/appContext';
@@ -111,7 +112,8 @@ export default function Game({
   }, [enableSessionCheckpoint, level._id, level.data]);
 
   const SECOND = 1000;
-  const fetchPlayAttempt = useMemo(() => throttle(15 * SECOND, async () => {
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const fetchPlayAttempt = useCallback(throttle(15 * SECOND, async () => {
     if (shouldAttemptAuth) {
       await fetch('/api/play-attempt', {
         body: JSON.stringify({
@@ -124,7 +126,7 @@ export default function Game({
         method: 'POST',
       });
     }
-  }), [shouldAttemptAuth, level._id, matchId]);
+  }), []);
 
   const trackStats = useCallback((directions: Direction[], levelId: string, maxRetries: number) => {
     if (disableStats) {
@@ -327,7 +329,8 @@ export default function Game({
     }
   }, [checkpoints, gameState, level.data]);
 
-  const saveSessionToSessionStorage = useCallback((gs: GameState) => {
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const saveSessionToSessionStorage = useCallback(debounce(100, (gs: GameState) => {
     if (typeof window.sessionStorage === 'undefined') {
       return;
     }
@@ -336,10 +339,7 @@ export default function Game({
       _id: level._id,
       directions: gs.moves.map(move => move.direction),
     } as SessionCheckpoint));
-  }, [level._id]);
-
-  // Create a debounced version of the save function
-  const debouncedSaveSession = useMemo(() => debounce(100, saveSessionToSessionStorage), [saveSessionToSessionStorage]);
+  }), [level._id]);
 
   const handleKeyDown = useCallback((code: string) => {
     if (code === 'KeyN') {
@@ -403,7 +403,7 @@ export default function Game({
       function onSuccessfulMove(gameState: GameState) {
         // keep track of gameState in session storage
         if (enableSessionCheckpoint && typeof window.sessionStorage !== 'undefined') {
-          debouncedSaveSession(gameState);
+          saveSessionToSessionStorage(gameState);
         }
 
         if (onMove) {
@@ -496,7 +496,7 @@ export default function Game({
 
       return onSuccessfulMove(newGameState);
     });
-  }, [disableAutoUndo, disableCheckpoints, disablePlayAttempts, enableSessionCheckpoint, fetchPlayAttempt, game.displayName, isComplete, level._id, level.data, level.leastMoves, loadCheckpoint, onComplete, onMove, onNext, onPrev, onSolve, pro, saveCheckpoint, debouncedSaveSession, trackStats]);
+  }, [disableAutoUndo, disableCheckpoints, disablePlayAttempts, enableSessionCheckpoint, fetchPlayAttempt, game.displayName, isComplete, level._id, level.data, level.leastMoves, loadCheckpoint, onComplete, onMove, onNext, onPrev, onSolve, pro, saveCheckpoint, saveSessionToSessionStorage, trackStats]);
 
   const touchXDown = useRef<number>(0);
   const touchYDown = useRef<number>(0);
