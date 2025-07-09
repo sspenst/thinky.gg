@@ -73,7 +73,7 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, le
             >
               <LucideMoveLeft className='mr-2' />
               <span className='max-w-32 md:max-w-60 flex flex-col items-start'>
-                <span>{prevLevel ? 'Prev Level' : 'Back'}</span>
+                <span>{prevLevel ? <><u>P</u>rev Level</> : 'Back'}</span>
                 {prevLevel && (
                   <span className='hidden md:inline'>
                     <FormattedLevelLink id='prev' level={prevLevel} />
@@ -88,7 +88,7 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, le
               onClick={() => controls.find(c => c.id === 'btn-next')?.action()}
             >
               <span className='max-w-32 md:max-w-60 flex flex-col items-end'>
-                <span>Next Level</span>
+                <span><u>N</u>ext Level</span>
                 {nextLevel && (
                   <span className='hidden md:inline'>
                     <FormattedLevelLink id='next' level={nextLevel} />
