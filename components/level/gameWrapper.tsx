@@ -5,6 +5,7 @@ import getLevelCompleteColor from '@root/helpers/getLevelCompleteColor';
 import { CollectionType } from '@root/models/constants/collection';
 import classNames from 'classnames';
 import Link from 'next/link';
+import { useFeatureFlagEnabled } from 'posthog-js/react';
 import React, { Dispatch, SetStateAction, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import Collection, { EnrichedCollection } from '../../models/db/collection';
 import { EnrichedLevel } from '../../models/db/level';
@@ -16,6 +17,7 @@ import LevelInfoModal from '../modal/levelInfoModal';
 import PostGameModal from '../modal/postGameModal';
 import { dropConfetti } from '../page/confetti';
 import Game from './game';
+import GameRefactored from './game-refactored';
 import FormattedLevelInfo from './info/formattedLevelInfo';
 import Solved from './info/solved';
 
@@ -142,6 +144,8 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
       // For regular collections, get the previous level if not loading
       !isCollectionLoading.current ? collection.levels[collection.levels.findIndex(l => l._id === level._id) - 1] : undefined
   ) : undefined;
+  const refactoredFeatureFlag = useFeatureFlagEnabled('refactored-game');
+  const GameComponent = refactoredFeatureFlag ? GameRefactored : Game;
 
   return (
     <div className='flex h-full'>
@@ -208,7 +212,7 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
             level={level}
           />
         </div>
-        <Game
+        <GameComponent
           disablePlayAttempts={!user}
           disableStats={!user}
           enableSessionCheckpoint={true}

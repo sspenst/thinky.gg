@@ -14,3 +14,4 @@ newrelic_agent.log
 .vscode
 
 public/sounds/music/
+tsconfig.tsbuildinfo
