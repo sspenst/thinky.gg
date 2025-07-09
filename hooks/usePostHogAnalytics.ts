@@ -9,8 +9,8 @@ export function usePostHogAnalytics(user: User | null | undefined) {
   // Initialize PostHog analytics
   useEffect(() => {
     // Don't initialize PostHog for localhost
-    if (window.location.hostname === 'localhost') {
-      //return;
+    if (window.location.hostname.includes('localhost') && window.location.port === '3000') {
+      return;
     }
 
     posthog.init((process.env.NEXT_PUBLIC_POSTHOG_KEY as string) || 'phc_Am38672etY9vtglKkfMa86HVxREbLuh7ExC7Qj1qPBx', {
@@ -23,8 +23,7 @@ export function usePostHogAnalytics(user: User | null | undefined) {
         posthog.capture('$pageview');
       },
     });
-    console.log('POSTHOG_KEY', process.env.NEXT_PUBLIC_POSTHOG_KEY);
-    console.log('POSTHOG_HOST', process.env.NEXT_PUBLIC_POSTHOG_HOST);
+
     const handleRouteChange = () => posthog?.capture('$pageview');
 
     Router.events.on('routeChangeComplete', handleRouteChange);
@@ -42,7 +41,6 @@ export function usePostHogAnalytics(user: User | null | undefined) {
         'user_id': user?._id.toString()
       });
 
-      console.log('IDENTIFYING USER WITH POSTHOG', user.name);
       // Identify user with PostHog
       posthog.identify(user._id.toString(), {
         name: user?.name,
@@ -57,7 +55,6 @@ export function usePostHogAnalytics(user: User | null | undefined) {
         // Don't include the entire user object for privacy reasons
       });
     } else {
-      console.log('RESETING POSTHOG');
       // Reset PostHog identity when user logs out
       posthog.reset();
     }
