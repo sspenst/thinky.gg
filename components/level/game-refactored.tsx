@@ -513,6 +513,7 @@ export default function GameRefactored({
         nextLevel={nextLevel}
         prevLevel={prevLevel}
       />
+      <div>[testing 0.1]</div>
     </GameContext.Provider>
   );
 }
