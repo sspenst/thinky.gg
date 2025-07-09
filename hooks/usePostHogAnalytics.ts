@@ -9,8 +9,8 @@ export function usePostHogAnalytics(user: User | null | undefined) {
   // Initialize PostHog analytics
   useEffect(() => {
     // Don't initialize PostHog for localhost
-    if (window.location.hostname === 'localhost') {
-      //return;
+    if (window.location.hostname.includes('localhost') && window.location.port === '3000') {
+      return;
     }
 
     posthog.init((process.env.NEXT_PUBLIC_POSTHOG_KEY as string) || 'phc_Am38672etY9vtglKkfMa86HVxREbLuh7ExC7Qj1qPBx', {
