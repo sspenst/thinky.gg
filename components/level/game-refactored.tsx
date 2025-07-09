@@ -1,8 +1,9 @@
-import { getDirectionFromCode } from '@root/constants/direction';
+import Direction, { directionToVector, getDirectionFromCode } from '@root/constants/direction';
+import TileType from '@root/constants/tileType';
 import { GameContext } from '@root/contexts/gameContext';
-import { directionsToGameState, isValidDirections } from '@root/helpers/checkpointHelpers';
-import { areEqualGameStates, cloneGameState, GameState, makeMove, undo } from '@root/helpers/gameStateHelpers';
+import { cloneGameState, GameState, makeMove, undo } from '@root/helpers/gameStateHelpers';
 import isPro from '@root/helpers/isPro';
+import TileTypeHelper from '@root/helpers/tileTypeHelper';
 import useCheckpointAPI from '@root/hooks/useCheckpointAPI';
 import useCheckpoints, { BEST_CHECKPOINT_INDEX } from '@root/hooks/useCheckpoints';
 import useGameControls from '@root/hooks/useGameControls';
@@ -11,6 +12,7 @@ import useGameStats from '@root/hooks/useGameStats';
 import useKeyboardControls from '@root/hooks/useKeyboardControls';
 import useSessionCheckpoint from '@root/hooks/useSessionCheckpoint';
 import useTouchControls from '@root/hooks/useTouchControls';
+import Position from '@root/models/position';
 import Image from 'next/image';
 import Link from 'next/link';
 import React, { useCallback, useContext, useEffect, useRef } from 'react';
@@ -179,6 +181,116 @@ export default function GameRefactored({
     redoMoveRef.current = redoMove;
   }, [gameState, isComplete, fetchPlayAttempt, makeGameMove, restart, undoMove, redoMove]);
 
+  // Function to handle shift + direction movement
+  const handleShiftDirection = useCallback((direction: Direction) => {
+    const currentGameState = gameStateRef.current;
+    const playerPos = currentGameState.pos;
+    const directionVector = directionToVector(direction);
+
+    // Check if the first move would push a block
+    const firstMovePos = playerPos.add(directionVector);
+
+    // Check if first move is within bounds
+    if (firstMovePos.y < 0 || firstMovePos.y >= currentGameState.board.length ||
+        firstMovePos.x < 0 || firstMovePos.x >= currentGameState.board[firstMovePos.y].length) {
+      return playerPos; // Can't move, return current position
+    }
+
+    const firstMoveTile = currentGameState.board[firstMovePos.y][firstMovePos.x];
+    const blockAtFirstMove = firstMoveTile.block;
+
+    // If there's a block at the first move position, check if we can push it
+    if (blockAtFirstMove && TileTypeHelper.canMoveInDirection(blockAtFirstMove.tileType, direction)) {
+      // We can push the block! Now simulate pushing it as far as possible
+      let currentPlayerPos = playerPos;
+      let currentBlockPos = firstMovePos;
+
+      // Keep pushing the block until we can't anymore
+      while (true) {
+        const nextPlayerPos = currentPlayerPos.add(directionVector);
+        const nextBlockPos = currentBlockPos.add(directionVector);
+
+        // Check if next player position is valid
+        if (nextPlayerPos.y < 0 || nextPlayerPos.y >= currentGameState.board.length ||
+            nextPlayerPos.x < 0 || nextPlayerPos.x >= currentGameState.board[nextPlayerPos.y].length) {
+          break;
+        }
+
+        // Check if next block position is valid
+        if (nextBlockPos.y < 0 || nextBlockPos.y >= currentGameState.board.length ||
+            nextBlockPos.x < 0 || nextBlockPos.x >= currentGameState.board[nextBlockPos.y].length) {
+          break;
+        }
+
+        const nextPlayerTile = currentGameState.board[nextPlayerPos.y][nextPlayerPos.x];
+        const nextBlockTile = currentGameState.board[nextBlockPos.y][nextBlockPos.x];
+
+        // Check if player can move to next position (not wall or hole)
+        if (nextPlayerTile.tileType === TileType.Wall || nextPlayerTile.tileType === TileType.Hole) {
+          break;
+        }
+
+        // Check if block can move to next position
+        // Block can't move to: walls, positions with other blocks (unless it's a hole)
+        if (nextBlockTile.tileType === TileType.Wall || nextBlockTile.block) {
+          break;
+        }
+
+        // If next block position is a hole, block can go there and hole becomes default
+        // Otherwise, block just moves to the empty space
+        // In both cases, we can continue
+
+        currentPlayerPos = nextPlayerPos;
+        currentBlockPos = nextBlockPos;
+
+        // If we reach an exit, we can stop here (exits are valid targets for player)
+        if (nextPlayerTile.tileType === TileType.Exit) {
+          break;
+        }
+      }
+
+      return currentPlayerPos;
+    }
+
+    // No block to push, use original logic - find target cell by traversing until hitting non-empty square
+    let targetPos = new Position(playerPos.x, playerPos.y);
+
+    // Keep moving in the direction until we hit a non-empty square or boundary
+    while (true) {
+      const nextPos = targetPos.add(directionVector);
+
+      // Check if next position is within bounds
+      if (nextPos.y < 0 || nextPos.y >= currentGameState.board.length ||
+          nextPos.x < 0 || nextPos.x >= currentGameState.board[nextPos.y].length) {
+        break;
+      }
+
+      const nextTile = currentGameState.board[nextPos.y][nextPos.x];
+
+      // Check if next tile is non-empty
+      const hasBlock = nextTile.block !== undefined;
+      const hasBlockInHole = nextTile.blockInHole !== undefined;
+      const isWall = nextTile.tileType === TileType.Wall;
+      const isHole = nextTile.tileType === TileType.Hole;
+      const isExit = nextTile.tileType === TileType.Exit;
+
+      // If next tile is non-empty (except exits which can be entered), stop here
+      if (hasBlock || hasBlockInHole || isWall || isHole) {
+        break;
+      }
+
+      // Move to next position
+      targetPos = nextPos;
+
+      // If we reach an exit, we can stop here (exits are valid targets)
+      if (isExit) {
+        break;
+      }
+    }
+
+    return targetPos;
+  }, []);
+
   // Main keyboard handler - stable function that doesn't depend on frequently changing values
   const handleKeyDown = useCallback((code: string): boolean => {
     // Navigation controls
@@ -227,6 +339,53 @@ export default function GameRefactored({
       return false;
     }
 
+    // Get direction from code for both regular movement and shift+direction
+    const direction = getDirectionFromCode(code);
+
+    // Handle shift + direction for "travel as far as possible"
+    if (direction && shiftKeyDown.current) {
+      const currentGameState = gameStateRef.current;
+      const playerPos = currentGameState.pos;
+      const targetPos = handleShiftDirection(direction);
+
+      // Only move if we found a different position than current
+      if (!targetPos.equals(playerPos)) {
+        // Simulate the click by moving step by step in the direction
+        const dist = Math.abs(targetPos.x - playerPos.x + targetPos.y - playerPos.y);
+
+        // Only move if on same row or column
+        if (targetPos.x === playerPos.x || targetPos.y === playerPos.y) {
+          const dx = targetPos.x - playerPos.x;
+          const dy = targetPos.y - playerPos.y;
+
+          for (let i = 0; i < dist; i++) {
+            const moveDirection = Math.abs(dx) > Math.abs(dy) ?
+              (dx < 0 ? Direction.LEFT : Direction.RIGHT) :
+              (dy < 0 ? Direction.UP : Direction.DOWN);
+
+            // Make the move directly without going through handleKeyDown to avoid recursion
+            const currentState = gameStateRef.current;
+
+            if (isCompleteRef.current(currentState)) {
+              break;
+            }
+
+            const moveResult = makeGameMoveRef.current(moveDirection);
+
+            if (moveResult.success && !disablePlayAttempts) {
+              fetchPlayAttemptRef.current();
+            }
+
+            if (moveResult.isComplete) {
+              break;
+            }
+          }
+        }
+      }
+
+      return false;
+    }
+
     // Game movement controls
     if (code === 'KeyR') {
       restartRef.current();
@@ -257,18 +416,18 @@ export default function GameRefactored({
     }
 
     const currentGameState = gameStateRef.current;
-    const direction = redoKey ?
+    const moveDirection = redoKey ?
       (currentGameState.redoStack.length > 0 ? currentGameState.redoStack[currentGameState.redoStack.length - 1] : null) :
-      getDirectionFromCode(code);
+      direction;
 
-    if (!direction) return false;
+    if (!moveDirection) return false;
 
     // Lock movement once complete
     if (isCompleteRef.current(currentGameState)) return false;
 
     const moveResult = redoKey ?
       { success: redoMoveRef.current(), isComplete: false } : // redo doesn't return completion info yet
-      makeGameMoveRef.current(direction);
+      makeGameMoveRef.current(moveDirection);
 
     if (moveResult.success && !disablePlayAttempts) {
       // Track play attempts upon making a successful move
@@ -277,7 +436,7 @@ export default function GameRefactored({
 
     // Return true if the game became complete after this move, false otherwise
     return moveResult.isComplete;
-  }, [onNext, onPrev, pro, disablePlayAttempts, disableCheckpoints, game.displayName, saveCheckpoint, loadCheckpoint]);
+  }, [onNext, onPrev, pro, disablePlayAttempts, disableCheckpoints, game.displayName, saveCheckpoint, loadCheckpoint, handleShiftDirection]);
 
   // Handle touch-to-keyboard mapping
   const handleTouchMove = useCallback((dx: number, dy: number): boolean => {
