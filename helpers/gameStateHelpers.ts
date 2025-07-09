@@ -127,26 +127,43 @@ export function cloneGameState(gameState: GameState) {
 }
 
 export function areEqualGameStates(g1: GameState, g2: GameState) {
+  // Separate each check into its own boolean for easier debugging
+  const sameBoardLength = g1.board.length === g2.board.length;
+
+  const sameBoardContent = g1.board.every((row, y) => {
+    if (row.length !== g2.board[y].length) return false;
+
+    return row.every((tileState, x) => {
+      const otherTile = g2.board[y][x];
+      const sameBlockId = tileState.block?.id === otherTile.block?.id;
+      const sameBlockType = tileState.block?.tileType === otherTile.block?.tileType;
+      const sameBlockInHoleId = tileState.blockInHole?.id === otherTile.blockInHole?.id;
+      const sameBlockInHoleType = tileState.blockInHole?.tileType === otherTile.blockInHole?.tileType;
+      const sameText = tileState.text.length === otherTile.text.length &&
+        tileState.text.every((t, i) => t === otherTile.text[i]);
+      const sameTileType = tileState.tileType === otherTile.tileType;
+
+      return sameBlockId && sameBlockType && sameBlockInHoleId && sameBlockInHoleType && sameText && sameTileType;
+    });
+  });
+
+  const sameMoves = g1.moves.length === g2.moves.length && g1.moves.every((move, i) => {
+    return move.blockId === g2.moves[i]?.blockId &&
+      move.direction === g2.moves[i]?.direction;
+  });
+
+  const samePos = g1.pos.equals(g2.pos);
+
+  const sameRedoStackLength = g1.redoStack.length === g2.redoStack.length;
+  const sameRedoStack = sameRedoStackLength && g1.redoStack.every((direction, i) => direction === g2.redoStack[i]);
+
   return (
-    g1.board.length === g2.board.length &&
-    g1.board.every((row, y) => {
-      return row.length === g2.board[y].length &&
-        row.every((tileState, x) => {
-          return tileState.block?.id === g2.board[y][x].block?.id &&
-            tileState.block?.tileType === g2.board[y][x].block?.tileType &&
-            tileState.blockInHole?.id === g2.board[y][x].blockInHole?.id &&
-            tileState.blockInHole?.tileType === g2.board[y][x].blockInHole?.tileType &&
-            tileState.text.every((t, i) => t === g2.board[y][x].text[i]) &&
-            tileState.tileType === g2.board[y][x].tileType;
-        });
-    }) &&
-    g1.moves.every((move, i) => {
-      return move.blockId === g2.moves[i].blockId &&
-        move.direction === g2.moves[i].direction;
-    }) &&
-    g1.pos.equals(g2.pos) &&
-    g1.redoStack.length === g2.redoStack.length &&
-    g1.redoStack.every((direction, i) => direction === g2.redoStack[i])
+    sameBoardLength &&
+    sameBoardContent &&
+    sameMoves &&
+    samePos &&
+    sameRedoStackLength &&
+    sameRedoStack
   );
 }
 

@@ -3,6 +3,7 @@ import { GameContext } from '@root/contexts/gameContext';
 import { directionsToGameState, isValidDirections } from '@root/helpers/checkpointHelpers';
 import { areEqualGameStates, cloneGameState, GameState, makeMove, undo } from '@root/helpers/gameStateHelpers';
 import isPro from '@root/helpers/isPro';
+import useCheckpointAPI from '@root/hooks/useCheckpointAPI';
 import useCheckpoints, { BEST_CHECKPOINT_INDEX } from '@root/hooks/useCheckpoints';
 import useGameControls from '@root/hooks/useGameControls';
 import useGameState from '@root/hooks/useGameState';
@@ -147,131 +148,16 @@ export default function GameRefactored({
     mutateReviews,
   });
 
-  // Checkpoint operations
-  const saveCheckpoint = useCallback((index: number) => {
-    if (index !== BEST_CHECKPOINT_INDEX) {
-      toast.dismiss();
-      toast.loading(`Saving checkpoint ${index}...`);
-    }
-
-    fetch('/api/level/' + level._id + '/checkpoints', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        index: index,
-        directions: gameState.moves.map(move => move.direction),
-      }),
-    }).then(async res => {
-      if (res.status === 200) {
-        if (index !== BEST_CHECKPOINT_INDEX) {
-          toast.dismiss();
-          toast.success(`Saved checkpoint ${index}`);
-        }
-
-        mutateCheckpoints();
-      } else {
-        throw res.text();
-      }
-    }).catch(async err => {
-      console.error(err);
-
-      if (index !== BEST_CHECKPOINT_INDEX) {
-        toast.dismiss();
-        toast.error(JSON.parse(await err)?.error || 'Error saving checkpoint');
-      }
-    });
-  }, [gameState, level._id, mutateCheckpoints]);
-
-  const deleteCheckpoint = useCallback((index: number) => {
-    if (index !== BEST_CHECKPOINT_INDEX) {
-      toast.dismiss();
-      toast.loading(`Deleting checkpoint ${index}...`);
-    }
-
-    fetch(`/api/level/${level._id}/checkpoints?index=${index}`, {
-      method: 'DELETE',
-    }).then(async res => {
-      if (res.status === 200) {
-        if (index !== BEST_CHECKPOINT_INDEX) {
-          toast.dismiss();
-          toast.success(`Deleted checkpoint ${index}`);
-        }
-
-        mutateCheckpoints();
-      } else {
-        throw res.text();
-      }
-    }).catch(async err => {
-      console.error(err);
-      toast.dismiss();
-      toast.error(JSON.parse(await err)?.error || 'Error deleting checkpoint');
-    });
-  }, [level._id, mutateCheckpoints]);
-
-  const loadCheckpoint = useCallback((index: number) => {
-    if (!checkpoints) {
-      toast.dismiss();
-      toast.error('No checkpoints to restore');
-
-      return;
-    }
-
-    const checkpoint = checkpoints[index];
-
-    if (!checkpoint) {
-      return;
-    }
-
-    if (!isValidDirections(checkpoint)) {
-      toast.dismiss();
-      toast.error('Corrupted checkpoint');
-
-      return;
-    }
-
-    const checkpointGameState = directionsToGameState(checkpoint, level.data);
-
-    if (!checkpointGameState) {
-      toast.dismiss();
-      toast.error('Invalid checkpoint');
-
-      return;
-    }
-
-    if (!areEqualGameStates(checkpointGameState, gameState)) {
-      oldGameState.current = cloneGameState(gameState);
-      setGameState(checkpointGameState);
-
-      toast.dismiss();
-      toast.success(
-        <div>
-          {index === BEST_CHECKPOINT_INDEX ?
-            'Restored your best completion. Press B again to '
-            :
-            `Restored checkpoint ${index}. Press ${index} again to `
-          }
-          <span
-            className='text-blue-400'
-            style={{ cursor: 'pointer' }}
-            onClick={() => {
-              loadCheckpoint(index);
-              toast.dismiss();
-            }}
-          >
-            undo
-          </span>
-        </div>,
-        { duration: 3000 },
-      );
-    } else if (oldGameState.current) {
-      setGameState(cloneGameState(oldGameState.current));
-      oldGameState.current = undefined;
-      toast.dismiss();
-      toast.error('Undoing checkpoint restore', { duration: 1500, icon: '👍' });
-    }
-  }, [checkpoints, gameState, level.data, setGameState, oldGameState]);
+  // Checkpoint API operations
+  const { saveCheckpoint, deleteCheckpoint, loadCheckpoint } = useCheckpointAPI({
+    levelId: level._id,
+    levelData: level.data,
+    gameState,
+    setGameState,
+    oldGameState,
+    checkpoints,
+    mutateCheckpoints,
+  });
 
   // Create refs for frequently changing values to avoid recreating handleKeyDown
   const gameStateRef = useRef(gameState);
@@ -281,8 +167,6 @@ export default function GameRefactored({
   const restartRef = useRef(restart);
   const undoMoveRef = useRef(undoMove);
   const redoMoveRef = useRef(redoMove);
-  const saveCheckpointRef = useRef(saveCheckpoint);
-  const loadCheckpointRef = useRef(loadCheckpoint);
 
   // Update refs when values change
   useEffect(() => {
@@ -293,9 +177,7 @@ export default function GameRefactored({
     restartRef.current = restart;
     undoMoveRef.current = undoMove;
     redoMoveRef.current = redoMove;
-    saveCheckpointRef.current = saveCheckpoint;
-    loadCheckpointRef.current = loadCheckpoint;
-  }, [gameState, isComplete, fetchPlayAttempt, makeGameMove, restart, undoMove, redoMove, saveCheckpoint, loadCheckpoint]);
+  }, [gameState, isComplete, fetchPlayAttempt, makeGameMove, restart, undoMove, redoMove]);
 
   // Main keyboard handler - stable function that doesn't depend on frequently changing values
   const handleKeyDown = useCallback((code: string): boolean => {
@@ -334,12 +216,12 @@ export default function GameRefactored({
         const isShiftHeld = shiftKeyDown.current;
 
         if (isShiftHeld) {
-          saveCheckpointRef.current(index);
+          saveCheckpoint(index);
         } else {
-          loadCheckpointRef.current(index);
+          loadCheckpoint(index);
         }
       } else {
-        loadCheckpointRef.current(BEST_CHECKPOINT_INDEX);
+        loadCheckpoint(BEST_CHECKPOINT_INDEX);
       }
 
       return false;
@@ -395,9 +277,7 @@ export default function GameRefactored({
 
     // Return true if the game became complete after this move, false otherwise
     return moveResult.isComplete;
-  }, [
-    onNext, onPrev, disableCheckpoints, pro, game.displayName, disablePlayAttempts
-  ]);
+  }, [onNext, onPrev, pro, disablePlayAttempts, disableCheckpoints, game.displayName, saveCheckpoint, loadCheckpoint]);
 
   // Handle touch-to-keyboard mapping
   const handleTouchMove = useCallback((dx: number, dy: number): boolean => {

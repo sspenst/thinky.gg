@@ -127,20 +127,10 @@ export default function useCheckpointAPI({
       oldGameState.current = cloneGameState(gameState);
       setGameState(checkpointGameState);
 
-      const undoText = React.createElement('span', {
-        className: 'text-blue-400',
-        style: { cursor: 'pointer' },
-        onClick: () => {
-          loadCheckpoint(index);
-          toast.dismiss();
-        }
-      }, 'undo');
-
       const message = React.createElement('div', {},
         index === BEST_CHECKPOINT_INDEX ?
           'Restored your best completion. Press B again to ' :
-          `Restored checkpoint ${index}. Press ${index} again to `,
-        undoText
+          `Restored checkpoint ${index}. Press ${index} again to undo.`,
       );
 
       toast.dismiss();
