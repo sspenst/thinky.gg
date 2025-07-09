@@ -145,7 +145,7 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
       !isCollectionLoading.current ? collection.levels[collection.levels.findIndex(l => l._id === level._id) - 1] : undefined
   ) : undefined;
   const refactoredFeatureFlag = useFeatureFlagEnabled('refactored-game');
-  const GameComponent = !refactoredFeatureFlag ? GameRefactored : Game;
+  const GameComponent = refactoredFeatureFlag ? GameRefactored : Game;
 
   return (
     <div className='flex h-full'>
