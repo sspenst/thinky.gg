@@ -23,8 +23,7 @@ export function usePostHogAnalytics(user: User | null | undefined) {
         posthog.capture('$pageview');
       },
     });
-    console.log('POSTHOG_KEY', process.env.NEXT_PUBLIC_POSTHOG_KEY);
-    console.log('POSTHOG_HOST', process.env.NEXT_PUBLIC_POSTHOG_HOST);
+
     const handleRouteChange = () => posthog?.capture('$pageview');
 
     Router.events.on('routeChangeComplete', handleRouteChange);
@@ -42,7 +41,6 @@ export function usePostHogAnalytics(user: User | null | undefined) {
         'user_id': user?._id.toString()
       });
 
-      console.log('IDENTIFYING USER WITH POSTHOG', user.name);
       // Identify user with PostHog
       posthog.identify(user._id.toString(), {
         name: user?.name,
@@ -57,7 +55,6 @@ export function usePostHogAnalytics(user: User | null | undefined) {
         // Don't include the entire user object for privacy reasons
       });
     } else {
-      console.log('RESETING POSTHOG');
       // Reset PostHog identity when user logs out
       posthog.reset();
     }
