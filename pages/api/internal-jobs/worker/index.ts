@@ -4,6 +4,7 @@ import { GameId } from '@root/constants/GameId';
 import queueDiscordWebhook from '@root/helpers/discordWebhook';
 import { getEnrichNotificationPipelineStages } from '@root/helpers/enrich';
 import genLevelImage from '@root/helpers/genLevelImage';
+import { checkIfBlocked } from '@root/helpers/getBlockedUserIds';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import isGuest from '@root/helpers/isGuest';
 import { createNewLevelNotifications } from '@root/helpers/notificationHelper';
@@ -310,7 +311,10 @@ async function processQueueMessage(queueMessage: QueueMessage) {
       } else {
         const notification = notificationAgg[0];
 
-        const userConfig = await UserConfigModel.findOne<UserConfig>({ userId: notification.userId._id, gameId: notification.gameId }).lean<UserConfig>();
+        const [userConfig, isBlocked] = await Promise.all([
+          UserConfigModel.findOne<UserConfig>({ userId: notification.userId._id, gameId: notification.gameId }).lean<UserConfig>(),
+          notification.source?._id ? checkIfBlocked(notification.userId._id.toString(), notification.source._id.toString()) : false
+        ]);
 
         if (userConfig === null) {
           log = `Notification ${notificationId} not sent: user config not found`;
@@ -324,10 +328,16 @@ async function processQueueMessage(queueMessage: QueueMessage) {
           const disallowedEmail = (notification.userId as User).disallowedEmailNotifications?.includes(notification.type);
           const disallowedPush = (notification.userId as User).disallowedPushNotifications?.includes(notification.type);
 
-          if (whereSend === sendEmailNotification && disallowedEmail) {
-            log = `Notification ${notificationId} not sent: ${notification.type} not allowed by user (email)`;
-          } else if (whereSend === sendPushNotification && disallowedPush) {
-            log = `Notification ${notificationId} not sent: ${notification.type} not allowed by user (push)`;
+          console.log('isBlocked', isBlocked, notification.userId._id.toString(), notification.source._id.toString());
+
+          if (whereSend === sendEmailNotification && (disallowedEmail || isBlocked)) {
+            const reason = disallowedEmail ? 'not allowed by user' : 'user blocked source';
+
+            log = `Notification ${notificationId} not sent: ${notification.type} ${reason} (email)`;
+          } else if (whereSend === sendPushNotification && (disallowedPush || isBlocked)) {
+            const reason = disallowedPush ? 'not allowed by user' : 'user blocked source';
+
+            log = `Notification ${notificationId} not sent: ${notification.type} ${reason} (push)`;
           } else {
             log = await whereSend(userConfig.gameId, notification);
           }

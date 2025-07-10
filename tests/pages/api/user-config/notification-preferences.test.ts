@@ -1,5 +1,7 @@
 import { DEFAULT_GAME_ID } from '@root/constants/GameId';
+import GraphType from '@root/constants/graphType';
 import NotificationType from '@root/constants/notificationType';
+import { getBlockedUserIds } from '@root/helpers/getBlockedUserIds';
 import { createNewFollowerNotification, createNewReviewOnYourLevelNotification } from '@root/helpers/notificationHelper';
 import User from '@root/models/db/user';
 import { processQueueMessages } from '@root/pages/api/internal-jobs/worker';
@@ -13,7 +15,7 @@ import TestId from '../../../../constants/testId';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
-import { QueueMessageModel, UserModel } from '../../../../models/mongoose';
+import { GraphModel, QueueMessageModel, UserModel } from '../../../../models/mongoose';
 import handler from '../../../../pages/api/user-config/index';
 
 jest.mock('@root/pages/api/internal-jobs/worker/sendEmailNotification');
@@ -25,8 +27,11 @@ beforeAll(async () => {
 afterAll(async() => {
   await dbDisconnect();
 });
-afterEach(() => {
+afterEach(async () => {
   jest.restoreAllMocks();
+  // Clean up queue messages and graphs between tests
+  await QueueMessageModel.deleteMany({});
+  await GraphModel.deleteMany({});
 });
 enableFetchMocks();
 const defaultObj = {
@@ -122,10 +127,39 @@ describe('account settings notification preferences', () => {
     expect(queueProcessed).toBe('Processed 2 messages with 2 errors');
     const queueMessages = await QueueMessageModel.find({}).lean();
 
-    expect(queueMessages.length).toBe(6);
-    expect(queueMessages[4].log[0]).toContain('not sent: user is guest');
-    expect(queueMessages[5].log[0]).toContain('not sent: user is guest');
+    expect(queueMessages.length).toBe(2);
+    expect(queueMessages[0].log[0]).toContain('not sent: user is guest');
+    expect(queueMessages[1].log[0]).toContain('not sent: user is guest');
     expect(sendEmailNotification).toHaveBeenCalledTimes(0); // important
     expect(sendPushNotification).toHaveBeenCalledTimes(0); // important!
+  });
+  test('create a new review on your level notification from someone you have blocked', async () => {
+    // spy on sendMailRefMock.ref
+    await Promise.all([
+      GraphModel.create({
+        source: TestId.USER,
+        target: TestId.USER_B,
+        type: GraphType.BLOCK,
+        sourceModel: 'User',
+        targetModel: 'User',
+      }),
+      createNewReviewOnYourLevelNotification(
+        DEFAULT_GAME_ID,
+        new Types.ObjectId(TestId.USER),
+        new Types.ObjectId(TestId.USER_B),
+        TestId.LEVEL,
+        'Sample review'
+      ),
+    ]);
+
+    const blockedUserIds = await getBlockedUserIds(TestId.USER);
+
+    expect(blockedUserIds).toEqual([TestId.USER_B]);
+
+    const queueProcessed = await processQueueMessages();
+
+    expect(queueProcessed).toBe('Processed 2 messages with no errors');
+    expect(sendEmailNotification).toHaveBeenCalledTimes(0);
+    expect(sendPushNotification).toHaveBeenCalledTimes(0);
   });
 });

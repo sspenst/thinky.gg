@@ -30,6 +30,16 @@ export async function getBlockedUserIds(userId?: string | Types.ObjectId): Promi
   return blockedIds;
 }
 
+export async function checkIfBlocked(userId: string, blockedUserId: string) {
+  return await GraphModel.exists({
+    source: new Types.ObjectId(userId),
+    sourceModel: 'User',
+    type: GraphType.BLOCK,
+    targetModel: 'User',
+    target: new Types.ObjectId(blockedUserId),
+  });
+}
+
 // Optional: method to clear cache if needed
 export function clearBlockedCache(userId?: string) {
   if (userId) {
