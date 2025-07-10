@@ -4,6 +4,7 @@ import { Games } from '@root/constants/Games';
 import NotificationType from '@root/constants/notificationType';
 import PrivateTagType from '@root/constants/privateTagType';
 import Role from '@root/constants/role';
+import { initializeDisposableEmailDomains, isDisposableEmailDomain } from '@root/helpers/disposableEmailDomains';
 import { generatePassword } from '@root/helpers/generatePassword';
 import getEmailConfirmationToken from '@root/helpers/getEmailConfirmationToken';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
@@ -23,8 +24,9 @@ import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
 import getTokenCookie from '../../../lib/getTokenCookie';
 import sendPasswordResetEmail from '../../../lib/sendPasswordResetEmail';
+import KeyValue from '../../../models/db/keyValue';
 import User from '../../../models/db/user';
-import { UserConfigModel, UserModel } from '../../../models/mongoose';
+import { KeyValueModel, UserConfigModel, UserModel } from '../../../models/mongoose';
 
 async function createUser({ gameId, email, name, password, tutorialCompletedAt, utm_source, roles, emailConfirmed, privateTags }: {gameId: GameId, email: string, name: string, password: string, tutorialCompletedAt: number, utm_source: string, roles: Role[], emailConfirmed?: boolean, privateTags?: PrivateTagType[]}, queryOptions: QueryOptions): Promise<[User, UserConfig]> {
   const id = new Types.ObjectId();
@@ -65,6 +67,48 @@ async function createUser({ gameId, email, name, password, tutorialCompletedAt, 
   const userConfig = configCreated[0] as UserConfig;
 
   return [user, userConfig];
+}
+
+async function isEmailDomainAllowed(email: string): Promise<boolean> {
+  try {
+    // Get the domain from email (everything after @)
+    const domain = email.split('@')[1]?.toLowerCase();
+
+    if (!domain) {
+      return false; // Invalid email format
+    }
+
+    // Initialize disposable email domains on first use
+    await initializeDisposableEmailDomains();
+
+    // Check if domain is in the global disposable domains list
+    if (isDisposableEmailDomain(domain)) {
+      return false;
+    }
+
+    // Query for admin-configured disallowed domains
+    const disallowedDomainsKV = await KeyValueModel.findOne({
+      key: 'DISALLOWED_EMAIL_SIGNUP_DOMAIN',
+      gameId: GameId.THINKY
+    }).lean<KeyValue>();
+
+    if (!disallowedDomainsKV || !disallowedDomainsKV.value) {
+      return true; // No admin restrictions, allow domain (already checked disposable)
+    }
+
+    // Parse space-separated domain list
+    const disallowedDomains = String(disallowedDomainsKV.value)
+      .split(' ')
+      .map(d => d.trim().toLowerCase())
+      .filter(d => d.length > 0);
+
+    // Check if the email domain is in the admin-configured disallowed list
+    return !disallowedDomains.includes(domain);
+  } catch (error) {
+    logger.error('Error checking email domain:', error);
+
+    return true; // On error, allow signup to proceed
+  }
 }
 
 export default apiWrapper({ POST: {
@@ -116,6 +160,13 @@ export default apiWrapper({ POST: {
     trimmedEmail = email.trim();
     trimmedName = name.trim();
     passwordValue = oauthData ? generatePassword() : password;
+  }
+
+  // Check if email domain is allowed (skip for guest users)
+  if (!guest && !(await isEmailDomainAllowed(trimmedEmail))) {
+    return res.status(400).json({
+      error: 'Email address is not valid',
+    });
   }
 
   const [userWithEmail, userWithUsername] = await Promise.all([UserModel.findOne<User>({ email: trimmedEmail }, '+email +password'), UserModel.findOne<User>({ name: trimmedName })]);
