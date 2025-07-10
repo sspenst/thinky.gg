@@ -7,6 +7,7 @@ interface ConnectedUsersViewerProps {
   selectedUserId?: string;
   switchToUser: (userId: string) => void;
   showIpAddresses: (ips: string[]) => void;
+  showEmailDomains: (domains: string[]) => void;
   formatDate: (date: string | number) => string;
   getTimeAgo: (timestamp: number) => string;
 }
@@ -16,6 +17,7 @@ export default function ConnectedUsersViewer({
   selectedUserId,
   switchToUser,
   showIpAddresses,
+  showEmailDomains,
   formatDate,
   getTimeAgo
 }: ConnectedUsersViewerProps) {
@@ -41,6 +43,13 @@ export default function ConnectedUsersViewer({
             >
               {data.numDistinctIPs} IP address(es)
             </button>
+            {' '}and{' '}
+            <button
+              onClick={() => showEmailDomains(data.distinctEmailDomains)}
+              className='text-blue-600 dark:text-blue-400 hover:underline font-medium'
+            >
+              {data.numDistinctEmailDomains} email domain(s)
+            </button>
             {otherUsers.length > 0 && (
               <span className='block mt-1'>
                 {otherUsers.length} other connected user(s):
@@ -55,6 +64,13 @@ export default function ConnectedUsersViewer({
               className='text-blue-600 dark:text-blue-400 hover:underline font-medium'
             >
               {data.numDistinctIPs} IP address(es)
+            </button>
+            {' '}and{' '}
+            <button
+              onClick={() => showEmailDomains(data.distinctEmailDomains)}
+              className='text-blue-600 dark:text-blue-400 hover:underline font-medium'
+            >
+              {data.numDistinctEmailDomains} email domain(s)
             </button>
           </>
         )}

@@ -21,6 +21,7 @@ interface UserManagementTabProps {
   onRunCommand: () => void;
   switchToUser: (userId: string) => void;
   showIpAddresses: (ips: string[]) => void;
+  showEmailDomains: (domains: string[]) => void;
   formatDate: (date: string | number) => string;
   getTimeAgo: (timestamp: number) => string;
 }
@@ -37,6 +38,7 @@ export default function UserManagementTab({
   onRunCommand,
   switchToUser,
   showIpAddresses,
+  showEmailDomains,
   formatDate,
   getTimeAgo
 }: UserManagementTabProps) {
@@ -96,6 +98,7 @@ export default function UserManagementTab({
                   selectedUserId={selectedUser._id.toString()}
                   switchToUser={switchToUser}
                   showIpAddresses={showIpAddresses}
+                  showEmailDomains={showEmailDomains}
                   formatDate={formatDate}
                   getTimeAgo={getTimeAgo}
                 />

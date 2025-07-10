@@ -80,18 +80,30 @@ export default withAuth({
       {
         $addFields: {
           allUsers: {
-            $map: {
-              input: '$connected',
-              as: 'doc',
-              in: {
-                _id: '$$doc._id',
-                name: '$$doc.name',
-                email: '$$doc.email',
-                roles: '$$doc.roles',
-                ts: '$$doc.ts',
-                last_visited_at: '$$doc.last_visited_at'
+            $setUnion: [
+              [{
+                _id: { $toString: '$_id' },
+                name: '$name',
+                email: '$email',
+                roles: '$roles',
+                ts: '$ts',
+                last_visited_at: '$last_visited_at'
+              }],
+              {
+                $map: {
+                  input: '$connected',
+                  as: 'doc',
+                  in: {
+                    _id: { $toString: '$$doc._id' },
+                    name: '$$doc.name',
+                    email: '$$doc.email',
+                    roles: '$$doc.roles',
+                    ts: '$$doc.ts',
+                    last_visited_at: '$$doc.last_visited_at'
+                  }
+                }
               }
-            }
+            ]
           },
           allIPs: {
             $reduce: {
@@ -105,39 +117,102 @@ export default withAuth({
               initialValue: [],
               in: { $setUnion: ['$$value', '$$this'] }
             }
+          },
+          allEmailDomains: {
+            $reduce: {
+              input: {
+                $concatArrays: [
+                  [{
+                    $cond: {
+                      if: {
+                        $and: [
+                          { $ne: ['$email', null] },
+                          { $ne: ['$email', ''] },
+                          { $regexMatch: { input: '$email', regex: /@/ } }
+                        ]
+                      },
+                      then: {
+                        $trim: {
+                          input: {
+                            $arrayElemAt: [
+                              { $split: ['$email', '@'] },
+                              1
+                            ]
+                          }
+                        }
+                      },
+                      else: null
+                    }
+                  }],
+                  {
+                    $map: {
+                      input: '$connected',
+                      as: 'doc',
+                      in: {
+                        $cond: {
+                          if: {
+                            $and: [
+                              { $ne: ['$$doc.email', null] },
+                              { $ne: ['$$doc.email', ''] },
+                              { $regexMatch: { input: '$$doc.email', regex: /@/ } }
+                            ]
+                          },
+                          then: {
+                            $trim: {
+                              input: {
+                                $arrayElemAt: [
+                                  { $split: ['$$doc.email', '@'] },
+                                  1
+                                ]
+                              }
+                            }
+                          },
+                          else: null
+                        }
+                      }
+                    }
+                  }
+                ]
+              },
+              initialValue: [],
+              in: {
+                $cond: {
+                  if: { $ne: ['$$this', null] },
+                  then: { $setUnion: ['$$value', ['$$this']] },
+                  else: '$$value'
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        $addFields: {
+          uniqueUsers: {
+            $reduce: {
+              input: '$allUsers',
+              initialValue: [],
+              in: {
+                $cond: {
+                  if: {
+                    $in: ['$$this._id', { $map: { input: '$$value', as: 'u', in: '$$u._id' } }]
+                  },
+                  then: '$$value',
+                  else: { $concatArrays: ['$$value', ['$$this']] }
+                }
+              }
+            }
           }
         }
       },
       {
         $project: {
-          users: {
-            $setUnion: [
-              [{
-                _id: { $toString: '$_id' },
-                name: '$name',
-                email: '$email',
-                roles: '$roles',
-                ts: '$ts',
-                last_visited_at: '$last_visited_at'
-              }],
-              '$allUsers'
-            ]
-          },
+          users: '$uniqueUsers',
           distinctIPs: '$allIPs',
-          numUsers: { $size: {
-            $setUnion: [
-              [{
-                _id: { $toString: '$_id' },
-                name: '$name',
-                email: '$email',
-                roles: '$roles',
-                ts: '$ts',
-                last_visited_at: '$last_visited_at'
-              }],
-              '$allUsers'
-            ]
-          } },
-          numDistinctIPs: { $size: '$allIPs' }
+          distinctEmailDomains: '$allEmailDomains',
+          numUsers: { $size: '$uniqueUsers' },
+          numDistinctIPs: { $size: '$allIPs' },
+          numDistinctEmailDomains: { $size: '$allEmailDomains' }
         }
       },
       {
@@ -153,8 +228,10 @@ export default withAuth({
           _id: '$_id',
           users: { $push: '$users' },
           distinctIPs: { $first: '$distinctIPs' },
+          distinctEmailDomains: { $first: '$distinctEmailDomains' },
           numUsers: { $first: '$numUsers' },
-          numDistinctIPs: { $first: '$numDistinctIPs' }
+          numDistinctIPs: { $first: '$numDistinctIPs' },
+          numDistinctEmailDomains: { $first: '$numDistinctEmailDomains' }
         }
       }
     ]);
@@ -164,8 +241,10 @@ export default withAuth({
       return res.status(200).json({
         users: [],
         distinctIPs: [],
+        distinctEmailDomains: [],
         numUsers: 0,
-        numDistinctIPs: 0
+        numDistinctIPs: 0,
+        numDistinctEmailDomains: 0
       });
     }
 
@@ -181,8 +260,10 @@ export default withAuth({
     return res.status(200).json({
       users,
       distinctIPs: data.distinctIPs || [],
+      distinctEmailDomains: data.distinctEmailDomains || [],
       numUsers: data.numUsers || 0,
-      numDistinctIPs: data.numDistinctIPs || 0
+      numDistinctIPs: data.numDistinctIPs || 0,
+      numDistinctEmailDomains: data.numDistinctEmailDomains || 0
     });
   } catch (error) {
     logger.error('Error fetching connected users:', error);

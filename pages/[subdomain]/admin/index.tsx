@@ -95,7 +95,9 @@ export default function AdminPage({ adminQuery, level, user }: AdminPageProps) {
   const [connectedUsers, setConnectedUsers] = useState<ConnectedUsersData | null>(null);
   const [loadingConnectedUsers, setLoadingConnectedUsers] = useState(false);
   const [showIpModal, setShowIpModal] = useState(false);
+  const [showEmailDomainModal, setShowEmailDomainModal] = useState(false);
   const [ipList, setIpList] = useState<string[]>([]);
+  const [emailDomainList, setEmailDomainList] = useState<string[]>([]);
 
   const systemVariables = useSystemVariables();
   const adminCommands = useAdminCommands();
@@ -176,6 +178,11 @@ export default function AdminPage({ adminQuery, level, user }: AdminPageProps) {
   const showIpAddresses = (ips: string[]) => {
     setIpList(ips);
     setShowIpModal(true);
+  };
+
+  const showEmailDomains = (domains: string[]) => {
+    setEmailDomainList(domains);
+    setShowEmailDomainModal(true);
   };
 
   const fetchConnectedUsers = async (userId: string) => {
@@ -327,6 +334,44 @@ export default function AdminPage({ adminQuery, level, user }: AdminPageProps) {
             </div>
           </div>
         )}
+        {/* Email Domain Modal */}
+        {showEmailDomainModal && (
+          <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'>
+            <div className='bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4 max-h-96 overflow-y-auto'>
+              <div className='flex items-center justify-between mb-4'>
+                <h3 className='text-lg font-semibold text-gray-900 dark:text-white'>Email Domains</h3>
+                <button
+                  onClick={() => setShowEmailDomainModal(false)}
+                  className='text-gray-400 hover:text-gray-600 dark:hover:text-gray-200'
+                >
+                  <svg className='w-6 h-6' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                    <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M6 18L18 6M6 6l12 12' />
+                  </svg>
+                </button>
+              </div>
+              <div className='mb-4'>
+                <textarea
+                  className='w-full h-40 p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-mono text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500'
+                  value={emailDomainList.join('\n')}
+                  readOnly
+                  onClick={(e) => {
+                    (e.target as HTMLTextAreaElement).select();
+                    navigator.clipboard.writeText(emailDomainList.join('\n'));
+                    toast.success('All email domains copied to clipboard');
+                  }}
+                  placeholder='No email domains found'
+                />
+                <p className='text-xs text-gray-500 dark:text-gray-400 mt-2'>Click the textarea to select all and copy to clipboard</p>
+              </div>
+              <button
+                onClick={() => setShowEmailDomainModal(false)}
+                className='w-full bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors'
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        )}
         {/* Tab Navigation */}
         <div className='border-b border-gray-200 dark:border-gray-700 mb-8'>
           <nav className='-mb-px flex space-x-8'>
@@ -369,6 +414,7 @@ export default function AdminPage({ adminQuery, level, user }: AdminPageProps) {
             onRunCommand={handleUserCommand}
             switchToUser={switchToUser}
             showIpAddresses={showIpAddresses}
+            showEmailDomains={showEmailDomains}
             formatDate={formatDate}
             getTimeAgo={getTimeAgo}
           />

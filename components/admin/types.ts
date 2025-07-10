@@ -22,8 +22,10 @@ export interface ConnectedUser {
 export interface ConnectedUsersData {
   users: ConnectedUser[];
   distinctIPs: string[];
+  distinctEmailDomains: string[];
   numUsers: number;
   numDistinctIPs: number;
+  numDistinctEmailDomains: number;
 }
 
 export interface SystemVariable {

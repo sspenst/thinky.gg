@@ -1,4 +1,4 @@
-import { DEFAULT_GAME_ID } from '@root/constants/GameId';
+import { DEFAULT_GAME_ID, GameId } from '@root/constants/GameId';
 import { Games } from '@root/constants/Games';
 import NotificationType from '@root/constants/notificationType';
 import UserConfig from '@root/models/db/userConfig';
@@ -6,13 +6,23 @@ import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
 import TestId from '../../../../constants/testId';
+// Import the mocked functions
+import { initializeDisposableEmailDomains, isDisposableEmailDomain } from '../../../../helpers/disposableEmailDomains';
 import { logger } from '../../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
-import { UserConfigModel, UserModel } from '../../../../models/mongoose';
+import { KeyValueModel, UserConfigModel, UserModel } from '../../../../models/mongoose';
 import loginUserHandler from '../../../../pages/api/login/index';
 import signupUserHandler from '../../../../pages/api/signup/index';
+
+// Mock the disposable domains module
+jest.mock('../../../../helpers/disposableEmailDomains', () => ({
+  initializeDisposableEmailDomains: jest.fn(),
+  isDisposableEmailDomain: jest.fn(),
+  getDisposableDomainsCount: jest.fn(),
+  refreshDisposableEmailDomains: jest.fn(),
+}));
 
 beforeAll(async () => {
   await dbConnect();
@@ -374,6 +384,429 @@ describe('pages/api/signup', () => {
         expect(res.status).toBe(200);
         expect(response.success).toBeDefined();
       },
+    });
+  });
+
+  describe('Email domain validation', () => {
+    afterEach(async () => {
+      // Clean up disallowed domain entries after each test
+      await KeyValueModel.deleteMany({ key: 'DISALLOWED_EMAIL_SIGNUP_DOMAIN' });
+    });
+
+    test('Creating a user with a disallowed email domain should fail', async () => {
+      // Set up disallowed domain
+      await KeyValueModel.create({
+        gameId: GameId.THINKY,
+        key: 'DISALLOWED_EMAIL_SIGNUP_DOMAIN',
+        value: 'blocked.com tempmail.com'
+      });
+
+      await testApiHandler({
+        pagesHandler: async (_, res) => {
+          const req: NextApiRequestWithAuth = {
+            method: 'POST',
+            cookies: {
+              token: cookie,
+            },
+            body: {
+              name: 'blocked_user',
+              email: 'test@blocked.com',
+              password: 'password',
+            },
+            headers: {
+              'content-type': 'application/json',
+            },
+          } as unknown as NextApiRequestWithAuth;
+
+          await signupUserHandler(req, res);
+        },
+        test: async ({ fetch }) => {
+          const res = await fetch();
+          const response = await res.json();
+
+          expect(response.error).toBe('Email address is not valid');
+          expect(res.status).toBe(400);
+        },
+      });
+    });
+
+    test('Creating a user with a disallowed email domain (case insensitive) should fail', async () => {
+      // Set up disallowed domain
+      await KeyValueModel.create({
+        gameId: GameId.THINKY,
+        key: 'DISALLOWED_EMAIL_SIGNUP_DOMAIN',
+        value: 'BLOCKED.COM'
+      });
+
+      await testApiHandler({
+        pagesHandler: async (_, res) => {
+          const req: NextApiRequestWithAuth = {
+            method: 'POST',
+            cookies: {
+              token: cookie,
+            },
+            body: {
+              name: 'blocked_user2',
+              email: 'test@blocked.com',
+              password: 'password',
+            },
+            headers: {
+              'content-type': 'application/json',
+            },
+          } as unknown as NextApiRequestWithAuth;
+
+          await signupUserHandler(req, res);
+        },
+        test: async ({ fetch }) => {
+          const res = await fetch();
+          const response = await res.json();
+
+          expect(response.error).toBe('Email address is not valid');
+          expect(res.status).toBe(400);
+        },
+      });
+    });
+
+    test('Creating a user with an allowed email domain should work', async () => {
+      // Set up disallowed domain (but not the domain we're testing)
+      await KeyValueModel.create({
+        gameId: GameId.THINKY,
+        key: 'DISALLOWED_EMAIL_SIGNUP_DOMAIN',
+        value: 'blocked.com'
+      });
+
+      await testApiHandler({
+        pagesHandler: async (_, res) => {
+          const req: NextApiRequestWithAuth = {
+            method: 'POST',
+            cookies: {
+              token: cookie,
+            },
+            body: {
+              name: 'allowed_user',
+              email: 'test@allowed.com',
+              password: 'password',
+            },
+            headers: {
+              'content-type': 'application/json',
+            },
+          } as unknown as NextApiRequestWithAuth;
+
+          await signupUserHandler(req, res);
+        },
+        test: async ({ fetch }) => {
+          const res = await fetch();
+          const response = await res.json();
+
+          expect(response.error).toBeUndefined();
+          expect(response.success).toBe(true);
+          expect(res.status).toBe(200);
+        },
+      });
+    });
+
+    test('Creating a user when no disallowed domains are configured should work', async () => {
+      // No disallowed domains configured
+      await testApiHandler({
+        pagesHandler: async (_, res) => {
+          const req: NextApiRequestWithAuth = {
+            method: 'POST',
+            cookies: {
+              token: cookie,
+            },
+            body: {
+              name: 'no_restrictions_user',
+              email: 'test@anydomain.com',
+              password: 'password',
+            },
+            headers: {
+              'content-type': 'application/json',
+            },
+          } as unknown as NextApiRequestWithAuth;
+
+          await signupUserHandler(req, res);
+        },
+        test: async ({ fetch }) => {
+          const res = await fetch();
+          const response = await res.json();
+
+          expect(response.error).toBeUndefined();
+          expect(response.success).toBe(true);
+          expect(res.status).toBe(200);
+        },
+      });
+    });
+
+    test('Creating a guest user should not be affected by email domain restrictions', async () => {
+      // Set up disallowed domain
+      await KeyValueModel.create({
+        gameId: GameId.THINKY,
+        key: 'DISALLOWED_EMAIL_SIGNUP_DOMAIN',
+        value: 'guest.com'
+      });
+
+      await testApiHandler({
+        pagesHandler: async (_, res) => {
+          const req: NextApiRequestWithAuth = {
+            method: 'POST',
+            cookies: {
+              token: cookie,
+            },
+            body: {
+              guest: true,
+              name: 'guest_user',
+              email: 'test@guest.com',
+              password: 'password',
+            },
+            headers: {
+              'content-type': 'application/json',
+            },
+          } as unknown as NextApiRequestWithAuth;
+
+          await signupUserHandler(req, res);
+        },
+        test: async ({ fetch }) => {
+          const res = await fetch();
+          const response = await res.json();
+
+          expect(response.error).toBeUndefined();
+          expect(response.success).toBe(true);
+          expect(res.status).toBe(200);
+        },
+      });
+    });
+
+    test('Creating a user with invalid email format should fail', async () => {
+      await testApiHandler({
+        pagesHandler: async (_, res) => {
+          const req: NextApiRequestWithAuth = {
+            method: 'POST',
+            cookies: {
+              token: cookie,
+            },
+            body: {
+              name: 'invalid_email_user',
+              email: 'invalid-email-format',
+              password: 'password',
+            },
+            headers: {
+              'content-type': 'application/json',
+            },
+          } as unknown as NextApiRequestWithAuth;
+
+          await signupUserHandler(req, res);
+        },
+        test: async ({ fetch }) => {
+          const res = await fetch();
+          const response = await res.json();
+
+          expect(response.error).toBe('Email address is not valid');
+          expect(res.status).toBe(400);
+        },
+      });
+    });
+  });
+
+  describe('Disposable email domains', () => {
+    beforeEach(() => {
+      // Reset mocks
+      (initializeDisposableEmailDomains as jest.Mock).mockReset();
+      (isDisposableEmailDomain as jest.Mock).mockReset();
+    });
+
+    test('Creating a user with a disposable email domain should fail', async () => {
+      // Mock disposable domain check to return true
+      (initializeDisposableEmailDomains as jest.Mock).mockResolvedValue(undefined);
+      (isDisposableEmailDomain as jest.Mock).mockReturnValue(true);
+
+      await testApiHandler({
+        pagesHandler: async (_, res) => {
+          const req: NextApiRequestWithAuth = {
+            method: 'POST',
+            cookies: {
+              token: cookie,
+            },
+            body: {
+              name: 'disposable_user',
+              email: 'test@10minutemail.com',
+              password: 'password',
+            },
+            headers: {
+              'content-type': 'application/json',
+            },
+          } as unknown as NextApiRequestWithAuth;
+
+          await signupUserHandler(req, res);
+        },
+        test: async ({ fetch }) => {
+          const res = await fetch();
+          const response = await res.json();
+
+          expect(response.error).toBe('Email address is not valid');
+          expect(res.status).toBe(400);
+          expect(initializeDisposableEmailDomains).toHaveBeenCalledTimes(1);
+          expect(isDisposableEmailDomain).toHaveBeenCalledWith('10minutemail.com');
+        },
+      });
+    });
+
+    test('Creating a user with a non-disposable email domain should work', async () => {
+      // Mock disposable domain check to return false
+      (initializeDisposableEmailDomains as jest.Mock).mockResolvedValue(undefined);
+      (isDisposableEmailDomain as jest.Mock).mockReturnValue(false);
+
+      await testApiHandler({
+        pagesHandler: async (_, res) => {
+          const req: NextApiRequestWithAuth = {
+            method: 'POST',
+            cookies: {
+              token: cookie,
+            },
+            body: {
+              name: 'regular_user',
+              email: 'test@legitimate.com',
+              password: 'password',
+            },
+            headers: {
+              'content-type': 'application/json',
+            },
+          } as unknown as NextApiRequestWithAuth;
+
+          await signupUserHandler(req, res);
+        },
+        test: async ({ fetch }) => {
+          const res = await fetch();
+          const response = await res.json();
+
+          expect(response.error).toBeUndefined();
+          expect(response.success).toBe(true);
+          expect(res.status).toBe(200);
+          expect(initializeDisposableEmailDomains).toHaveBeenCalledTimes(1);
+          expect(isDisposableEmailDomain).toHaveBeenCalledWith('legitimate.com');
+        },
+      });
+    });
+
+    test('Creating a user with disposable domain should fail even if admin restrictions are empty', async () => {
+      // Mock disposable domain check to return true
+      (initializeDisposableEmailDomains as jest.Mock).mockResolvedValue(undefined);
+      (isDisposableEmailDomain as jest.Mock).mockReturnValue(true);
+
+      // No admin restrictions configured
+      await testApiHandler({
+        pagesHandler: async (_, res) => {
+          const req: NextApiRequestWithAuth = {
+            method: 'POST',
+            cookies: {
+              token: cookie,
+            },
+            body: {
+              name: 'disposable_user2',
+              email: 'test@tempmail.org',
+              password: 'password',
+            },
+            headers: {
+              'content-type': 'application/json',
+            },
+          } as unknown as NextApiRequestWithAuth;
+
+          await signupUserHandler(req, res);
+        },
+        test: async ({ fetch }) => {
+          const res = await fetch();
+          const response = await res.json();
+
+          expect(response.error).toBe('Email address is not valid');
+          expect(res.status).toBe(400);
+          expect(initializeDisposableEmailDomains).toHaveBeenCalledTimes(1);
+          expect(isDisposableEmailDomain).toHaveBeenCalledWith('tempmail.org');
+        },
+      });
+    });
+
+    test('Disposable domain check should be combined with admin restrictions', async () => {
+      // Mock disposable domain check to return false (not disposable)
+      (initializeDisposableEmailDomains as jest.Mock).mockResolvedValue(undefined);
+      (isDisposableEmailDomain as jest.Mock).mockReturnValue(false);
+
+      // Set up admin disallowed domain
+      await KeyValueModel.create({
+        gameId: GameId.THINKY,
+        key: 'DISALLOWED_EMAIL_SIGNUP_DOMAIN',
+        value: 'blocked.com'
+      });
+
+      await testApiHandler({
+        pagesHandler: async (_, res) => {
+          const req: NextApiRequestWithAuth = {
+            method: 'POST',
+            cookies: {
+              token: cookie,
+            },
+            body: {
+              name: 'combined_test_user',
+              email: 'test@blocked.com',
+              password: 'password',
+            },
+            headers: {
+              'content-type': 'application/json',
+            },
+          } as unknown as NextApiRequestWithAuth;
+
+          await signupUserHandler(req, res);
+        },
+        test: async ({ fetch }) => {
+          const res = await fetch();
+          const response = await res.json();
+
+          expect(response.error).toBe('Email address is not valid');
+          expect(res.status).toBe(400);
+          expect(initializeDisposableEmailDomains).toHaveBeenCalledTimes(1);
+          expect(isDisposableEmailDomain).toHaveBeenCalledWith('blocked.com');
+        },
+      });
+
+      // Clean up
+      await KeyValueModel.deleteMany({ key: 'DISALLOWED_EMAIL_SIGNUP_DOMAIN' });
+    });
+
+    test('Guest users should not be affected by disposable domain restrictions', async () => {
+      // Mock disposable domain check to return true
+      (initializeDisposableEmailDomains as jest.Mock).mockResolvedValue(undefined);
+      (isDisposableEmailDomain as jest.Mock).mockReturnValue(true);
+
+      await testApiHandler({
+        pagesHandler: async (_, res) => {
+          const req: NextApiRequestWithAuth = {
+            method: 'POST',
+            cookies: {
+              token: cookie,
+            },
+            body: {
+              guest: true,
+              name: 'guest_disposable_user',
+              email: 'test@10minutemail.com',
+              password: 'password',
+            },
+            headers: {
+              'content-type': 'application/json',
+            },
+          } as unknown as NextApiRequestWithAuth;
+
+          await signupUserHandler(req, res);
+        },
+        test: async ({ fetch }) => {
+          const res = await fetch();
+          const response = await res.json();
+
+          expect(response.error).toBeUndefined();
+          expect(response.success).toBe(true);
+          expect(res.status).toBe(200);
+          // Should not even check disposable domains for guest users
+          expect(initializeDisposableEmailDomains).not.toHaveBeenCalled();
+          expect(isDisposableEmailDomain).not.toHaveBeenCalled();
+        },
+      });
     });
   });
 });

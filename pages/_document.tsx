@@ -5,6 +5,7 @@ import { Types } from 'mongoose';
 import Document, { DocumentContext, DocumentInitialProps, Head, Html, Main, NextScript } from 'next/document';
 import Script from 'next/script';
 import React from 'react';
+import { initializeDisposableEmailDomains } from '../helpers/disposableEmailDomains';
 import { logger } from '../helpers/logger';
 import dbConnect from '../lib/dbConnect';
 import isLocal from '../lib/isLocal';
@@ -56,6 +57,14 @@ if (process.env.OFFLINE_BUILD !== 'true') {
   logger.warn('[Run ID ' + containerRunInstanceId + '] Starting... Trying to connect to DB');
   dbConnect().then(async () => { // Hopefully this works... and prevents the big spike in performance on every deploy...
     await UserModel.findOne({}, { _id: 1 }).lean<User>();
+
+    // Initialize disposable email domains on app startup
+    try {
+      await initializeDisposableEmailDomains();
+      logger.info('[Run ID ' + containerRunInstanceId + '] Initialized disposable email domains');
+    } catch (error) {
+      logger.error('[Run ID ' + containerRunInstanceId + '] Failed to initialize disposable email domains:', error);
+    }
 
     logger.warn('[Run ID ' + containerRunInstanceId + '] Connected to database and ran a sample query in ' + (Date.now() - benchmark_start) + 'ms');
   });
