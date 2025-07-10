@@ -1,6 +1,7 @@
 import { enrichReqUser } from '@root/helpers/enrich';
 import getEmailConfirmationToken from '@root/helpers/getEmailConfirmationToken';
 import isGuest from '@root/helpers/isGuest';
+import { deleteUser } from '@root/helpers/userDeletion';
 import sendEmailConfirmationEmail from '@root/lib/sendEmailConfirmationEmail';
 import Collection from '@root/models/db/collection';
 import MultiplayerProfile from '@root/models/db/multiplayerProfile';
@@ -237,100 +238,10 @@ export default withAuth({
       }
     }
 
-    const deletedAt = new Date();
-    const session = await mongoose.startSession();
-    const ts = TimerUtil.getTs();
-
     try {
-      await session.withTransaction(async () => {
-        const levels = await LevelModel.find<Level>({
-          userId: req.user._id,
-          isDeleted: { $ne: true },
-          isDraft: false,
-          gameId: req.gameId,
-        }, '_id name', { session: session }).lean<Level[]>();
-
-        for (const level of levels) {
-          const slug = await generateLevelSlug(level.gameId, 'archive', level.name, level._id.toString(), { session: session });
-
-          // TODO: promise.all this?
-          await LevelModel.updateOne({ _id: level._id }, { $set: {
-            userId: new Types.ObjectId(TestId.ARCHIVE),
-            archivedBy: req.user._id,
-            archivedTs: ts,
-            slug: slug,
-          } }, { session: session });
-        }
-
-        // delete all comments posted on this user's profile, and all their replies
-        const commentAgg = await CommentModel.aggregate([
-          {
-            $match: {
-              deletedAt: null,
-              targetModel: 'User',
-              $or: [
-                { author: req.user._id },
-                { target: req.user._id },
-              ],
-            },
-          },
-          {
-            $lookup: {
-              from: CommentModel.collection.name,
-              localField: '_id',
-              foreignField: 'target',
-              as: 'children',
-              pipeline: [
-                {
-                  $project: {
-                    _id: 1,
-                  },
-                },
-              ],
-            },
-          },
-          {
-            $project: {
-              _id: 1,
-              children: 1,
-            },
-          },
-        ], { session: session });
-
-        const commentIdsToDelete = [];
-
-        for (const comment of commentAgg) {
-          commentIdsToDelete.push(comment._id);
-
-          for (const child of comment.children) {
-            commentIdsToDelete.push(child._id);
-          }
-        }
-
-        await Promise.all([
-          AchievementModel.deleteMany({ userId: req.user._id }, { session: session }),
-          CollectionModel.deleteMany({ userId: req.user._id }, { session: session }),
-          CommentModel.updateMany({ _id: { $in: commentIdsToDelete } }, { $set: { deletedAt: deletedAt } }, { session: session }),
-          DeviceModel.deleteMany({ userId: req.user._id }, { session: session }),
-          GraphModel.deleteMany({ $or: [{ source: req.user._id }, { target: req.user._id }] }, { session: session }),
-          // delete in keyvaluemodel where key contains userId
-          KeyValueModel.deleteMany({ key: { $regex: `.*${req.user._id}.*` } }, { session: session }),
-          // delete draft levels
-          LevelModel.updateMany({ userId: req.user._id, isDraft: true }, { $set: { isDeleted: true } }, { session: session }),
-          NotificationModel.deleteMany({ $or: [
-            { source: req.user._id },
-            { target: req.user._id },
-            { userId: req.user._id },
-          ] }, { session: session }),
-          UserConfigModel.deleteMany({ userId: req.user._id }, { session: session }),
-          UserAuthModel.deleteMany({ userId: req.user._id }, { session: session }),
-          UserModel.deleteOne({ _id: req.user._id }, { session: session }), // TODO, should make this soft delete...
-        ]);
-      });
-      session.endSession();
+      await deleteUser(req.user._id, req.gameId);
     } catch (err) {
       logger.error(err);
-      session.endSession();
 
       return res.status(500).json({ error: 'Internal server error' });
     }

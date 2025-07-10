@@ -8,6 +8,7 @@ import genLevelImage from '@root/helpers/genLevelImage';
 import { logger } from '@root/helpers/logger';
 import { createNewAdminMessageNotifications } from '@root/helpers/notificationHelper';
 import { refreshAchievements } from '@root/helpers/refreshAchievements';
+import { deleteUser } from '@root/helpers/userDeletion';
 import { requestBroadcastReloadPage } from '@root/lib/appSocketToClient';
 import withAuth, { NextApiRequestWithAuth } from '@root/lib/withAuth';
 import Level from '@root/models/db/level';
@@ -85,6 +86,9 @@ export default withAuth({ POST: {
         AchievementModel.deleteMany({ userId: new Types.ObjectId(targetId as string), gameId: req.gameId }),
         NotificationModel.deleteMany({ userId: new Types.ObjectId(targetId as string), type: NotificationType.NEW_ACHIEVEMENT, gameId: req.gameId }),
       ]);
+      break;
+    case AdminCommand.DeleteUser:
+      await deleteUser(new Types.ObjectId(targetId as string), req.gameId);
       break;
     case AdminCommand.RefreshIndexCalcs:
       await refreshIndexCalcs(new Types.ObjectId(targetId as string));
