@@ -1,17 +1,20 @@
-// No direction imports needed for this hook
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 
-interface UseKeyboardControlsProps {
+interface UseGameKeyboardControlsProps {
   onKeyDown: (code: string) => void;
   preventKeyDownEvent?: boolean;
+}
+
+interface UseGameKeyboardControlsReturn {
   shiftKeyDown: React.MutableRefObject<boolean>;
 }
 
-export default function useKeyboardControls({
+export default function useGameKeyboardControls({
   onKeyDown,
   preventKeyDownEvent = false,
-  shiftKeyDown,
-}: UseKeyboardControlsProps): void {
+}: UseGameKeyboardControlsProps): UseGameKeyboardControlsReturn {
+  const shiftKeyDown = useRef(false);
+
   const handleKeyDownEvent = useCallback((event: KeyboardEvent) => {
     if (preventKeyDownEvent) {
       return;
@@ -30,7 +33,7 @@ export default function useKeyboardControls({
     }
 
     onKeyDown(code);
-  }, [onKeyDown, preventKeyDownEvent, shiftKeyDown]);
+  }, [onKeyDown, preventKeyDownEvent]);
 
   const handleKeyUpEvent = useCallback((event: KeyboardEvent) => {
     const code = event.code;
@@ -38,11 +41,11 @@ export default function useKeyboardControls({
     if (code.startsWith('Shift')) {
       shiftKeyDown.current = false;
     }
-  }, [shiftKeyDown]);
+  }, []);
 
   const handleBlurEvent = useCallback(() => {
     shiftKeyDown.current = false;
-  }, [shiftKeyDown]);
+  }, []);
 
   useEffect(() => {
     window.addEventListener('blur', handleBlurEvent);
@@ -55,4 +58,8 @@ export default function useKeyboardControls({
       document.removeEventListener('keyup', handleKeyUpEvent);
     };
   }, [handleBlurEvent, handleKeyDownEvent, handleKeyUpEvent]);
+
+  return {
+    shiftKeyDown,
+  };
 }

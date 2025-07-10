@@ -1,7 +1,6 @@
 import { enrichReqUser } from '@root/helpers/enrich';
 import getEmailConfirmationToken from '@root/helpers/getEmailConfirmationToken';
 import isGuest from '@root/helpers/isGuest';
-import { getUserAuthProviders } from '@root/helpers/userAuthHelpers';
 import sendEmailConfirmationEmail from '@root/lib/sendEmailConfirmationEmail';
 import Collection from '@root/models/db/collection';
 import MultiplayerProfile from '@root/models/db/multiplayerProfile';
