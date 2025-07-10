@@ -328,8 +328,6 @@ async function processQueueMessage(queueMessage: QueueMessage) {
           const disallowedEmail = (notification.userId as User).disallowedEmailNotifications?.includes(notification.type);
           const disallowedPush = (notification.userId as User).disallowedPushNotifications?.includes(notification.type);
 
-          console.log('isBlocked', isBlocked, notification.userId._id.toString(), notification.source._id.toString());
-
           if (whereSend === sendEmailNotification && (disallowedEmail || isBlocked)) {
             const reason = disallowedEmail ? 'not allowed by user' : 'user blocked source';
 
