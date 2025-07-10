@@ -7,9 +7,9 @@ import TileTypeHelper from '@root/helpers/tileTypeHelper';
 import useCheckpointAPI from '@root/hooks/useCheckpointAPI';
 import useCheckpoints, { BEST_CHECKPOINT_INDEX } from '@root/hooks/useCheckpoints';
 import useGameControls from '@root/hooks/useGameControls';
+import useGameKeyboardControls from '@root/hooks/useGameKeyboardControls';
 import useGameState from '@root/hooks/useGameState';
 import useGameStats from '@root/hooks/useGameStats';
-import useKeyboardControls from '@root/hooks/useKeyboardControls';
 import useSessionCheckpoint from '@root/hooks/useSessionCheckpoint';
 import useTouchControls from '@root/hooks/useTouchControls';
 import Position from '@root/models/position';
@@ -73,7 +73,6 @@ export default function GameRefactored({
   const isMobile = deviceInfo.isMobile;
 
   // Refs for keyboard state
-  const shiftKeyDown = useRef(false);
 
   // Context mutations
   const mutateCollection = levelContext?.mutateCollection;
@@ -181,6 +180,13 @@ export default function GameRefactored({
     redoMoveRef.current = redoMove;
   }, [gameState, isComplete, fetchPlayAttempt, makeGameMove, restart, undoMove, redoMove]);
 
+  // Keyboard controls hook - needs to be defined before handleKeyDown
+  const handleKeyDownRef = useRef<(code: string) => void>(() => {});
+  const { shiftKeyDown } = useGameKeyboardControls({
+    onKeyDown: (code) => handleKeyDownRef.current(code),
+    preventKeyDownEvent,
+  });
+
   // Function to handle shift + direction movement
   const handleShiftDirection = useCallback((direction: Direction) => {
     const currentGameState = gameStateRef.current;
@@ -199,59 +205,6 @@ export default function GameRefactored({
     const firstMoveTile = currentGameState.board[firstMovePos.y][firstMovePos.x];
     const blockAtFirstMove = firstMoveTile.block;
 
-    // If there's a block at the first move position, check if we can push it
-    if (blockAtFirstMove && TileTypeHelper.canMoveInDirection(blockAtFirstMove.tileType, direction)) {
-      // We can push the block! Now simulate pushing it as far as possible
-      let currentPlayerPos = playerPos;
-      let currentBlockPos = firstMovePos;
-
-      // Keep pushing the block until we can't anymore
-      while (true) {
-        const nextPlayerPos = currentPlayerPos.add(directionVector);
-        const nextBlockPos = currentBlockPos.add(directionVector);
-
-        // Check if next player position is valid
-        if (nextPlayerPos.y < 0 || nextPlayerPos.y >= currentGameState.board.length ||
-            nextPlayerPos.x < 0 || nextPlayerPos.x >= currentGameState.board[nextPlayerPos.y].length) {
-          break;
-        }
-
-        // Check if next block position is valid
-        if (nextBlockPos.y < 0 || nextBlockPos.y >= currentGameState.board.length ||
-            nextBlockPos.x < 0 || nextBlockPos.x >= currentGameState.board[nextBlockPos.y].length) {
-          break;
-        }
-
-        const nextPlayerTile = currentGameState.board[nextPlayerPos.y][nextPlayerPos.x];
-        const nextBlockTile = currentGameState.board[nextBlockPos.y][nextBlockPos.x];
-
-        // Check if player can move to next position (not wall or hole)
-        if (nextPlayerTile.tileType === TileType.Wall || nextPlayerTile.tileType === TileType.Hole) {
-          break;
-        }
-
-        // Check if block can move to next position
-        // Block can't move to: walls, positions with other blocks (unless it's a hole)
-        if (nextBlockTile.tileType === TileType.Wall || nextBlockTile.block) {
-          break;
-        }
-
-        // If next block position is a hole, block can go there and hole becomes default
-        // Otherwise, block just moves to the empty space
-        // In both cases, we can continue
-
-        currentPlayerPos = nextPlayerPos;
-        currentBlockPos = nextBlockPos;
-
-        // If we reach an exit, we can stop here (exits are valid targets for player)
-        if (nextPlayerTile.tileType === TileType.Exit) {
-          break;
-        }
-      }
-
-      return currentPlayerPos;
-    }
-
     // No block to push, use original logic - find target cell by traversing until hitting non-empty square
     let targetPos = new Position(playerPos.x, playerPos.y);
 
@@ -269,14 +222,15 @@ export default function GameRefactored({
 
       // Check if next tile is non-empty
       const hasBlock = nextTile.block !== undefined;
-      const hasBlockInHole = nextTile.blockInHole !== undefined;
       const isWall = nextTile.tileType === TileType.Wall;
       const isHole = nextTile.tileType === TileType.Hole;
       const isExit = nextTile.tileType === TileType.Exit;
 
       // If next tile is non-empty (except exits which can be entered), stop here
-      if (hasBlock || hasBlockInHole || isWall || isHole) {
-        break;
+      if (hasBlock || isWall || isHole) {
+        if (!(blockAtFirstMove && TileTypeHelper.canMoveInDirection(blockAtFirstMove.tileType, direction))) {
+          break;
+        }
       }
 
       // Move to next position
@@ -436,7 +390,12 @@ export default function GameRefactored({
 
     // Return true if the game became complete after this move, false otherwise
     return moveResult.isComplete;
-  }, [onNext, onPrev, pro, disablePlayAttempts, disableCheckpoints, game.displayName, saveCheckpoint, loadCheckpoint, handleShiftDirection]);
+  }, [onNext, onPrev, pro, disablePlayAttempts, disableCheckpoints, game.displayName, saveCheckpoint, loadCheckpoint, handleShiftDirection, shiftKeyDown]);
+
+  // Update the keyboard handler ref
+  useEffect(() => {
+    handleKeyDownRef.current = handleKeyDown;
+  }, [handleKeyDown]);
 
   // Handle touch-to-keyboard mapping
   const handleTouchMove = useCallback((dx: number, dy: number): boolean => {
@@ -447,12 +406,7 @@ export default function GameRefactored({
     return handleKeyDown(code);
   }, [handleKeyDown]);
 
-  // Keyboard controls hook
-  useKeyboardControls({
-    onKeyDown: handleKeyDown,
-    preventKeyDownEvent,
-    shiftKeyDown,
-  });
+  // Keyboard controls hook moved above handleKeyDown definition
 
   // Touch controls hook
   const { isSwiping, resetTouchState } = useTouchControls({
