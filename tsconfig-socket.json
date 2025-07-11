@@ -107,12 +107,12 @@
   },
   "include": [
       "global.d.ts",
-      "**/*.tsx",
-      "**/*.ts",
-      "server/socket/socket-server.ts", 
-      "hooks/*", 
-      
-
+      "server/socket/**/*.ts",
+      "models/**/*.ts",
+      "lib/**/*.ts",
+      "helpers/**/*.ts",
+      "constants/**/*.ts",
+      "types/**/*.ts"
   ],
   "exclude": [
     "node_modules",
