@@ -239,7 +239,7 @@ export default withAuth({
     }
 
     try {
-      await deleteUser(req.user._id, req.gameId);
+      await deleteUser(req.user._id);
     } catch (err) {
       logger.error(err);
 

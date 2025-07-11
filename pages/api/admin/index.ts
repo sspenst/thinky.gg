@@ -8,7 +8,7 @@ import genLevelImage from '@root/helpers/genLevelImage';
 import { logger } from '@root/helpers/logger';
 import { createNewAdminMessageNotifications } from '@root/helpers/notificationHelper';
 import { refreshAchievements } from '@root/helpers/refreshAchievements';
-import { deleteUser } from '@root/helpers/userDeletion';
+import { archiveUserLevels, deleteUser } from '@root/helpers/userDeletion';
 import { requestBroadcastReloadPage } from '@root/lib/appSocketToClient';
 import withAuth, { NextApiRequestWithAuth } from '@root/lib/withAuth';
 import Level from '@root/models/db/level';
@@ -88,7 +88,10 @@ export default withAuth({ POST: {
       ]);
       break;
     case AdminCommand.DeleteUser:
-      await deleteUser(new Types.ObjectId(targetId as string), req.gameId);
+      await deleteUser(new Types.ObjectId(targetId as string));
+      break;
+    case AdminCommand.ArchiveAllLevels:
+      await archiveUserLevels(new Types.ObjectId(targetId as string));
       break;
     case AdminCommand.RefreshIndexCalcs:
       await refreshIndexCalcs(new Types.ObjectId(targetId as string));

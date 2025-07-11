@@ -65,11 +65,13 @@ export default function UserManagementTab({
                 commands={commandsUser}
                 selectedCommand={selectedUserCommand}
                 onSelect={onCommandSelect}
+                disabled={!selectedUser}
               />
               <CommandButton
                 command={selectedUserCommand || { label: 'Run', command: '' }}
                 isRunning={runningCommand}
                 onClick={onRunCommand}
+                disabled={!selectedUser}
               />
             </div>
           </div>
