@@ -21,7 +21,7 @@ import { DefaultSeo } from 'next-seo';
 import { ThemeProvider } from 'next-themes';
 import posthog from 'posthog-js';
 import { PostHogProvider } from 'posthog-js/react';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import Theme from '../constants/theme';
 import { AppContext } from '../contexts/appContext';
 import useUser from '../hooks/useUser';

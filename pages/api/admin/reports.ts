@@ -1,4 +1,3 @@
-import NotificationType from '@root/constants/notificationType';
 import { ReportStatus } from '@root/constants/ReportStatus';
 import Role from '@root/constants/role';
 import { ValidEnum, ValidObjectId, ValidType } from '@root/helpers/apiWrapper';

@@ -7,7 +7,7 @@ import useSWRHelper from '@root/hooks/useSWRHelper';
 import { MultiplayerMatchState, MultiplayerMatchType } from '@root/models/constants/multiplayer';
 import MultiplayerMatch from '@root/models/db/multiplayerMatch';
 import { useRouter } from 'next/router';
-import React, { useCallback, useContext, useRef, useState } from 'react';
+import { useCallback, useContext, useRef, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import MatchResults from './matchResults';
 import MultiplayerRating from './multiplayerRating';

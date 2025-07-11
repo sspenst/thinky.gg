@@ -2,7 +2,6 @@ import UpsellFullAccount from '@root/components/home/upsellFullAccount';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Link from 'next/link';
-import React from 'react';
 import FormattedCampaign from '../../../components/formatted/formattedCampaign';
 import LinkInfo from '../../../components/formatted/linkInfo';
 import Page from '../../../components/page/page';

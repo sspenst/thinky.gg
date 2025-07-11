@@ -3,7 +3,7 @@ import { ReportReason } from '@root/constants/ReportReason';
 import { ReportType } from '@root/constants/ReportType';
 import { PageContext } from '@root/contexts/pageContext';
 import Link from 'next/link';
-import React, { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import Modal from '.';
 

@@ -9,7 +9,7 @@ import isPro from '@root/helpers/isPro';
 import TileTypeHelper from '@root/helpers/tileTypeHelper';
 import { BEST_CHECKPOINT_INDEX } from '@root/hooks/useCheckpoints';
 import Link from 'next/link';
-import React, { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import Modal from '.';
 
 interface CheckpointButtonProps {

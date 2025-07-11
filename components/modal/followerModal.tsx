@@ -1,7 +1,6 @@
 import Dimensions from '@root/constants/dimensions';
 import User from '@root/models/db/user';
 import { IsFollowingGraph } from '@root/pages/[subdomain]/profile/[name]/[[...tab]]';
-import React from 'react';
 import FollowButton from '../buttons/followButton';
 import FormattedUser from '../formatted/formattedUser';
 import Modal from '.';

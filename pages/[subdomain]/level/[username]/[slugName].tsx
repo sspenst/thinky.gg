@@ -10,7 +10,7 @@ import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { useRouter } from 'next/router';
 import { ArticleJsonLd, NextSeo } from 'next-seo';
 import { ParsedUrlQuery } from 'querystring';
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import { useCallback, useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import LinkInfo from '../../../../components/formatted/linkInfo';
 import GameWrapper from '../../../../components/level/gameWrapper';

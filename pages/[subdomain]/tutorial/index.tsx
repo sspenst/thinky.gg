@@ -7,7 +7,7 @@ import { AppContext } from '@root/contexts/appContext';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { GetServerSidePropsContext } from 'next';
 import { NextSeo } from 'next-seo';
-import React, { useContext } from 'react';
+import { useContext } from 'react';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const gameId = getGameIdFromReq(context.req);

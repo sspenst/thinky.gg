@@ -2,7 +2,7 @@
 
 import { redirectToLogin } from '@root/helpers/redirectToLogin';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import Editor from '../../../components/editor';
 import LinkInfo from '../../../components/formatted/linkInfo';
 import Page from '../../../components/page/page';

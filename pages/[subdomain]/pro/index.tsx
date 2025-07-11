@@ -1,7 +1,6 @@
 import { GameId } from '@root/constants/GameId';
 import { getGameFromId, getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
-import React from 'react';
 import Page from '../../../components/page/page';
 import SettingsPro from '../../../components/settings/settingsPro';
 import { getUserFromToken } from '../../../lib/withAuth';

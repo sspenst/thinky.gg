@@ -3,7 +3,7 @@ import { AppContext } from '@root/contexts/appContext';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { NextSeo } from 'next-seo';
-import React, { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { useSWRConfig } from 'swr';
 import Home from '../../components/home';
 import Page from '../../components/page/page';

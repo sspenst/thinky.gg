@@ -6,7 +6,6 @@ import Level from '@root/models/db/level';
 import { LevelModel } from '@root/models/mongoose';
 import { Types } from 'mongoose';
 import { GetServerSidePropsContext } from 'next';
-import React from 'react';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const { id } = context.params as { id: string };

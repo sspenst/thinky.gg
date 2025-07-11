@@ -7,7 +7,6 @@ import { USER_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import { Types } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { useRouter } from 'next/router';
-import React from 'react';
 import LinkInfo from '../../../components/formatted/linkInfo';
 import Game from '../../../components/level/game';
 import Page from '../../../components/page/page';

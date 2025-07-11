@@ -1,5 +1,4 @@
 import { GetServerSidePropsContext } from 'next';
-import React from 'react';
 import LoginForm from '../../../components/forms/loginForm';
 import Page from '../../../components/page/page';
 import redirectToHome from '../../../helpers/redirectToHome';

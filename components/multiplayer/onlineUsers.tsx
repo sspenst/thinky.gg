@@ -1,6 +1,6 @@
 import classNames from 'classnames';
 import Link from 'next/link';
-import React, { useContext } from 'react';
+import { useContext } from 'react';
 import { AppContext } from '../../contexts/appContext';
 
 export default function OnlineUsers() {

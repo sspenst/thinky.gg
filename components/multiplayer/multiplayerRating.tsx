@@ -1,6 +1,6 @@
 import { AppContext } from '@root/contexts/appContext';
 import { ScreenSize } from '@root/hooks/useDeviceCheck';
-import React, { useContext } from 'react';
+import { useContext } from 'react';
 import { getMatchCountFromProfile, getMatchTypeNameFromMatchType, getRatingFromProfile, isProvisional, MUTLIPLAYER_PROVISIONAL_GAME_LIMIT } from '../../helpers/multiplayerHelperFunctions';
 import { MultiplayerMatchType } from '../../models/constants/multiplayer';
 import MultiplayerProfile from '../../models/db/multiplayerProfile';

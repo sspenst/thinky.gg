@@ -5,7 +5,7 @@ import { AppContext } from '@root/contexts/appContext';
 import { getGameFromId, getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import useSWRHelper from '@root/hooks/useSWRHelper';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
-import React, { useContext } from 'react';
+import { useContext } from 'react';
 import ChapterSelectCard from '../../../components/cards/chapterSelectCard';
 import Page from '../../../components/page/page';
 import { getUserFromToken } from '../../../lib/withAuth';

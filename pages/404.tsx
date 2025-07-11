@@ -1,7 +1,7 @@
 /* istanbul ignore file */
 import Page from '@root/components/page/page';
 import { AppContext } from '@root/contexts/appContext';
-import React, { useContext } from 'react';
+import { useContext } from 'react';
 
 export default function Custom404() {
   const { game } = useContext(AppContext);

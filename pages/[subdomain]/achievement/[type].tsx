@@ -16,7 +16,7 @@ import Achievement from '@root/models/db/achievement';
 import User from '@root/models/db/user';
 import { AchievementModel, UserModel } from '@root/models/mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
-import React, { useContext } from 'react';
+import { useContext } from 'react';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   await dbConnect();

@@ -4,7 +4,6 @@ import User from '@root/models/db/user';
 import { Types } from 'mongoose';
 import Document, { DocumentContext, DocumentInitialProps, Head, Html, Main, NextScript } from 'next/document';
 import Script from 'next/script';
-import React from 'react';
 import { initializeDisposableEmailDomains } from '../helpers/disposableEmailDomains';
 import { logger } from '../helpers/logger';
 import dbConnect from '../lib/dbConnect';

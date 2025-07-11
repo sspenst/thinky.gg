@@ -3,7 +3,7 @@ import User from '@root/models/db/user';
 import { UserModel } from '@root/models/mongoose';
 import { GetServerSidePropsContext } from 'next';
 import { useRouter } from 'next/router';
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {

@@ -4,7 +4,7 @@ import { getGameFromId, getGameIdFromReq } from '@root/helpers/getGameIdFromReq'
 import { PipelineStage, Types } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Image from 'next/image';
-import React, { useCallback, useContext } from 'react';
+import { useCallback, useContext } from 'react';
 import SelectCard from '../../../components/cards/selectCard';
 import Page from '../../../components/page/page';
 import dbConnect from '../../../lib/dbConnect';

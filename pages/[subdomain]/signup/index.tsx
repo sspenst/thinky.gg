@@ -1,7 +1,6 @@
 import SignupForm from '@root/components/forms/signupForm';
 import { getUserFromToken } from '@root/lib/withAuth';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
-import React from 'react';
 import Page from '../../../components/page/page';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {

@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import { useContext } from 'react';
 import toast from 'react-hot-toast';
 import { LevelContext } from '../../contexts/levelContext';
 import Modal from '.';

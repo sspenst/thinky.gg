@@ -3,7 +3,7 @@ import isPro from '@root/helpers/isPro';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import React, { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import Collection from '../../models/db/collection';
 import isNotFullAccountToast from '../toasts/isNotFullAccountToast';

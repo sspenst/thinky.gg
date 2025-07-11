@@ -1,6 +1,6 @@
 import classNames from 'classnames';
 import dayjs from 'dayjs';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Bar, CartesianGrid, ComposedChart, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { NameType, Payload } from 'recharts/types/component/DefaultTooltipContent';
 import { MatchAction, MatchLogDataLevelComplete, MatchLogDataUserLeveId, MultiplayerMatchTypeDurationMap } from '../../models/constants/multiplayer';

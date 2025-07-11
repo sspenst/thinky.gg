@@ -1,4 +1,3 @@
-import bcrypt from 'bcryptjs';
 import { NextApiResponse } from 'next';
 import PrivateTagType from '../../../../constants/privateTagType';
 import { ValidType } from '../../../../helpers/apiWrapper';

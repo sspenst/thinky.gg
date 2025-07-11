@@ -8,7 +8,7 @@ import { getUserFromToken } from '@root/lib/withAuth';
 import classNames from 'classnames';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Link from 'next/link';
-import React, { useContext, useRef, useState } from 'react';
+import { useContext, useRef, useState } from 'react';
 import ReCAPTCHA from 'react-google-recaptcha';
 import { toast } from 'react-hot-toast';
 import { useSWRConfig } from 'swr';

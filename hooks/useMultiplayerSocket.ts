@@ -3,7 +3,7 @@ import AlertType from '@root/constants/alertType';
 import { Game } from '@root/constants/Games';
 import Notification from '@root/models/db/notification';
 import { useRouter } from 'next/router';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { DefaultEventsMap } from 'socket.io/dist/typed-events';
 import { io, Socket } from 'socket.io-client';

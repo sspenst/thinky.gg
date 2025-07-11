@@ -11,7 +11,7 @@ import { Loader } from 'lucide-react';
 import { GetServerSidePropsContext } from 'next';
 import { NextSeo } from 'next-seo';
 import { ParsedUrlQuery } from 'querystring';
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import { useCallback, useContext, useEffect, useState } from 'react';
 import FormattedUser from '../../../components/formatted/formattedUser';
 import Page from '../../../components/page/page';
 import Dimensions from '../../../constants/dimensions';

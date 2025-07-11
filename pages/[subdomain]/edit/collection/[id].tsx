@@ -5,7 +5,7 @@ import { getCollection } from '@root/pages/api/collection-by-id/[id]';
 import { Types } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import nProgress from 'nprogress';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import toast from 'react-hot-toast';
 import LinkInfo from '../../../../components/formatted/linkInfo';
 import Page from '../../../../components/page/page';

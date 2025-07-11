@@ -3,7 +3,7 @@ import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { Types } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { ParsedUrlQuery } from 'querystring';
-import React, { useCallback } from 'react';
+import { useCallback } from 'react';
 import Select from '../../../components/cards/select';
 import FormattedAuthorNote from '../../../components/formatted/formattedAuthorNote';
 import LinkInfo from '../../../components/formatted/linkInfo';
