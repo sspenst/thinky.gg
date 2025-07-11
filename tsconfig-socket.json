@@ -109,13 +109,25 @@
       "global.d.ts",
       "server/socket/**/*.ts",
       "models/**/*.ts",
-      "lib/**/*.ts",
-      "helpers/**/*.ts",
+      "lib/dbConnect.ts",
+      "lib/withAuth.ts",
+      "lib/cleanUser.ts",
+      "helpers/gameStateHelpers.ts",
+      "helpers/getGameIdFromReq.ts",
+      "helpers/match/**/*.ts",
+      "helpers/enrich.ts",
+      "helpers/getUsersWithMultiplayerProfile.ts",
+      "helpers/logger.ts",
+      "helpers/sortByRating.ts",
       "constants/**/*.ts",
       "types/**/*.ts"
   ],
   "exclude": [
     "node_modules",
-    "thinky-react-native"
+    "thinky-react-native",
+    "**/*.tsx",
+    "components/**/*",
+    "pages/**/*",
+    "hooks/**/*"
   ]
 }

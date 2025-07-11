@@ -13,7 +13,7 @@ import Stat from '@root/models/db/stat';
 import User from '@root/models/db/user';
 import { refreshIndexCalcs } from '@root/models/schemas/levelSchema';
 import { generateMatchLog } from '@root/models/schemas/multiplayerMatchSchema';
-import { queueRefreshAchievements } from '@root/pages/api/internal-jobs/worker';
+import { queueRefreshAchievements } from '@root/pages/api/internal-jobs/worker/queueFunctions';
 import cliProgress from 'cli-progress';
 import dotenv from 'dotenv';
 import { Types } from 'mongoose';

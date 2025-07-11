@@ -36,7 +36,7 @@ afterEach(async () => {
 describe('pages/api/internal-jobs/worker', () => {
   describe('Queue functions', () => {
     test('basic queue function should create queue message', async () => {
-      const { queue } = await import('../../../../../pages/api/internal-jobs/worker/index');
+      const { queue } = await import('../../../../../pages/api/internal-jobs/worker/queueFunctions');
 
       const dedupeKey = 'test-queue-basic';
       const type = QueueMessageType.FETCH;
@@ -54,7 +54,7 @@ describe('pages/api/internal-jobs/worker', () => {
     });
 
     test('queue function with runAt date should schedule message', async () => {
-      const { queue } = await import('../../../../../pages/api/internal-jobs/worker/index');
+      const { queue } = await import('../../../../../pages/api/internal-jobs/worker/queueFunctions');
 
       const dedupeKey = 'test-queue-scheduled';
       const type = QueueMessageType.FETCH;
@@ -69,7 +69,7 @@ describe('pages/api/internal-jobs/worker', () => {
     });
 
     test('queuePushNotification should create both push and email messages', async () => {
-      const { queuePushNotification } = await import('../../../../../pages/api/internal-jobs/worker/index');
+      const { queuePushNotification } = await import('../../../../../pages/api/internal-jobs/worker/queueFunctions');
 
       const notificationId = new Types.ObjectId();
 
@@ -89,7 +89,7 @@ describe('pages/api/internal-jobs/worker', () => {
     });
 
     test('bulkQueuePushNotification should create multiple push and email messages with session', async () => {
-      const { bulkQueuePushNotification } = await import('../../../../../pages/api/internal-jobs/worker/index');
+      const { bulkQueuePushNotification } = await import('../../../../../pages/api/internal-jobs/worker/queueFunctions');
       const mongoose = await import('mongoose');
 
       const notificationIds = [new Types.ObjectId(), new Types.ObjectId()];
@@ -127,7 +127,7 @@ describe('pages/api/internal-jobs/worker', () => {
     });
 
     test('queueRefreshAchievements should create refresh achievements message', async () => {
-      const { queueRefreshAchievements } = await import('../../../../../pages/api/internal-jobs/worker/index');
+      const { queueRefreshAchievements } = await import('../../../../../pages/api/internal-jobs/worker/queueFunctions');
 
       const userId = new Types.ObjectId();
       const categories = [AchievementCategory.SKILL, AchievementCategory.CREATOR];
@@ -150,7 +150,7 @@ describe('pages/api/internal-jobs/worker', () => {
     });
 
     test('queueDiscord should create Discord notification message with default dedupeKey', async () => {
-      const { queueDiscord } = await import('../../../../../pages/api/internal-jobs/worker/index');
+      const { queueDiscord } = await import('../../../../../pages/api/internal-jobs/worker/queueFunctions');
 
       const channelId = 'test-channel-123';
       const token = 'test-token-456';
@@ -175,7 +175,7 @@ describe('pages/api/internal-jobs/worker', () => {
     });
 
     test('queueDiscord should use custom dedupeKey when provided', async () => {
-      const { queueDiscord } = await import('../../../../../pages/api/internal-jobs/worker/index');
+      const { queueDiscord } = await import('../../../../../pages/api/internal-jobs/worker/queueFunctions');
 
       const channelId = 'test-channel-456';
       const token = 'test-token-789';
@@ -200,7 +200,7 @@ describe('pages/api/internal-jobs/worker', () => {
     });
 
     test('queueFetch should create fetch message with auto-generated dedupeKey when not provided', async () => {
-      const { queueFetch } = await import('../../../../../pages/api/internal-jobs/worker/index');
+      const { queueFetch } = await import('../../../../../pages/api/internal-jobs/worker/queueFunctions');
 
       const url = 'https://example.com/api/auto-dedupe';
       const options = { method: 'GET' };
@@ -222,7 +222,7 @@ describe('pages/api/internal-jobs/worker', () => {
     });
 
     test('bulkQueueCalcPlayAttempts should create multiple calc messages', async () => {
-      const { bulkQueueCalcPlayAttempts } = await import('../../../../../pages/api/internal-jobs/worker/index');
+      const { bulkQueueCalcPlayAttempts } = await import('../../../../../pages/api/internal-jobs/worker/queueFunctions');
 
       const levelIds = [new Types.ObjectId(), new Types.ObjectId()];
 
@@ -240,7 +240,7 @@ describe('pages/api/internal-jobs/worker', () => {
     });
 
     test('bulkQueueCalcPlayAttempts with spreadRunAtDuration should schedule messages with different times', async () => {
-      const { bulkQueueCalcPlayAttempts } = await import('../../../../../pages/api/internal-jobs/worker/index');
+      const { bulkQueueCalcPlayAttempts } = await import('../../../../../pages/api/internal-jobs/worker/queueFunctions');
 
       const levelIds = [new Types.ObjectId(), new Types.ObjectId()];
       const spreadDuration = 10; // 10 seconds
@@ -262,7 +262,7 @@ describe('pages/api/internal-jobs/worker', () => {
     });
 
     test('queueFetch should create fetch message', async () => {
-      const { queueFetch } = await import('../../../../../pages/api/internal-jobs/worker/index');
+      const { queueFetch } = await import('../../../../../pages/api/internal-jobs/worker/queueFunctions');
 
       const url = 'https://example.com/api';
       const options = { method: 'POST', body: 'test' };
@@ -283,7 +283,7 @@ describe('pages/api/internal-jobs/worker', () => {
     });
 
     test('queueCalcCreatorCounts should create calc creator counts message', async () => {
-      const { queueCalcCreatorCounts } = await import('../../../../../pages/api/internal-jobs/worker/index');
+      const { queueCalcCreatorCounts } = await import('../../../../../pages/api/internal-jobs/worker/queueFunctions');
 
       const userId = new Types.ObjectId();
 
@@ -303,7 +303,7 @@ describe('pages/api/internal-jobs/worker', () => {
     });
 
     test('queueGenLevelImage should create gen level image message', async () => {
-      const { queueGenLevelImage } = await import('../../../../../pages/api/internal-jobs/worker/index');
+      const { queueGenLevelImage } = await import('../../../../../pages/api/internal-jobs/worker/queueFunctions');
 
       const levelId = new Types.ObjectId();
       const postToDiscord = true;
@@ -324,7 +324,7 @@ describe('pages/api/internal-jobs/worker', () => {
     });
 
     test('queueRefreshIndexCalcs should create refresh index message', async () => {
-      const { queueRefreshIndexCalcs } = await import('../../../../../pages/api/internal-jobs/worker/index');
+      const { queueRefreshIndexCalcs } = await import('../../../../../pages/api/internal-jobs/worker/queueFunctions');
 
       const levelId = new Types.ObjectId();
 
@@ -339,7 +339,7 @@ describe('pages/api/internal-jobs/worker', () => {
     });
 
     test('queueCalcPlayAttempts should create calc play attempts message', async () => {
-      const { queueCalcPlayAttempts } = await import('../../../../../pages/api/internal-jobs/worker/index');
+      const { queueCalcPlayAttempts } = await import('../../../../../pages/api/internal-jobs/worker/queueFunctions');
 
       const levelId = new Types.ObjectId();
 
@@ -354,7 +354,7 @@ describe('pages/api/internal-jobs/worker', () => {
     });
 
     test('queueCalcPlayAttempts with future runAt should schedule message', async () => {
-      const { queueCalcPlayAttempts } = await import('../../../../../pages/api/internal-jobs/worker/index');
+      const { queueCalcPlayAttempts } = await import('../../../../../pages/api/internal-jobs/worker/queueFunctions');
 
       const levelId = new Types.ObjectId();
       const futureDate = new Date(Date.now() + 120000); // 2 minutes in future

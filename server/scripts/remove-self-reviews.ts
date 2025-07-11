@@ -2,7 +2,7 @@
 
 // import Level from '@root/models/db/level';
 import Review from '@root/models/db/review';
-import { queueRefreshIndexCalcs } from '@root/pages/api/internal-jobs/worker';
+import { queueRefreshIndexCalcs } from '@root/pages/api/internal-jobs/worker/queueFunctions';
 import cliProgress from 'cli-progress';
 import dotenv from 'dotenv';
 import dbConnect from '../../lib/dbConnect';

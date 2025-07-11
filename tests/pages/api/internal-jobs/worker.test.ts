@@ -7,7 +7,8 @@ import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import QueueMessage from '../../../../models/db/queueMessage';
 import { QueueMessageModel } from '../../../../models/mongoose';
 import { QueueMessageState } from '../../../../models/schemas/queueMessageSchema';
-import handler, { processQueueMessages, queueFetch } from '../../../../pages/api/internal-jobs/worker';
+import handler, { processQueueMessages } from '../../../../pages/api/internal-jobs/worker';
+import { queueFetch } from '../../../../pages/api/internal-jobs/worker/queueFunctions';
 
 afterEach(() => {
   jest.restoreAllMocks();

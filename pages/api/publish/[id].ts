@@ -13,7 +13,7 @@ import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import User from '../../../models/db/user';
 import { CacheModel, LevelModel, RecordModel, StatModel, UserConfigModel } from '../../../models/mongoose';
-import { queueCalcCreatorCounts, queueCalcPlayAttempts, queueGenLevelImage, queueRefreshAchievements, queueRefreshIndexCalcs } from '../internal-jobs/worker';
+import { queueCalcCreatorCounts, queueCalcPlayAttempts, queueGenLevelImage, queueRefreshAchievements, queueRefreshIndexCalcs } from '../internal-jobs/worker/queueFunctions';
 
 export async function checkPublishRestrictions(gameId: GameId, userId: Types.ObjectId) {
   // check last 24h

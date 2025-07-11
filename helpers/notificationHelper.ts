@@ -9,7 +9,7 @@ import GraphType from '../constants/graphType';
 import NotificationType from '../constants/notificationType';
 import Achievement from '../models/db/achievement';
 import { AchievementModel, GraphModel, NotificationModel } from '../models/mongoose';
-import { bulkQueuePushNotification, queuePushNotification } from '../pages/api/internal-jobs/worker';
+import { bulkQueuePushNotification, queuePushNotification } from '../pages/api/internal-jobs/worker/queueFunctions';
 
 export async function createNewAdminMessageNotifications(gameId: GameId, userIds: Types.ObjectId[], payload: string, session: ClientSession) {
   const notificationIds = [];

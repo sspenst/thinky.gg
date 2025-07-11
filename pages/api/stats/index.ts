@@ -26,7 +26,7 @@ import Level, { EnrichedLevel } from '../../../models/db/level';
 import Record from '../../../models/db/record';
 import Stat from '../../../models/db/stat';
 import { KeyValueModel, LevelModel, PlayAttemptModel, RecordModel, StatModel, UserConfigModel } from '../../../models/mongoose';
-import { queueRefreshAchievements, queueRefreshIndexCalcs } from '../internal-jobs/worker';
+import { queueRefreshAchievements, queueRefreshIndexCalcs } from '../internal-jobs/worker/queueFunctions';
 
 export async function putStat(user: User, directions: Direction[], levelId: string, matchId?: string) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

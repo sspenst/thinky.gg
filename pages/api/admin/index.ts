@@ -17,7 +17,8 @@ import { calcPlayAttempts, refreshIndexCalcs } from '@root/models/schemas/levelS
 import mongoose, { Types } from 'mongoose';
 import { NextApiResponse } from 'next';
 import { runEmailDigest } from '../internal-jobs/email-digest';
-import { bulkQueueCalcPlayAttempts, processQueueMessages } from '../internal-jobs/worker';
+import { processQueueMessages } from '../internal-jobs/worker';
+import { bulkQueueCalcPlayAttempts } from '../internal-jobs/worker/queueFunctions';
 
 export async function switchIsRanked(levelId: Types.ObjectId, gameId: GameId, isRanked?: boolean): Promise<boolean> {
   const session = await mongoose.startSession();

@@ -4,11 +4,11 @@ import { archiveUserLevels } from '@root/helpers/userDeletion';
 import dbConnect, { dbDisconnect } from '@root/lib/dbConnect';
 import { LevelModel, UserModel } from '@root/models/mongoose';
 // Import the mocked functions
-import { queueCalcCreatorCounts } from '@root/pages/api/internal-jobs/worker';
+import { queueCalcCreatorCounts } from '@root/pages/api/internal-jobs/worker/queueFunctions';
 import { Types } from 'mongoose';
 
 // Mock the queue functions
-jest.mock('@root/pages/api/internal-jobs/worker', () => ({
+jest.mock('@root/pages/api/internal-jobs/worker/queueFunctions', () => ({
   queueCalcCreatorCounts: jest.fn(),
 }));
 
