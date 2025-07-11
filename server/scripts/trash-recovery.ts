@@ -327,60 +327,124 @@ async function restoreAllFromCollection() {
   console.log(`🔄 Found ${trashRecords.length} restorable records for ${collection}`);
   console.log('❓ Are you sure you want to restore all of them? (y/N)');
 
-  // Simple confirmation
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
+  // Promise-based readline for proper async handling
+  const answer = await new Promise<string>((resolve) => {
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout
+    });
+
+    rl.question('', (answer: string) => {
+      rl.close();
+      resolve(answer);
+    });
   });
 
-  rl.question('', async (answer: string) => {
-    if (answer.toLowerCase() === 'y' || answer.toLowerCase() === 'yes') {
-      console.log('🔄 Starting bulk restore...');
+  if (answer.toLowerCase() === 'y' || answer.toLowerCase() === 'yes') {
+    console.log('🔄 Starting bulk restore...');
 
-      let restored = 0;
-      let skipped = 0;
+    let totalRestored = 0;
+    let totalSkipped = 0;
 
-      for (const trashRecord of trashRecords) {
+    // Group records by collection for efficient batch processing
+    const recordsByCollection = new Map<string, any[]>();
+
+    trashRecords.forEach(record => {
+      const collection = record.originalCollection;
+
+      if (!recordsByCollection.has(collection)) {
+        recordsByCollection.set(collection, []);
+      }
+
+      recordsByCollection.get(collection)!.push(record);
+    });
+
+    console.log(`  Processing ${recordsByCollection.size} different collections...`);
+
+    // Process each collection in batches
+    for (const [collectionName, records] of recordsByCollection) {
+      console.log(`\n  🔄 Processing ${records.length} records from ${collectionName}...`);
+
+      const Model = mongoose.models[collectionName];
+
+      if (!Model) {
+        console.error(`    ❌ Unknown collection: ${collectionName}, skipping ${records.length} records`);
+        totalSkipped += records.length;
+        continue;
+      }
+
+      // Process in batches to avoid memory/transaction limits
+      const BATCH_SIZE = 1000;
+      const batches = [];
+
+      for (let i = 0; i < records.length; i += BATCH_SIZE) {
+        batches.push(records.slice(i, i + BATCH_SIZE));
+      }
+
+      let collectionRestored = 0;
+      let collectionSkipped = 0;
+
+      for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
+        const batch = batches[batchIndex];
+        const session = await mongoose.startSession();
+
         try {
-          const Model = mongoose.models[trashRecord.originalCollection];
+          await session.withTransaction(async () => {
+            // Check which records already exist (batch query)
+            const existingIds = batch.map(record => record.originalId);
+            const existingRecords = await Model.find(
+              { _id: { $in: existingIds } },
+              { _id: 1 },
+              { session }
+            );
+            const existingIdSet = new Set(existingRecords.map(doc => doc._id.toString()));
 
-          // Check if record already exists
-          const existingRecord = await Model.findById(trashRecord.originalId);
+            // Filter out records that already exist
+            const recordsToRestore = batch.filter(record =>
+              !existingIdSet.has(record.originalId.toString())
+            );
+            const skippedInBatch = batch.length - recordsToRestore.length;
 
-          if (existingRecord) {
-            console.log(`⏭️  Skipped ${trashRecord.originalId} (already exists)`);
-            skipped++;
-            continue;
-          }
+            if (recordsToRestore.length > 0) {
+              // Prepare documents for batch insert
+              const documentsToInsert = recordsToRestore.map(record => record.originalDocument);
 
-          // Restore the document
-          const restoredDoc = new Model(trashRecord.originalDocument);
+              // Batch insert into original collection
+              await Model.insertMany(documentsToInsert, { session, ordered: false });
 
-          await restoredDoc.save();
+              // Batch remove from trash
+              const trashIdsToDelete = recordsToRestore.map(record => record._id);
 
-          // Remove from trash
-          await TrashCanModel.findByIdAndDelete(trashRecord._id);
+              await TrashCanModel.deleteMany(
+                { _id: { $in: trashIdsToDelete } },
+                { session }
+              );
 
-          restored++;
+              collectionRestored += recordsToRestore.length;
+            }
 
-          if (restored % 10 === 0) {
-            console.log(`   Restored ${restored}/${trashRecords.length} records...`);
-          }
+            collectionSkipped += skippedInBatch;
+
+            console.log(`    ✅ Batch ${batchIndex + 1}/${batches.length}: restored ${recordsToRestore.length}, skipped ${skippedInBatch}`);
+          });
         } catch (error) {
-          console.error(`❌ Error restoring ${trashRecord.originalId}:`, (error as Error).message);
-          skipped++;
+          console.error(`    ❌ Error processing batch ${batchIndex + 1}:`, (error as Error).message);
+          console.log(`    Skipping this batch (${batch.length} records)...`);
+          collectionSkipped += batch.length;
+        } finally {
+          await session.endSession();
         }
       }
 
-      console.log(`✅ Bulk restore complete: ${restored} restored, ${skipped} skipped`);
-    } else {
-      console.log('❌ Bulk restore cancelled');
+      console.log(`  ✅ ${collectionName}: ${collectionRestored} restored, ${collectionSkipped} skipped`);
+      totalRestored += collectionRestored;
+      totalSkipped += collectionSkipped;
     }
 
-    rl.close();
-    await mongoose.connection.close();
-    process.exit(0);
-  });
+    console.log(`\n✅ Bulk restore complete: ${totalRestored} restored, ${totalSkipped} skipped`);
+  } else {
+    console.log('❌ Bulk restore cancelled');
+  }
 }
 
 async function showTrashCount() {
@@ -459,26 +523,28 @@ async function cleanOldTrash() {
   console.log(`🗑️  Found ${oldRecords.length} records older than ${days} days`);
   console.log('❓ Are you sure you want to permanently delete them? (y/N)');
 
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
+  // Promise-based readline for proper async handling
+  const answer = await new Promise<string>((resolve) => {
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout
+    });
+
+    rl.question('', (answer: string) => {
+      rl.close();
+      resolve(answer);
+    });
   });
 
-  rl.question('', async (answer: string) => {
-    if (answer.toLowerCase() === 'y' || answer.toLowerCase() === 'yes') {
-      const result = await TrashCanModel.deleteMany({
-        deletedAt: { $lt: cutoffDate }
-      });
+  if (answer.toLowerCase() === 'y' || answer.toLowerCase() === 'yes') {
+    const result = await TrashCanModel.deleteMany({
+      deletedAt: { $lt: cutoffDate }
+    });
 
-      console.log(`✅ Permanently deleted ${result.deletedCount} old trash records`);
-    } else {
-      console.log('❌ Cleanup cancelled');
-    }
-
-    rl.close();
-    await mongoose.connection.close();
-    process.exit(0);
-  });
+    console.log(`✅ Permanently deleted ${result.deletedCount} old trash records`);
+  } else {
+    console.log('❌ Cleanup cancelled');
+  }
 }
 
 // Run the recovery tool
