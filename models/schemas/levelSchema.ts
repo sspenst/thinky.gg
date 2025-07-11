@@ -210,6 +210,7 @@ export async function calcPlayAttempts(levelId: Types.ObjectId, options: any = {
       {
         $match: {
           levelId: levelId,
+          isDeleted: { $ne: true },
         }
       },
       // group by userId
