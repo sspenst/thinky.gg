@@ -43,9 +43,12 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   const adminQuery: AdminQuery = { ...DefaultQuery };
 
-  if (context.query && (Object.keys(context.query).length > 0)) {
+  if (context.query && Object.keys(context.query).length > 0) {
     for (const q in context.query as AdminQuery) {
-      adminQuery[q] = context.query[q];
+      const value = context.query[q];
+
+      // If the value is an array, take the first element; otherwise, use the value as is
+      adminQuery[q] = Array.isArray(value) ? value[0] : value;
     }
   }
 
