@@ -2,7 +2,7 @@ import Role from '@root/constants/role';
 import { ValidObjectId } from '@root/helpers/apiWrapper';
 import { logger } from '@root/helpers/logger';
 import withAuth, { NextApiRequestWithAuth } from '@root/lib/withAuth';
-import { UserModel } from '@root/models/mongoose';
+import { LevelModel, ReviewModel, UserModel } from '@root/models/mongoose';
 import { Types } from 'mongoose';
 import { NextApiResponse } from 'next';
 
@@ -257,8 +257,64 @@ export default withAuth({
       roles: user.roles || []
     }));
 
+    // Get user IDs for additional queries
+    const userIds = users.map((user: any) => new Types.ObjectId(user._id));
+
+    // Get published levels count for each user
+    const levelsCountResult = await LevelModel.aggregate([
+      {
+        $match: {
+          userId: { $in: userIds },
+          isDraft: false,
+          isDeleted: { $ne: true }
+        }
+      },
+      {
+        $group: {
+          _id: '$userId',
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    // Get reviews count for each user
+    const reviewsCountResult = await ReviewModel.aggregate([
+      {
+        $match: {
+          userId: { $in: userIds },
+          isDeleted: { $ne: true }
+        }
+      },
+      {
+        $group: {
+          _id: '$userId',
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    // Create maps for easy lookup
+    const levelsCountMap = new Map();
+
+    levelsCountResult.forEach((item: any) => {
+      levelsCountMap.set(item._id.toString(), item.count);
+    });
+
+    const reviewsCountMap = new Map();
+
+    reviewsCountResult.forEach((item: any) => {
+      reviewsCountMap.set(item._id.toString(), item.count);
+    });
+
+    // Merge counts into user data
+    const usersWithCounts = users.map((user: any) => ({
+      ...user,
+      publishedLevelsCount: levelsCountMap.get(user._id) || 0,
+      reviewsCount: reviewsCountMap.get(user._id) || 0
+    }));
+
     return res.status(200).json({
-      users,
+      users: usersWithCounts,
       distinctIPs: data.distinctIPs || [],
       distinctEmailDomains: data.distinctEmailDomains || [],
       numUsers: data.numUsers || 0,

@@ -17,6 +17,8 @@ export interface ConnectedUser {
   roles: string[];
   ts?: number;
   last_visited_at?: number;
+  publishedLevelsCount: number;
+  reviewsCount: number;
 }
 
 export interface ConnectedUsersData {
