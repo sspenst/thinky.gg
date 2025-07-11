@@ -7,7 +7,7 @@ import { generateLevelSlug } from '@root/helpers/generateSlug';
 import { TimerUtil } from '@root/helpers/getTs';
 import { logger } from '@root/helpers/logger';
 import Level from '@root/models/db/level';
-import { AchievementModel, CollectionModel, CommentModel, DeviceModel, GraphModel, KeyValueModel, LevelModel, NotificationModel, UserAuthModel, UserConfigModel, UserModel } from '@root/models/mongoose';
+import { AchievementModel, CollectionModel, CommentModel, DeviceModel, GraphModel, KeyValueModel, LevelModel, NotificationModel, ReviewModel, UserAuthModel, UserConfigModel, UserModel } from '@root/models/mongoose';
 import { queueCalcCreatorCounts } from '@root/pages/api/internal-jobs/worker';
 import mongoose, { ClientSession, Types } from 'mongoose';
 
@@ -179,6 +179,7 @@ export async function deleteUser(userId: Types.ObjectId, session?: ClientSession
         UserConfigModel.deleteMany({ userId: userId }, { session: session }),
         UserAuthModel.deleteMany({ userId: userId }, { session: session }),
         UserModel.deleteOne({ _id: userId }, { session: session }),
+        ReviewModel.deleteMany({ userId: userId }, { session: session }),
       ]);
     };
 
