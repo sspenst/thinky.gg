@@ -17,10 +17,10 @@ import classNames from 'classnames';
 import { Search as SearchIcon } from 'lucide-react';
 import { Types } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
+import { NextSeo } from 'next-seo';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { NextSeo } from 'next-seo';
 import nProgress from 'nprogress';
 import { ParsedUrlQuery } from 'querystring';
 import React, { Fragment, useCallback, useContext, useEffect, useState } from 'react';
@@ -634,10 +634,15 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
         <form onSubmit={(e) => {
           e.preventDefault();
           const formData = new FormData(e.currentTarget);
+          const searchTerm = formData.get('search') as string || '';
 
           queryHelper({
-            search: formData.get('search') as string || '',
+            search: searchTerm,
             page: '1',
+            // Auto-switch to "All Time" when user searches with a term
+            ...(searchTerm && query.timeRange !== TimeRange[TimeRange.All] && {
+              timeRange: TimeRange[TimeRange.All],
+            }),
           });
         }}>
           <div className='flex flex-col sm:flex-row gap-2 items-stretch sm:items-center'>
@@ -652,14 +657,6 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
                 placeholder='Level name...'
                 type='search'
                 defaultValue={query.search}
-                onChange={(e) => {
-                  // Auto-switch to "All Time" when user starts typing
-                  if (e.target.value && query.timeRange !== TimeRange[TimeRange.All]) {
-                    queryHelper({
-                      timeRange: TimeRange[TimeRange.All],
-                    });
-                  }
-                }}
                 className='w-full pl-10 pr-3 py-2 text-base border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent'
               />
             </div>
