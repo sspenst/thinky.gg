@@ -85,11 +85,19 @@ function NotificationMessage({ notification, onMarkAsRead }: NotificationMessage
 
     const payload = JSON.parse(notification.message);
 
-    return (
-      <Link className='hover:underline' href={payload.href} onClick={onMarkAsRead}>
-        {payload.message}
-      </Link>
-    );
+    if (payload.href) {
+      return (
+        <Link className='hover:underline' href={payload.href} onClick={onMarkAsRead}>
+          {payload.message}
+        </Link>
+      );
+    } else {
+      return (
+        <span className='hover:underline' onClick={onMarkAsRead}>
+          {payload.message}
+        </span>
+      );
+    }
   }
 
   case NotificationType.NEW_RECORD_ON_A_LEVEL_YOU_SOLVED:

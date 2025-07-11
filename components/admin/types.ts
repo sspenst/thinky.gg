@@ -2,14 +2,6 @@ import Level from '@root/models/db/level';
 import User from '@root/models/db/user';
 import { ParsedUrlQuery } from 'querystring';
 
-export interface AdminQuery extends ParsedUrlQuery {
-  levelId?: string;
-  userId?: string;
-  tab?: string;
-}
-
-export type Tab = 'users' | 'levels' | 'system' | 'config';
-
 export interface ConnectedUser {
   _id: string;
   name: string;
@@ -23,6 +15,7 @@ export interface ConnectedUser {
 
 export interface ConnectedUsersData {
   users: ConnectedUser[];
+  count: number;
   distinctIPs: string[];
   distinctEmailDomains: string[];
   numUsers: number;
@@ -39,11 +32,18 @@ export interface SystemVariable {
 }
 
 export interface IAdminCommand {
-  command: string;
-  confirm?: boolean;
   label: string;
-  icon?: React.ComponentType<{ className?: string }>;
+  command: string;
+  icon?: any;
   dangerous?: boolean;
+  confirm?: boolean;
+}
+
+export interface AdminQuery {
+  levelId?: string;
+  userId?: string;
+  tab?: Tab;
+  [key: string]: string | undefined;
 }
 
 export interface AdminPageProps {
@@ -51,3 +51,5 @@ export interface AdminPageProps {
   level: Level | null;
   user: User | null;
 }
+
+export type Tab = 'users' | 'levels' | 'system' | 'config' | 'reports';
