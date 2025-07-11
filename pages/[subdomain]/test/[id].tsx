@@ -1,5 +1,6 @@
 /* istanbul ignore file */
 
+import GameRefactored from '@root/components/level/game-refactored';
 import { getEnrichUserConfigPipelineStage } from '@root/helpers/enrich';
 import { getGameFromId, getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { redirectToLogin } from '@root/helpers/redirectToLogin';
@@ -8,7 +9,6 @@ import { Types } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { useRouter } from 'next/router';
 import LinkInfo from '../../../components/formatted/linkInfo';
-import Game from '../../../components/level/game';
 import Page from '../../../components/page/page';
 import cleanUser from '../../../lib/cleanUser';
 import { getUserFromToken } from '../../../lib/withAuth';
@@ -112,7 +112,7 @@ export default function Test({ level }: TestProps) {
         <h2 className='whitespace-nowrap font-bold truncate text-center p-1'>
           {level?.name}
         </h2>
-        <Game
+        <GameRefactored
           disablePlayAttempts={true}
           level={level}
           onStatsSuccess={() => router.replace(router.asPath)}

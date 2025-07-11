@@ -6,14 +6,14 @@ import classNames from 'classnames';
 import { Types } from 'mongoose';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import React, { JSX, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { JSX, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { AppContext } from '../../contexts/appContext';
 import { TimerUtil } from '../../helpers/getTs';
 import Control from '../../models/control';
 import Level from '../../models/db/level';
 import BasicLayout from '../level/basicLayout';
 import Controls from '../level/controls';
-import Game from '../level/game';
+import GameRefactored from '../level/game-refactored';
 import Page from '../page/page';
 import DismissToast from '../toasts/dismissToast';
 
@@ -509,7 +509,7 @@ export default function TutorialSokopath() {
         )}
         {tutorialStep.gameGrid && tutorialStep.level && (
           <div id='game-div-parent' key={'div-' + tutorialStep.key} className={classNames('grow', tutorialStep.gameClasses)}>
-            <Game
+            <GameRefactored
               disableCheckpoints={true}
               disablePlayAttempts={true}
               disableStats={true}
