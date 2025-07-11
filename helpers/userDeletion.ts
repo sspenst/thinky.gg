@@ -1,6 +1,5 @@
 import DiscordChannel from '@root/constants/discordChannel';
 import { GameId } from '@root/constants/GameId';
-import { Games } from '@root/constants/Games';
 import TestId from '@root/constants/testId';
 import queueDiscordWebhook from '@root/helpers/discordWebhook';
 import { generateLevelSlug } from '@root/helpers/generateSlug';

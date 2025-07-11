@@ -11,7 +11,7 @@ import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { ParsedUrlQueryInput } from 'querystring';
-import React, { useCallback, useMemo, useState } from 'react';
+import { useCallback, useState } from 'react';
 import Page from '../../../components/page/page';
 import { getUserFromToken } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';

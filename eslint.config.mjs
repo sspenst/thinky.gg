@@ -43,6 +43,8 @@ const eslintConfig = [...compat.extends(
     'simple-import-sort': simpleImportSort,
   },
   rules: {
+    'react/jsx-uses-react': 0,
+    'react/react-in-jsx-scope': 0,
     '@stylistic/ts/type-annotation-spacing': 'warn',
     // TODO: '@typescript-eslint/no-deprecated': 'warn',
     '@typescript-eslint/no-explicit-any': 'warn',

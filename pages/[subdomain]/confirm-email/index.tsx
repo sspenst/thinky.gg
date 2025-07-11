@@ -4,7 +4,7 @@ import { getUserFromToken } from '@root/lib/withAuth';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Link from 'next/link';
 import Router from 'next/router';
-import React, { useContext, useEffect } from 'react';
+import { useContext, useEffect } from 'react';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const token = context.req?.cookies?.token;

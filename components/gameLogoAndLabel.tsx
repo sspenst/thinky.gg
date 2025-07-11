@@ -1,6 +1,5 @@
 import { GameId } from '@root/constants/GameId';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
-import React from 'react';
 import GameLogo from './gameLogo';
 
 interface GameLogoAndLabelPropbs {

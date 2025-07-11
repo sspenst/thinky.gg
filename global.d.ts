@@ -34,4 +34,4 @@ declare global {
   var __MONGOSERVER__: MongoMemoryReplSet[];
 }
 
-export {};
+export { };

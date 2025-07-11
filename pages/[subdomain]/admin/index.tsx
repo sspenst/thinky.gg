@@ -20,7 +20,7 @@ import { LevelModel, UserModel } from '@root/models/mongoose';
 import { Box, Database, Flag, Settings, Trash2, User as UserIcon } from 'lucide-react';
 import { Types } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
-import React, { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 
 const DefaultQuery: AdminQuery = {

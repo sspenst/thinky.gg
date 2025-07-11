@@ -11,7 +11,7 @@ import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { NextSeo, SoftwareAppJsonLd } from 'next-seo';
 import posthog from 'posthog-js';
 import { useFeatureFlagEnabled } from 'posthog-js/react';
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   await dbConnect();

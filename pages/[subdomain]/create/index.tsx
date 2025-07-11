@@ -4,7 +4,7 @@ import { AppContext } from '@root/contexts/appContext';
 import { getGameFromReq } from '@root/helpers/getGameIdFromReq';
 import { redirectToLogin } from '@root/helpers/redirectToLogin';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
-import React, { useContext, useState } from 'react';
+import { useContext, useState } from 'react';
 import Editor from '../../../components/editor';
 import LinkInfo from '../../../components/formatted/linkInfo';
 import Page from '../../../components/page/page';

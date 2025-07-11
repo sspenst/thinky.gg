@@ -3,7 +3,7 @@ import { getGameFromId, getGameIdFromReq } from '@root/helpers/getGameIdFromReq'
 import { redirectToLogin } from '@root/helpers/redirectToLogin';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { NextSeo } from 'next-seo';
-import React, { useContext } from 'react';
+import { useContext } from 'react';
 import Multiplayer from '../../../components/multiplayer/multiplayer';
 import Page from '../../../components/page/page';
 import { getUserFromToken } from '../../../lib/withAuth';

@@ -1,4 +1,4 @@
-import { ProStatsLevel as ProStatsLevel } from '../contexts/levelContext';
+import { ProStatsLevel } from '../contexts/levelContext';
 import { EnrichedLevel } from '../models/db/level';
 import useSWRHelper from './useSWRHelper';
 

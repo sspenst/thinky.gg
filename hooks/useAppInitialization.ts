@@ -1,5 +1,5 @@
 import DismissToast from '@root/components/toasts/dismissToast';
-import { DEFAULT_GAME_ID, GameId } from '@root/constants/GameId';
+import { GameId } from '@root/constants/GameId';
 import { Game, Games } from '@root/constants/Games';
 import isPro from '@root/helpers/isPro';
 import { parseHostname } from '@root/helpers/parseUrl';

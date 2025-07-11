@@ -1,4 +1,3 @@
-import getDifficultyEstimate, { getDifficultyCompletionEstimate } from '@root/helpers/getDifficultyEstimate';
 import { TimerUtil } from '@root/helpers/getTs';
 import { logger } from '@root/helpers/logger';
 import Level, { EnrichedLevel } from '@root/models/db/level';

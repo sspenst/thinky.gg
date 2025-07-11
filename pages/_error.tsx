@@ -2,7 +2,7 @@
 import Page from '@root/components/page/page';
 import { AppContext } from '@root/contexts/appContext';
 import { ErrorProps } from 'next/error';
-import React, { useContext } from 'react';
+import { useContext } from 'react';
 
 export default function CustomError({ statusCode, title }: ErrorProps) {
   const { game } = useContext(AppContext);

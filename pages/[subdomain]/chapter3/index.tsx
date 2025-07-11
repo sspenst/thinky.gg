@@ -3,7 +3,7 @@ import { AppContext } from '@root/contexts/appContext';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Link from 'next/link';
-import React, { useContext } from 'react';
+import { useContext } from 'react';
 import FormattedCampaign from '../../../components/formatted/formattedCampaign';
 import LinkInfo from '../../../components/formatted/linkInfo';
 import Page from '../../../components/page/page';
