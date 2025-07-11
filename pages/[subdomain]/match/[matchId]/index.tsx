@@ -1,4 +1,5 @@
 import LevelCard from '@root/components/cards/levelCard';
+import GameRefactored from '@root/components/level/game-refactored';
 import Grid from '@root/components/level/grid';
 import MatchResults from '@root/components/multiplayer/matchResults';
 import { MatchGameState } from '@root/helpers/gameStateHelpers';
@@ -15,7 +16,6 @@ import React, { useCallback, useContext, useEffect, useRef, useState } from 'rea
 import { toast } from 'react-hot-toast';
 import { io } from 'socket.io-client';
 import FormattedUser from '../../../../components/formatted/formattedUser';
-import Game from '../../../../components/level/game';
 import MatchChart from '../../../../components/multiplayer/matchChart';
 import MatchStatus from '../../../../components/multiplayer/matchStatus';
 import Page from '../../../../components/page/page';
@@ -554,7 +554,7 @@ export default function Match() {
             </div>
             {activeLevel && (
               <div className='grow h-full w-full' key={'div-' + activeLevel._id.toString()}>
-                <Game
+                <GameRefactored
                   disableCheckpoints={true}
                   enableSessionCheckpoint={false}
                   extraControls={[skipControl(usedSkip)]}
