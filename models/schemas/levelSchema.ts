@@ -156,6 +156,7 @@ async function calcReviews(lvl: Level) {
   // get average score for reviews with levelId: id
   const reviews = await ReviewModel.find({
     levelId: lvl._id,
+    isDeleted: { $ne: true },
   });
 
   let totalUp = 0;
