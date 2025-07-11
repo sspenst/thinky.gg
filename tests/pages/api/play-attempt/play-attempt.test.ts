@@ -12,7 +12,8 @@ import PlayAttempt from '../../../../models/db/playAttempt';
 import Stat from '../../../../models/db/stat';
 import { LevelModel, PlayAttemptModel, RecordModel, StatModel, UserModel } from '../../../../models/mongoose';
 import { AttemptContext } from '../../../../models/schemas/playAttemptSchema';
-import { processQueueMessages, queueCalcPlayAttempts, queueRefreshIndexCalcs } from '../../../../pages/api/internal-jobs/worker';
+import { processQueueMessages } from '../../../../pages/api/internal-jobs/worker';
+import { queueCalcPlayAttempts, queueRefreshIndexCalcs } from '../../../../pages/api/internal-jobs/worker/queueFunctions';
 import { getLastLevelPlayed } from '../../../../pages/api/play-attempt/index';
 import { putStat } from '../../../../pages/api/stats/index';
 

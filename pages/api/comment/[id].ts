@@ -13,7 +13,7 @@ import { COMMENT_QUERY_LIMIT } from '../../../models/constants/comment';
 import Comment, { EnrichedComment } from '../../../models/db/comment';
 import User from '../../../models/db/user';
 import { CommentModel, UserModel } from '../../../models/mongoose';
-import { queueRefreshAchievements } from '../internal-jobs/worker';
+import { queueRefreshAchievements } from '../internal-jobs/worker/queueFunctions';
 
 export interface CommentQuery {
   comments: EnrichedComment[];

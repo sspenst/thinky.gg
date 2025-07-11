@@ -3,7 +3,7 @@ import * as crypto from 'crypto';
 import { SaveOptions } from 'mongoose';
 import DiscordChannel from '../constants/discordChannel';
 import isLocal from '../lib/isLocal';
-import { queueDiscord } from '../pages/api/internal-jobs/worker';
+import { queueDiscord } from '../pages/api/internal-jobs/worker/queueFunctions';
 
 export default async function queueDiscordWebhook(
   id: DiscordChannel,

@@ -13,7 +13,7 @@ import { logger } from '../../../helpers/logger';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import { LevelModel } from '../../../models/mongoose';
-import { queueCalcCreatorCounts } from '../internal-jobs/worker';
+import { queueCalcCreatorCounts } from '../internal-jobs/worker/queueFunctions';
 
 export default withAuth({ POST: {
   query: {

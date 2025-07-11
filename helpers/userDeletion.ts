@@ -7,7 +7,7 @@ import { TimerUtil } from '@root/helpers/getTs';
 import { logger } from '@root/helpers/logger';
 import Level from '@root/models/db/level';
 import { AchievementModel, CollectionModel, CommentModel, DeviceModel, GraphModel, KeyValueModel, LevelModel, NotificationModel, PlayAttemptModel, ReportModel, ReviewModel, UserAuthModel, UserConfigModel, UserModel } from '@root/models/mongoose';
-import { queueCalcCreatorCounts } from '@root/pages/api/internal-jobs/worker';
+import { queueCalcCreatorCounts } from '@root/pages/api/internal-jobs/worker/queueFunctions';
 import mongoose, { ClientSession, Types } from 'mongoose';
 
 export async function archiveUserLevels(userId: Types.ObjectId, session?: ClientSession): Promise<void> {

@@ -21,8 +21,8 @@ import {
 import { AttemptContext } from '../../../../models/schemas/playAttemptSchema';
 import {
   processQueueMessages,
-  queueCalcPlayAttempts
 } from '../../../../pages/api/internal-jobs/worker';
+import { queueCalcPlayAttempts } from '../../../../pages/api/internal-jobs/worker/queueFunctions';
 import handler from '../../../../pages/api/play-attempt/index';
 import { putStat } from '../../../../pages/api/stats/index';
 

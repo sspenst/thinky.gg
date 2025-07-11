@@ -21,7 +21,7 @@ import MultiplayerMatch from '../../../models/db/multiplayerMatch';
 import User from '../../../models/db/user';
 import { LevelModel, MultiplayerMatchModel, MultiplayerProfileModel, UserModel } from '../../../models/mongoose';
 import { computeMatchScoreTable, enrichMultiplayerMatch, generateMatchLog } from '../../../models/schemas/multiplayerMatchSchema';
-import { queueRefreshAchievements } from '../internal-jobs/worker';
+import { queueRefreshAchievements } from '../internal-jobs/worker/queueFunctions';
 
 export async function checkForFinishedMatches() {
   const matches = await MultiplayerMatchModel.find(
