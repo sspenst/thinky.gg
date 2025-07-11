@@ -5,11 +5,13 @@ interface CommandButtonProps {
   command: IAdminCommand;
   isRunning: boolean;
   onClick: () => void;
+  disabled?: boolean;
 }
 
-export default function CommandButton({ command, isRunning, onClick }: CommandButtonProps) {
+export default function CommandButton({ command, isRunning, onClick, disabled = false }: CommandButtonProps) {
   const Icon = command.icon;
   const isDangerous = command.dangerous;
+  const isDisabled = isRunning || disabled;
 
   return (
     <button
@@ -19,9 +21,9 @@ export default function CommandButton({ command, isRunning, onClick }: CommandBu
       ? 'bg-red-500 hover:bg-red-600 text-white'
       : 'bg-blue-500 hover:bg-blue-600 text-white'
     }
-        ${isRunning ? 'opacity-50 cursor-not-allowed' : ''}
+        ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}
       `}
-      disabled={isRunning}
+      disabled={isDisabled}
       onClick={onClick}
     >
       {Icon && <Icon className='w-4 h-4' />}

@@ -3,6 +3,7 @@ enum AdminCommand {
   RefreshAchievements = 'refreshAchievements',
   DeleteAchievements = 'deleteAchievements',
   DeleteUser = 'deleteUser',
+  ArchiveAllLevels = 'archiveAllLevels',
 
   // level
   RefreshIndexCalcs = 'refreshIndexCalcs',

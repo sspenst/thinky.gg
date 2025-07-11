@@ -278,6 +278,65 @@ describe('api/admin', () => {
         },
       });
     });
+
+    test('should handle ArchiveAllLevels command', async () => {
+      // check that user and levels by the user exists
+      const user = await UserModel.findById(TestId.USER);
+      const levels = await LevelModel.find({ userId: TestId.USER, isDraft: false, isDeleted: { $ne: true } });
+
+      expect(user).toBeDefined();
+      expect(levels.length).toBeGreaterThan(0);
+
+      await testApiHandler({
+        pagesHandler: async (_, res) => {
+          const req: NextApiRequestWithAuth = {
+            method: 'POST',
+            cookies: {
+              token: getTokenCookieValue(TestId.USER_ADMIN)
+            },
+            body: {
+              command: AdminCommand.ArchiveAllLevels,
+              targetId: TestId.USER,
+            },
+            headers: {
+              'content-type': 'application/json',
+            },
+          } as unknown as NextApiRequestWithAuth;
+
+          await adminHandler(req, res);
+        },
+        test: async ({ fetch }) => {
+          const res = await fetch();
+          const response = await res.json();
+
+          expect(response.error).toBeUndefined();
+          expect(response.success).toBe(true);
+          expect(res.status).toBe(200);
+
+          // Verify user still exists
+          const user = await UserModel.findById(TestId.USER);
+
+          expect(user).toBeDefined();
+
+          // Verify levels were archived (transferred to archive user)
+          const archivedLevels = await LevelModel.find({ userId: TestId.ARCHIVE, archivedBy: TestId.USER });
+
+          expect(archivedLevels.length).toBe(levels.length);
+
+          // Verify original user no longer has published levels
+          const userLevels = await LevelModel.find({ userId: TestId.USER, isDraft: false, isDeleted: { $ne: true } });
+
+          expect(userLevels).toHaveLength(0);
+
+          // Verify archived levels have correct archive properties
+          for (const archivedLevel of archivedLevels) {
+            expect(archivedLevel.archivedBy).toEqual(new Types.ObjectId(TestId.USER));
+            expect(archivedLevel.archivedTs).toBeDefined();
+            expect(archivedLevel.slug).toContain('archive/');
+          }
+        },
+      });
+    });
   });
 
   describe('Level Commands', () => {

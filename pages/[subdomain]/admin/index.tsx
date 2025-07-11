@@ -119,6 +119,13 @@ export default function AdminPage({ adminQuery, level, user }: AdminPageProps) {
       dangerous: true
     },
     {
+      label: 'Archive All Levels',
+      command: AdminCommand.ArchiveAllLevels,
+      confirm: true,
+      icon: Box,
+      dangerous: true
+    },
+    {
       label: 'Delete User',
       command: AdminCommand.DeleteUser,
       confirm: true,
