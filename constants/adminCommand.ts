@@ -11,6 +11,9 @@ enum AdminCommand {
   SwitchIsRanked = 'switchIsRanked',
   RegenImage = 'regenImage',
 
+  // reports
+  CloseReport = 'closeReport',
+
   // admin
   SendAdminMessage = 'sendAdminMessage',
   RunEmailDigest = 'runEmailDigest',

@@ -1,4 +1,5 @@
 import LevelManagementTab from '@root/components/admin/tabs/LevelManagementTab';
+import ReportsTab from '@root/components/admin/tabs/ReportsTab';
 import SystemOperationsTab from '@root/components/admin/tabs/SystemOperationsTab';
 import SystemVariablesTab from '@root/components/admin/tabs/SystemVariablesTab';
 import UserManagementTab from '@root/components/admin/tabs/UserManagementTab';
@@ -16,7 +17,7 @@ import { USER_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import Level from '@root/models/db/level';
 import User from '@root/models/db/user';
 import { LevelModel, UserModel } from '@root/models/mongoose';
-import { Box, Database, Settings, Trash2, User as UserIcon } from 'lucide-react';
+import { Box, Database, Flag, Settings, Trash2, User as UserIcon } from 'lucide-react';
 import { Types } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import React, { useCallback, useEffect, useState } from 'react';
@@ -294,6 +295,7 @@ export default function AdminPage({ adminQuery, level, user }: AdminPageProps) {
     { id: 'levels' as Tab, name: 'Level Management', icon: Box },
     { id: 'system' as Tab, name: 'System Operations', icon: Settings },
     { id: 'config' as Tab, name: 'System Variables', icon: Database },
+    { id: 'reports' as Tab, name: 'Reports', icon: Flag },
   ];
 
   return (
@@ -466,6 +468,12 @@ export default function AdminPage({ adminQuery, level, user }: AdminPageProps) {
             onDeleteVariable={systemVariables.deleteSystemVariable}
             onEditVariable={systemVariables.setEditingVariable}
             onCancelEdit={() => systemVariables.setEditingVariable(null)}
+            formatDate={formatDate}
+            getTimeAgo={getTimeAgo}
+          />
+        )}
+        {activeTab === 'reports' && (
+          <ReportsTab
             formatDate={formatDate}
             getTimeAgo={getTimeAgo}
           />
