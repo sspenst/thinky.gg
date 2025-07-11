@@ -181,7 +181,7 @@ export async function deleteUser(userId: Types.ObjectId, session?: ClientSession
         UserModel.deleteOne({ _id: userId }, { session: session }),
 
         ReportModel.deleteMany({ reportedUser: userId }, { session: session }),
-        PlayAttemptModel.updateMany({ userId: userId }, { $set: { isDeleted: true } }, { session: session }),
+        PlayAttemptModel.deleteMany({ userId: userId }, { session: session }),
         ReviewModel.updateMany({ userId: userId }, { $set: { isDeleted: true } }, { session: session }),
 
       ]);
