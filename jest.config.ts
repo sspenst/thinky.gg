@@ -55,9 +55,8 @@ export default {
     '^.+\\.tsx$': ['ts-jest', {
       isolatedModules: true,
       tsconfig: {
-        // Got this below snippet from https://github.com/kulshekhar/ts-jest/issues/2805
-        // This is necessary because next.js forces { "jsx": "preserve" }, but ts-jest appears to require { "jsx": "react" }
-        jsx: 'react',
+        // Updated to use the new JSX transform which doesn't require React imports
+        jsx: 'react-jsx',
       },
     }],
   },
