@@ -41,7 +41,85 @@ MyApp.getInitialProps = async ({ ctx }: { ctx: NextPageContext }) => {
   return { userAgent, initGame: gameId ? Games[gameId] : Games[DEFAULT_GAME_ID] };
 };
 
-export default function MyApp({ Component, pageProps, userAgent, initGame }: AppProps & { userAgent: string, initGame: Game }) {
+// Minimal wrapper for discord-play pages (no PostHog, no Theme, minimal context)
+function DiscordPlayWrapper({
+  children,
+  initGame,
+  userAgent
+}: {
+  children: React.ReactNode;
+  initGame: Game;
+  userAgent: string;
+}) {
+  const deviceInfo = useDeviceCheck(userAgent);
+  const userHook = useUser();
+  const { isLoading: isLoadingUser, mutateUser, user } = userHook;
+
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [showNav, setShowNav] = useState(false); // Discord play doesn't need nav
+
+  // Minimal context for discord-play
+  const contextValue = {
+    deviceInfo,
+    game: initGame,
+    host: undefined,
+    multiplayerSocket: {
+      connectedPlayers: [],
+      connectedPlayersCount: 0,
+      matches: [],
+      privateAndInvitedMatches: [],
+      socket: undefined,
+    },
+    mutatePlayLater: () => {},
+    mutateUser,
+    notifications,
+    playLater: undefined,
+    protocol: undefined,
+    setNotifications,
+    setShouldAttemptAuth: () => {},
+    setShowNav,
+    setTempCollection: () => {},
+    shouldAttemptAuth: false, // Discord play doesn't need auth attempts
+    showNav,
+    sounds: {},
+    tempCollection: undefined,
+    user: isLoadingUser ? undefined : !user ? null : user,
+    userConfig: isLoadingUser ? undefined : !user?.config ? null : user.config,
+    userHook,
+  };
+
+  return (
+    <>
+      <Head>
+        <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' />
+        <link href={initGame.favicon} rel='icon' />
+      </Head>
+      <AppContext.Provider value={contextValue}>
+        <div className={getFontFromGameId(initGame.id)} style={{
+          backgroundColor: 'var(--bg-color)',
+          color: 'var(--color)',
+        }}>
+          <ToasterPortal />
+          <MusicContextProvider>
+            {children}
+            <CookieConsentBanner />
+          </MusicContextProvider>
+        </div>
+      </AppContext.Provider>
+    </>
+  );
+}
+
+// Full context provider for regular pages
+function FullAppProvider({
+  children,
+  initGame,
+  userAgent
+}: {
+  children: React.ReactNode;
+  initGame: Game;
+  userAgent: string;
+}) {
   const deviceInfo = useDeviceCheck(userAgent);
   const userHook = useUser();
   const { isLoading: isLoadingUser, mutateUser, user } = userHook;
@@ -67,6 +145,53 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
   const notificationActions = useNotifications({ notifications, setNotifications });
   const multiplayerSocket = useMultiplayerSocket(user, selectedGame, notifications, notificationActions);
 
+  const contextValue = {
+    deviceInfo,
+    game: selectedGame,
+    host,
+    multiplayerSocket,
+    mutatePlayLater,
+    mutateUser,
+    notifications,
+    playLater,
+    protocol,
+    setNotifications,
+    setShouldAttemptAuth,
+    setShowNav,
+    setTempCollection,
+    shouldAttemptAuth,
+    showNav,
+    sounds,
+    tempCollection,
+    user: isLoadingUser ? undefined : !user ? null : user,
+    userConfig: isLoadingUser ? undefined : !user?.config ? null : user.config,
+    userHook,
+  };
+
+  return (
+    <AppContext.Provider value={contextValue}>
+      {children}
+    </AppContext.Provider>
+  );
+}
+
+export default function MyApp({ Component, pageProps, userAgent, initGame }: AppProps & { userAgent: string, initGame: Game }) {
+  const router = useRouter();
+
+  // Check if we're on the discord-play page
+  const isDiscordPlayPage = router.pathname === '/[subdomain]/discord-play' ||
+                           router.pathname.includes('discord-play');
+
+  // For discord-play pages, use minimal wrapper without PostHog and Theme providers
+  if (isDiscordPlayPage) {
+    return (
+      <DiscordPlayWrapper initGame={initGame} userAgent={userAgent}>
+        <Component {...pageProps} />
+      </DiscordPlayWrapper>
+    );
+  }
+
+  // For regular pages, use full providers
   return (
     <>
       <PostHogProvider client={posthog}>
@@ -74,55 +199,26 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
           <Head>
             <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' />
             <meta name='apple-itunes-app' content='app-id=1668925562, app-argument=thinky.gg' />
-            <link href={selectedGame.favicon} rel='icon' />
+            <link href={initGame.favicon} rel='icon' />
           </Head>
           <DefaultSeo
-            defaultTitle={selectedGame.seoTitle}
-            description={selectedGame.seoDescription}
-            canonical={`${selectedGame.baseUrl}'`}
+            defaultTitle={initGame.seoTitle}
+            description={initGame.seoDescription}
+            canonical={`${initGame.baseUrl}'`}
             openGraph={{
               type: 'website',
-              url: `${selectedGame.baseUrl}'`,
-              siteName: selectedGame.displayName,
-              images: [
-                {
-                  url: 'https://i.imgur.com/HXqAKZg.png',
-                  width: 1200,
-                  height: 630,
-                  alt: selectedGame.displayName,
-                },
-              ],
+              url: `${initGame.baseUrl}'`,
+              siteName: initGame.displayName,
             }}
             twitter={{
               handle: '@thinkygg',
-              site: selectedGame.baseUrl,
+              site: initGame.baseUrl,
               cardType: 'summary_large_image'
             }}
           />
-          <AppContext.Provider value={{
-            deviceInfo: deviceInfo,
-            game: selectedGame,
-            host: host,
-            multiplayerSocket: multiplayerSocket,
-            mutatePlayLater: mutatePlayLater,
-            mutateUser: mutateUser,
-            notifications: notifications,
-            playLater: playLater,
-            protocol: protocol,
-            setNotifications: setNotifications,
-            setShouldAttemptAuth: setShouldAttemptAuth,
-            setShowNav: setShowNav,
-            setTempCollection: setTempCollection,
-            shouldAttemptAuth: shouldAttemptAuth,
-            showNav: showNav,
-            sounds: sounds,
-            tempCollection,
-            user: isLoadingUser ? undefined : !user ? null : user,
-            userConfig: isLoadingUser ? undefined : !user?.config ? null : user.config,
-            userHook: userHook
-          }}>
-            <div className={getFontFromGameId(selectedGame.id)} style={{
-              backgroundColor: router.pathname === '/' && !user ? 'transparent' : 'var(--bg-color)',
+          <FullAppProvider initGame={initGame} userAgent={userAgent}>
+            <div className={getFontFromGameId(initGame.id)} style={{
+              backgroundColor: router.pathname === '/' ? 'transparent' : 'var(--bg-color)',
               color: 'var(--color)',
             }}>
               {/**
@@ -137,8 +233,7 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
                 <CookieConsentBanner />
               </MusicContextProvider>
             </div>
-
-          </AppContext.Provider>
+          </FullAppProvider>
         </ThemeProvider>
       </PostHogProvider>
     </>

@@ -33,7 +33,7 @@ export default function DiscordActivity({
   sessionId,
   instanceId
 }: DiscordActivityProps) {
-  const { userHook, setShouldAttemptAuth } = useContext(AppContext);
+  const { userHook } = useContext(AppContext);
   const [connectionInfo, setConnectionInfo] = useState<any>({});
   const [isInDiscordEmbed, setIsInDiscordEmbed] = useState(false);
   const [authError, setAuthError] = useState<string>('');
