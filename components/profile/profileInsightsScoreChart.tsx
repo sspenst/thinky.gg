@@ -53,24 +53,24 @@ export default function ProfileInsightsScoreChart({ user }: { user: User }) {
   const { proStatsUser: compareUserData } = useProStatsUser(compareUser, ProStatsUserType.ScoreHistory);
   const compareData = compareUserData?.[ProStatsUserType.ScoreHistory];
 
+  const scores = scoreChartData?.[ProStatsUserType.ScoreHistory] as DateAndSum[] || [];
+
+  const cumulativeScores = useMemo(() =>
+    getCumulativeScores(scores), [scores]
+  );
+
+  const cumulativeScoresCompare = useMemo(() =>
+    getCumulativeScores(compareData || []), [compareData]
+  );
+
+  const mergedData = useMemo(() =>
+    mergeData(cumulativeScores, cumulativeScoresCompare),
+    [cumulativeScores, cumulativeScoresCompare]
+  );
+
   if (!scoreChartData || !scoreChartData[ProStatsUserType.ScoreHistory]) {
     return <span>Loading...</span>;
   }
-
-  const scores = scoreChartData[ProStatsUserType.ScoreHistory] as DateAndSum[];
-  
-  const cumulativeScores = useMemo(() => 
-    getCumulativeScores(scores), [scores]
-  );
-  
-  const cumulativeScoresCompare = useMemo(() => 
-    getCumulativeScores(compareData || []), [compareData]
-  );
-  
-  const mergedData = useMemo(() => 
-    mergeData(cumulativeScores, cumulativeScoresCompare), 
-    [cumulativeScores, cumulativeScoresCompare]
-  );
 
   // use recharts to create a score chart over time
   return (<>
