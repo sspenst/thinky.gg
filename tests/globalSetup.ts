@@ -7,7 +7,7 @@ module.exports = async () => {
   const mongoServerUris = [];
   const num = 4;
 
-  process.env.MONGODB_TEST_URI_COUNT = '3';
+  process.env.MONGODB_TEST_URI_COUNT = num.toString();
 
   for (let i = 0; i < num; i++) {
     mongoServerPool.push(await MongoMemoryReplSet.create({
