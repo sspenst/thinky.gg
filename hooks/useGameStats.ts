@@ -1,6 +1,6 @@
 import Direction from '@root/constants/direction';
 import NProgress from 'nprogress';
-import { useCallback, useRef } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 import toast from 'react-hot-toast';
 import { throttle } from 'throttle-debounce';
 
@@ -111,8 +111,7 @@ export default function useGameStats({
 
   const SECOND = 1000;
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const fetchPlayAttempt = useCallback(throttle(15 * SECOND, async () => {
+  const fetchPlayAttemptInternal = useCallback(async () => {
     if (disablePlayAttempts || !shouldAttemptAuth) {
       return;
     }
@@ -131,7 +130,12 @@ export default function useGameStats({
     } catch (error) {
       console.error('Error tracking play attempt:', error);
     }
-  }), [disablePlayAttempts, shouldAttemptAuth, levelId, matchId]);
+  }, [disablePlayAttempts, shouldAttemptAuth, levelId, matchId]);
+
+  const fetchPlayAttempt = useMemo(
+    () => throttle(15 * SECOND, fetchPlayAttemptInternal),
+    [fetchPlayAttemptInternal]
+  );
 
   return {
     trackStats,

@@ -1,7 +1,7 @@
 import { AppContext } from '@root/contexts/appContext';
 import classNames from 'classnames';
 import Link from 'next/link';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useMemo, useState } from 'react';
 import Dimensions from '../../constants/dimensions';
 import getPngDataClient from '../../helpers/getPngDataClient';
 import SelectOption from '../../models/selectOption';
@@ -17,15 +17,15 @@ interface SelectCardProps {
 }
 
 export default function SelectCard({ option, prefetch }: SelectCardProps) {
-  const [backgroundImage, setBackgroundImage] = useState<string>();
   const { game, user } = useContext(AppContext);
   const [isSaveToCollectionModalOpen, setIsSaveToCollectionModalOpen] = useState(false);
 
-  useEffect(() => {
+  const backgroundImage = useMemo(() => {
     if (option.level && option.level.data) {
-      setBackgroundImage(getPngDataClient(game.id, option.level.data));
+      return getPngDataClient(game.id, option.level.data);
     }
-  }, [game.id, option.level]);
+    return undefined;
+  }, [game.id, option.level?.data]);
 
   const color = option.disabled ? 'var(--bg-color-4)' :
     option.stats?.getColor('var(--color)') ?? 'var(--color)';

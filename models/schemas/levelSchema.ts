@@ -152,6 +152,12 @@ LevelSchema.index({ calc_reviews_score_avg: 1 });
 LevelSchema.index({ calc_reviews_score_laplace: 1 });
 LevelSchema.index({ calc_stats_players_beaten: 1 });
 
+// Compound indexes for search optimization
+LevelSchema.index({ gameId: 1, isDraft: 1, isDeleted: 1, ts: -1 });
+LevelSchema.index({ gameId: 1, calc_difficulty_estimate: 1, isRanked: 1 });
+LevelSchema.index({ gameId: 1, calc_reviews_score_laplace: 1, ts: -1 });
+LevelSchema.index({ gameId: 1, userId: 1, isDraft: 1 });
+
 async function calcReviews(lvl: Level) {
   // get average score for reviews with levelId: id
   const reviews = await ReviewModel.find({

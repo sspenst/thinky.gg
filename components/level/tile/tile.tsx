@@ -28,7 +28,7 @@ interface TileProps {
   visited?: boolean;
 }
 
-export default function Tile({
+const Tile = React.memo(function Tile({
   atEnd,
   className,
   disableAnimation,
@@ -143,4 +143,6 @@ export default function Tile({
       {tile}
     </div>
   );
-}
+});
+
+export default Tile;

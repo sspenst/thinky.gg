@@ -7,7 +7,7 @@ import User from '@root/models/db/user';
 import classNames from 'classnames';
 import { Types } from 'mongoose';
 import Link from 'next/link';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useMemo } from 'react';
 import Dimensions from '../../constants/dimensions';
 import FormattedDifficulty from '../formatted/formattedDifficulty';
 import FormattedUser from '../formatted/formattedUser';
@@ -26,14 +26,14 @@ interface LevelCardProps {
 }
 
 export default function LevelCard({ href, id, level, onClick }: LevelCardProps) {
-  const [backgroundImage, setBackgroundImage] = useState<string>();
   const { game, user: reqUser } = useContext(AppContext);
 
-  useEffect(() => {
+  const backgroundImage = useMemo(() => {
     if (level && level.data) {
-      setBackgroundImage(getPngDataClient(game.id, level.data));
+      return getPngDataClient(game.id, level.data);
     }
-  }, [game.id, level]);
+    return undefined;
+  }, [game.id, level?.data]);
 
   if (level === undefined) {
     return <LoadingCard />;
