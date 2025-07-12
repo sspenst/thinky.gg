@@ -29,13 +29,13 @@ jobs:
       test-chunks: ${{ steps['set-test-chunks'].outputs['test-chunks'] }}
       test-chunk-ids: ${{ steps['set-test-chunk-ids'].outputs['test-chunk-ids'] }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - id: set-test-chunks
         name: Set Chunks
-        run: echo "::set-output name=test-chunks::$(find ./tests -maxdepth 10 -name '*test.*' | jq --raw-input --slurp 'split("\n")' | jq 'map(select(length > 0))' | jq -cM '[_nwise(length / 5 | ceil)]')"
+        run: echo "test-chunks=$(find ./tests -maxdepth 10 -name '*test.*' | jq --raw-input --slurp 'split("\n")' | jq 'map(select(length > 0))' | jq -cM '[_nwise(length / 5 | ceil)]')" >> $GITHUB_OUTPUT
       - id: set-test-chunk-ids
         name: Set Chunk IDs
-        run: echo "::set-output name=test-chunk-ids::$(echo $CHUNKS | jq -cM 'to_entries | map(.key)')"
+        run: echo "test-chunk-ids=$(echo $CHUNKS | jq -cM 'to_entries | map(.key)')" >> $GITHUB_OUTPUT
         env:
           CHUNKS: ${{ steps['set-test-chunks'].outputs['test-chunks'] }}
   test:
@@ -47,11 +47,11 @@ jobs:
       matrix:
         chunk: ${{ fromJson(needs.setup.outputs['test-chunk-ids']) }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - run: npm ci
       - name: jest
         run: echo $CHUNKS | jq '.[${{ matrix.chunk }}] | .[] | @text' | xargs npx jest --maxWorkers=2
         env:
           CHUNKS: ${{ needs.setup.outputs['test-chunks'] }}
       - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
