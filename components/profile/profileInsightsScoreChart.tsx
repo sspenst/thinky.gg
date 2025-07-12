@@ -1,6 +1,6 @@
 import useProStatsUser, { ProStatsUserType } from '@root/hooks/useProStatsUser';
 import dayjs from 'dayjs';
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Bar, CartesianGrid, ComposedChart, Legend, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { DateAndSum } from '../../contexts/levelContext';
 import User from '../../models/db/user';
@@ -58,9 +58,19 @@ export default function ProfileInsightsScoreChart({ user }: { user: User }) {
   }
 
   const scores = scoreChartData[ProStatsUserType.ScoreHistory] as DateAndSum[];
-  const cumulativeScores = getCumulativeScores(scores);
-  const cumulativeScoresCompare = getCumulativeScores(compareData || []);
-  const mergedData = mergeData(cumulativeScores, cumulativeScoresCompare);
+  
+  const cumulativeScores = useMemo(() => 
+    getCumulativeScores(scores), [scores]
+  );
+  
+  const cumulativeScoresCompare = useMemo(() => 
+    getCumulativeScores(compareData || []), [compareData]
+  );
+  
+  const mergedData = useMemo(() => 
+    mergeData(cumulativeScores, cumulativeScoresCompare), 
+    [cumulativeScores, cumulativeScoresCompare]
+  );
 
   // use recharts to create a score chart over time
   return (<>

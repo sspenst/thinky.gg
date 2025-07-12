@@ -366,7 +366,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
   const modifySave = isMobile ? <LucideSave /> : <div className='flex gap-1'><LucideSave /><span>Save</span></div>;
 
   const modifyEdit = isMobile ? <LucidePencil /> : <div className='flex gap-1'><LucidePencil /><span>Edit</span></div>;
-  const modifyPlay = isMobile ? <LucidePlay /> : <div className='flex gap-1'><LucidePlay /><span>Play</span></div>;
+  const modifyPlay = isMobile ? <LucidePlay /> : <div className='flex gap-1'><LucidePlay /><span>Test</span></div>;
 
   return (<>
     <div className='flex flex-col h-full'>
