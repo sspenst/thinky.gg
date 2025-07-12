@@ -26,7 +26,7 @@ const MathematicalBackground: React.FC<MathematicalBackgroundProps> = ({ classNa
     const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
 
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setClearColor(0x000000, 0); // Transparent background
+    renderer.setClearColor(0x000000, 1); // Black background
     mountRef.current.appendChild(renderer.domElement);
 
     // Scroll state
