@@ -4,7 +4,6 @@ import UserConfig from '@root/models/db/userConfig';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
-import { skip } from 'node:test';
 import Stripe from 'stripe';
 import { Logger } from 'winston';
 import Role from '../../../../constants/role';
@@ -292,7 +291,7 @@ describe('pages/api/stripe-webhook/index.ts', () => {
       },
     });
   });
-  skip('gifting Thinky Pro should give recipient Pro access to all games', async () => {
+  test.skip('gifting Thinky Pro should give recipient Pro access to all games', async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     jest.spyOn(stripeReal.products, 'retrieve').mockResolvedValue({ name: 'Thinky Yearly' } as any);
     await runStripeWebhookTest({

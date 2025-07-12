@@ -1,7 +1,6 @@
 import Direction from '@root/constants/direction';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
-import { skip } from 'node:test';
 import TestId from '../../../../constants/testId';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
@@ -55,7 +54,7 @@ describe('Doing a PUT from USER with 14 step solution and 12 step solution RIGHT
   test('do nothing', async () => {
     expect(true).toBe(true);
   }),
-  skip('should update the leastMoves to 12', async () => {
+  test.skip('should update the leastMoves to 12', async () => {
     await Promise.all([
       sendStat(TestId.USER_C, SOL_14),
       sendStat(TestId.USER_B, SOL_12),
