@@ -98,9 +98,6 @@ export default function ProfileMultiplayer({ user }: ProfileMultiplayerProps) {
 
   return (
     <div className='flex flex-col gap-4 text-center justify-center items-center'>
-      <h2 className='text-2xl font-bold break-words max-w-full'>
-        {user.name}&apos;s Multiplayer History
-      </h2>
       <div className='flex flex-row gap-2  text-center justify-center items-center'>
         <MultiSelectUser
           defaultValue={compare}

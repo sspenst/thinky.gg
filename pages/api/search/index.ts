@@ -637,7 +637,7 @@ export async function doQuery(gameId: GameId | undefined, query: SearchQuery, re
           {
             $match: {
               userId: new Types.ObjectId(userId),
-              gameId: gameId,
+              ...(gameId ? { gameId: gameId } : {}),
               ...statMatchQuery,
             }
           },
@@ -700,7 +700,7 @@ export async function doQuery(gameId: GameId | undefined, query: SearchQuery, re
             key: cacheKey,
             value: res,
             tag: CacheTag.SEARCH_API,
-            gameId: gameId,
+            ...(gameId ? { gameId: gameId } : {}),
             createdAt: now,
             expireAt: new Date(now.getTime() + 5 * 60 * 1000), // 5 minutes
           },
