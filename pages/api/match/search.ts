@@ -20,9 +20,15 @@ interface MatchQuery {
 }
 
 async function doMatchQuery(gameId: GameId, query: MatchQuery) {
+  let gameIdToUse: GameId | undefined = gameId;
+
+  if (gameId === GameId.THINKY) {
+    gameIdToUse = undefined;
+  }
+
   const searchObj = {
     state: MultiplayerMatchState.FINISHED,
-    gameId: gameId
+    ...(gameIdToUse !== undefined) ? { gameId: gameIdToUse } : {}
     // private: false // TODO: seems right to show private matches...
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } as any;
@@ -90,22 +96,25 @@ async function doMatchQuery(gameId: GameId, query: MatchQuery) {
               ...USER_DEFAULT_PROJECTION
             }
           },
-          ...getEnrichUserConfigPipelineStage(gameId, { excludeCalcs: true }),
-          {
-            $lookup: {
-              from: MultiplayerProfileModel.collection.name,
-              localField: '_id',
-              foreignField: 'userId',
-              as: 'multiplayerProfile',
-              pipeline: [
-                {
-                  $match: {
-                    gameId: gameId,
-                  }
-                },
-              ]
-            }
-          },
+          ...getEnrichUserConfigPipelineStage(gameIdToUse, { excludeCalcs: true }),
+          ...(gameIdToUse !== undefined
+            ? [{
+              $lookup: {
+                from: MultiplayerProfileModel.collection.name,
+                localField: '_id',
+                foreignField: 'userId',
+                as: 'multiplayerProfile',
+                pipeline: [
+                  {
+                    $match: {
+                      gameId: gameIdToUse
+                    }
+                  },
+                ]
+              }
+            }]
+            : []
+          ),
           {
             $unwind: {
               path: '$multiplayerProfile',

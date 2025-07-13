@@ -137,7 +137,7 @@ function generateCacheKey(gameId: GameId, query: SearchQuery): string {
  * @returns SearchResult containing levels, searchAuthor, and totalRows
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function doQuery(gameId: GameId, query: SearchQuery, reqUser?: User | null, _projection: any = LEVEL_SEARCH_DEFAULT_PROJECTION, skipCache?: boolean) {
+export async function doQuery(gameId: GameId | undefined, query: SearchQuery, reqUser?: User | null, _projection: any = LEVEL_SEARCH_DEFAULT_PROJECTION, skipCache?: boolean) {
   await dbConnect();
 
   // NB: need to clone projection because we modify it below
@@ -155,7 +155,7 @@ export async function doQuery(gameId: GameId, query: SearchQuery, reqUser?: User
   const searchObj = {
     isDeleted: { $ne: true },
     isDraft: false,
-    gameId: gameId,
+    ...(gameId !== undefined ? { gameId: gameId } : {}),
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } as FilterQuery<any>;
   const userId = reqUser?._id;
@@ -522,7 +522,7 @@ export async function doQuery(gameId: GameId, query: SearchQuery, reqUser?: User
     const shouldSkipCache = skipCache || (query.statFilter && query.statFilter !== StatFilter.All);
 
     // Create a cache key based on the search parameters
-    const cacheKey = generateCacheKey(gameId, query);
+    const cacheKey = generateCacheKey(gameId ?? GameId.THINKY, query);
 
     // Try to get from cache first (unless we should skip cache)
     const cachedResult = !shouldSkipCache ? await CacheModel.findOne({ key: cacheKey, gameId: gameId }) : null;

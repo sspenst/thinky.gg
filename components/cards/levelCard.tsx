@@ -1,16 +1,19 @@
+import { GameId } from '@root/constants/GameId';
 import { AppContext } from '@root/contexts/appContext';
 import getLevelCompleteColor from '@root/helpers/getLevelCompleteColor';
 import getPngDataClient from '@root/helpers/getPngDataClient';
 import getProfileSlug from '@root/helpers/getProfileSlug';
+import useUrl from '@root/hooks/useUrl';
 import { EnrichedLevel } from '@root/models/db/level';
 import User from '@root/models/db/user';
 import classNames from 'classnames';
 import { Types } from 'mongoose';
 import Link from 'next/link';
-import React, { useContext, useMemo } from 'react';
+import { useContext, useMemo } from 'react';
 import Dimensions from '../../constants/dimensions';
 import FormattedDifficulty from '../formatted/formattedDifficulty';
 import FormattedUser from '../formatted/formattedUser';
+import GameLogo from '../gameLogo';
 import LevelDropdown from '../level/info/levelDropdown';
 import Solved from '../level/info/solved';
 import StyledTooltip from '../page/styledTooltip';
@@ -26,14 +29,18 @@ interface LevelCardProps {
 }
 
 export default function LevelCard({ href, id, level, onClick }: LevelCardProps) {
-  const { game, user: reqUser } = useContext(AppContext);
+  const { game: pageGame, user: reqUser } = useContext(AppContext);
+  const getUrl = useUrl();
+
+  const defaultUrl = getUrl(level?.gameId, `/level/${level?.slug}`);
 
   const backgroundImage = useMemo(() => {
     if (level && level.data) {
-      return getPngDataClient(game.id, level.data);
+      return getPngDataClient(level.gameId || pageGame.id, level.data);
     }
+
     return undefined;
-  }, [game.id, level?.data]);
+  }, [pageGame.id, level]);
 
   if (level === undefined) {
     return <LoadingCard />;
@@ -72,12 +79,13 @@ export default function LevelCard({ href, id, level, onClick }: LevelCardProps) 
   }
 
   const color = getLevelCompleteColor(level);
+  const showGameLabel = pageGame.id === GameId.THINKY;
 
   return (
     <section className='pb-3 rounded-lg flex flex-col gap-2 w-64 max-w-full h-fit hover-bg-2 transition p-1 text-left'>
       <Link
         className='border-2 border-color-2 background rounded-md bg-cover bg-center w-full relative overflow-hidden'
-        href={href ?? `/level/${level.slug}`}
+        href={href ?? (defaultUrl || `/level/${level.slug}`)}
         onClick={onClick}
         style={{
           aspectRatio: '40 / 21',
@@ -85,6 +93,12 @@ export default function LevelCard({ href, id, level, onClick }: LevelCardProps) 
           borderColor: color,
         }}
       >
+        {showGameLabel &&
+          <div className='absolute bottom-0 left-0 p-1' data-tooltip-content={level.gameId || pageGame.id} data-tooltip-id={'game-label-tooltip-' + level._id.toString()}>
+            <GameLogo gameId={level.gameId || pageGame.id} id={'level'} size={16} />
+            <StyledTooltip id={'game-label-tooltip-' + level._id.toString()} />
+          </div>
+        }
         <div
           className='text-xs absolute bottom-0 right-0 px-1 bg-black font-bold'
           style={{

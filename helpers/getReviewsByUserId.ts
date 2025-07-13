@@ -9,7 +9,7 @@ import { GraphModel, LevelModel, ReviewModel } from '../models/mongoose';
 import { getEnrichLevelsPipelineSteps } from './enrich';
 import { logger } from './logger';
 
-export async function getReviewsByUserId(gameId: GameId, id: string | string[] | undefined, reqUser: User | null = null, queryOptions: QueryOptions = {}) {
+export async function getReviewsByUserId(gameId: GameId | undefined, id: string | string[] | undefined, reqUser: User | null = null, queryOptions: QueryOptions = {}) {
   try {
     const lookupPipelineUser: PipelineStage[] = getEnrichLevelsPipelineSteps(reqUser, 'levelId');
 
@@ -17,7 +17,7 @@ export async function getReviewsByUserId(gameId: GameId, id: string | string[] |
     const matchCriteria: Record<string, any> = {
       isDeleted: { $ne: true },
       userId: new Types.ObjectId(id?.toString()),
-      gameId: gameId
+      ...(gameId !== undefined ? { gameId: gameId } : {})
     };
 
     // Create pipeline
@@ -111,11 +111,11 @@ export async function getReviewsByUserId(gameId: GameId, id: string | string[] |
   }
 }
 
-export async function getReviewsByUserIdCount(gameId: GameId, id: string | string[] | undefined, reqUser: User | null = null) {
+export async function getReviewsByUserIdCount(gameId: GameId | undefined, id: string | string[] | undefined, reqUser: User | null = null) {
   try {
     // Base query for counting reviews
     const baseQuery: Record<string, any> = {
-      gameId: gameId
+      ...(gameId !== undefined ? { gameId: gameId } : {})
     };
 
     // Handle potential invalid ObjectId by using a try-catch

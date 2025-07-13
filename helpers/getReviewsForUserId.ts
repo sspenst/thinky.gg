@@ -9,7 +9,7 @@ import { GraphModel, LevelModel, ReviewModel, UserModel } from '../models/mongoo
 import { getEnrichLevelsPipelineSteps, getEnrichUserConfigPipelineStage } from './enrich';
 import { logger } from './logger';
 
-export async function getReviewsForUserId(gameId: GameId, id: string | string[] | undefined, reqUser: User | null = null, queryOptions: QueryOptions = {}) {
+export async function getReviewsForUserId(gameId: GameId | undefined, id: string | string[] | undefined, reqUser: User | null = null, queryOptions: QueryOptions = {}) {
   try {
     const lookupPipelineUser: PipelineStage[] = getEnrichLevelsPipelineSteps(reqUser, 'levelId');
 
@@ -18,7 +18,7 @@ export async function getReviewsForUserId(gameId: GameId, id: string | string[] 
       isDeleted: { $ne: true },
       isDraft: false,
       userId: new Types.ObjectId(id?.toString()),
-      gameId: gameId
+      ...(gameId !== undefined ? { gameId: gameId } : {})
     }, '_id');
 
     // Only proceed if the user has created levels
@@ -46,6 +46,7 @@ export async function getReviewsForUserId(gameId: GameId, id: string | string[] 
                 name: 1,
                 slug: 1,
                 leastMoves: 1,
+                gameId: 1,
               }
             }
           ]
@@ -61,12 +62,14 @@ export async function getReviewsForUserId(gameId: GameId, id: string | string[] 
             name: '$levelInfo.name',
             slug: '$levelInfo.slug',
             leastMoves: '$levelInfo.leastMoves',
+            gameId: '$levelInfo.gameId',
           },
           _id: 1,
           userId: 1,
           ts: 1,
           score: 1,
           text: 1,
+          gameId: 1,
         }
       }
     ];
@@ -149,6 +152,7 @@ export async function getReviewsForUserId(gameId: GameId, id: string | string[] 
             name: 1,
             slug: 1,
             leastMoves: 1,
+            gameId: 1,
           },
           userId: {
             _id: '$userId._id',
@@ -162,13 +166,16 @@ export async function getReviewsForUserId(gameId: GameId, id: string | string[] 
           _id: 1,
           ts: 1,
           score: 1,
-          text: 1
+          text: 1,
+
         }
       },
       ...lookupPipelineUser
     );
 
     const reviews = await ReviewModel.aggregate(pipeline);
+
+    console.log(reviews);
 
     return reviews.map(review => {
       cleanReview(review.levelId.complete, reqUser, review);
@@ -183,7 +190,7 @@ export async function getReviewsForUserId(gameId: GameId, id: string | string[] 
   }
 }
 
-export async function getReviewsForUserIdCount(gameId: GameId, id: string | string[] | undefined, reqUser: User | null = null) {
+export async function getReviewsForUserIdCount(gameId: GameId | undefined, id: string | string[] | undefined, reqUser: User | null = null) {
   try {
     // Create a userId ObjectId, handling potential invalid ids
     let userObjectId: Types.ObjectId;
@@ -202,7 +209,7 @@ export async function getReviewsForUserIdCount(gameId: GameId, id: string | stri
       isDeleted: { $ne: true },
       isDraft: false,
       userId: userObjectId,
-      gameId: gameId
+      ...(gameId !== undefined ? { gameId: gameId } : {})
     }, '_id');
 
     // If no levels, return 0

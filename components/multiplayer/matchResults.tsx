@@ -1,11 +1,14 @@
 import Dimensions from '@root/constants/dimensions';
+import { GameId } from '@root/constants/GameId';
+import { AppContext } from '@root/contexts/appContext';
 import { multiplayerMatchTypeToText } from '@root/helpers/multiplayerHelperFunctions';
 import { MatchLogDataGameRecap, MultiplayerMatchState } from '@root/models/constants/multiplayer';
 import MultiplayerMatch from '@root/models/db/multiplayerMatch';
 import Link from 'next/link';
-import React, { useEffect } from 'react';
+import React, { useContext, useEffect } from 'react';
 import FormattedDate from '../formatted/formattedDate';
 import FormattedUser from '../formatted/formattedUser';
+import GameLogo from '../gameLogo';
 import StyledTooltip from '../page/styledTooltip';
 import MultiplayerRating from './multiplayerRating';
 
@@ -16,6 +19,9 @@ interface MatchResultsProps {
 }
 
 export default function MatchResults({ match, recap, showViewLink }: MatchResultsProps) {
+  const { game } = useContext(AppContext);
+  const showGameLabel = game.id === GameId.THINKY;
+
   const sortedPlayers = [...match.players].sort((p1, p2) => {
     const p1Score = match.scoreTable[p1._id.toString()];
     const p2Score = match.scoreTable[p2._id.toString()];
@@ -44,21 +50,28 @@ export default function MatchResults({ match, recap, showViewLink }: MatchResult
 
   return (
     <div
-      className='flex flex-col flex-wrap justify-center gap-4 py-3 px-4 border rounded-md shadow-lg items-center w-fit max-w-full'
+      className='flex flex-col flex-wrap gap-4 py-3 px-4 border rounded-md shadow-lg  w-full max-w-full relative'
       style={{
         backgroundColor: 'var(--bg-color-2)',
         borderColor: 'var(--bg-color-3)',
       }}
     >
-      <div className='flex gap-2 items-center max-w-full'>
-        {showViewLink &&
-          <Link
-            className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-1 md:py-2 md:px-4 rounded mr-1 md:mr-2'
-            href={`/match/${match.matchId}`}
-          >
+
+      <div className='flex flex-row gap-2 items-center max-w-full'>
+        <div className='flex flex-col gap-1 items-center'>
+          {showGameLabel && <div className='' data-tooltip-content={match.gameId || game.id} data-tooltip-id={'game-label-tooltip-' + match._id.toString()}>
+            <GameLogo gameId={match.gameId || game.id} id={'level'} size={24} />
+            <StyledTooltip id={'game-label-tooltip-' + match._id.toString()} />
+          </div>}
+          {showViewLink &&
+            <Link
+              className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-1 md:py-2 md:px-4 rounded m-1 md:mr-2'
+              href={`/match/${match.matchId}`}
+            >
             View
-          </Link>
-        }
+            </Link>
+          }
+        </div>
         <div className='flex flex-col gap-1 items-center'>
           <span className='font-bold whitespace-nowrap'>
             {multiplayerMatchTypeToText(match.type)}

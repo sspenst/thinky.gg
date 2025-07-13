@@ -5,9 +5,10 @@ import getLevelCompleteColor from '@root/helpers/getLevelCompleteColor';
 import useUrl from '@root/hooks/useUrl';
 import Image from 'next/image';
 import Link from 'next/link';
-import React, { useContext } from 'react';
+import { useContext } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { EnrichedLevel } from '../../models/db/level';
+import GameLogo from '../gameLogo';
 import Solved from '../level/info/solved';
 import StyledTooltip from '../page/styledTooltip';
 
@@ -22,21 +23,25 @@ interface EnrichedLevelLinkProps {
 export default function FormattedLevelLink({ gameId, id, level, onClick }: EnrichedLevelLinkProps) {
   const { game } = useContext(AppContext);
   const getUrl = useUrl();
-  const href = getUrl(gameId || game.id, `/level/${level.slug}`);
+
+  const href = getUrl(level.gameId || gameId || game.id, `/level/${level.slug}`);
   const isSolved = level.userMoves === level.leastMoves;
   const tooltipId = `formatted-level-link-${level._id.toString()}-${id}`;
+  const showGameLabel = game.id === GameId.THINKY;
 
   return (<>
     <Link
       className='flex items-center font-bold underline w-fit max-w-full'
       data-tooltip-html={renderToStaticMarkup(
-        <Image
-          alt={level.name}
-          className='max-w-full'
-          height={Dimensions.LevelCanvasHeight / 3}
-          src={'/api/level/image/' + level._id + '.png'}
-          width={Dimensions.LevelCanvasWidth / 3}
-        />
+        <div>
+          <Image
+            alt={level.name}
+            className='max-w-full'
+            height={Dimensions.LevelCanvasHeight / 3}
+            src={'/api/level/image/' + level._id + '.png'}
+            width={Dimensions.LevelCanvasWidth / 3}
+          />
+        </div>
       )}
       data-tooltip-id={tooltipId}
       href={href}
@@ -49,6 +54,10 @@ export default function FormattedLevelLink({ gameId, id, level, onClick }: Enric
         minWidth: 10,
       }}
     >
+      {showGameLabel && <div className='pr-1' data-tooltip-content={level.gameId || game.id} data-tooltip-id={'game-label-tooltip-' + level._id.toString()}>
+        <GameLogo gameId={level.gameId || game.id} id={'level'} size={16} />
+        <StyledTooltip id={'game-label-tooltip-' + level._id.toString()} />
+      </div>}
       <span className='truncate'>{level.name}</span>
       {isSolved && <Solved className='-mr-1' />}
     </Link>
