@@ -121,7 +121,7 @@ interface EnrichUserConfigOptions {
 }
 
 // use string for gameId to allow for easier use in aggregation pipelines
-export function getEnrichUserConfigPipelineStage(gameId: GameId | string, { excludeCalcs, includeChapter, localField, lookupAs, project }: EnrichUserConfigOptions = {}) {
+export function getEnrichUserConfigPipelineStage(gameId: GameId | string | undefined, { excludeCalcs, includeChapter, localField, lookupAs, project }: EnrichUserConfigOptions = {}) {
   if (!localField) {
     localField = '_id';
   }

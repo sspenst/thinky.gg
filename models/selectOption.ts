@@ -1,3 +1,4 @@
+import { GameId } from '@root/constants/GameId';
 import { EnrichedLevel } from './db/level';
 import SelectOptionStats from './selectOptionStats';
 
@@ -9,6 +10,7 @@ interface SelectOption {
   hideStats?: boolean;
   href?: string;
   id: string;
+  gameId?: GameId;
   level?: EnrichedLevel | undefined;
   onClick?: () => void;
   searchLabel?: string; // text to search on, since text field is a react node (default is text?.toString())

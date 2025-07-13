@@ -1,10 +1,12 @@
+import { GameId } from '@root/constants/GameId';
 import { AppContext } from '@root/contexts/appContext';
 import classNames from 'classnames';
 import Link from 'next/link';
-import React, { useContext, useMemo, useState } from 'react';
+import { useContext, useMemo, useState } from 'react';
 import Dimensions from '../../constants/dimensions';
 import getPngDataClient from '../../helpers/getPngDataClient';
 import SelectOption from '../../models/selectOption';
+import GameLogo from '../gameLogo';
 import SaveToCollectionModal from '../modal/saveToCollectionModal';
 import StyledTooltip from '../page/styledTooltip';
 import { PlayLaterToggleButton } from './playLaterToggleButton';
@@ -20,16 +22,21 @@ export default function SelectCard({ option, prefetch }: SelectCardProps) {
   const { game, user } = useContext(AppContext);
   const [isSaveToCollectionModalOpen, setIsSaveToCollectionModalOpen] = useState(false);
 
+  const optionGameId = option.gameId || game.id;
+
   const backgroundImage = useMemo(() => {
     if (option.level && option.level.data) {
       return getPngDataClient(game.id, option.level.data);
     }
+
     return undefined;
-  }, [game.id, option.level?.data]);
+  }, [game.id, option.level]);
 
   const color = option.disabled ? 'var(--bg-color-4)' :
     option.stats?.getColor('var(--color)') ?? 'var(--color)';
   const tooltipId = `save-to-collection-${option.id}`;
+
+  const showGameLabel = game.id === GameId.THINKY;
 
   return (
     <div
@@ -71,7 +78,12 @@ export default function SelectCard({ option, prefetch }: SelectCardProps) {
               width: option.width ?? Dimensions.OptionWidth,
             }}
           >
+
             <SelectCardContent option={option} />
+            {showGameLabel && <div className='absolute bottom-0 left-0 p-1' data-tooltip-content={optionGameId} data-tooltip-id={'game-label-tooltip-' + option.id}>
+              <GameLogo gameId={optionGameId} id={'level'} size={16} />
+              <StyledTooltip id={'game-label-tooltip-' + option.id} />
+            </div>}
           </Link>
           :
           <button

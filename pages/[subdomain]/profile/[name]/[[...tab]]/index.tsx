@@ -18,7 +18,7 @@ import StatFilter from '@root/constants/statFilter';
 import { AppContext } from '@root/contexts/appContext';
 import { blueButton } from '@root/helpers/className';
 import { getEnrichUserConfigPipelineStage } from '@root/helpers/enrich';
-import { getGameFromId, getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
+import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { getUsersWithMultiplayerProfile } from '@root/helpers/getUsersWithMultiplayerProfile';
 import isOnline from '@root/helpers/isOnline';
 import useSWRHelper from '@root/hooks/useSWRHelper';
@@ -30,10 +30,10 @@ import classNames from 'classnames';
 import debounce from 'debounce';
 import { Types } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
+import { NextSeo, ProfilePageJsonLd } from 'next-seo';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { NextSeo, ProfilePageJsonLd } from 'next-seo';
 import { ParsedUrlQuery } from 'querystring';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import FollowButton from '../../../../../components/buttons/followButton';
@@ -91,7 +91,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     return { notFound: true };
   }
 
-  const gameId = getGameIdFromReq(context.req);
+  const gameIdFromReq = getGameIdFromReq(context.req);
+  const gameId = gameIdFromReq !== GameId.THINKY ? gameIdFromReq : undefined;
   const { name, tab } = context.params as ProfileParams;
   const token = context.req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
@@ -105,7 +106,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   const profileTab = !tab ? ProfileTab.Profile : tab[0] as ProfileTab;
 
-  const users = await getUsersWithMultiplayerProfile(gameId, { name: name }, { bio: 1, ts: 1, config: 1, lastGame: 1 });
+  const users = await getUsersWithMultiplayerProfile(gameIdFromReq, { name: name }, { bio: 1, ts: 1, config: 1, lastGame: 1 });
 
   if (!users || users.length !== 1) {
     return {
@@ -119,7 +120,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   const userId = user._id.toString();
   const viewingOwnProfile = reqUser?._id.toString() === userId;
-  const game = getGameFromId(getGameIdFromReq(context.req));
   const [
     achievements,
     achievementsCount,
@@ -133,17 +133,22 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     reviewsWrittenCount,
     blockData,
   ] = await Promise.all([
-    profileTab === ProfileTab.Achievements ? AchievementModel.find<Achievement>({ userId: userId, gameId: gameId }) : [] as Achievement[],
-    AchievementModel.countDocuments({ userId: userId, gameId: gameId }),
-    !game.isNotAGame && CollectionModel.countDocuments({
-      gameId: gameId,
+    profileTab === ProfileTab.Achievements ? AchievementModel.find<Achievement>({ userId: userId, ...(gameId !== undefined ? { gameId: gameId } : {}) }) : [] as Achievement[],
+    AchievementModel.countDocuments({ userId: userId, ...(gameId !== undefined ? { gameId: gameId } : {}) }),
+    CollectionModel.countDocuments({
+      ...(gameId !== undefined ? { gameId: gameId } : {}),
       userId: userId,
       ...(!viewingOwnProfile && { isPrivate: { $ne: true } }),
     }),
-    !game.isNotAGame && LevelModel.countDocuments({ isDeleted: { $ne: true }, isDraft: false, userId: userId, gameId: gameId }),
-    !game.isNotAGame && profileTab === ProfileTab.Levels && reqUser ? LevelModel.aggregate([
+    LevelModel.countDocuments({
+      isDeleted: { $ne: true },
+      isDraft: false,
+      userId: userId,
+      ...(gameId !== undefined ? { gameId: gameId } : {})
+    }),
+    profileTab === ProfileTab.Levels && reqUser ? LevelModel.aggregate([
       { $match: {
-        gameId: gameId,
+        ...(gameId !== undefined ? { gameId: gameId } : {}),
         isDeleted: { $ne: true },
         isDraft: false,
         userId: new Types.ObjectId(userId),
@@ -162,11 +167,11 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       { $match: { 'stats.0': { $exists: true } } },
       { $count: 'count' },
     ]) : undefined,
-    !game.isNotAGame && MultiplayerMatchModel.countDocuments({ players: userId, state: MultiplayerMatchState.FINISHED, rated: true, gameId: gameId }),
-    !game.isNotAGame && profileTab === ProfileTab.ReviewsReceived ? getReviewsForUserId(gameId, userId, reqUser, { limit: 10, skip: 10 * (page - 1) }) : [] as Review[],
-    !game.isNotAGame && profileTab === ProfileTab.ReviewsWritten ? getReviewsByUserId(gameId, userId, reqUser, { limit: 10, skip: 10 * (page - 1) }) : [] as Review[],
-    !game.isNotAGame && getReviewsForUserIdCount(gameId, userId),
-    !game.isNotAGame && getReviewsByUserIdCount(gameId, userId),
+    MultiplayerMatchModel.countDocuments({ players: userId, state: MultiplayerMatchState.FINISHED, rated: true, ...(gameId !== undefined ? { gameId: gameId } : {}) }),
+    profileTab === ProfileTab.ReviewsReceived ? getReviewsForUserId(gameId, userId, reqUser, { limit: 10, skip: 10 * (page - 1) }) : [] as Review[],
+    profileTab === ProfileTab.ReviewsWritten ? getReviewsByUserId(gameId, userId, reqUser, { limit: 10, skip: 10 * (page - 1) }) : [] as Review[],
+    getReviewsForUserIdCount(gameId, userId),
+    getReviewsByUserIdCount(gameId, userId),
     // Check if the current user has blocked this profile user
     reqUser ? GraphModel.countDocuments({
       source: reqUser._id,
@@ -311,7 +316,10 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   if (profileTab === ProfileTab.Collections) {
     const collectionsAgg = await getCollections({
-      matchQuery: { gameId: gameId, userId: user._id },
+      matchQuery: {
+        ...(gameId !== undefined ? { gameId: gameId } : {}),
+        userId: user._id,
+      },
       populateLevelData: false,
       reqUser,
     });
@@ -435,6 +443,7 @@ export default function ProfilePage({
       return {
         href: `/collection/${enrichedCollection.slug}`,
         id: enrichedCollection._id.toString(),
+        gameId: enrichedCollection.gameId,
         searchLabel: enrichedCollection.name,
         stats: new SelectOptionStats(enrichedCollection.levelCount, enrichedCollection.userSolvedCount),
         text: <>
@@ -948,7 +957,7 @@ export default function ProfilePage({
               <span>Achievements ({achievementsCount})</span>
             </div>
           </Link>
-          {!game.isNotAGame && !reqUserHasBlocked &&
+          {!reqUserHasBlocked &&
             <>
               <Link
                 className={getTabClassNames(ProfileTab.Levels)}

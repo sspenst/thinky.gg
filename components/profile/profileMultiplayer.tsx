@@ -3,7 +3,7 @@ import { MultiplayerMatchType } from '@root/models/constants/multiplayer';
 import MultiplayerMatch from '@root/models/db/multiplayerMatch';
 import User, { UserWithMultiplayerProfile } from '@root/models/db/user';
 import Link from 'next/link';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import FilterButton from '../buttons/filterButton';
 import MatchResults from '../multiplayer/matchResults';
 import MultiplayerRating from '../multiplayer/multiplayerRating';

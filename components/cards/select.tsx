@@ -1,4 +1,4 @@
-import React, { JSX, useCallback, useEffect, useState } from 'react';
+import { JSX, useCallback, useEffect, useState } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import SelectOption from '../../models/selectOption';
