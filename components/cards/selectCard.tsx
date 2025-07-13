@@ -81,7 +81,7 @@ export default function SelectCard({ option, prefetch }: SelectCardProps) {
 
             <SelectCardContent option={option} />
             {showGameLabel && <div className='absolute bottom-0 left-0 p-1' data-tooltip-content={optionGameId} data-tooltip-id={'game-label-tooltip-' + option.id}>
-              <GameLogo gameId={optionGameId} id={'level'} size={16} />
+              <GameLogo clickable gameId={optionGameId} id={'level'} size={16} />
               <StyledTooltip id={'game-label-tooltip-' + option.id} />
             </div>}
           </Link>

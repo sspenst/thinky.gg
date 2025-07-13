@@ -654,9 +654,13 @@ export default function ProfilePage({
         )}
       </div>,
     [ProfileTab.Insights]: <ProfileInsights reqUser={reqUser} user={user} />,
-    [ProfileTab.Multiplayer]: <ProfileMultiplayer user={user} />,
+    [ProfileTab.Multiplayer]: <div className='flex flex-col gap-2 justify-center items-center'>
+      <h1 className='font-bold text-3xl'>{user.name}&apos;s {game.displayName} Multiplayer History</h1>
+      <ProfileMultiplayer user={user} />
+    </div>,
     [ProfileTab.Collections]: (
-      <div className='flex flex-col gap-2 justify-center'>
+      <div className='flex flex-col gap-2 justify-center items-center'>
+        <h1 className='font-bold text-3xl'>{user.name}&apos;s {game.displayName} Collections</h1>
         {reqUser?._id === user._id &&
           <div className='text-center'>
             <button
@@ -686,7 +690,7 @@ export default function ProfilePage({
     ),
     [ProfileTab.Levels]: (
       <div className='flex flex-col gap-2 items-center'>
-        <h1 className='font-bold text-3xl'>{user.name}&apos;s Levels</h1>
+        <h1 className='font-bold text-3xl'>{user.name}&apos;s {game.displayName} Levels</h1>
         {reqUser &&
           <h2
             className='font-bold text-xl flex items-center'
@@ -761,6 +765,7 @@ export default function ProfilePage({
     ),
     [ProfileTab.ReviewsWritten]: [
       <div className='flex flex-col items-center gap-4' key='reviews-written'>
+        <h1 className='font-bold text-3xl'>{user.name}&apos;s {game.displayName} Reviews Written</h1>
         {reqUserHasBlocked ? (
           <div className='text-center p-4 bg-red-100 dark:bg-red-900 rounded-lg'>
             <p className='font-bold'>Reviews hidden</p>
@@ -810,6 +815,7 @@ export default function ProfilePage({
     ],
     [ProfileTab.ReviewsReceived]: [
       <div className='flex flex-col items-center gap-4' key='reviews-received'>
+        <h1 className='font-bold text-3xl'>{user.name}&apos;s {game.displayName} Reviews Received</h1>
         {reqUserHasBlocked ? (
           <div className='text-center p-4 bg-red-100 dark:bg-red-900 rounded-lg'>
             <p className='font-bold'>Reviews hidden</p>

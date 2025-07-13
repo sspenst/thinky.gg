@@ -82,7 +82,8 @@ export default function LevelCard({ href, id, level, onClick }: LevelCardProps) 
   const showGameLabel = pageGame.id === GameId.THINKY;
 
   return (
-    <section className='pb-3 rounded-lg flex flex-col gap-2 w-64 max-w-full h-fit hover-bg-2 transition p-1 text-left'>
+    <section className='pb-3 rounded-lg flex flex-col gap-2 w-64 max-w-full h-fit hover-bg-2 transition p-1 text-left relative'>
+
       <Link
         className='border-2 border-color-2 background rounded-md bg-cover bg-center w-full relative overflow-hidden'
         href={href ?? (defaultUrl || `/level/${level.slug}`)}
@@ -93,12 +94,7 @@ export default function LevelCard({ href, id, level, onClick }: LevelCardProps) 
           borderColor: color,
         }}
       >
-        {showGameLabel &&
-          <div className='absolute bottom-0 left-0 p-1' data-tooltip-content={level.gameId || pageGame.id} data-tooltip-id={'game-label-tooltip-' + level._id.toString()}>
-            <GameLogo gameId={level.gameId || pageGame.id} id={'level'} size={16} />
-            <StyledTooltip id={'game-label-tooltip-' + level._id.toString()} />
-          </div>
-        }
+
         <div
           className='text-xs absolute bottom-0 right-0 px-1 bg-black font-bold'
           style={{
@@ -116,6 +112,12 @@ export default function LevelCard({ href, id, level, onClick }: LevelCardProps) 
           </div>
         }
       </Link>
+      {showGameLabel &&
+          <div className='absolute top-1 left-1 p-1' data-tooltip-content={level.gameId || pageGame.id} data-tooltip-id={'game-label-tooltip-' + level._id.toString()}>
+            <GameLogo clickable gameId={level.gameId || pageGame.id} id={'level'} size={16} />
+            <StyledTooltip id={'game-label-tooltip-' + level._id.toString()} />
+          </div>
+      }
       <div className='flex justify-between'>
         <div className='flex gap-3 overflow-hidden'>
           {!level.isDraft &&

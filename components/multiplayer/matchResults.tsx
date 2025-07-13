@@ -60,7 +60,7 @@ export default function MatchResults({ match, recap, showViewLink }: MatchResult
       <div className='flex flex-row gap-2 items-center max-w-full'>
         <div className='flex flex-col gap-1 items-center'>
           {showGameLabel && <div className='' data-tooltip-content={match.gameId || game.id} data-tooltip-id={'game-label-tooltip-' + match._id.toString()}>
-            <GameLogo gameId={match.gameId || game.id} id={'level'} size={24} />
+            <GameLogo clickable gameId={match.gameId || game.id} id={'level'} size={24} />
             <StyledTooltip id={'game-label-tooltip-' + match._id.toString()} />
           </div>}
           {showViewLink &&
