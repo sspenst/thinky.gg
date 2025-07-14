@@ -1,6 +1,6 @@
 import { Menu, MenuButton, MenuItem, MenuItems, Transition } from '@headlessui/react';
 import Link from 'next/link';
-import React, { Fragment, useContext, useEffect } from 'react';
+import { Fragment, useContext, useEffect } from 'react';
 import Dimensions from '../../constants/dimensions';
 import { AppContext } from '../../contexts/appContext';
 import NotificationList from '../notification/notificationList';
@@ -57,7 +57,7 @@ export default function Notifications() {
           }}
         >
           <MenuItem>
-            {({ close }) => (<>
+            {({ close }) => (<div className='flex flex-col gap-2'>
               <NotificationList
                 close={close}
                 notifications={notifications}
@@ -68,7 +68,7 @@ export default function Notifications() {
                   See all
                 </Link>
               </div>
-            </>)}
+            </div>)}
           </MenuItem>
         </MenuItems>
       </Transition>

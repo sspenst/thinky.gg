@@ -1,5 +1,4 @@
 import { AnimateCounterOne } from '@root/components/counters/AnimateCounterOne';
-import FormattedNotification from '@root/components/notification/formattedNotification';
 import AlertType from '@root/constants/alertType';
 import { Game } from '@root/constants/Games';
 import Notification from '@root/models/db/notification';
@@ -11,6 +10,7 @@ import { DefaultEventsMap } from 'socket.io/dist/typed-events';
 import { MultiplayerMatchState } from '../models/constants/multiplayer';
 import MultiplayerMatch from '../models/db/multiplayerMatch';
 import User, { UserWithMultiMultiplayerProfile, UserWithMultiplayerProfile } from '../models/db/user';
+import { NotificationActions } from './useNotifications';
 
 export interface MultiplayerSocket {
   connectedPlayers: UserWithMultiplayerProfile[];
@@ -24,10 +24,9 @@ export function useMultiplayerSocket(
   user: User | null | undefined,
   selectedGame: Game,
   notifications: Notification[],
-  setNotifications: (notifications: Notification[]) => void
+  notificationActions: NotificationActions
 ) {
   const router = useRouter();
-  const timeFirstLoaded = useRef(Date.now());
   const [multiplayerSocket, setMultiplayerSocket] = useState<MultiplayerSocket>({
     connectedPlayers: [],
     connectedPlayersCount: 0,
@@ -96,33 +95,8 @@ export function useMultiplayerSocket(
       }
       }
     });
-    socketConn.on('notifications', (socketNotifications: Notification[]) => {
-      // Find new notifications that are in socketNotifications but not in notifications (by _id), and are unread and recent
-      const newNotifications = socketNotifications
-        .filter(n =>
-          !notifications.some(existing => existing._id.toString() === n._id.toString()) &&
-          n.read === false &&
-          new Date(n.createdAt).getTime() >= (timeFirstLoaded.current ? new Date(timeFirstLoaded.current).getTime() : 0)
-        )
-        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-        .slice(0, 5);
 
-      for (const notification of newNotifications) {
-        toast.success(<FormattedNotification key={notification._id.toString() + 'socket'} notification={notification} onMarkAsRead={() => {}} />, {
-          duration: 3500,
-          icon: null,
-          position: 'bottom-right',
-          style: {
-            minWidth: '200px',
-            backgroundColor: 'var(--bg-color)',
-            color: 'var(--color)',
-
-          }
-        });
-      }
-
-      setNotifications(socketNotifications);
-    });
+    socketConn.on('notifications', notificationActions.handleSocketNotifications);
     socketConn.on('reloadPage', () => {
       toast.dismiss();
       toast.loading('There is a new version of the site! Reloading page in 15 seconds...', {
@@ -199,7 +173,7 @@ export function useMultiplayerSocket(
       socketConn.off('killSocket');
       socketConn.disconnect();
     };
-  }, [selectedGame.id, user?._id, user?.disableStreakPopup, setNotifications]);
+  }, [selectedGame.id, user?._id, user?.disableStreakPopup, notificationActions.handleSocketNotifications]);
 
   // Handle match redirects
   useEffect(() => {

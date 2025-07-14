@@ -1,6 +1,7 @@
 import { AchievementRulesCombined } from '@root/constants/achievements/achievementInfo';
 import { GameId } from '@root/constants/GameId';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
+import { NotificationActions } from '@root/hooks/useNotifications';
 import Collection from '@root/models/db/collection';
 import classNames from 'classnames';
 import Image from 'next/image';
@@ -201,11 +202,23 @@ export function NotificationMessage({ notification, onMarkAsRead }: Notification
 interface FormattedNotificationProps {
   close?: () => void;
   notification: Notification;
-  onMarkAsRead: (read: boolean) => void;
+  notificationActions: NotificationActions;
 }
 
-export default function FormattedNotification({ close, notification, onMarkAsRead }: FormattedNotificationProps) {
+export default function FormattedNotification({ close, notification, notificationActions }: FormattedNotificationProps) {
   const game = getGameFromId(notification.gameId);
+
+  const handleMarkAsRead = async (read: boolean) => {
+    await notificationActions.markAsRead(notification._id.toString(), read);
+  };
+
+  const handleMarkAsReadAndClose = () => {
+    handleMarkAsRead(true);
+
+    if (close) {
+      close();
+    }
+  };
 
   return (
     <div
@@ -222,13 +235,7 @@ export default function FormattedNotification({ close, notification, onMarkAsRea
           {notification.sourceModel === 'User' ?
             <FormattedUser
               id={`notification-${notification._id.toString()}`}
-              onClick={() => {
-                onMarkAsRead(true);
-
-                if (close) {
-                  close();
-                }
-              }}
+              onClick={handleMarkAsReadAndClose}
               size={Dimensions.AvatarSizeSmall}
               user={notification.source as User}
             />
@@ -243,20 +250,17 @@ export default function FormattedNotification({ close, notification, onMarkAsRea
           <div className='focus:outline-none text-sm whitespace-normal truncate flex items-center gap-1 flex-wrap'>
             <NotificationMessage
               notification={notification}
-              onMarkAsRead={() => {
-                onMarkAsRead(true);
-
-                if (close) {
-                  close();
-                }
-              }}
+              onMarkAsRead={handleMarkAsReadAndClose}
             />
           </div>
         </div>
         <FormattedDate className='text-xs' date={notification.createdAt} />
       </div>
       <div className='flex'>
-        <button onClick={() => onMarkAsRead(!notification.read)} className={classNames(
+        <button onClick={(e) => {
+          e.stopPropagation();
+          handleMarkAsRead(!notification.read);
+        }} className={classNames(
           'w-4 h-4 border rounded-2xl',
           notification.read ? 'hover:bg-green-500 focus:bg-inherit' : 'bg-green-500 hover:bg-green-300'
         )} />

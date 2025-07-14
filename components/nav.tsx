@@ -172,14 +172,14 @@ export default function Nav({ isDropdown }: NavProps) {
         {!socket?.connected ?
           <span className='text-xs text-yellow-500'>Connecting...</span>
           :
-          <>
+          <div>
             <span className='text-xs text-green-500'>{`${connectedPlayersCount} player${connectedPlayersCount !== 1 ? 's' : ''} online`}</span>
             {matches.length > 0 &&
               <span className='text-xs text-green-300'>
                 {`${matches.length} current match${matches.length === 1 ? '' : 'es'}`}
               </span>
             }
-          </>
+          </div>
         }
       </div>
     }
