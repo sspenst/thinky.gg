@@ -1,5 +1,7 @@
 import UpsellFullAccount from '@root/components/home/upsellFullAccount';
+import AchievementCategory from '@root/constants/achievements/achievementCategory';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
+import { refreshAchievements } from '@root/helpers/refreshAchievements';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Link from 'next/link';
 import FormattedCampaign from '../../../components/formatted/formattedCampaign';
@@ -49,8 +51,10 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       };
     }
 
-    await UserConfigModel.updateOne({ userId: reqUser._id, gameId: gameId }, { $set: { chapterUnlocked: 2 } });
-    // TODO: unlock achievement here for completing chapter 1
+    await Promise.all([
+      UserConfigModel.updateOne({ userId: reqUser._id, gameId: gameId }, { $set: { chapterUnlocked: 2 } }),
+      refreshAchievements(gameId, reqUser._id, [AchievementCategory.PROGRESS])
+    ]);
   }
 
   return await getCampaignProps(gameId, reqUser, 'chapter2');

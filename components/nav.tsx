@@ -276,6 +276,12 @@ export default function Nav({ isDropdown }: NavProps) {
     label='Campaigns'
   />;
 
+  const achievementsNavLink = <NavLink
+    href='/achievements'
+    icon={<span className='w-5 h-5 flex justify-center items-center text-lg'>🏆</span>}
+    label='Achievements'
+  />;
+
   const leaderboardNavLink = <NavLink
     href='/leaderboards'
     icon={
@@ -382,6 +388,7 @@ export default function Nav({ isDropdown }: NavProps) {
       {!game.isNotAGame && <>
         {usersNavLink}
         {campaignNavLink}
+        {achievementsNavLink}
         {leaderboardNavLink}
         {tutorialNavLink}
         <NavDivider />

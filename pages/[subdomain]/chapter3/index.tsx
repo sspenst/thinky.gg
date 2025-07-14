@@ -1,6 +1,8 @@
 import UpsellFullAccount from '@root/components/home/upsellFullAccount';
+import AchievementCategory from '@root/constants/achievements/achievementCategory';
 import { AppContext } from '@root/contexts/appContext';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
+import { refreshAchievements } from '@root/helpers/refreshAchievements';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Link from 'next/link';
 import { useContext } from 'react';
@@ -58,8 +60,10 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       };
     }
 
-    await UserConfigModel.updateOne({ userId: reqUser._id, gameId: gameId }, { $set: { chapterUnlocked: 3 } });
-    // TODO: unlock achievement here for completing chapter 2
+    await Promise.all([
+      UserConfigModel.updateOne({ userId: reqUser._id, gameId: gameId }, { $set: { chapterUnlocked: 3 } }),
+      refreshAchievements(gameId, reqUser._id, [AchievementCategory.PROGRESS])
+    ]);
   }
 
   const { props } = await getCampaignProps(gameId, reqUser, 'chapter3');
@@ -75,10 +79,12 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   if (chapterUnlocked === 3) {
     const isChapter3Complete = props.totalLevels - props.solvedLevels <= 0;
-    // TODO: unlock achievement here for completing chapter 2
 
     if (isChapter3Complete) {
-      await UserConfigModel.updateOne({ userId: reqUser._id, gameId: gameId }, { $set: { chapterUnlocked: 4 } });
+      await Promise.all([
+        UserConfigModel.updateOne({ userId: reqUser._id, gameId: gameId }, { $set: { chapterUnlocked: 4 } }),
+        refreshAchievements(gameId, reqUser._id, [AchievementCategory.PROGRESS])
+      ]);
     }
   }
 
