@@ -1,19 +1,15 @@
 // Optionally import the CSS
-import 'cal-heatmap/cal-heatmap.css';
 import { GameId } from '@root/constants/GameId';
-import { Game, Games } from '@root/constants/Games';
-import { getGameFromId } from '@root/helpers/getGameIdFromReq';
+import { Games } from '@root/constants/Games';
 import useSWRHelper from '@root/hooks/useSWRHelper';
 import useUrl from '@root/hooks/useUrl';
 import { getStreak } from '@root/lib/cleanUser';
 import Level from '@root/models/db/level';
 import User from '@root/models/db/user';
 import UserConfig from '@root/models/db/userConfig';
+import 'cal-heatmap/cal-heatmap.css';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import React from 'react';
-import ChapterSelectCard, { ChapterSelectCardBase } from '../cards/chapterSelectCard';
-import { getStreakRankIndex, STREAK_RANK_GROUPS } from '../counters/AnimateCounterOne';
 import FormattedUser from '../formatted/formattedUser';
 import GameLogo from '../gameLogo';
 import MultiSelectUser from '../page/multiSelectUser';
@@ -100,7 +96,7 @@ export function ThinkyHomePageLoggedIn({ user }: { user: User }) {
                       <QuickActionButton
                         href={getUrl(game.id, '/search')}
                         icon='🔍'
-                        text='Browse Levels'
+                        text='Find Levels'
                       />
                       <QuickActionButton
                         href={getUrl(game.id, '/drafts')}

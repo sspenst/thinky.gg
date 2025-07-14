@@ -1,6 +1,6 @@
 import { ScreenSize } from '@root/hooks/useDeviceCheck';
 import Link from 'next/link';
-import React, { useContext, useState } from 'react';
+import { useContext, useState } from 'react';
 import { AppContext } from '../../contexts/appContext';
 import MusicModal from '../modal/musicModal';
 import StyledTooltip from '../page/styledTooltip';
@@ -67,7 +67,7 @@ export default function HeaderControls() {
   const { game, user } = useContext(AppContext);
 
   return (<>
-    {!game.isNotAGame && <>
+    <>
       <Link id='searchBtn' aria-label='search' className='hover:opacity-70' href={'/search'} passHref prefetch={false}>
         <svg xmlns='http://www.w3.org/2000/svg' className='h-5 w-5' fill='none' viewBox='0 0 24 24' stroke='currentColor' strokeWidth={2}>
           <path strokeLinecap='round' strokeLinejoin='round' d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z' />
@@ -75,7 +75,6 @@ export default function HeaderControls() {
       </Link>
       <HeaderMultiplayer />
     </>
-    }
     <button className='hidden sm:block hover:opacity-70' onClick={() => setIsMusicModalOpen(true)}>
       <MusicIcon />
     </button>

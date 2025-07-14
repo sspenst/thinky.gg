@@ -3,7 +3,7 @@ import { GameType } from '@root/constants/Games';
 import { ScreenSize } from '@root/hooks/useDeviceCheck';
 import Image from 'next/image';
 import Link from 'next/link';
-import React, { Fragment, useContext, useEffect, useState } from 'react';
+import { Fragment, useContext, useEffect, useState } from 'react';
 import Dimensions from '../../constants/dimensions';
 import { AppContext } from '../../contexts/appContext';
 import LinkInfo from '../formatted/linkInfo';

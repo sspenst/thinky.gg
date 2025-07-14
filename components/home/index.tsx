@@ -6,7 +6,7 @@ import { ChevronsDown, ChevronsUp } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import React, { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import TimeRange from '../../constants/timeRange';
 import { AppContext } from '../../contexts/appContext';
 import useTour from '../../hooks/useTour';
@@ -99,7 +99,7 @@ export default function Home({
         <QuickActionButton
           href='/search'
           icon='🔍'
-          text='Browse Levels'
+          text='Find Levels'
         />
         <QuickActionButton
           href='/create'
