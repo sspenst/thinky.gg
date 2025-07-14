@@ -24,7 +24,7 @@ export default function GameLogo({ gameId, id, size = 28, tooltip = false, click
   const tooltipId = `${game.id}-tooltip-${id}`;
   const src = game.logo;
 
-  return (<>
+  return (<div>
     <Image
       alt={`logo-${game.displayName}`}
       data-tooltip-content={game.displayName}
@@ -48,5 +48,5 @@ export default function GameLogo({ gameId, id, size = 28, tooltip = false, click
       } : undefined}
     />
     {tooltip && <StyledTooltip id={tooltipId} />}
-  </>);
+  </div>);
 }

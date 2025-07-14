@@ -9,6 +9,7 @@ import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { useAppInitialization } from '@root/hooks/useAppInitialization';
 import useDeviceCheck from '@root/hooks/useDeviceCheck';
 import { useMultiplayerSocket } from '@root/hooks/useMultiplayerSocket';
+import { useNotifications } from '@root/hooks/useNotifications';
 import { usePostHogAnalytics } from '@root/hooks/usePostHogAnalytics';
 import Notification from '@root/models/db/notification';
 import { NextPageContext } from 'next';
@@ -62,7 +63,8 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
     setTempCollection,
     mutatePlayLater,
   } = useAppInitialization(user, initGame);
-  const multiplayerSocket = useMultiplayerSocket(user, selectedGame, notifications, setNotifications);
+  const notificationActions = useNotifications({ notifications, setNotifications });
+  const multiplayerSocket = useMultiplayerSocket(user, selectedGame, notifications, notificationActions);
 
   return (
     <>
