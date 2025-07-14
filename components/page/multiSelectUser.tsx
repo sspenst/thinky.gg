@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import User from '@root/models/db/user';
 import classNames from 'classnames';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AsyncSelect from 'react-select/async';
 import { debounce } from 'throttle-debounce';
 import Dimensions from '../../constants/dimensions';
@@ -18,6 +18,11 @@ interface MultiSelectUserProps {
 export default function MultiSelectUser({ className, controlStyles, defaultValue, onSelect, placeholder }: MultiSelectUserProps) {
   const [options, setOptions] = useState([]);
   const [value, setValue] = useState(defaultValue);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const doSearch = async (searchText: any, callback: any) => {
     const search = encodeURI(searchText) || '';
@@ -36,6 +41,10 @@ export default function MultiSelectUser({ className, controlStyles, defaultValue
   };
   const debounceDoSearch = debounce(500, doSearch);
 
+  if (!isMounted) {
+    return <div className={classNames('text-left text-base', className)} style={{ height: 44 }}></div>;
+  }
+
   return <AsyncSelect
     backspaceRemovesValue={true}
     className={classNames('text-left text-base', className)}
@@ -48,7 +57,7 @@ export default function MultiSelectUser({ className, controlStyles, defaultValue
     )}
     getOptionLabel={(option: any) => option.name}
     getOptionValue={(option: any) => option._id.toString()}
-    id='search-author-input-async-select'
+    inputId='search-author-input-async-select-input'
     instanceId='search-author-input-async-select'
     isClearable={true}
     loadOptions={debounceDoSearch}
