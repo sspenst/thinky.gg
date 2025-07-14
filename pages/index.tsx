@@ -10,7 +10,7 @@ import { ReqUser } from '@root/models/db/user';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { NextSeo, SoftwareAppJsonLd } from 'next-seo';
 import posthog from 'posthog-js';
-import { useFeatureFlagEnabled } from 'posthog-js/react';
+import { useFeatureFlagVariantKey } from 'posthog-js/react';
 import { useEffect } from 'react';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
@@ -32,9 +32,9 @@ interface ThinkyHomeRouterProps {
 
 export default function ThinkyHomeRouter({ user }: ThinkyHomeRouterProps) {
   // Feature flag for homepage A/B test
-  const isNewHomepageLanding = useFeatureFlagEnabled('new-homepage-landing');
+  const variant = useFeatureFlagVariantKey('new-home-page-experiment-v2');
 
-  const featureFlagStillLoading = isNewHomepageLanding === undefined;
+  const featureFlagStillLoading = variant === undefined;
 
   // Track feature flag exposure explicitly
   useEffect(() => {
@@ -42,11 +42,11 @@ export default function ThinkyHomeRouter({ user }: ThinkyHomeRouterProps) {
       // Only track for non-logged-in users since that's who sees the A/B test
       posthog.capture('homepage_ab_test_exposure', {
         feature_flag: 'new-homepage-landing',
-        variant: isNewHomepageLanding ? 'test' : 'control',
+        variant: variant ? 'test' : 'control',
         user_logged_in: false,
       });
     }
-  }, [isNewHomepageLanding, user]);
+  }, [variant, user]);
 
   useEffect(() => {
     if (!user) {
@@ -107,7 +107,7 @@ export default function ThinkyHomeRouter({ user }: ThinkyHomeRouterProps) {
                   <circle cx='12' cy='12' r='10' stroke='currentColor' strokeWidth='4' strokeLinecap='round' strokeDasharray='60' strokeDashoffset='20' />
                 </svg>
               </div>
-            ) : isNewHomepageLanding ? <ThinkyHomePageNotLoggedInVariant /> : <ThinkyHomePageNotLoggedIn />
+            ) : variant === 'test' ? <ThinkyHomePageNotLoggedInVariant /> : <ThinkyHomePageNotLoggedIn />
           )}
         </div>
       </Page>
