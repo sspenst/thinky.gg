@@ -196,8 +196,6 @@ export default function FormattedUser({ className, hideAvatar, id, noLinks, noTo
 
   const tooltipId = `formatted-user-${user._id.toString()}-${id}`;
 
-  console.log(tooltipId);
-
   return (<>
     <div
       className={classNames('flex items-center gap-2 truncate w-fit max-w-full font-bold', className)}
