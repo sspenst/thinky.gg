@@ -5,7 +5,6 @@ import Collection from '@root/models/db/collection';
 import classNames from 'classnames';
 import Image from 'next/image';
 import Link from 'next/link';
-import React from 'react';
 import Dimensions from '../../constants/dimensions';
 import NotificationType from '../../constants/notificationType';
 import getProfileSlug from '../../helpers/getProfileSlug';
@@ -74,7 +73,7 @@ function NotificationIcon({ notification }: { notification: Notification }) {
   return icon;
 }
 
-function NotificationMessage({ notification, onMarkAsRead }: NotificationMessageProps) {
+export function NotificationMessage({ notification, onMarkAsRead }: NotificationMessageProps): React.ReactNode {
   const game = getGameFromId(notification.gameId as GameId);
 
   switch (notification.type) {

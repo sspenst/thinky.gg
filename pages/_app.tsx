@@ -1,6 +1,4 @@
 /* istanbul ignore file */
-import 'react-tooltip/dist/react-tooltip.css';
-import '../styles/global.css';
 import CookieConsentBanner from '@root/components/app/CookieConsentBanner';
 import ToasterPortal from '@root/components/app/ToasterPortal';
 import { DEFAULT_GAME_ID } from '@root/constants/GameId';
@@ -14,17 +12,19 @@ import { useMultiplayerSocket } from '@root/hooks/useMultiplayerSocket';
 import { usePostHogAnalytics } from '@root/hooks/usePostHogAnalytics';
 import Notification from '@root/models/db/notification';
 import { NextPageContext } from 'next';
+import { DefaultSeo } from 'next-seo';
+import { ThemeProvider } from 'next-themes';
 import type { AppProps } from 'next/app';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
-import { DefaultSeo } from 'next-seo';
-import { ThemeProvider } from 'next-themes';
 import posthog from 'posthog-js';
 import { PostHogProvider } from 'posthog-js/react';
 import { useState } from 'react';
+import 'react-tooltip/dist/react-tooltip.css';
 import Theme from '../constants/theme';
 import { AppContext } from '../contexts/appContext';
 import useUser from '../hooks/useUser';
+import '../styles/global.css';
 
 MyApp.getInitialProps = async ({ ctx }: { ctx: NextPageContext }) => {
   let userAgent;
@@ -62,7 +62,7 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
     setTempCollection,
     mutatePlayLater,
   } = useAppInitialization(user, initGame);
-  const multiplayerSocket = useMultiplayerSocket(user, selectedGame, setNotifications);
+  const multiplayerSocket = useMultiplayerSocket(user, selectedGame, notifications, setNotifications);
 
   return (
     <>

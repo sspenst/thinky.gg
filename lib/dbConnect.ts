@@ -40,6 +40,7 @@ export default async function dbConnect({ ignoreInitializeLocalDb }: DBConnectPr
       heartbeatFrequencyMS: 30000,
       serverSelectionTimeoutMS: 10000,
       socketTimeoutMS: 20000,
+      maxIdleTimeMS: 30000,
     };
 
     let uri = '';
