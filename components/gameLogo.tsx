@@ -1,7 +1,7 @@
 import { GameId } from '@root/constants/GameId';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import StyledTooltip from './page/styledTooltip';
 
 interface GameLogoProps {
@@ -14,7 +14,11 @@ interface GameLogoProps {
 }
 
 export default function GameLogo({ gameId, id, size = 28, tooltip = false, clickable = false }: GameLogoProps) {
-  const router = useRouter();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   if (!gameId) {
     return null;
@@ -38,13 +42,13 @@ export default function GameLogo({ gameId, id, size = 28, tooltip = false, click
       unoptimized
       width={size}
       className={clickable ? 'cursor-pointer z-10' : undefined}
-      onClick={clickable ? () => {
+      onClick={clickable && mounted ? () => {
         // get the game url and visit this same url but with the game id subdomain
         const subdomain = game.subdomain;
         const currentUrl = window.location.href;
         const newUrl = currentUrl.replace(window.location.hostname, `${subdomain}.${window.location.hostname}`);
 
-        router.push(newUrl);
+        window.location.href = newUrl;
       } : undefined}
     />
     {tooltip && <StyledTooltip id={tooltipId} />}
