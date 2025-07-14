@@ -4,7 +4,7 @@ import isGuest from '@root/helpers/isGuest';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import React, { Fragment, useContext, useState } from 'react';
+import { Fragment, useContext, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import Dimensions from '../../constants/dimensions';
 import { AppContext } from '../../contexts/appContext';
