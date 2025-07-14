@@ -37,7 +37,7 @@ export function useNotifications({ notifications, setNotifications }: UseNotific
       throw new Error(await response.text());
     }
 
-    if (mutateUser) {
+    if (mutateUser && typeof mutateUser === 'function') {
       mutateUser();
     }
   }, [mutateUser]);
@@ -87,9 +87,18 @@ export function useNotifications({ notifications, setNotifications }: UseNotific
   }, [putNotification, updateNotificationState]);
 
   const showNotificationToast = useCallback((notification: Notification) => {
+    // Create a toast-specific markAsRead that also dismisses the toast
+    const toastMarkAsRead = async (notificationId: string, read: boolean): Promise<void> => {
+      // Use the main markAsRead function to ensure proper state updates
+      await markAsRead(notificationId, read);
+      
+      // Dismiss this specific toast after marking as read
+      toast.dismiss(notification._id.toString() + 'toast');
+    };
+
     // Create stable notification actions for the toast
     const toastNotificationActions = {
-      markAsRead,
+      markAsRead: toastMarkAsRead,
       markMultipleAsRead: async () => {}, // Not used in toast notifications
       updateNotificationState: () => {}, // Not used in toast notifications
       showNotificationToast: () => {}, // Not used in toast notifications
@@ -101,6 +110,7 @@ export function useNotifications({ notifications, setNotifications }: UseNotific
       notification={notification}
       notificationActions={toastNotificationActions}
     />, {
+      id: notification._id.toString() + 'toast',
       duration: 3500,
       icon: null,
       position: 'bottom-right',
