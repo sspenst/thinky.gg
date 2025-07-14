@@ -15,7 +15,7 @@ import useTouchControls from '@root/hooks/useTouchControls';
 import Position from '@root/models/position';
 import Image from 'next/image';
 import Link from 'next/link';
-import React, { useCallback, useContext, useEffect, useRef } from 'react';
+import { useCallback, useContext, useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
 import { AppContext } from '../../contexts/appContext';
 import { LevelContext } from '../../contexts/levelContext';
@@ -506,7 +506,6 @@ export default function GameRefactored({
         nextLevel={nextLevel}
         prevLevel={prevLevel}
       />
-      <div className='text-xs'>[testing 0.1]</div>
     </GameContext.Provider>
   );
 }
