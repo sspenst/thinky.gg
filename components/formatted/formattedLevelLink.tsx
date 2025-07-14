@@ -29,7 +29,11 @@ export default function FormattedLevelLink({ gameId, id, level, onClick }: Enric
   const tooltipId = `formatted-level-link-${level._id.toString()}-${id}`;
   const showGameLabel = game.id === GameId.THINKY;
 
-  return (<>
+  return (<div className='flex flex-row items-center gap-1'>
+    {showGameLabel && <div className='' data-tooltip-content={level.gameId || game.id} data-tooltip-id={'game-label-tooltip-' + level._id.toString()}>
+      <GameLogo clickable gameId={level.gameId || game.id} id={'level'} size={16} />
+      <StyledTooltip id={'game-label-tooltip-' + level._id.toString()} />
+    </div>}
     <Link
       className='flex items-center font-bold underline w-fit max-w-full'
       data-tooltip-html={renderToStaticMarkup(
@@ -54,13 +58,10 @@ export default function FormattedLevelLink({ gameId, id, level, onClick }: Enric
         minWidth: 10,
       }}
     >
-      {showGameLabel && <div className='pr-1' data-tooltip-content={level.gameId || game.id} data-tooltip-id={'game-label-tooltip-' + level._id.toString()}>
-        <GameLogo gameId={level.gameId || game.id} id={'level'} size={16} />
-        <StyledTooltip id={'game-label-tooltip-' + level._id.toString()} />
-      </div>}
+
       <span className='truncate'>{level.name}</span>
       {isSolved && <Solved className='-mr-1' />}
     </Link>
     <StyledTooltip id={tooltipId} />
-  </>);
+  </div>);
 }

@@ -22,6 +22,10 @@ import User from '../../../models/db/user';
 import { CacheModel, GraphModel, LevelModel, StatModel, UserModel } from '../../../models/mongoose';
 import { BlockFilterMask, SearchQuery } from '../../[subdomain]/search';
 
+export function parseThinkyGameId(gameId: GameId | undefined) {
+  return gameId !== GameId.THINKY && gameId !== undefined ? gameId : undefined;
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getDimensionLimits(query: SearchQuery, searchObj: FilterQuery<any>) {
   const maxDimensionOr = [];
@@ -155,7 +159,7 @@ export async function doQuery(gameId: GameId | undefined, query: SearchQuery, re
   const searchObj = {
     isDeleted: { $ne: true },
     isDraft: false,
-    ...(gameId !== undefined ? { gameId: gameId } : {}),
+    ...(parseThinkyGameId(gameId) ? { gameId: gameId } : {}),
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } as FilterQuery<any>;
   const userId = reqUser?._id;
@@ -522,10 +526,11 @@ export async function doQuery(gameId: GameId | undefined, query: SearchQuery, re
     const shouldSkipCache = skipCache || (query.statFilter && query.statFilter !== StatFilter.All);
 
     // Create a cache key based on the search parameters
-    const cacheKey = generateCacheKey(gameId ?? GameId.THINKY, query);
+    const cacheGameId = gameId ?? GameId.THINKY;
+    const cacheKey = generateCacheKey(cacheGameId, query);
 
     // Try to get from cache first (unless we should skip cache)
-    const cachedResult = !shouldSkipCache ? await CacheModel.findOne({ key: cacheKey, gameId: gameId }) : null;
+    const cachedResult = !shouldSkipCache ? await CacheModel.findOne({ key: cacheKey, gameId: cacheGameId }) : null;
     let res;
 
     if (cachedResult) {
@@ -637,7 +642,7 @@ export async function doQuery(gameId: GameId | undefined, query: SearchQuery, re
           {
             $match: {
               userId: new Types.ObjectId(userId),
-              ...(gameId ? { gameId: gameId } : {}),
+              ...(parseThinkyGameId(gameId) ? { gameId: gameId } : {}),
               ...statMatchQuery,
             }
           },
@@ -700,7 +705,7 @@ export async function doQuery(gameId: GameId | undefined, query: SearchQuery, re
             key: cacheKey,
             value: res,
             tag: CacheTag.SEARCH_API,
-            ...(gameId ? { gameId: gameId } : {}),
+            ...(parseThinkyGameId(gameId) ? { gameId: gameId } : {}),
             createdAt: now,
             expireAt: new Date(now.getTime() + 5 * 60 * 1000), // 5 minutes
           },

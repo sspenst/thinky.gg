@@ -2,7 +2,7 @@ import FormattedUser from '@root/components/formatted/formattedUser';
 import { ReportReason } from '@root/constants/ReportReason';
 import { ReportStatus } from '@root/constants/ReportStatus';
 import { AlertTriangle, CheckCircle, Clock, ExternalLink, Flag, X } from 'lucide-react';
-import React, { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 
 interface ReportUser {
