@@ -104,7 +104,7 @@ export default function Header({
           {user && <div className='hidden sm:block h-6 w-px bg-neutral-500' />}
           <div className='flex gap-3 items-center'>
             {user && !game.isNotAGame && <>
-              {!game.disableRanked && <div>
+              {!game.disableRanked && <div className='flex flex-row gap-2'>
                 <Link
                   className='hidden sm:block'
                   data-tooltip-content='Ranked Solves'
