@@ -143,7 +143,7 @@ export default function LevelCard({ href, id, level, onClick }: LevelCardProps) 
               <FormattedUser
                 className='font-medium text-sm gray'
                 hideAvatar
-                id='author'
+                id='level-card-author'
                 size={Dimensions.AvatarSizeSmall}
                 user={user}
               />
