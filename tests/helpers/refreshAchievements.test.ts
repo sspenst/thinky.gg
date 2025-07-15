@@ -46,7 +46,7 @@ describe('helpers/refreshAchievements.ts', () => {
 
     await refreshAchievements(DEFAULT_GAME_ID, new Types.ObjectId(TestId.USER), [AchievementCategory.PROGRESS]);
     let achievements = await AchievementModel.find({ userId: TestId.USER }).lean();
-    
+
     expect(achievements.some(a => a.type === AchievementType.CHAPTER_1_COMPLETED)).toBe(true);
     expect(achievements.some(a => a.type === AchievementType.CHAPTER_2_COMPLETED)).toBe(false);
     expect(achievements.some(a => a.type === AchievementType.CHAPTER_3_COMPLETED)).toBe(false);
@@ -59,7 +59,7 @@ describe('helpers/refreshAchievements.ts', () => {
 
     await refreshAchievements(DEFAULT_GAME_ID, new Types.ObjectId(TestId.USER), [AchievementCategory.PROGRESS]);
     achievements = await AchievementModel.find({ userId: TestId.USER }).lean();
-    
+
     expect(achievements.some(a => a.type === AchievementType.CHAPTER_1_COMPLETED)).toBe(true);
     expect(achievements.some(a => a.type === AchievementType.CHAPTER_2_COMPLETED)).toBe(true);
     expect(achievements.some(a => a.type === AchievementType.CHAPTER_3_COMPLETED)).toBe(false);
@@ -72,7 +72,7 @@ describe('helpers/refreshAchievements.ts', () => {
 
     await refreshAchievements(DEFAULT_GAME_ID, new Types.ObjectId(TestId.USER), [AchievementCategory.PROGRESS]);
     achievements = await AchievementModel.find({ userId: TestId.USER }).lean();
-    
+
     expect(achievements.some(a => a.type === AchievementType.CHAPTER_1_COMPLETED)).toBe(true);
     expect(achievements.some(a => a.type === AchievementType.CHAPTER_2_COMPLETED)).toBe(true);
     expect(achievements.some(a => a.type === AchievementType.CHAPTER_3_COMPLETED)).toBe(true);

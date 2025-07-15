@@ -91,7 +91,7 @@ export function useNotifications({ notifications, setNotifications }: UseNotific
     const toastMarkAsRead = async (notificationId: string, read: boolean): Promise<void> => {
       // Use the main markAsRead function to ensure proper state updates
       await markAsRead(notificationId, read);
-      
+
       // Dismiss this specific toast after marking as read
       toast.dismiss(notification._id.toString() + 'toast');
     };

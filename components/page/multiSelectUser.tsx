@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import User from '@root/models/db/user';
 import classNames from 'classnames';
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import AsyncSelect from 'react-select/async';
 import { debounce } from 'throttle-debounce';
 import Dimensions from '../../constants/dimensions';
@@ -42,7 +42,7 @@ export default function MultiSelectUser({ className, controlStyles, defaultValue
   const debounceDoSearch = debounce(500, doSearch);
 
   if (!isMounted) {
-    return <div className={classNames('text-left text-base', className)} style={{ height: 44 }}></div>;
+    return <div className={classNames('text-left text-base', className)} style={{ height: 44 }} />;
   }
 
   return <AsyncSelect

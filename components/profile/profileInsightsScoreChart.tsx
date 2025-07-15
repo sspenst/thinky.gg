@@ -65,7 +65,7 @@ export default function ProfileInsightsScoreChart({ user }: { user: User }) {
 
   const mergedData = useMemo(() =>
     mergeData(cumulativeScores, cumulativeScoresCompare),
-    [cumulativeScores, cumulativeScoresCompare]
+  [cumulativeScores, cumulativeScoresCompare]
   );
 
   if (!scoreChartData || !scoreChartData[ProStatsUserType.ScoreHistory]) {
