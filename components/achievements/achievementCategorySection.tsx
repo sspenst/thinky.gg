@@ -19,6 +19,7 @@ interface AchievementCategorySectionProps {
   statsMap: Map<string, { count: number; firstEarned: Date; lastEarned: Date; gameId: GameId }>;
   selectedGame: GameId | 'all';
   userAchievementsByGame: Record<GameId, Achievement[]>;
+  sectionId?: string;
 }
 
 export default function AchievementCategorySection({
@@ -31,6 +32,7 @@ export default function AchievementCategorySection({
   statsMap,
   selectedGame,
   userAchievementsByGame,
+  sectionId,
 }: AchievementCategorySectionProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const progressPercentage = Math.round((unlockedCount / totalCount) * 100);
@@ -39,6 +41,7 @@ export default function AchievementCategorySection({
     <div className='bg-2 rounded-xl border border-color-3 overflow-hidden'>
       {/* Category Header */}
       <button
+        id={sectionId}
         onClick={() => setIsExpanded(!isExpanded)}
         className='w-full px-6 py-4 bg-3 hover:bg-4 transition-colors flex items-center justify-between'
       >

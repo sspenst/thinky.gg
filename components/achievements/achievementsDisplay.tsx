@@ -40,6 +40,7 @@ export default function AchievementsDisplay({
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedGame, setSelectedGame] = useState<GameId | 'all'>(defaultSelectedGame);
   const [filterUnlocked, setFilterUnlocked] = useState<'all' | 'unlocked' | 'locked'>('all');
+  const [filterRarity, setFilterRarity] = useState<'all' | 'legendary' | 'epic' | 'rare' | 'uncommon' | 'common'>('all');
 
   // Reset category when it becomes invalid for the selected game
   useEffect(() => {
@@ -281,66 +282,6 @@ export default function AchievementsDisplay({
           </div>
         </div>
       )}
-      {showSearchFilters && (
-        <div className='bg-2 rounded-xl p-3 border border-color-3'>
-          <div className='flex flex-col lg:flex-row gap-3 items-center'>
-            {/* Search Input */}
-            <div className='flex-1 w-full lg:w-auto'>
-              <input
-                type='text'
-                placeholder='Search achievements...'
-                className='w-full px-3 py-2 rounded-lg bg-3 border border-color-4 focus:border-blue-500 focus:outline-none transition-colors'
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-            <div className='flex flex-row gap-3 items-center'>
-              {/* Category Filter */}
-              <select
-                className='px-3 py-2 rounded-lg bg-3 border border-color-4 focus:border-blue-500 focus:outline-none transition-colors min-w-[150px]'
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-              >
-                <option value='all'>All Categories</option>
-                {Object.keys(totalAchievements).filter(category => {
-                // Filter categories based on selected game
-                  if (selectedGame === 'all') {
-                    return true; // Show all categories when viewing all games
-                  }
-
-                  if (selectedGame === GameId.THINKY) {
-                    return category === 'SOCIAL'; // Only social achievements for THINKY
-                  }
-
-                  return category !== 'SOCIAL'; // All categories except social for other games
-                }).map(category => (
-                  <option key={category} value={category}>
-                    {category === 'SOCIAL' ? 'Social' :
-                      category === 'USER' ? 'Progress' :
-                        category === 'CREATOR' ? 'Creator' :
-                          category === 'LEVEL_COMPLETION' ? 'Skill' :
-                            category === 'REVIEWER' ? 'Reviewer' :
-                              category === 'MULTIPLAYER' ? 'Multiplayer' : category}
-                  </option>
-                ))}
-              </select>
-              {/* Status Filter */}
-              {reqUser && (
-                <select
-                  className='px-3 py-2 rounded-lg bg-3 border border-color-4 focus:border-blue-500 focus:outline-none transition-colors min-w-[150px]'
-                  value={filterUnlocked}
-                  onChange={(e) => setFilterUnlocked(e.target.value as 'all' | 'unlocked' | 'locked')}
-                >
-                  <option value='all'>All Achievements</option>
-                  <option value='unlocked'>Unlocked</option>
-                  <option value='locked'>Locked</option>
-                </select>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-      {/* Achievements Browser */}
       <AchievementsBrowser
         userAchievements={userAchievements}
         userAchievementsByGame={userAchievementsByGame}
@@ -350,7 +291,14 @@ export default function AchievementsDisplay({
         selectedCategory={selectedCategory}
         selectedGame={selectedGame}
         filterUnlocked={filterUnlocked}
+        filterRarity={filterRarity}
         totalAchievements={totalAchievements}
+        showSearchFilters={showSearchFilters}
+        setSearchQuery={setSearchQuery}
+        setSelectedCategory={setSelectedCategory}
+        setFilterUnlocked={setFilterUnlocked}
+        setFilterRarity={setFilterRarity}
+        reqUser={reqUser}
       />
     </div>
   );
