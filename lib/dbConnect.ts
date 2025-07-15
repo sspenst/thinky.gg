@@ -40,7 +40,12 @@ export default async function dbConnect({ ignoreInitializeLocalDb }: DBConnectPr
       heartbeatFrequencyMS: 30000,
       serverSelectionTimeoutMS: 10000,
       socketTimeoutMS: 20000,
-      maxIdleTimeMS: 30000,
+      maxIdleTimeMS: process.env.NODE_ENV === 'development' ? 5000 : 30000,
+      ...(process.env.NODE_ENV === 'development' && {
+        maxPoolSize: 10,
+        minPoolSize: 2,
+        maxConnecting: 2,
+      }),
     };
 
     let uri = '';

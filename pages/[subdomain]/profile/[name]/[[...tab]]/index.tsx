@@ -133,7 +133,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     reviewsWrittenCount,
     blockData,
   ] = await Promise.all([
-    profileTab === ProfileTab.Achievements ? AchievementModel.find<Achievement>({ userId: userId, ...(gameId !== undefined ? { gameId: gameId } : {}) }) : [] as Achievement[],
+    profileTab === ProfileTab.Achievements ? AchievementModel.find<Achievement>({ userId: userId }) : [] as Achievement[],
     AchievementModel.countDocuments({ userId: userId, ...(gameId !== undefined ? { gameId: gameId } : {}) }),
     CollectionModel.countDocuments({
       ...(gameId !== undefined ? { gameId: gameId } : {}),
