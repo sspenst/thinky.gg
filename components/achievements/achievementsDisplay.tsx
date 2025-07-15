@@ -94,7 +94,7 @@ export default function AchievementsDisplay({
   });
 
   return (
-    <div className='flex flex-col gap-6  max-w-7xl mx-auto'>
+    <div className='flex flex-col gap-6 p-3 max-w-7xl mx-auto'>
       {showProgressSection && reqUser && (
         <>
           {/* Header Section */}
@@ -103,23 +103,23 @@ export default function AchievementsDisplay({
             <p className='text-lg opacity-75'>
               Track your progress and unlock achievements as you play!
             </p>
-            <div className='bg-2 rounded-xl p-6 border border-color-3'>
+            <div className='bg-2 rounded-xl p-4 border border-color-3'>
               {/* Overall Progress */}
-              <div className='text-center mb-6'>
+              <div className='text-center mb-2'>
                 <h2 className='text-2xl font-bold'>{reqUser.name}&apos;s Progress</h2>
                 <p className='text-lg'>
                   {totalUnlockedCount} of {totalAvailableCount} achievements unlocked
                 </p>
-                <div className='flex justify-center mt-4'>
-                  <div className='flex flex-col items-center gap-2'>
-                    <div className='text-3xl font-bold text-blue-500'>
-                      {totalAvailableCount > 0 ? Math.round((totalUnlockedCount / totalAvailableCount) * 100) : 0}%
-                    </div>
+                <div className='flex justify-center mt-2'>
+                  <div className='flex flex-row items-center gap-2'>
                     <div className='w-32 h-3 bg-3 rounded-full overflow-hidden'>
                       <div
                         className='h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-500'
                         style={{ width: `${totalAvailableCount > 0 ? Math.round((totalUnlockedCount / totalAvailableCount) * 100) : 0}%` }}
                       />
+                    </div>
+                    <div className='text-3xl font-bold text-blue-500'>
+                      {totalAvailableCount > 0 ? Math.round((totalUnlockedCount / totalAvailableCount) * 100) : 0}%
                     </div>
                   </div>
                 </div>
@@ -166,7 +166,6 @@ export default function AchievementsDisplay({
                       </div>
                     </button>
                   ))}
-                  
                   {/* All Games Tile */}
                   <button
                     onClick={() => setSelectedGame('all')}
@@ -247,7 +246,6 @@ export default function AchievementsDisplay({
                 </div>
               </button>
             ))}
-            
             {/* All Games Tile */}
             <button
               onClick={() => setSelectedGame('all')}
@@ -283,7 +281,6 @@ export default function AchievementsDisplay({
           </div>
         </div>
       )}
-      
       {showSearchFilters && (
         <div className='bg-2 rounded-xl p-3 border border-color-3'>
           <div className='flex flex-col lg:flex-row gap-3 items-center'>
@@ -297,47 +294,49 @@ export default function AchievementsDisplay({
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            {/* Category Filter */}
-            <select
-              className='px-3 py-2 rounded-lg bg-3 border border-color-4 focus:border-blue-500 focus:outline-none transition-colors min-w-[150px]'
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-            >
-              <option value='all'>All Categories</option>
-              {Object.keys(totalAchievements).filter(category => {
-                // Filter categories based on selected game
-                if (selectedGame === 'all') {
-                  return true; // Show all categories when viewing all games
-                }
-
-                if (selectedGame === GameId.THINKY) {
-                  return category === 'SOCIAL'; // Only social achievements for THINKY
-                }
-
-                return category !== 'SOCIAL'; // All categories except social for other games
-              }).map(category => (
-                <option key={category} value={category}>
-                  {category === 'SOCIAL' ? 'Social' :
-                    category === 'USER' ? 'Progress' :
-                      category === 'CREATOR' ? 'Creator' :
-                        category === 'LEVEL_COMPLETION' ? 'Skill' :
-                          category === 'REVIEWER' ? 'Reviewer' :
-                            category === 'MULTIPLAYER' ? 'Multiplayer' : category}
-                </option>
-              ))}
-            </select>
-            {/* Status Filter */}
-            {reqUser && (
+            <div className='flex flex-row gap-3 items-center'>
+              {/* Category Filter */}
               <select
                 className='px-3 py-2 rounded-lg bg-3 border border-color-4 focus:border-blue-500 focus:outline-none transition-colors min-w-[150px]'
-                value={filterUnlocked}
-                onChange={(e) => setFilterUnlocked(e.target.value as 'all' | 'unlocked' | 'locked')}
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
               >
-                <option value='all'>All Achievements</option>
-                <option value='unlocked'>Unlocked</option>
-                <option value='locked'>Locked</option>
+                <option value='all'>All Categories</option>
+                {Object.keys(totalAchievements).filter(category => {
+                // Filter categories based on selected game
+                  if (selectedGame === 'all') {
+                    return true; // Show all categories when viewing all games
+                  }
+
+                  if (selectedGame === GameId.THINKY) {
+                    return category === 'SOCIAL'; // Only social achievements for THINKY
+                  }
+
+                  return category !== 'SOCIAL'; // All categories except social for other games
+                }).map(category => (
+                  <option key={category} value={category}>
+                    {category === 'SOCIAL' ? 'Social' :
+                      category === 'USER' ? 'Progress' :
+                        category === 'CREATOR' ? 'Creator' :
+                          category === 'LEVEL_COMPLETION' ? 'Skill' :
+                            category === 'REVIEWER' ? 'Reviewer' :
+                              category === 'MULTIPLAYER' ? 'Multiplayer' : category}
+                  </option>
+                ))}
               </select>
-            )}
+              {/* Status Filter */}
+              {reqUser && (
+                <select
+                  className='px-3 py-2 rounded-lg bg-3 border border-color-4 focus:border-blue-500 focus:outline-none transition-colors min-w-[150px]'
+                  value={filterUnlocked}
+                  onChange={(e) => setFilterUnlocked(e.target.value as 'all' | 'unlocked' | 'locked')}
+                >
+                  <option value='all'>All Achievements</option>
+                  <option value='unlocked'>Unlocked</option>
+                  <option value='locked'>Locked</option>
+                </select>
+              )}
+            </div>
           </div>
         </div>
       )}
