@@ -3,6 +3,7 @@ import FormattedDate from '@root/components/formatted/formattedDate';
 import FormattedUser from '@root/components/formatted/formattedUser';
 import GameLogo from '@root/components/gameLogo';
 import Page from '@root/components/page/page';
+import StyledTooltip from '@root/components/page/styledTooltip';
 import { DataTableOffline } from '@root/components/tables/dataTable';
 import AchievementCategory from '@root/constants/achievements/achievementCategory';
 import { AchievementCategoryMapping } from '@root/constants/achievements/achievementInfo';
@@ -11,9 +12,7 @@ import Dimensions from '@root/constants/dimensions';
 import { GameId } from '@root/constants/GameId';
 import { Games } from '@root/constants/Games';
 import { AppContext } from '@root/contexts/appContext';
-import { getRarityFromStats, getRarityText, getRarityColor, getRarityTooltip } from '@root/helpers/achievementRarity';
-import StyledTooltip from '@root/components/page/styledTooltip';
-import { getEnrichUserConfigPipelineStage } from '@root/helpers/enrich';
+import { getRarityColor, getRarityFromStats, getRarityText, getRarityTooltip } from '@root/helpers/achievementRarity';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import cleanUser from '@root/lib/cleanUser';
 import dbConnect from '@root/lib/dbConnect';
@@ -24,7 +23,7 @@ import User from '@root/models/db/user';
 import { AchievementModel, UserModel } from '@root/models/mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Image from 'next/image';
-import { useContext, useState, useMemo } from 'react';
+import { useContext, useMemo, useState } from 'react';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   await dbConnect();
@@ -41,16 +40,16 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const { type } = context.query;
   const gameId = getGameIdFromReq(context.req);
   const isViewingFromThinky = gameId === GameId.THINKY;
-  
+
   // When viewing from THINKY, get achievements from all games for master view
   // Include THINKY for social achievements, other games for other achievement types
   const gameIds = isViewingFromThinky ? [GameId.THINKY, GameId.PATHOLOGY, GameId.SOKOPATH] : [gameId];
-  
+
   const [myAchievements, allAchievements] = await Promise.all([
     // Get user's achievements for this type across relevant games
-    AchievementModel.find({ 
-      userId: reqUser._id, 
-      type: type as string, 
+    AchievementModel.find({
+      userId: reqUser._id,
+      type: type as string,
       gameId: { $in: gameIds }
     }),
     // Get all achievements for this type across relevant games
@@ -90,17 +89,17 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 }
 
 /* istanbul ignore next */
-export default function AchievementPage({ 
-  type, 
-  gameId, 
-  isViewingFromThinky, 
-  myAchievements, 
-  achievements 
+export default function AchievementPage({
+  type,
+  gameId,
+  isViewingFromThinky,
+  myAchievements,
+  achievements
 }: {
-  type: AchievementType, 
+  type: AchievementType,
   gameId: GameId,
   isViewingFromThinky: boolean,
-  myAchievements: Achievement[], 
+  myAchievements: Achievement[],
   achievements: Achievement[]
 }) {
   const { game } = useContext(AppContext);
@@ -111,6 +110,7 @@ export default function AchievementPage({
     if (selectedGame === 'all' || !isViewingFromThinky) {
       return achievements;
     }
+
     return achievements.filter(achievement => achievement.gameId === selectedGame);
   }, [achievements, selectedGame, isViewingFromThinky]);
 
@@ -119,61 +119,66 @@ export default function AchievementPage({
     if (!isViewingFromThinky) {
       return myAchievements[0];
     }
+
     if (selectedGame === 'all') {
       return myAchievements[0]; // Show first achievement found
     }
+
     return myAchievements.find(ach => ach.gameId === selectedGame);
   }, [myAchievements, selectedGame, isViewingFromThinky]);
 
   // Check if this achievement type is available across multiple games
   const shouldShowGameFilters = useMemo(() => {
     if (!isViewingFromThinky) return false;
-    
+
     // Find which category this achievement type belongs to
     let achievementCategory: AchievementCategory | null = null;
+
     for (const [category, categoryAchievements] of Object.entries(AchievementCategoryMapping)) {
       if (type in categoryAchievements) {
         achievementCategory = category as AchievementCategory;
         break;
       }
     }
-    
+
     if (!achievementCategory) return false;
-    
+
     // Check if this category exists in multiple games
     const gamesWithCategory = [GameId.PATHOLOGY, GameId.SOKOPATH].filter(gId => {
       const gameInfo = Games[gId];
+
       return gameInfo.achievementCategories.includes(achievementCategory!);
     });
-    
+
     return gamesWithCategory.length > 1;
   }, [type, isViewingFromThinky]);
 
   // Calculate stats for game tiles
   const gameStats = useMemo(() => {
     if (!isViewingFromThinky || !shouldShowGameFilters) return [];
-    
+
     // Find which category this achievement type belongs to
     let achievementCategory: AchievementCategory | null = null;
+
     for (const [category, categoryAchievements] of Object.entries(AchievementCategoryMapping)) {
       if (type in categoryAchievements) {
         achievementCategory = category as AchievementCategory;
         break;
       }
     }
-    
+
     if (!achievementCategory) return [];
-    
+
     // Get the appropriate games for this achievement category
-    const relevantGameIds = achievementCategory === AchievementCategory.SOCIAL 
-      ? [GameId.THINKY] 
+    const relevantGameIds = achievementCategory === AchievementCategory.SOCIAL
+      ? [GameId.THINKY]
       : [GameId.PATHOLOGY, GameId.SOKOPATH];
-    
+
     const stats = relevantGameIds.map(gId => {
       const gameAchievements = achievements.filter(ach => ach.gameId === gId);
       const gameInfo = Games[gId];
       const userHasAchievement = myAchievements.some(ach => ach.gameId === gId);
-      
+
       return {
         gameId: gId,
         name: gameInfo.displayName,
@@ -202,6 +207,7 @@ export default function AchievementPage({
     if (selectedGame === 'all' || !isViewingFromThinky) {
       return achievements.length;
     }
+
     return achievements.filter(ach => ach.gameId === selectedGame).length;
   }, [achievements, selectedGame, isViewingFromThinky]);
 
@@ -215,24 +221,24 @@ export default function AchievementPage({
       <div className='flex flex-col items-center justify-center w-full p-3 space-y-6'>
         {/* Achievement Display */}
         <div className='flex flex-col items-center gap-4'>
-          <FormattedAchievement 
-            achievementType={type} 
-            game={selectedGame === 'all' ? game : Games[selectedGame as GameId]} 
-            createdAt={displayAchievement?.createdAt} 
-            unlocked={!!displayAchievement} 
+          <FormattedAchievement
+            achievementType={type}
+            game={selectedGame === 'all' ? game : Games[selectedGame as GameId]}
+            createdAt={displayAchievement?.createdAt}
+            unlocked={!!displayAchievement}
           />
           
           {/* Rarity Display */}
           <div className='flex items-center gap-4 text-center'>
             <div className='bg-2 rounded-lg px-4 py-2 border border-color-3'>
               <div className='text-sm opacity-75 mb-1'>Rarity</div>
-              <div 
+              <div
                 className={`text-lg font-bold ${rarityColor}`}
                 data-tooltip-content={rarityTooltip}
-                data-tooltip-id={`achievement-rarity-tooltip`}
+                data-tooltip-id={'achievement-rarity-tooltip'}
               >
                 {rarityText}
-                <StyledTooltip id={`achievement-rarity-tooltip`} />
+                <StyledTooltip id={'achievement-rarity-tooltip'} />
               </div>
             </div>
             <div className='bg-2 rounded-lg px-4 py-2 border border-color-3'>
@@ -243,7 +249,6 @@ export default function AchievementPage({
             </div>
           </div>
         </div>
-
         {/* Game Filter Tiles - only show when viewing from THINKY and achievement exists in multiple games */}
         {shouldShowGameFilters && gameStats.length > 0 && (
           <div className='bg-2 rounded-xl p-4 border border-color-3 w-full max-w-4xl'>
@@ -285,7 +290,6 @@ export default function AchievementPage({
             </div>
           </div>
         )}
-
         {/* Achievements Table */}
         <div className='w-full max-w-6xl'>
           <DataTableOffline
@@ -295,16 +299,15 @@ export default function AchievementPage({
                 id: 'game',
                 name: 'Game',
                 selector: (row: Achievement) => (
-                  <GameLogo 
-                    gameId={row.gameId as GameId} 
-                    id={`game-${row._id}`} 
-                    size={24} 
+                  <GameLogo
+                    gameId={row.gameId as GameId}
+                    id={`game-${row._id}`}
+                    size={24}
                     tooltip={true}
                     clickable={true}
                   />
                 ),
                 sortable: false,
-                width: '80px',
               }] : []),
               {
                 id: 'user',

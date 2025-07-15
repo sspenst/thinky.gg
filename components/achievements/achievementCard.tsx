@@ -2,7 +2,7 @@ import { AchievementRulesCombined } from '@root/constants/achievements/achieveme
 import AchievementType from '@root/constants/achievements/achievementType';
 import { GameId } from '@root/constants/GameId';
 import { Game, Games } from '@root/constants/Games';
-import { getRarityFromStats, getRarityText, getRarityColor, getRarityTooltip } from '@root/helpers/achievementRarity';
+import { getRarityColor, getRarityFromStats, getRarityText, getRarityTooltip } from '@root/helpers/achievementRarity';
 import Achievement from '@root/models/db/achievement';
 import classNames from 'classnames';
 import Image from 'next/image';
@@ -165,9 +165,9 @@ export default function AchievementCard({
           <div className='flex items-center gap-2 mb-1'>
             <h3 className='font-bold text-lg truncate'>{achievementInfo.name}</h3>
             {achievementInfo.secret && isUnlocked && (
-              <span 
+              <span
                 className='text-xs px-2 py-1 bg-orange-500 text-white rounded-full'
-                data-tooltip-content="Secret achievement - rare and special!"
+                data-tooltip-content='Secret achievement - rare and special!'
                 data-tooltip-id={`secret-tooltip-${achievementType}-list`}
               >
                 SECRET
@@ -175,9 +175,9 @@ export default function AchievementCard({
               </span>
             )}
             {isUnlocked && (
-              <span 
+              <span
                 className='text-xs px-2 py-1 bg-green-500 text-white rounded-full'
-                data-tooltip-content="You unlocked this achievement"
+                data-tooltip-content='You unlocked this achievement'
                 data-tooltip-id={`unlocked-tooltip-${achievementType}-list`}
               >
                 ✓
@@ -193,7 +193,7 @@ export default function AchievementCard({
           )}
           {renderGameLogos()}
           {stats && (
-            <div 
+            <div
               className={`text-xs font-semibold ${rarityColor}`}
               data-tooltip-content={rarityTooltip}
               data-tooltip-id={`rarity-tooltip-${achievementType}-list`}
@@ -231,9 +231,9 @@ export default function AchievementCard({
           <div className='text-4xl'>{achievementInfo.emoji}</div>
           <div className='flex flex-col items-end gap-1'>
             {achievementInfo.secret && isUnlocked && (
-              <span 
+              <span
                 className='text-xs px-2 py-1 bg-orange-500 text-white rounded-full'
-                data-tooltip-content="Secret achievement - rare and special!"
+                data-tooltip-content='Secret achievement - rare and special!'
                 data-tooltip-id={`secret-tooltip-${achievementType}-grid`}
               >
                 SECRET
@@ -241,9 +241,9 @@ export default function AchievementCard({
               </span>
             )}
             {isUnlocked && (
-              <div 
+              <div
                 className='w-6 h-6 bg-green-500 rounded-full flex items-center justify-center'
-                data-tooltip-content="You unlocked this achievement"
+                data-tooltip-content='You unlocked this achievement'
                 data-tooltip-id={`unlocked-tooltip-${achievementType}-grid`}
               >
                 <span className='text-white text-xs font-bold'>✓</span>
@@ -279,7 +279,7 @@ export default function AchievementCard({
           
           {stats && (
             <div className='flex justify-between items-center text-xs'>
-              <span 
+              <span
                 className={`font-semibold ${rarityColor}`}
                 data-tooltip-content={rarityTooltip}
                 data-tooltip-id={`rarity-tooltip-${achievementType}-grid`}
