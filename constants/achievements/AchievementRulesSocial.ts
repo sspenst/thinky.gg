@@ -8,7 +8,7 @@ interface IAchievementInfoSocial extends IAchievementInfo {
 const AchievementRulesSocial: { [achievementType: string]: IAchievementInfoSocial } = {};
 
 AchievementRulesSocial[AchievementType.COMMENT_1] = {
-  getDescription: () => 'Wrote a comment',
+  getDescription: () => 'Wrote a comment on another user\'s profile',
   name: 'Chatty',
   emoji: '💬',
   discordNotification: false,
@@ -18,7 +18,7 @@ AchievementRulesSocial[AchievementType.COMMENT_1] = {
   },
 };
 AchievementRulesSocial[AchievementType.COMMENT_5] = {
-  getDescription: () => 'Wrote 5 comments',
+  getDescription: () => 'Wrote 5 comments on other users\' profiles',
   name: 'Conversationalist',
   emoji: '🗣️',
   discordNotification: false,
@@ -28,7 +28,7 @@ AchievementRulesSocial[AchievementType.COMMENT_5] = {
   },
 };
 AchievementRulesSocial[AchievementType.COMMENT_10] = {
-  getDescription: () => 'Wrote 10 comments',
+  getDescription: () => 'Wrote 10 comments on other users\' profiles',
   name: 'Commentator',
   emoji: '🎙️',
   discordNotification: true,
@@ -38,7 +38,7 @@ AchievementRulesSocial[AchievementType.COMMENT_10] = {
   },
 };
 AchievementRulesSocial[AchievementType.COMMENT_25] = {
-  getDescription: () => 'Wrote 25 comments',
+  getDescription: () => 'Wrote 25 comments on other users\' profiles',
   name: 'Social Butterfly',
   emoji: '🦋',
   discordNotification: true,

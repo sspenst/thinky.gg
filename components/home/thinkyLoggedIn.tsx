@@ -45,8 +45,17 @@ export function ThinkyHomePageLoggedIn({ user }: { user: User }) {
               <p className='text-white/80'>Continue your puzzle journey</p>
             </div>
           </div>
-          <div className='bg-white/10 p-3 rounded-lg backdrop-blur-sm'>
-            <StreakCalendar />
+          <div className='flex gap-3'>
+            <div className='bg-white/10 p-3 rounded-lg backdrop-blur-sm'>
+              <StreakCalendar />
+            </div>
+            <Link
+              href='/achievements'
+              className='bg-white/10 p-3 rounded-lg backdrop-blur-sm hover:bg-white/20 transition-colors flex flex-col items-center justify-center min-w-[100px]'
+            >
+              <span className='text-2xl mb-1'>🏆</span>
+              <span className='text-sm font-medium text-center'>Achievements</span>
+            </Link>
           </div>
         </div>
       </div>
@@ -148,7 +157,7 @@ export function ThinkyHomePageLoggedIn({ user }: { user: User }) {
       </div>
       {/* Global Quick Actions Section */}
       <div className='w-full'>
-        <div className='grid grid-cols-2 md:grid-cols-3 gap-4'>
+        <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
           <div className='flex flex-col items-center justify-center p-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition'>
             <span className='text-2xl mb-2'>👥</span>
             <span className='font-medium mb-2'>Users</span>
@@ -160,6 +169,13 @@ export function ThinkyHomePageLoggedIn({ user }: { user: User }) {
               }}
             />
           </div>
+          <Link
+            href='/achievements'
+            className='flex flex-col items-center justify-center p-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition'
+          >
+            <span className='text-2xl mb-2'>🏆</span>
+            <span className='font-medium'>Achievements</span>
+          </Link>
           <Link
             href='/pro'
             className='flex flex-col items-center justify-center p-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition'

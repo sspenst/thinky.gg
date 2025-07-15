@@ -1,4 +1,5 @@
 import AchievementType from '@root/constants/achievements/achievementType';
+import { GameId } from '@root/constants/GameId';
 import { Game } from '@root/constants/Games';
 import Achievement from '@root/models/db/achievement';
 import { useState } from 'react';
@@ -8,14 +9,16 @@ interface AchievementCategorySectionProps {
   categoryName: string;
   achievements: Array<{
     type: AchievementType;
-    isUnlocked: boolean;
-    achievement?: Achievement;
+    gameAchievements: Achievement[];
+    allGames: GameId[];
   }>;
   unlockedCount: number;
   totalCount: number;
   viewMode: 'grid' | 'list';
   game: Game;
-  statsMap: Map<string, { count: number; firstEarned: Date; lastEarned: Date }>;
+  statsMap: Map<string, { count: number; firstEarned: Date; lastEarned: Date; gameId: GameId }>;
+  selectedGame: GameId | 'all';
+  userAchievementsByGame: Record<GameId, Achievement[]>;
 }
 
 export default function AchievementCategorySection({
@@ -26,6 +29,8 @@ export default function AchievementCategorySection({
   viewMode,
   game,
   statsMap,
+  selectedGame,
+  userAchievementsByGame,
 }: AchievementCategorySectionProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const progressPercentage = Math.round((unlockedCount / totalCount) * 100);
@@ -71,15 +76,17 @@ export default function AchievementCategorySection({
                 : 'space-y-3'
             }
           >
-            {achievements.map(({ type, isUnlocked, achievement }) => (
+            {achievements.map(({ type, gameAchievements, allGames }) => (
               <AchievementCard
                 key={type}
                 achievementType={type}
-                isUnlocked={isUnlocked}
-                achievement={achievement}
+                gameAchievements={gameAchievements}
+                allGames={allGames}
                 game={game}
                 viewMode={viewMode}
-                stats={statsMap.get(type)}
+                statsMap={statsMap}
+                selectedGame={selectedGame}
+                userAchievementsByGame={userAchievementsByGame}
               />
             ))}
           </div>
