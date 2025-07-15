@@ -326,7 +326,7 @@ export default function AchievementsBrowser({
       {/* Category Navigation Tiles */}
       <div id='navigation-tiles' className='bg-2 rounded-xl p-4 border border-color-3'>
         <div className='mb-3'>
-          <h3 className='text-lg font-semibold'>Quick Navigation</h3>
+          <h3 className='text-lg font-semibold'>Categories</h3>
           <p className='text-sm opacity-75'>Click to jump to a category section</p>
         </div>
         <div className='grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3'>
