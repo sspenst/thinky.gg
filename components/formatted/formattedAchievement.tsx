@@ -38,8 +38,35 @@ export default function FormattedAchievement({ achievementType, createdAt, game,
       }}
     >
       <span className='text-4xl'>{achievement.emoji}</span>
-      <div className='flex flex-col'>
-        <span className='font-bold text-lg'>{achievement.name}</span>
+      <div className='flex flex-col flex-1'>
+        <div className='flex items-center gap-2'>
+          <span className='font-bold text-lg'>{achievement.name}</span>
+          {achievement.secret && !locked && (
+            <span 
+              className='text-xs px-2 py-1 bg-orange-500 text-white rounded-full'
+              data-tooltip-content="Secret achievement - rare and special!"
+              data-tooltip-id={`secret-tooltip-${achievementType}`}
+            >
+              SECRET
+              <StyledTooltip id={`secret-tooltip-${achievementType}`} />
+            </span>
+          )}
+          {!locked && (
+            <span 
+              className='text-xs px-2 py-1 bg-green-500 text-white rounded-full'
+              data-tooltip-content="You unlocked this achievement"
+              data-tooltip-id={`unlocked-tooltip-${achievementType}`}
+            >
+              ✓ UNLOCKED
+              <StyledTooltip id={`unlocked-tooltip-${achievementType}`} />
+            </span>
+          )}
+          {locked && (
+            <span className='text-xs px-2 py-1 bg-gray-500 text-white rounded-full'>
+              🔒 LOCKED
+            </span>
+          )}
+        </div>
         <span
           className='text-sm'
           data-tooltip-content={achievement.tooltip}
@@ -49,6 +76,11 @@ export default function FormattedAchievement({ achievementType, createdAt, game,
         </span>
         {achievement.tooltip && <StyledTooltip id={`achievement-description-${achievementType}`} />}
         {!locked && <FormattedDate className='w-fit' date={createdAt} />}
+        {locked && (
+          <span className='text-sm text-orange-400 font-medium mt-1'>
+            Complete this challenge to unlock the achievement!
+          </span>
+        )}
       </div>
     </Link>
   );

@@ -2,6 +2,7 @@ import { AchievementRulesCombined } from '@root/constants/achievements/achieveme
 import AchievementType from '@root/constants/achievements/achievementType';
 import { GameId } from '@root/constants/GameId';
 import { Game, Games } from '@root/constants/Games';
+import { getRarityFromStats, getRarityText, getRarityColor, getRarityTooltip } from '@root/helpers/achievementRarity';
 import Achievement from '@root/models/db/achievement';
 import classNames from 'classnames';
 import Image from 'next/image';
@@ -96,29 +97,10 @@ export default function AchievementCard({
 
   const stats = getCombinedStats();
 
-  const getRarityColor = () => {
-    if (!stats) return 'text-gray-500';
-    const percentage = (stats.count / 1000) * 100; // Assuming 1000+ players for rough percentage
-
-    if (percentage < 1) return 'text-purple-500'; // Legendary
-    if (percentage < 5) return 'text-orange-500'; // Epic
-    if (percentage < 15) return 'text-blue-500'; // Rare
-    if (percentage < 40) return 'text-green-500'; // Uncommon
-
-    return 'text-gray-500'; // Common
-  };
-
-  const getRarityText = () => {
-    if (!stats) return 'Unknown';
-    const percentage = (stats.count / 1000) * 100;
-
-    if (percentage < 1) return 'Legendary';
-    if (percentage < 5) return 'Epic';
-    if (percentage < 15) return 'Rare';
-    if (percentage < 40) return 'Uncommon';
-
-    return 'Common';
-  };
+  const rarity = stats ? getRarityFromStats(stats.count) : null;
+  const rarityText = rarity ? getRarityText(rarity) : 'Unknown';
+  const rarityColor = rarity ? getRarityColor(rarity) : 'text-gray-500';
+  const rarityTooltip = rarity ? getRarityTooltip(rarity) : 'Rarity unknown';
 
   // Render game logos for earned achievements (only if showing all games and not social category)
   const renderGameLogos = () => {
@@ -183,10 +165,24 @@ export default function AchievementCard({
           <div className='flex items-center gap-2 mb-1'>
             <h3 className='font-bold text-lg truncate'>{achievementInfo.name}</h3>
             {achievementInfo.secret && isUnlocked && (
-              <span className='text-xs px-2 py-1 bg-orange-500 text-white rounded-full'>SECRET</span>
+              <span 
+                className='text-xs px-2 py-1 bg-orange-500 text-white rounded-full'
+                data-tooltip-content="Secret achievement - rare and special!"
+                data-tooltip-id={`secret-tooltip-${achievementType}-list`}
+              >
+                SECRET
+                <StyledTooltip id={`secret-tooltip-${achievementType}-list`} />
+              </span>
             )}
             {isUnlocked && (
-              <span className='text-xs px-2 py-1 bg-green-500 text-white rounded-full'>✓</span>
+              <span 
+                className='text-xs px-2 py-1 bg-green-500 text-white rounded-full'
+                data-tooltip-content="You unlocked this achievement"
+                data-tooltip-id={`unlocked-tooltip-${achievementType}-list`}
+              >
+                ✓
+                <StyledTooltip id={`unlocked-tooltip-${achievementType}-list`} />
+              </span>
             )}
           </div>
           <p className='text-sm opacity-75 truncate'>{achievementInfo.getDescription(game)}</p>
@@ -197,8 +193,13 @@ export default function AchievementCard({
           )}
           {renderGameLogos()}
           {stats && (
-            <div className={`text-xs font-semibold ${getRarityColor()}`}>
-              {getRarityText()}
+            <div 
+              className={`text-xs font-semibold ${rarityColor}`}
+              data-tooltip-content={rarityTooltip}
+              data-tooltip-id={`rarity-tooltip-${achievementType}-list`}
+            >
+              {rarityText}
+              <StyledTooltip id={`rarity-tooltip-${achievementType}-list`} />
             </div>
           )}
           {stats && (
@@ -230,11 +231,23 @@ export default function AchievementCard({
           <div className='text-4xl'>{achievementInfo.emoji}</div>
           <div className='flex flex-col items-end gap-1'>
             {achievementInfo.secret && isUnlocked && (
-              <span className='text-xs px-2 py-1 bg-orange-500 text-white rounded-full'>SECRET</span>
+              <span 
+                className='text-xs px-2 py-1 bg-orange-500 text-white rounded-full'
+                data-tooltip-content="Secret achievement - rare and special!"
+                data-tooltip-id={`secret-tooltip-${achievementType}-grid`}
+              >
+                SECRET
+                <StyledTooltip id={`secret-tooltip-${achievementType}-grid`} />
+              </span>
             )}
             {isUnlocked && (
-              <div className='w-6 h-6 bg-green-500 rounded-full flex items-center justify-center'>
+              <div 
+                className='w-6 h-6 bg-green-500 rounded-full flex items-center justify-center'
+                data-tooltip-content="You unlocked this achievement"
+                data-tooltip-id={`unlocked-tooltip-${achievementType}-grid`}
+              >
                 <span className='text-white text-xs font-bold'>✓</span>
+                <StyledTooltip id={`unlocked-tooltip-${achievementType}-grid`} />
               </div>
             )}
           </div>
@@ -266,8 +279,13 @@ export default function AchievementCard({
           
           {stats && (
             <div className='flex justify-between items-center text-xs'>
-              <span className={`font-semibold ${getRarityColor()}`}>
-                {getRarityText()}
+              <span 
+                className={`font-semibold ${rarityColor}`}
+                data-tooltip-content={rarityTooltip}
+                data-tooltip-id={`rarity-tooltip-${achievementType}-grid`}
+              >
+                {rarityText}
+                <StyledTooltip id={`rarity-tooltip-${achievementType}-grid`} />
               </span>
               <span className='opacity-50'>
                 {stats.count} players
