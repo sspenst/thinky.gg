@@ -864,7 +864,10 @@ export default function ProfilePage({
       ,
     ],
     [ProfileTab.Achievements]: (
-      <ProfileAchievments achievements={achievements} />
+      <div className='flex flex-col gap-2 justify-center items-center'>
+        <h1 className='font-bold text-3xl'>{user.name}&apos;s {game.displayName} Achievements</h1>
+        <ProfileAchievments achievements={achievements} />
+      </div>
     ),
   } as { [key: string]: React.ReactNode | null };
 

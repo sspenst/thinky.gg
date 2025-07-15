@@ -1,12 +1,10 @@
-import { AchievementCategoryMapping } from '@root/constants/achievements/achievementInfo';
 import AchievementType from '@root/constants/achievements/achievementType';
 import { GameId } from '@root/constants/GameId';
 import { Games } from '@root/constants/Games';
 import { AppContext } from '@root/contexts/appContext';
 import Achievement from '@root/models/db/achievement';
 import Image from 'next/image';
-import Link from 'next/link';
-import { useContext, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import AchievementsBrowser from './achievementsBrowser';
 
 interface AchievementsDisplayProps {
@@ -43,6 +41,27 @@ export default function AchievementsDisplay({
   const [selectedGame, setSelectedGame] = useState<GameId | 'all'>(defaultSelectedGame);
   const [filterUnlocked, setFilterUnlocked] = useState<'all' | 'unlocked' | 'locked'>('all');
 
+  // Reset category when it becomes invalid for the selected game
+  useEffect(() => {
+    if (selectedCategory !== 'all') {
+      const availableCategories = Object.keys(totalAchievements).filter(category => {
+        if (selectedGame === 'all') {
+          return true;
+        }
+
+        if (selectedGame === GameId.THINKY) {
+          return category === 'SOCIAL';
+        }
+
+        return category !== 'SOCIAL';
+      });
+
+      if (!availableCategories.includes(selectedCategory)) {
+        setSelectedCategory('all');
+      }
+    }
+  }, [selectedGame, selectedCategory, totalAchievements]);
+
   // Calculate total progress across all games
   const totalUnlockedCount = userAchievements.length;
   const socialAchievementCount = totalAchievements['SOCIAL'] || 0;
@@ -51,19 +70,19 @@ export default function AchievementsDisplay({
     .reduce((sum, [, count]) => sum + count, 0);
   const gameCount = Object.values(GameId).filter(gameId => gameId !== GameId.THINKY).length;
   const totalAvailableCount = socialAchievementCount + (gameAchievementCount * gameCount);
-  
+
   // Calculate progress per game
   const gameProgressData = Object.values(GameId).map(gameId => {
     const gameAchievements = userAchievementsByGame[gameId] || [];
     const gameInfo = Games[gameId];
-    
+
     // Calculate total achievements for this specific game
-    const totalForGame = gameId === GameId.THINKY 
+    const totalForGame = gameId === GameId.THINKY
       ? totalAchievements['SOCIAL'] || 0 // Only social achievements for THINKY
       : Object.entries(totalAchievements)
-          .filter(([category]) => category !== 'SOCIAL') // All categories except social for games
-          .reduce((sum, [, count]) => sum + count, 0);
-    
+        .filter(([category]) => category !== 'SOCIAL') // All categories except social for games
+        .reduce((sum, [, count]) => sum + count, 0);
+
     return {
       gameId,
       name: gameInfo.displayName,
@@ -75,7 +94,7 @@ export default function AchievementsDisplay({
   });
 
   return (
-    <div className='flex flex-col gap-6 p-4 max-w-7xl mx-auto'>
+    <div className='flex flex-col gap-6  max-w-7xl mx-auto'>
       {showProgressSection && reqUser && (
         <>
           {/* Header Section */}
@@ -84,7 +103,6 @@ export default function AchievementsDisplay({
             <p className='text-lg opacity-75'>
               Track your progress and unlock achievements as you play!
             </p>
-            
             <div className='bg-2 rounded-xl p-6 border border-color-3'>
               {/* Overall Progress */}
               <div className='text-center mb-6'>
@@ -106,7 +124,6 @@ export default function AchievementsDisplay({
                   </div>
                 </div>
               </div>
-              
               {/* Game Progress Grid */}
               <div>
                 <h3 className='text-lg font-semibold mb-3'>Progress by Game</h3>
@@ -188,7 +205,6 @@ export default function AchievementsDisplay({
           </div>
         </>
       )}
-      
       {showGameTiles && !showProgressSection && (
         <div className='bg-2 rounded-xl p-4 border border-color-3'>
           <h3 className='text-lg font-semibold mb-3'>Filter by Game</h3>
@@ -269,40 +285,51 @@ export default function AchievementsDisplay({
       )}
       
       {showSearchFilters && (
-        <div className='bg-2 rounded-xl p-4 border border-color-3'>
-          <div className='flex flex-col lg:flex-row gap-4 items-center'>
+        <div className='bg-2 rounded-xl p-3 border border-color-3'>
+          <div className='flex flex-col lg:flex-row gap-3 items-center'>
             {/* Search Input */}
             <div className='flex-1 w-full lg:w-auto'>
               <input
                 type='text'
                 placeholder='Search achievements...'
-                className='w-full px-4 py-3 rounded-lg bg-3 border border-color-4 focus:border-blue-500 focus:outline-none transition-colors'
+                className='w-full px-3 py-2 rounded-lg bg-3 border border-color-4 focus:border-blue-500 focus:outline-none transition-colors'
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
             {/* Category Filter */}
             <select
-              className='px-4 py-3 rounded-lg bg-3 border border-color-4 focus:border-blue-500 focus:outline-none transition-colors min-w-[150px]'
+              className='px-3 py-2 rounded-lg bg-3 border border-color-4 focus:border-blue-500 focus:outline-none transition-colors min-w-[150px]'
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
             >
               <option value='all'>All Categories</option>
-              {Object.keys(totalAchievements).map(category => (
+              {Object.keys(totalAchievements).filter(category => {
+                // Filter categories based on selected game
+                if (selectedGame === 'all') {
+                  return true; // Show all categories when viewing all games
+                }
+
+                if (selectedGame === GameId.THINKY) {
+                  return category === 'SOCIAL'; // Only social achievements for THINKY
+                }
+
+                return category !== 'SOCIAL'; // All categories except social for other games
+              }).map(category => (
                 <option key={category} value={category}>
-                  {category === 'SOCIAL' ? 'Social' : 
-                   category === 'USER' ? 'Progress' :
-                   category === 'CREATOR' ? 'Creator' :
-                   category === 'LEVEL_COMPLETION' ? 'Skill' :
-                   category === 'REVIEWER' ? 'Reviewer' :
-                   category === 'MULTIPLAYER' ? 'Multiplayer' : category}
+                  {category === 'SOCIAL' ? 'Social' :
+                    category === 'USER' ? 'Progress' :
+                      category === 'CREATOR' ? 'Creator' :
+                        category === 'LEVEL_COMPLETION' ? 'Skill' :
+                          category === 'REVIEWER' ? 'Reviewer' :
+                            category === 'MULTIPLAYER' ? 'Multiplayer' : category}
                 </option>
               ))}
             </select>
             {/* Status Filter */}
             {reqUser && (
               <select
-                className='px-4 py-3 rounded-lg bg-3 border border-color-4 focus:border-blue-500 focus:outline-none transition-colors min-w-[150px]'
+                className='px-3 py-2 rounded-lg bg-3 border border-color-4 focus:border-blue-500 focus:outline-none transition-colors min-w-[150px]'
                 value={filterUnlocked}
                 onChange={(e) => setFilterUnlocked(e.target.value as 'all' | 'unlocked' | 'locked')}
               >
@@ -314,7 +341,6 @@ export default function AchievementsDisplay({
           </div>
         </div>
       )}
-      
       {/* Achievements Browser */}
       <AchievementsBrowser
         userAchievements={userAchievements}

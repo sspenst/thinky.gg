@@ -34,7 +34,9 @@ export function ProfileAchievments({ achievements }: { achievements: Achievement
     // Get total counts by category
     const totalAchievements = Object.keys(AchievementCategoryMapping).reduce((acc, category) => {
       const categoryAchievements = AchievementCategoryMapping[category as keyof typeof AchievementCategoryMapping];
+
       acc[category] = Object.keys(categoryAchievements).length;
+
       return acc;
     }, {} as Record<string, number>);
 
