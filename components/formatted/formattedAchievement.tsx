@@ -63,7 +63,7 @@ export default function FormattedAchievement({ achievementType, createdAt, game,
           )}
           {locked && (
             <span className='text-xs px-2 py-1 bg-gray-500 text-white rounded-full'>
-              🔒 LOCKED
+              🔒 Not Met
             </span>
           )}
         </div>

@@ -74,8 +74,11 @@ export default function AchievementsDisplay({
   const gameCount = Object.values(GameId).filter(gameId => gameId !== GameId.THINKY).length;
   const totalAvailableCount = socialAchievementCount + (gameAchievementCount * gameCount);
 
-  // Calculate progress per game
-  const gameProgressData = Object.values(GameId).map(gameId => {
+  // Calculate progress per game - put Thinky at the end
+  const gameIds: GameId[] = Object.values(GameId).filter(id => id !== GameId.THINKY);
+
+  gameIds.push(GameId.THINKY);
+  const gameProgressData = gameIds.map(gameId => {
     const gameAchievements = userAchievementsByGame[gameId] || [];
     const gameInfo = Games[gameId];
 
@@ -131,6 +134,38 @@ export default function AchievementsDisplay({
               <div>
                 <h3 className='text-lg font-semibold mb-3'>Progress by Game</h3>
                 <div className='grid grid-cols-2 lg:grid-cols-4 gap-3'>
+                  {/* All Games Tile */}
+                  <button
+                    onClick={() => setSelectedGame('all')}
+                    className={`p-4 rounded-lg border transition-all hover:border-blue-500 ${
+                      selectedGame === 'all'
+                        ? 'border-blue-500 bg-blue-500/10'
+                        : 'border-color-4 bg-3 hover:bg-4'
+                    }`}
+                  >
+                    <div className='flex flex-col items-center gap-3'>
+                      <div className='w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded flex items-center justify-center'>
+                        <span className='text-white font-bold text-sm'>All</span>
+                      </div>
+                      <div className='text-center'>
+                        <div className='font-semibold text-sm'>All Games</div>
+                        <div className='text-xs opacity-75'>
+                          {totalUnlockedCount}/{totalAvailableCount}
+                        </div>
+                      </div>
+                      <div className='w-full'>
+                        <div className='text-lg font-bold text-blue-500 text-center mb-1'>
+                          {totalAvailableCount > 0 ? Math.round((totalUnlockedCount / totalAvailableCount) * 100) : 0}%
+                        </div>
+                        <div className='w-full h-2 bg-color-base rounded-full overflow-hidden'>
+                          <div
+                            className='h-full bg-gradient-to-r from-green-500 to-blue-500 transition-all duration-500'
+                            style={{ width: `${totalAvailableCount > 0 ? Math.round((totalUnlockedCount / totalAvailableCount) * 100) : 0}%` }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </button>
                   {gameProgressData.map((gameData) => (
                     <button
                       key={gameData.gameId}
@@ -169,38 +204,6 @@ export default function AchievementsDisplay({
                       </div>
                     </button>
                   ))}
-                  {/* All Games Tile */}
-                  <button
-                    onClick={() => setSelectedGame('all')}
-                    className={`p-4 rounded-lg border transition-all hover:border-blue-500 ${
-                      selectedGame === 'all'
-                        ? 'border-blue-500 bg-blue-500/10'
-                        : 'border-color-4 bg-3 hover:bg-4'
-                    }`}
-                  >
-                    <div className='flex flex-col items-center gap-3'>
-                      <div className='w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded flex items-center justify-center'>
-                        <span className='text-white font-bold text-sm'>All</span>
-                      </div>
-                      <div className='text-center'>
-                        <div className='font-semibold text-sm'>All Games</div>
-                        <div className='text-xs opacity-75'>
-                          {totalUnlockedCount}/{totalAvailableCount}
-                        </div>
-                      </div>
-                      <div className='w-full'>
-                        <div className='text-lg font-bold text-blue-500 text-center mb-1'>
-                          {totalAvailableCount > 0 ? Math.round((totalUnlockedCount / totalAvailableCount) * 100) : 0}%
-                        </div>
-                        <div className='w-full h-2 bg-color-base rounded-full overflow-hidden'>
-                          <div
-                            className='h-full bg-gradient-to-r from-green-500 to-blue-500 transition-all duration-500'
-                            style={{ width: `${totalAvailableCount > 0 ? Math.round((totalUnlockedCount / totalAvailableCount) * 100) : 0}%` }}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </button>
                 </div>
               </div>
             </div>
@@ -211,6 +214,38 @@ export default function AchievementsDisplay({
         <div className='bg-2 rounded-xl p-4 border border-color-3'>
           <h3 className='text-lg font-semibold mb-3'>Filter by Game</h3>
           <div className='grid grid-cols-2 lg:grid-cols-4 gap-3'>
+            {/* All Games Tile */}
+            <button
+              onClick={() => setSelectedGame('all')}
+              className={`p-4 rounded-lg border transition-all hover:border-blue-500 ${
+                selectedGame === 'all'
+                  ? 'border-blue-500 bg-blue-500/10'
+                  : 'border-color-4 bg-3 hover:bg-4'
+              }`}
+            >
+              <div className='flex flex-col items-center gap-3'>
+                <div className='w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded flex items-center justify-center'>
+                  <span className='text-white font-bold text-sm'>All</span>
+                </div>
+                <div className='text-center'>
+                  <div className='font-semibold text-sm'>All Games</div>
+                  <div className='text-xs opacity-75'>
+                    {totalUnlockedCount}/{totalAvailableCount}
+                  </div>
+                </div>
+                <div className='w-full'>
+                  <div className='text-lg font-bold text-blue-500 text-center mb-1'>
+                    {totalAvailableCount > 0 ? Math.round((totalUnlockedCount / totalAvailableCount) * 100) : 0}%
+                  </div>
+                  <div className='w-full h-2 bg-color-base rounded-full overflow-hidden'>
+                    <div
+                      className='h-full bg-gradient-to-r from-green-500 to-blue-500 transition-all duration-500'
+                      style={{ width: `${totalAvailableCount > 0 ? Math.round((totalUnlockedCount / totalAvailableCount) * 100) : 0}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+            </button>
             {gameProgressData.map((gameData) => (
               <button
                 key={gameData.gameId}
@@ -249,38 +284,6 @@ export default function AchievementsDisplay({
                 </div>
               </button>
             ))}
-            {/* All Games Tile */}
-            <button
-              onClick={() => setSelectedGame('all')}
-              className={`p-4 rounded-lg border transition-all hover:border-blue-500 ${
-                selectedGame === 'all'
-                  ? 'border-blue-500 bg-blue-500/10'
-                  : 'border-color-4 bg-3 hover:bg-4'
-              }`}
-            >
-              <div className='flex flex-col items-center gap-3'>
-                <div className='w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded flex items-center justify-center'>
-                  <span className='text-white font-bold text-sm'>All</span>
-                </div>
-                <div className='text-center'>
-                  <div className='font-semibold text-sm'>All Games</div>
-                  <div className='text-xs opacity-75'>
-                    {totalUnlockedCount}/{totalAvailableCount}
-                  </div>
-                </div>
-                <div className='w-full'>
-                  <div className='text-lg font-bold text-blue-500 text-center mb-1'>
-                    {totalAvailableCount > 0 ? Math.round((totalUnlockedCount / totalAvailableCount) * 100) : 0}%
-                  </div>
-                  <div className='w-full h-2 bg-color-base rounded-full overflow-hidden'>
-                    <div
-                      className='h-full bg-gradient-to-r from-green-500 to-blue-500 transition-all duration-500'
-                      style={{ width: `${totalAvailableCount > 0 ? Math.round((totalUnlockedCount / totalAvailableCount) * 100) : 0}%` }}
-                    />
-                  </div>
-                </div>
-              </div>
-            </button>
           </div>
         </div>
       )}

@@ -3,10 +3,21 @@ import AchievementType from '@root/constants/achievements/achievementType';
 import { GameId } from '@root/constants/GameId';
 import { AppContext } from '@root/contexts/appContext';
 import Achievement from '@root/models/db/achievement';
+import User from '@root/models/db/user';
 import { useContext, useMemo } from 'react';
 import AchievementsDisplay from '../achievements/achievementsDisplay';
 
-export function ProfileAchievments({ achievements }: { achievements: Achievement[] }) {
+export function ProfileAchievments({ achievements, achievementStats, totalActiveUsers, reqUser }: {
+  achievements: Achievement[];
+  achievementStats: Array<{
+    _id: { type: AchievementType; gameId: GameId };
+    count: number;
+    firstEarned: Date;
+    lastEarned: Date;
+  }>;
+  totalActiveUsers: number;
+  reqUser: User | null;
+}) {
   const { game } = useContext(AppContext);
   // Transform achievements data to match the new component's expected format
   const transformedData = useMemo(() => {
@@ -23,13 +34,7 @@ export function ProfileAchievments({ achievements }: { achievements: Achievement
       }
     });
 
-    // Create mock achievement stats (empty for profile view)
-    const achievementStats: Array<{
-      _id: { type: AchievementType; gameId: GameId };
-      count: number;
-      firstEarned: Date;
-      lastEarned: Date;
-    }> = [];
+    // Use the provided achievement stats
 
     // Get total counts by category
     const totalAchievements = Object.keys(AchievementCategoryMapping).reduce((acc, category) => {
@@ -42,7 +47,6 @@ export function ProfileAchievments({ achievements }: { achievements: Achievement
 
     return {
       userAchievementsByGame,
-      achievementStats,
       totalAchievements
     };
   }, [achievements]);
@@ -52,13 +56,14 @@ export function ProfileAchievments({ achievements }: { achievements: Achievement
       <AchievementsDisplay
         userAchievements={achievements}
         userAchievementsByGame={transformedData.userAchievementsByGame}
-        achievementStats={transformedData.achievementStats}
+        achievementStats={achievementStats}
         totalAchievements={transformedData.totalAchievements}
-        reqUser={null} // Profile view doesn't show user name in progress
+        totalActiveUsers={totalActiveUsers}
+        reqUser={reqUser} // Pass through reqUser for locked/unlocked filter
         showProgressSection={false} // Hide the big progress section for profile
         showSearchFilters={true} // Show search/filters for profile
         showGameTiles={true} // Show game selection tiles for profile
-        defaultSelectedGame={game.id} // Default to current game being viewed
+        defaultSelectedGame={game.id === GameId.THINKY ? 'all' : game.id} // Default to All Games when viewing from THINKY
       />
     </div>
   );
