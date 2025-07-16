@@ -58,7 +58,6 @@ export default function AchievementCategorySection({
             {unlockedCount} of {totalCount}
           </div>
         </div>
-        
         <div className='flex items-center gap-4'>
           <div className='text-right'>
             <div className='text-sm font-semibold'>{progressPercentage}%</div>

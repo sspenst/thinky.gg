@@ -64,7 +64,6 @@ export default function SendAdminMessage({ runningCommand, selectedUserCommand, 
           Send Admin Message
         </h2>
       </div>
-      
       <div className='space-y-4'>
         <div>
           <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>Message</label>
@@ -76,7 +75,6 @@ export default function SendAdminMessage({ runningCommand, selectedUserCommand, 
             minRows={3}
           />
         </div>
-        
         <div>
           <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>Link (Optional)</label>
           <ReactTextareaAutosize
@@ -87,7 +85,6 @@ export default function SendAdminMessage({ runningCommand, selectedUserCommand, 
             minRows={1}
           />
         </div>
-        
         <div className='flex gap-3 items-center'>
           <span className='text-sm font-medium text-gray-700 dark:text-gray-300'>Send to:</span>
           <Menu as='div' className='relative inline-block text-left'>

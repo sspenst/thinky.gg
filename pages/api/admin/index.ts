@@ -125,7 +125,6 @@ export default withAuth({ POST: {
             $or: [
               { calcLevelsSolvedCount: { $gt: 0 } },
               { calcLevelsCompletedCount: { $gt: 0 } },
-              { calcRecordsCount: { $gt: 0 } }
             ]
           }
         },

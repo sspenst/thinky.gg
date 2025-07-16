@@ -204,6 +204,10 @@ export async function bulkQueueRefreshAchievements(userIds: Types.ObjectId[], ga
       state: QueueMessageState.PENDING,
       type: QueueMessageType.REFRESH_ACHIEVEMENTS,
       runAt: runAtTime,
+      createdAt: now,
+      updatedAt: now,
+      processingAttempts: 0,
+      isProcessing: false,
     });
   }
 
