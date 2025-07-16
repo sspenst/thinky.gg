@@ -134,4 +134,4 @@ describe('validateSokopathSolution.ts', () => {
   });
 });
 
-export {};
+export { };

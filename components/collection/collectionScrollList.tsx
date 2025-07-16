@@ -2,7 +2,7 @@ import { CollectionType } from '@root/models/constants/collection';
 import Collection, { EnrichedCollection } from '@root/models/db/collection';
 import { EnrichedLevel } from '@root/models/db/level';
 import classNames from 'classnames';
-import React, { Dispatch, SetStateAction, useCallback, useEffect, useState } from 'react';
+import { Dispatch, SetStateAction, useCallback, useEffect, useState } from 'react';
 import LevelCard from '../cards/levelCard';
 import LoadingSpinner from '../page/loadingSpinner';
 

@@ -1,6 +1,5 @@
 import Level from '@root/models/db/level';
 import User from '@root/models/db/user';
-import { ParsedUrlQuery } from 'querystring';
 
 export interface ConnectedUser {
   _id: string;

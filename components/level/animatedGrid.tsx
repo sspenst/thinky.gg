@@ -2,7 +2,7 @@ import Direction from '@root/constants/direction';
 import { Game } from '@root/constants/Games';
 import Theme from '@root/constants/theme';
 import { initGameState, makeMove } from '@root/helpers/gameStateHelpers';
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Grid from './grid';
 
 interface AnimatedGridProps {

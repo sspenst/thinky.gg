@@ -1,7 +1,6 @@
 import { GameType } from '@root/constants/Games';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import { EnrichedLevel } from '@root/models/db/level';
-import React from 'react';
 import StyledTooltip from '../page/styledTooltip';
 
 const maxDiff = 30000;

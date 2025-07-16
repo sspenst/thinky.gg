@@ -1,6 +1,6 @@
 import { AppContext } from '@root/contexts/appContext';
 import classNames from 'classnames';
-import React, { useContext, useState } from 'react';
+import { useContext, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import GraphType from '../../constants/graphType';
 import User from '../../models/db/user';

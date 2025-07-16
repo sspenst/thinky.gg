@@ -1,6 +1,5 @@
 import SendAdminMessage from '@root/components/admin/sendAdminMessage';
 import { Settings } from 'lucide-react';
-import React from 'react';
 import CommandButton from '../shared/CommandButton';
 import CommandMenu from '../shared/CommandMenu';
 import { IAdminCommand } from '../types';

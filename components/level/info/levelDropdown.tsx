@@ -14,7 +14,7 @@ import isGuest from '@root/helpers/isGuest';
 import Level from '@root/models/db/level';
 import classNames from 'classnames';
 import Link from 'next/link';
-import React, { Fragment, useContext, useState } from 'react';
+import { Fragment, useContext, useState } from 'react';
 import toast from 'react-hot-toast';
 
 interface LevelDropdownProps {

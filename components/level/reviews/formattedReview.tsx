@@ -3,7 +3,7 @@ import { AppContext } from '@root/contexts/appContext';
 import classNames from 'classnames';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
-import React, { useContext } from 'react';
+import { useContext } from 'react';
 import { EnrichedLevel } from '../../../models/db/level';
 import { ReviewWithStats } from '../../../models/db/review';
 import User from '../../../models/db/user';

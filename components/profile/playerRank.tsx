@@ -3,7 +3,6 @@ import { getDifficultyRollingSum } from '@root/helpers/playerRankHelper';
 import User from '@root/models/db/user';
 import { ProfileTab } from '@root/pages/[subdomain]/profile/[name]/[[...tab]]';
 import Link from 'next/link';
-import React from 'react';
 import FormattedDifficulty, { difficultyList } from '../formatted/formattedDifficulty';
 
 function getPlayerRank(levelsSolvedByDifficulty?: { [key: string]: number }, tooltip?: string) {

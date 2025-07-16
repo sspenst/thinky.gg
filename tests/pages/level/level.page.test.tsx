@@ -50,4 +50,5 @@ it('should redirect if user is a bot', async () => {
   expect(ret.redirect?.permanent).toBe(false);
 });
 
-export {};
+export { };
+

@@ -2,7 +2,7 @@ import FormattedDate from '@root/components/formatted/formattedDate';
 import FormattedUser from '@root/components/formatted/formattedUser';
 import StyledTooltip from '@root/components/page/styledTooltip';
 import Dimensions from '@root/constants/dimensions';
-import React, { useContext, useState } from 'react';
+import { useContext, useState } from 'react';
 import { LevelContext } from '../../../contexts/levelContext';
 
 export default function LevelInfoRecords() {

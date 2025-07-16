@@ -1,5 +1,5 @@
 import StyledTooltip from '@root/components/page/styledTooltip';
-import React, { useContext, useState } from 'react';
+import { useContext, useState } from 'react';
 import toast from 'react-hot-toast';
 import { Rating } from 'react-simple-star-rating';
 import ReactTextareaAutosize from 'react-textarea-autosize';

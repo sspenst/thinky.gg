@@ -3,7 +3,7 @@ import TileType from '@root/constants/tileType';
 import { GridContext } from '@root/contexts/gridContext';
 import TileTypeHelper from '@root/helpers/tileTypeHelper';
 import classNames from 'classnames';
-import React, { useContext } from 'react';
+import { useContext } from 'react';
 import Theme from '../../../constants/theme';
 import styles from './Block.module.css';
 

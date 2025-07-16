@@ -8,7 +8,7 @@ import isCurator from '@root/helpers/isCurator';
 import isGuest from '@root/helpers/isGuest';
 import Review from '@root/models/db/review';
 import classNames from 'classnames';
-import React, { Fragment, useContext, useState } from 'react';
+import { Fragment, useContext, useState } from 'react';
 import DeleteReviewModal from '../../modal/deleteReviewModal';
 
 interface ReviewDropdownProps {

@@ -4,7 +4,7 @@ import { ReportType } from '@root/constants/ReportType';
 import { PageContext } from '@root/contexts/pageContext';
 import classNames from 'classnames';
 import { Types } from 'mongoose';
-import React, { Fragment, useContext, useEffect, useRef, useState } from 'react';
+import { Fragment, useContext, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import ReactTextareaAutosize from 'react-textarea-autosize';
 import { KeyedMutator } from 'swr';

@@ -45,4 +45,4 @@ describe('helpers/apiWrapper.ts', () => {
   });
 });
 
-export {};
+export { };

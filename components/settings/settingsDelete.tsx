@@ -1,6 +1,6 @@
 import { AppContext } from '@root/contexts/appContext';
 import { useRouter } from 'next/router';
-import React, { useContext } from 'react';
+import { useContext } from 'react';
 import toast from 'react-hot-toast';
 
 export default function SettingsDelete() {

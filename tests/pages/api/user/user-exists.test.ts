@@ -1,8 +1,6 @@
 import { DEFAULT_GAME_ID } from '@root/constants/GameId';
-import { getTokenCookieValue } from '@root/lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '@root/lib/withAuth';
 import { testApiHandler } from 'next-test-api-route-handler';
-import TestId from '../../../../constants/testId';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import userExistsHandler from '../../../../pages/api/user/exists';
 

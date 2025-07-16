@@ -1,6 +1,5 @@
 import Collection from '@root/models/db/collection';
 import Link from 'next/link';
-import React from 'react';
 
 interface CollectionLinkProps {
   collection: Collection;

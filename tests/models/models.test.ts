@@ -124,4 +124,4 @@ describe('models/*.ts', () => {
   });
 });
 
-export {};
+export { };

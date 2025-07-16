@@ -2,7 +2,6 @@ import FormattedUser from '@root/components/formatted/formattedUser';
 import MultiSelectUser from '@root/components/page/multiSelectUser';
 import User from '@root/models/db/user';
 import { Network, User as UserIcon } from 'lucide-react';
-import React from 'react';
 import CommandButton from '../shared/CommandButton';
 import CommandMenu from '../shared/CommandMenu';
 import { ConnectedUsersData, IAdminCommand } from '../types';

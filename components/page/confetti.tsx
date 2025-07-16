@@ -1,6 +1,6 @@
 import { AppContext } from '@root/contexts/appContext';
 import confetti from 'canvas-confetti';
-import React, { useContext, useRef } from 'react';
+import { useContext, useRef } from 'react';
 
 let confettiInstance: () => void;
 

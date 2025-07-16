@@ -1,5 +1,5 @@
 import StyledTooltip from '@root/components/page/styledTooltip';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import toast from 'react-hot-toast';
 
 interface SpoilerTextProps {

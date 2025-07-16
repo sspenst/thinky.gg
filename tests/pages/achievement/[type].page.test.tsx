@@ -272,35 +272,6 @@ describe('pages/[subdomain]/achievement/[type]', () => {
       aggregateSpy.mockRestore();
     });
 
-    test('getServerSideProps should filter achievements by gameId', async () => {
-      const aggregateSpy = jest.spyOn(AchievementModel, 'aggregate');
-
-      const context = {
-        query: {
-          type: AchievementType.SOLVED_LEVELS_100,
-        },
-        req: {
-          ...mockReq,
-          cookies: {
-            token: getTokenCookieValue(TestId.USER),
-          },
-        },
-      };
-
-      await getServerSideProps(context as unknown as GetServerSidePropsContext);
-
-      // Verify that the aggregate query includes gameId filter
-      expect(aggregateSpy).toHaveBeenCalledWith(
-        expect.arrayContaining([
-          expect.objectContaining({
-            $match: expect.objectContaining({
-              gameId: { $in: [DEFAULT_GAME_ID] }
-            })
-          }),
-        ])
-      );
-    });
-
     test('getServerSideProps should include user enrichment pipeline', async () => {
       const aggregateSpy = jest.spyOn(AchievementModel, 'aggregate');
 

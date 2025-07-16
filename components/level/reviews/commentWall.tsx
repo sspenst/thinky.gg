@@ -1,5 +1,5 @@
 import { Types } from 'mongoose';
-import React, { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import ReactTextareaAutosize from 'react-textarea-autosize';
 import { AppContext } from '../../../contexts/appContext';

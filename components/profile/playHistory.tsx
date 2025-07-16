@@ -5,7 +5,7 @@ import { AttemptContext } from '@root/models/schemas/playAttemptSchema';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 import utc from 'dayjs/plugin/utc';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import LevelCard from '../cards/levelCard';
 import LoadingSpinner from '../page/loadingSpinner';
 

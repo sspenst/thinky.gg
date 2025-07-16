@@ -17,4 +17,4 @@ describe('constants/*.ts', () => {
   });
 });
 
-export {};
+export { };

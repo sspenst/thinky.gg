@@ -39,4 +39,4 @@ describe('helpers/transformLevel.ts', () => {
   });
 });
 
-export {};
+export { };

@@ -2,7 +2,7 @@ import { Menu, MenuButton, MenuItem, MenuItems, Transition } from '@headlessui/r
 import { IAdminCommand } from '@root/components/admin/types';
 import AdminCommand from '@root/constants/adminCommand';
 import Role from '@root/constants/role';
-import React, { Fragment, useState } from 'react';
+import { Fragment, useState } from 'react';
 import toast from 'react-hot-toast';
 import ReactTextareaAutosize from 'react-textarea-autosize';
 

@@ -1,12 +1,10 @@
 // ts-node -r tsconfig-paths/register --files server/scripts/pro-validation.ts
 import Role from '@root/constants/role';
 import dbConnect from '@root/lib/dbConnect';
-import User from '@root/models/db/user';
-import { StripeEventModel, UserConfigModel, UserModel } from '@root/models/mongoose';
+import { StripeEventModel, UserConfigModel } from '@root/models/mongoose';
 import { giveAccessToAllGames } from '@root/pages/api/stripe-webhook';
 import dotenv from 'dotenv';
 import { Types } from 'mongoose';
-import { migrateFields } from './migrateFields';
 
 dotenv.config();
 

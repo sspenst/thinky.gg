@@ -2,7 +2,6 @@ import User from '@root/models/db/user';
 import { Bot } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import React from 'react';
 import Role from '../../constants/role';
 import StyledTooltip from './styledTooltip';
 

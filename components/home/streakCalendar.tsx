@@ -1,6 +1,6 @@
 import useSWRHelper from '@root/hooks/useSWRHelper';
 import CalHeatmap from 'cal-heatmap';
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import LoadingSpinner from '../page/loadingSpinner';
 
 export function StreakCalendar() {

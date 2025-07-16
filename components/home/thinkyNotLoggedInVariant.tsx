@@ -7,7 +7,7 @@ import { Games } from '@root/constants/Games';
 import Theme from '@root/constants/theme';
 import { AppContext } from '@root/contexts/appContext';
 import useUrl from '@root/hooks/useUrl';
-import { ArrowRight, BookOpen, Lightbulb, Play, Share2, Trophy, Users, Zap } from 'lucide-react';
+import { ArrowRight, BookOpen, Lightbulb, Trophy, Zap } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { useContext, useRef } from 'react';

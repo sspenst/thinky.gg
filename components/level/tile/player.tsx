@@ -1,7 +1,7 @@
 import { Game } from '@root/constants/Games';
 import { GridContext } from '@root/contexts/gridContext';
 import classNames from 'classnames';
-import React, { useContext } from 'react';
+import { useContext } from 'react';
 import Theme, { getIconFromTheme } from '../../../constants/theme';
 import TileType from '../../../constants/tileType';
 import styles from './Player.module.css';
