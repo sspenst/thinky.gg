@@ -2,7 +2,6 @@ import LevelCard from '@root/components/cards/levelCard';
 import MultiSelectLevel from '@root/components/page/multiSelectLevel';
 import Level from '@root/models/db/level';
 import { Box } from 'lucide-react';
-import React from 'react';
 import CommandButton from '../shared/CommandButton';
 import CommandMenu from '../shared/CommandMenu';
 import PropertyViewer from '../shared/PropertyViewer';

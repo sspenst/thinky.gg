@@ -126,4 +126,4 @@ describe('validatePathologySolution.ts', () => {
   });
 });
 
-export {};
+export { };

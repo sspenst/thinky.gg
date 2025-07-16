@@ -1,6 +1,6 @@
 import { MusicContext } from '@root/contexts/musicContext';
 import classNames from 'classnames';
-import React, { useContext } from 'react';
+import { useContext } from 'react';
 
 export default function MusicIcon() {
   const { isHot, isPlaying } = useContext(MusicContext);

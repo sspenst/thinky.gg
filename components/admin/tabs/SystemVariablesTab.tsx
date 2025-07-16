@@ -1,5 +1,4 @@
 import { Database } from 'lucide-react';
-import React from 'react';
 import SystemVariablesList from '../systemVariables/SystemVariablesList';
 import { SystemVariable } from '../types';
 

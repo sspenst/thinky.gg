@@ -1,7 +1,7 @@
 import { AppContext } from '@root/contexts/appContext';
 import User from '@root/models/db/user';
 import Link from 'next/link';
-import React, { JSX, useContext, useRef } from 'react';
+import { JSX, useContext, useRef } from 'react';
 
 interface DidYouKnowTipProps {
   reqUser: User | null;

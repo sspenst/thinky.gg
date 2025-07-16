@@ -1,6 +1,6 @@
 import { GameType } from '@root/constants/Games';
 import { UserAndSum } from '@root/contexts/levelContext';
-import React, { useContext } from 'react';
+import { useContext } from 'react';
 import Dimensions from '../../constants/dimensions';
 import { AppContext } from '../../contexts/appContext';
 import useProStatsUser, { ProStatsUserType } from '../../hooks/useProStatsUser';

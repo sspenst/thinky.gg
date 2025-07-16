@@ -1,4 +1,3 @@
-import React from 'react';
 import { SystemVariable } from '../types';
 import EditVariableForm from './EditVariableForm';
 

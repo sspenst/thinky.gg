@@ -2,7 +2,7 @@ import { AppContext } from '@root/contexts/appContext';
 import isPro from '@root/helpers/isPro';
 import { EnrichedLevel } from '@root/models/db/level';
 import Link from 'next/link';
-import React, { useContext, useState } from 'react';
+import { useContext, useState } from 'react';
 import toast from 'react-hot-toast';
 import StyledTooltip from '../page/styledTooltip';
 

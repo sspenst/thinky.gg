@@ -1,5 +1,5 @@
 import { motion, MotionValue, useSpring, useTransform } from 'framer-motion';
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 
 const fontSize = 30;
 const padding = 15;

@@ -2,7 +2,7 @@ import { AppContext } from '@root/contexts/appContext';
 import { PageContext } from '@root/contexts/pageContext';
 import { GameState } from '@root/helpers/gameStateHelpers';
 import { LucideMoveLeft, LucideMoveRight } from 'lucide-react';
-import React, { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import Control from '../../models/control';
 import { EnrichedLevel } from '../../models/db/level';
 import FormattedLevelLink from '../formatted/formattedLevelLink';

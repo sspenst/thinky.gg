@@ -3,7 +3,7 @@ import { blueButton } from '@root/helpers/className';
 import { ImageTools } from '@root/helpers/imageTools';
 import User from '@root/models/db/user';
 import Image from 'next/image';
-import React, { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import Dimensions from '../../constants/dimensions';
 import ProfileAvatar from '../profile/profileAvatar';

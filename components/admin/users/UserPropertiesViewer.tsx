@@ -1,5 +1,4 @@
 import User from '@root/models/db/user';
-import React from 'react';
 
 interface UserPropertiesViewerProps {
   user: User;

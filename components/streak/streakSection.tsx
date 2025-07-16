@@ -3,7 +3,6 @@ import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import { getStreak } from '@root/lib/cleanUser';
 import UserConfig from '@root/models/db/userConfig';
 import { useRouter } from 'next/navigation';
-import React from 'react';
 import { getStreakRankIndex, STREAK_RANK_GROUPS } from '../counters/AnimateCounterOne';
 import GameLogo from '../gameLogo';
 

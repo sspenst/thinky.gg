@@ -22,4 +22,4 @@ describe('lib/*.ts', () => {
   });
 });
 
-export {};
+export { };

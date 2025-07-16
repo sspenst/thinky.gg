@@ -2,7 +2,7 @@ import Direction from '@root/constants/direction';
 import { Game, GameType } from '@root/constants/Games';
 import { GridContext } from '@root/contexts/gridContext';
 import TileTypeHelper from '@root/helpers/tileTypeHelper';
-import React, { useContext } from 'react';
+import { useContext } from 'react';
 import Theme, { getIconFromTheme } from '../../../constants/theme';
 import TileType from '../../../constants/tileType';
 

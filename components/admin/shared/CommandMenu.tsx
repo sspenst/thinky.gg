@@ -1,6 +1,5 @@
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
 import { AlertTriangle, ChevronDown } from 'lucide-react';
-import React from 'react';
 import { IAdminCommand } from '../types';
 
 interface CommandMenuProps {

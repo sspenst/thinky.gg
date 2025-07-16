@@ -2,7 +2,7 @@ import { EmailDigestSettingType } from '@root/constants/emailDigest';
 import NotificationType from '@root/constants/notificationType';
 import { AppContext } from '@root/contexts/appContext';
 import isGuest from '@root/helpers/isGuest';
-import React, { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 
 export default function SettingsNotifications() {
