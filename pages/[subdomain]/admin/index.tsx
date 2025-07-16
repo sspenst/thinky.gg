@@ -172,6 +172,11 @@ export default function AdminPage({ adminQuery, level, user }: AdminPageProps) {
       command: AdminCommand.RunBatchRefreshPlayAttempts,
       icon: Settings
     },
+    {
+      label: 'Refresh All User Achievements (spread over 1 hr)',
+      command: AdminCommand.RunBatchRefreshAchievements,
+      icon: Settings
+    },
   ];
 
   const updateQuery = useCallback((update: Partial<AdminQuery>) => {

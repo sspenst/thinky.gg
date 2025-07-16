@@ -18,7 +18,7 @@ import mongoose, { Types } from 'mongoose';
 import { NextApiResponse } from 'next';
 import { runEmailDigest } from '../internal-jobs/email-digest';
 import { processQueueMessages } from '../internal-jobs/worker';
-import { bulkQueueCalcPlayAttempts } from '../internal-jobs/worker/queueFunctions';
+import { bulkQueueCalcPlayAttempts, bulkQueueRefreshAchievements } from '../internal-jobs/worker/queueFunctions';
 
 export async function switchIsRanked(levelId: Types.ObjectId, gameId: GameId, isRanked?: boolean): Promise<boolean> {
   const session = await mongoose.startSession();
@@ -112,6 +112,23 @@ export default withAuth({ POST: {
       const oneHourSeconds = 60 * 60;
 
       await bulkQueueCalcPlayAttempts(allLevels.map(lvl => lvl._id), undefined, oneHourSeconds);
+
+      break;
+    }
+
+    case AdminCommand.RunBatchRefreshAchievements: {
+      // Query all users with score > 0 into memory
+      const allUsers = await UserConfigModel.find({
+        gameId: req.gameId,
+        score: { $gt: 0 }
+      }, '_id userId');
+
+      // for each user, add a message to the queue
+      // we want to spread out the messages so we don't overload the queue with just these messages
+      // so let's interleave them by having each message run at a different time... Divide 1 hour by the number of users
+      const oneHourSeconds = 60 * 60;
+
+      await bulkQueueRefreshAchievements(allUsers.map(user => user.userId), req.gameId, Object.values(AchievementCategory), undefined, oneHourSeconds);
 
       break;
     }

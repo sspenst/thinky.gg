@@ -19,6 +19,7 @@ enum AdminCommand {
   RunEmailDigest = 'runEmailDigest',
   SendReloadPageToUsers = 'sendReloadPageToUsers',
   RunBatchRefreshPlayAttempts = 'runBatchRefreshPlayAttempts',
+  RunBatchRefreshAchievements = 'runBatchRefreshAchievements',
 }
 
 export default AdminCommand;
