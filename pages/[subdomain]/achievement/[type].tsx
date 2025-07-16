@@ -45,7 +45,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   // Include THINKY for social achievements, other games for other achievement types
   const gameIds = isViewingFromThinky ? [GameId.THINKY, GameId.PATHOLOGY, GameId.SOKOPATH] : [gameId];
 
-  const [myAchievements, allAchievements] = await Promise.all([
+  const [myAchievements, allAchievements, totalActiveUsers] = await Promise.all([
     // Get user's achievements for this type across relevant games
     AchievementModel.find({
       userId: reqUser._id,
@@ -71,6 +71,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       { $unwind: { path: '$userId' } },
       // Note: For multi-game view, we'll enrich configs for each game as needed
     ]),
+    // Get total count of active users (users with score > 0)
+    UserModel.countDocuments({ 'score': { $gt: 0 } }),
   ]);
 
   for (const achievement of allAchievements) {
@@ -82,6 +84,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       type: type as string,
       gameId,
       isViewingFromThinky,
+      totalActiveUsers,
       myAchievements: JSON.parse(JSON.stringify(myAchievements)),
       achievements: JSON.parse(JSON.stringify(allAchievements)),
     },
@@ -93,12 +96,14 @@ export default function AchievementPage({
   type,
   gameId,
   isViewingFromThinky,
+  totalActiveUsers,
   myAchievements,
   achievements
 }: {
   type: AchievementType,
   gameId: GameId,
   isViewingFromThinky: boolean,
+  totalActiveUsers: number,
   myAchievements: Achievement[],
   achievements: Achievement[]
 }) {
@@ -211,10 +216,10 @@ export default function AchievementPage({
     return achievements.filter(ach => ach.gameId === selectedGame).length;
   }, [achievements, selectedGame, isViewingFromThinky]);
 
-  const rarity = getRarityFromStats(totalAchievementCount);
+  const rarity = getRarityFromStats(totalAchievementCount, totalActiveUsers);
   const rarityText = getRarityText(rarity);
   const rarityColor = getRarityColor(rarity);
-  const rarityTooltip = getRarityTooltip(rarity);
+  const rarityTooltip = getRarityTooltip(rarity, totalAchievementCount, totalActiveUsers);
 
   return (
     <Page title='Viewing Achievement'>

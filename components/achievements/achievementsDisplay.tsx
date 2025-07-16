@@ -17,6 +17,7 @@ interface AchievementsDisplayProps {
     lastEarned: Date;
   }>;
   totalAchievements: Record<string, number>;
+  totalActiveUsers: number;
   reqUser: { _id: string; name: string } | null;
   showProgressSection?: boolean;
   showSearchFilters?: boolean;
@@ -29,6 +30,7 @@ export default function AchievementsDisplay({
   userAchievementsByGame,
   achievementStats,
   totalAchievements,
+  totalActiveUsers,
   reqUser,
   showProgressSection = true,
   showSearchFilters = true,
@@ -293,6 +295,7 @@ export default function AchievementsDisplay({
         filterUnlocked={filterUnlocked}
         filterRarity={filterRarity}
         totalAchievements={totalAchievements}
+        totalActiveUsers={totalActiveUsers}
         showSearchFilters={showSearchFilters}
         setSearchQuery={setSearchQuery}
         setSelectedCategory={setSelectedCategory}

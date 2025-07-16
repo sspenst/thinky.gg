@@ -19,6 +19,7 @@ interface AchievementCategorySectionProps {
   statsMap: Map<string, { count: number; firstEarned: Date; lastEarned: Date; gameId: GameId }>;
   selectedGame: GameId | 'all';
   userAchievementsByGame: Record<GameId, Achievement[]>;
+  totalActiveUsers: number;
   sectionId?: string;
 }
 
@@ -32,6 +33,7 @@ export default function AchievementCategorySection({
   statsMap,
   selectedGame,
   userAchievementsByGame,
+  totalActiveUsers,
   sectionId,
 }: AchievementCategorySectionProps) {
   const [isExpanded, setIsExpanded] = useState(true);
@@ -90,6 +92,7 @@ export default function AchievementCategorySection({
                 statsMap={statsMap}
                 selectedGame={selectedGame}
                 userAchievementsByGame={userAchievementsByGame}
+                totalActiveUsers={totalActiveUsers}
               />
             ))}
           </div>
