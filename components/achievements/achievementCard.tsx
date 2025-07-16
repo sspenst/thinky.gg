@@ -19,6 +19,7 @@ interface AchievementCardProps {
   statsMap: Map<string, { count: number; firstEarned: Date; lastEarned: Date; gameId: GameId }>;
   selectedGame: GameId | 'all';
   userAchievementsByGame: Record<GameId, Achievement[]>;
+  totalActiveUsers: number;
 }
 
 export default function AchievementCard({
@@ -30,6 +31,7 @@ export default function AchievementCard({
   statsMap,
   selectedGame,
   userAchievementsByGame,
+  totalActiveUsers,
 }: AchievementCardProps) {
   const achievementInfo = AchievementRulesCombined[achievementType];
 
@@ -97,10 +99,10 @@ export default function AchievementCard({
 
   const stats = getCombinedStats();
 
-  const rarity = stats ? getRarityFromStats(stats.count) : null;
+  const rarity = stats ? getRarityFromStats(stats.count, totalActiveUsers) : null;
   const rarityText = rarity ? getRarityText(rarity) : 'Unknown';
   const rarityColor = rarity ? getRarityColor(rarity) : 'text-gray-500';
-  const rarityTooltip = rarity ? getRarityTooltip(rarity) : 'Rarity unknown';
+  const rarityTooltip = rarity ? getRarityTooltip(rarity, stats?.count, totalActiveUsers) : 'Rarity unknown';
 
   // Render game logos for earned achievements (only if showing all games and not social category)
   const renderGameLogos = () => {

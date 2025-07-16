@@ -5,7 +5,7 @@ import { Game } from '@root/constants/Games';
 import { getAchievementCategoryDisplayName } from '@root/helpers/achievementCategoryDisplayNames';
 import { getRarityFromStats } from '@root/helpers/achievementRarity';
 import Achievement from '@root/models/db/achievement';
-import { useMemo, useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import AchievementCategorySection from './achievementCategorySection';
 
 interface AchievementsBrowserProps {
@@ -24,6 +24,7 @@ interface AchievementsBrowserProps {
   filterUnlocked: 'all' | 'unlocked' | 'locked';
   filterRarity: 'all' | 'legendary' | 'epic' | 'rare' | 'uncommon' | 'common';
   totalAchievements: Record<string, number>;
+  totalActiveUsers: number;
   showSearchFilters?: boolean;
   setSearchQuery: (query: string) => void;
   setSelectedCategory: (category: string) => void;
@@ -43,6 +44,7 @@ export default function AchievementsBrowser({
   filterUnlocked,
   filterRarity,
   totalAchievements,
+  totalActiveUsers,
   showSearchFilters = true,
   setSearchQuery,
   setSelectedCategory,
@@ -52,7 +54,6 @@ export default function AchievementsBrowser({
 }: AchievementsBrowserProps) {
   const viewMode = 'grid';
   const [showScrollButton, setShowScrollButton] = useState(false);
-
 
   // Create a map for quick lookup of user achievements (by type and game)
   const userAchievementMap = useMemo(() => {
@@ -154,19 +155,23 @@ export default function AchievementsBrowser({
 
         // Get combined stats for this achievement
         let totalCount = 0;
+
         if (selectedGame === 'all') {
           allGames.forEach(gameId => {
             const key = `${type}-${gameId}`;
             const stat = statsMap.get(key);
+
             if (stat) totalCount += stat.count;
           });
         } else {
           const key = `${type}-${selectedGame}`;
           const stat = statsMap.get(key);
+
           totalCount = stat?.count || 0;
         }
 
-        const achievementRarity = getRarityFromStats(totalCount);
+        const achievementRarity = getRarityFromStats(totalCount, totalActiveUsers);
+
         return achievementRarity === filterRarity;
       });
 
@@ -176,7 +181,7 @@ export default function AchievementsBrowser({
     });
 
     return result;
-  }, [selectedCategory, selectedGame, searchQuery, filterUnlocked, filterRarity, userAchievementMap, game, statsMap]);
+  }, [selectedCategory, selectedGame, searchQuery, filterUnlocked, filterRarity, userAchievementMap, game, statsMap, totalActiveUsers]);
 
   // Count hidden achievements that are not yet unlocked
   const hiddenAchievementCount = useMemo(() => {
@@ -255,6 +260,7 @@ export default function AchievementsBrowser({
         if (selectedGame === 'all') {
           return a.gameAchievements.length > 0;
         }
+
         return a.gameAchievements.some(ach => ach.gameId === selectedGame);
       }).length;
 
@@ -285,10 +291,12 @@ export default function AchievementsBrowser({
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
+
     if (element) {
       const elementRect = element.getBoundingClientRect();
       const absoluteElementTop = elementRect.top + window.pageYOffset;
       const offset = 80; // Add some padding from the top
+
       window.scrollTo({
         top: absoluteElementTop - offset,
         behavior: 'smooth'
@@ -298,6 +306,7 @@ export default function AchievementsBrowser({
 
   const scrollToNavigationTiles = () => {
     const element = document.getElementById('navigation-tiles');
+
     if (element) {
       element.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
@@ -307,8 +316,10 @@ export default function AchievementsBrowser({
     const handleScroll = () => {
       // Show button only when navigation tiles are completely out of view
       const navigationElement = document.getElementById('navigation-tiles');
+
       if (navigationElement) {
         const rect = navigationElement.getBoundingClientRect();
+
         // Hide button when any part of the navigation tiles is visible
         setShowScrollButton(rect.bottom < 0);
       } else {
@@ -318,6 +329,7 @@ export default function AchievementsBrowser({
     };
 
     window.addEventListener('scroll', handleScroll);
+
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -352,7 +364,6 @@ export default function AchievementsBrowser({
           ))}
         </div>
       </div>
-
       {/* Scroll to Top Button */}
       {showScrollButton && (
         <button
@@ -440,6 +451,7 @@ export default function AchievementsBrowser({
                 statsMap={statsMap}
                 selectedGame={selectedGame}
                 userAchievementsByGame={userAchievementsByGame}
+                totalActiveUsers={totalActiveUsers}
                 sectionId={`category-${categoryKey}`}
               />
             );
