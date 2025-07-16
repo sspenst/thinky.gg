@@ -1065,7 +1065,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
                   <p className='text-blue-800 text-sm mb-2'>
                     Looking for more results?
                   </p>
-                  <button 
+                  <button
                     className='bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200'
                     onClick={() => { onTimeRangeClick(TimeRange[TimeRange.All]); }}
                   >
