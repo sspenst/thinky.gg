@@ -2,7 +2,6 @@ import { AchievementCategoryMapping } from '@root/constants/achievements/achieve
 import AchievementType from '@root/constants/achievements/achievementType';
 import { GameId } from '@root/constants/GameId';
 import { AppContext } from '@root/contexts/appContext';
-import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import dbConnect from '@root/lib/dbConnect';
 import { getUserFromToken } from '@root/lib/withAuth';
 import Achievement from '@root/models/db/achievement';
@@ -23,8 +22,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       notFound: true,
     };
   }
-
-  const gameId = getGameIdFromReq(context.req);
 
   let userAchievements: Achievement[] = [];
   const userAchievementsByGame: Record<GameId, Achievement[]> = {

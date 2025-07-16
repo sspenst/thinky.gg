@@ -1,3 +1,4 @@
+import AchievementCategory from '@root/constants/achievements/achievementCategory';
 import { AchievementCategoryMapping } from '@root/constants/achievements/achievementInfo';
 import AchievementType from '@root/constants/achievements/achievementType';
 import { GameId } from '@root/constants/GameId';
@@ -47,7 +48,6 @@ export default function AchievementsBrowser({
   totalActiveUsers,
   showSearchFilters = true,
   setSearchQuery,
-  setSelectedCategory,
   setFilterUnlocked,
   setFilterRarity,
   reqUser,
@@ -241,20 +241,17 @@ export default function AchievementsBrowser({
     }> = [];
 
     // Add individual categories that have visible achievements
-    Object.entries(filteredCategories).forEach(([categoryKey, achievements]) => {
-      const categoryName = categoryKey === 'SOCIAL' ? 'Social' :
-        categoryKey === 'USER' ? 'Progress' :
-          categoryKey === 'CREATOR' ? 'Creator' :
-            categoryKey === 'LEVEL_COMPLETION' ? 'Skill' :
-              categoryKey === 'REVIEWER' ? 'Reviewer' :
-                categoryKey === 'MULTIPLAYER' ? 'Multiplayer' : categoryKey;
+    const categoryKeyToNameAndIcon: Record<string, { name: string; icon: string }> = {
+      [AchievementCategory.SOCIAL]: { name: 'Social', icon: '👥' },
+      [AchievementCategory.PROGRESS]: { name: 'Progress', icon: '📈' },
+      [AchievementCategory.CREATOR]: { name: 'Creator', icon: '🛠️' },
+      [AchievementCategory.SKILL]: { name: 'Skill', icon: '🎯' },
+      [AchievementCategory.REVIEWER]: { name: 'Reviewer', icon: '⭐' },
+      MULTIPLAYER: { name: 'Multiplayer', icon: '🎮' },
+    };
 
-      const icon = categoryKey === 'SOCIAL' ? '👥' :
-        categoryKey === 'USER' ? '📈' :
-          categoryKey === 'CREATOR' ? '🛠️' :
-            categoryKey === 'LEVEL_COMPLETION' ? '🎯' :
-              categoryKey === 'REVIEWER' ? '⭐' :
-                categoryKey === 'MULTIPLAYER' ? '🎮' : '🏅';
+    Object.entries(filteredCategories).forEach(([categoryKey, achievements]) => {
+      const { name: categoryName, icon } = categoryKeyToNameAndIcon[categoryKey] || { name: categoryKey, icon: '🏅' };
 
       // Calculate unlocked achievements for this category
       const unlockedCount = achievements.filter(a => {
@@ -291,7 +288,7 @@ export default function AchievementsBrowser({
     }
 
     return stats;
-  }, [filteredCategories, totalAchievements, hiddenAchievementCount]);
+  }, [filteredCategories, hiddenAchievementCount, totalAchievements, selectedGame]);
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
@@ -473,7 +470,6 @@ export default function AchievementsBrowser({
               />
             );
           })}
-          
           {/* Hidden Achievements Section */}
           {hiddenAchievementCount > 0 && (
             <div id='category-hidden' className='bg-2 rounded-xl border border-color-3 overflow-hidden'>
