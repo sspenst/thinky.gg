@@ -236,6 +236,7 @@ export default function AchievementsBrowser({
       name: string;
       totalCount: number;
       unlockedCount: number;
+      percentage: number;
       icon: string;
     }> = [];
 
@@ -265,12 +266,14 @@ export default function AchievementsBrowser({
       }).length;
 
       const totalCount = totalAchievements[categoryKey] || 0;
+      const percentage = totalCount > 0 ? Math.round((unlockedCount / totalCount) * 100) : 0;
 
       stats.push({
         key: categoryKey,
         name: categoryName,
         totalCount,
         unlockedCount,
+        percentage,
         icon
       });
     });
@@ -282,6 +285,7 @@ export default function AchievementsBrowser({
         name: 'Hidden',
         totalCount: hiddenAchievementCount,
         unlockedCount: 0, // Hidden achievements are by definition not unlocked
+        percentage: 0,
         icon: '🔒'
       });
     }
@@ -358,6 +362,19 @@ export default function AchievementsBrowser({
                       : `${category.unlockedCount}/${category.totalCount}`
                     }
                   </div>
+                  {category.key !== 'hidden' && (
+                    <>
+                      <div className='text-lg font-bold text-blue-500 mt-1'>
+                        {category.percentage}%
+                      </div>
+                      <div className='w-full h-2 bg-color-base rounded-full overflow-hidden mt-1'>
+                        <div
+                          className='h-full bg-gradient-to-r from-green-500 to-blue-500 transition-all duration-500'
+                          style={{ width: `${category.percentage}%` }}
+                        />
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             </button>
