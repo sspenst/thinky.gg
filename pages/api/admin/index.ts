@@ -117,18 +117,41 @@ export default withAuth({ POST: {
     }
 
     case AdminCommand.RunBatchRefreshAchievements: {
-      // Query all users with score > 0 into memory
-      const allUsers = await UserConfigModel.find({
-        gameId: req.gameId,
-        score: { $gt: 0 }
-      }, '_id userId');
+      // Query all users across all games who have any activity (solved levels, created levels, or records)
+      // Use aggregation to get unique users who have any activity in any game
+      const allUsers = await UserConfigModel.aggregate([
+        {
+          $match: {
+            $or: [
+              { calcLevelsSolvedCount: { $gt: 0 } },
+              { calcLevelsCompletedCount: { $gt: 0 } },
+              { calcRecordsCount: { $gt: 0 } }
+            ]
+          }
+        },
+        {
+          $group: {
+            _id: '$userId',
+            userId: { $first: '$userId' }
+          }
+        }
+      ]);
+
+      console.log(`Found ${allUsers.length} users to refresh achievements for`);
 
       // for each user, add a message to the queue
       // we want to spread out the messages so we don't overload the queue with just these messages
       // so let's interleave them by having each message run at a different time... Divide 1 hour by the number of users
       const oneHourSeconds = 60 * 60;
 
-      await bulkQueueRefreshAchievements(allUsers.map(user => user.userId), req.gameId, Object.values(AchievementCategory), undefined, oneHourSeconds);
+      try {
+        await bulkQueueRefreshAchievements(allUsers.map(user => user.userId), req.gameId, Object.values(AchievementCategory), undefined, oneHourSeconds);
+        console.log(`Successfully queued ${allUsers.length} achievement refresh messages`);
+        resp = { message: `Queued ${allUsers.length} achievement refresh messages (spread over 1 hour)` };
+      } catch (error) {
+        console.error('Error queuing achievement refresh messages:', error);
+        throw error;
+      }
 
       break;
     }

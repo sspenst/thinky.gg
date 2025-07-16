@@ -59,7 +59,7 @@ export function ProfileAchievments({ achievements, achievementStats, totalActive
         achievementStats={achievementStats}
         totalAchievements={transformedData.totalAchievements}
         totalActiveUsers={totalActiveUsers}
-        reqUser={reqUser} // Pass through reqUser for locked/unlocked filter
+        reqUser={reqUser ? { _id: reqUser._id.toString(), name: reqUser.name } : null} // Pass through reqUser for locked/unlocked filter
         showProgressSection={false} // Hide the big progress section for profile
         showSearchFilters={true} // Show search/filters for profile
         showGameTiles={true} // Show game selection tiles for profile

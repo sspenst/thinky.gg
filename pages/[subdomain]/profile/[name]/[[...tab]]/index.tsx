@@ -12,6 +12,7 @@ import LevelsSolvedByDifficultyList from '@root/components/profile/levelsSolvedB
 import PlayerRank from '@root/components/profile/playerRank';
 import { ProfileAchievments } from '@root/components/profile/profileAchievements';
 import ProfileMultiplayer from '@root/components/profile/profileMultiplayer';
+import AchievementType from '@root/constants/achievements/achievementType';
 import { GameId } from '@root/constants/GameId';
 import { GameType } from '@root/constants/Games';
 import StatFilter from '@root/constants/statFilter';

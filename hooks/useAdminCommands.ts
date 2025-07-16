@@ -42,7 +42,9 @@ export function useAdminCommands() {
       if (json.error) {
         toast.error(json.error);
       } else {
-        toast.success('Command ran successfully');
+        const message = json.resp?.message || 'Command ran successfully';
+
+        toast.success(message);
       }
     } catch (error) {
       toast.dismiss();
