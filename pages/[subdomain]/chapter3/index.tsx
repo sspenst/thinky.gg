@@ -62,7 +62,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
     await Promise.all([
       UserConfigModel.updateOne({ userId: reqUser._id, gameId: gameId }, { $set: { chapterUnlocked: 3 } }),
-      refreshAchievements(gameId, reqUser._id, [AchievementCategory.PROGRESS])
+      refreshAchievements(gameId, reqUser._id, [AchievementCategory.PROGRESS, AchievementCategory.CHAPTER_COMPLETION])
     ]);
   }
 

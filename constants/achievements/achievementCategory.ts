@@ -5,6 +5,7 @@ enum AchievementCategory {
   SKILL = 'LEVEL_COMPLETION',
   REVIEWER = 'REVIEWER',
   MULTIPLAYER = 'MULTIPLAYER',
+  CHAPTER_COMPLETION = 'CHAPTER_COMPLETION',
 }
 
 export default AchievementCategory;
