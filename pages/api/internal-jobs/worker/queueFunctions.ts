@@ -182,6 +182,35 @@ export async function queueGenLevelImage(levelId: Types.ObjectId, postToDiscord:
   }), options);
 }
 
+/**
+ * @param userIds
+ * @param gameId
+ * @param categories
+ * @param options
+ * @param spreadRunAtDuration How long to spread out the runAt times (in seconds).
+ */
+export async function bulkQueueRefreshAchievements(userIds: Types.ObjectId[], gameId: GameId, categories: AchievementCategory[], options?: QueryOptions, spreadRunAtDuration: number = 0) {
+  const queueMessages = [];
+  const now = new Date();
+  const timeBetweenUsers = spreadRunAtDuration > 0 ? spreadRunAtDuration * 1000 / userIds.length : 0;
+
+  for (const userId of userIds) {
+    const runAtTime: Date = new Date(now.getTime() + timeBetweenUsers * queueMessages.length);
+
+    queueMessages.push({
+      _id: new Types.ObjectId(),
+      dedupeKey: userId.toString() + '-refresh-achievements-batch-' + new Types.ObjectId().toString(),
+      message: JSON.stringify({ gameId: gameId, userId: userId.toString(), categories: categories }),
+      state: QueueMessageState.PENDING,
+      type: QueueMessageType.REFRESH_ACHIEVEMENTS,
+      runAt: runAtTime,
+    });
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await QueueMessageModel.insertMany(queueMessages, { ...options as any });
+}
+
 export interface EmailQueueMessage {
     toUser: Types.ObjectId | string;
     fromUser: Types.ObjectId | string;
