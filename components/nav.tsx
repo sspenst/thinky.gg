@@ -388,13 +388,13 @@ export default function Nav({ isDropdown }: NavProps) {
       {!game.isNotAGame && <>
         {usersNavLink}
         {campaignNavLink}
-        {achievementsNavLink}
         {leaderboardNavLink}
         {tutorialNavLink}
         <NavDivider />
       </>}
       {user && <>
         {profileNavLink}
+        {user && achievementsNavLink}
         {!game.isNotAGame && <>
           {newNavLink}
           {draftsNavLink}

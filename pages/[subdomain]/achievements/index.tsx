@@ -17,6 +17,13 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   const token = context.req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
+
+  if (!reqUser) {
+    return {
+      notFound: true,
+    };
+  }
+
   const gameId = getGameIdFromReq(context.req);
 
   let userAchievements: Achievement[] = [];
