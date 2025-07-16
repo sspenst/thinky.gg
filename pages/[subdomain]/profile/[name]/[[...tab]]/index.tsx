@@ -132,6 +132,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     reviewsReceivedCount,
     reviewsWrittenCount,
     blockData,
+    totalActiveUsers,
+    achievementStats,
   ] = await Promise.all([
     profileTab === ProfileTab.Achievements ? AchievementModel.find<Achievement>({ userId: userId }) : [] as Achievement[],
     AchievementModel.countDocuments({ userId: userId, ...(gameId !== undefined ? { gameId: gameId } : {}) }),
@@ -180,12 +182,26 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       targetModel: 'User',
       type: GraphType.BLOCK,
     }) : Promise.resolve(0),
+    // Get total users for rarity calculations
+    UserModel.countDocuments({}),
+    // Get achievement statistics for rarity calculations
+    profileTab === ProfileTab.Achievements ? AchievementModel.aggregate([
+      {
+        $group: {
+          _id: { type: '$type', gameId: '$gameId' },
+          count: { $sum: 1 },
+          firstEarned: { $min: '$createdAt' },
+          lastEarned: { $max: '$createdAt' }
+        }
+      }
+    ]) : Promise.resolve([]),
   ]);
 
   const levelsSolved = levelsSolvedAgg?.at(0)?.count ?? 0;
 
   const profilePageProps = {
     achievements: JSON.parse(JSON.stringify(achievements)),
+    achievementStats: JSON.parse(JSON.stringify(achievementStats)),
     achievementsCount: achievementsCount,
     collectionsCount: collectionsCount,
     followers: JSON.parse(JSON.stringify([])),
@@ -202,6 +218,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     reviewsReceivedCount: reviewsReceivedCount,
     reviewsWritten: JSON.parse(JSON.stringify(reviewsWritten)),
     reviewsWrittenCount: reviewsWrittenCount,
+    totalActiveUsers: totalActiveUsers,
     user: JSON.parse(JSON.stringify(user)),
   } as ProfilePageProps;
 
@@ -360,6 +377,12 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
 interface ProfilePageProps {
   achievements: Achievement[];
+  achievementStats: Array<{
+    _id: { type: AchievementType; gameId: GameId };
+    count: number;
+    firstEarned: Date;
+    lastEarned: Date;
+  }>;
   achievementsCount: number;
   collectionsCount: number;
   enrichedCollections: EnrichedCollection[] | undefined;
@@ -379,6 +402,7 @@ interface ProfilePageProps {
   reviewsWritten?: Review[];
   reviewsWrittenCount: number;
   searchQuery: SearchQuery | undefined;
+  totalActiveUsers: number;
   totalRows: number | undefined;
   user: User;
 }
@@ -386,6 +410,7 @@ interface ProfilePageProps {
 /* istanbul ignore next */
 export default function ProfilePage({
   achievements,
+  achievementStats,
   achievementsCount,
   collectionsCount,
   enrichedCollections,
@@ -405,6 +430,7 @@ export default function ProfilePage({
   reviewsWritten,
   reviewsWrittenCount,
   searchQuery,
+  totalActiveUsers,
   totalRows,
   user,
 }: ProfilePageProps) {
@@ -866,7 +892,7 @@ export default function ProfilePage({
     [ProfileTab.Achievements]: (
       <div className='flex flex-col gap-2 justify-center items-center'>
         <h1 className='font-bold text-3xl'>{user.name}&apos;s {game.displayName} Achievements</h1>
-        <ProfileAchievments achievements={achievements} />
+        <ProfileAchievments achievements={achievements} achievementStats={achievementStats} totalActiveUsers={totalActiveUsers} reqUser={reqUser} />
       </div>
     ),
   } as { [key: string]: React.ReactNode | null };

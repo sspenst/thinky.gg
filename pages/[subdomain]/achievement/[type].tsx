@@ -43,37 +43,68 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   // When viewing from THINKY, get achievements from all games for master view
   // Include THINKY for social achievements, other games for other achievement types
-  const gameIds = isViewingFromThinky ? [GameId.THINKY, GameId.PATHOLOGY, GameId.SOKOPATH] : [gameId];
+  const gameIds = [GameId.THINKY, GameId.PATHOLOGY, GameId.SOKOPATH];
 
-  const [myAchievements, allAchievements, totalActiveUsers] = await Promise.all([
+  const [myAchievements, allAchievementsData, totalActiveUsers] = await Promise.all([
     // Get user's achievements for this type across relevant games
     AchievementModel.find({
       userId: reqUser._id,
       type: type as string,
       gameId: { $in: gameIds }
     }),
-    // Get all achievements for this type across relevant games
+    // Get achievements with both total count and limited results per game
     AchievementModel.aggregate([
       { $match: { type: type as string, gameId: { $in: gameIds } } },
-      { $sort: { createdAt: -1 } },
-      { $limit: 1000 },
       {
-        $lookup: {
-          from: UserModel.collection.name,
-          localField: 'userId',
-          foreignField: '_id',
-          as: 'userId',
-          pipeline: [
-            { $project: USER_DEFAULT_PROJECTION },
+        $facet: {
+          totalCount: [{ $count: 'count' }],
+          countsByGame: [
+            { $group: { _id: '$gameId', count: { $sum: 1 } } }
           ],
-        },
-      },
-      { $unwind: { path: '$userId' } },
-      // Note: For multi-game view, we'll enrich configs for each game as needed
+          ...gameIds.reduce((acc, gameId) => ({
+            ...acc,
+            [`${gameId}_achievements`]: [
+              { $match: { gameId } },
+              { $sort: { createdAt: -1 } },
+              { $limit: 100 },
+              {
+                $lookup: {
+                  from: UserModel.collection.name,
+                  localField: 'userId',
+                  foreignField: '_id',
+                  as: 'userId',
+                  pipeline: [
+                    { $project: USER_DEFAULT_PROJECTION },
+                  ],
+                },
+              },
+              { $unwind: { path: '$userId' } },
+            ]
+          }), {})
+        }
+      }
     ]),
-    // Get total count of active users (users with score > 0)
-    UserModel.countDocuments({ 'score': { $gt: 0 } }),
+    // Get total count of users
+    UserModel.countDocuments({}),
   ]);
+
+  const totalAchievementCount = allAchievementsData[0]?.totalCount[0]?.count || 0;
+  const countsByGame = allAchievementsData[0]?.countsByGame || [];
+
+  // Merge achievements from all games, maintaining the last 100 per game structure
+  const allAchievements: Achievement[] = [];
+  const achievementsByGame: Record<string, Achievement[]> = {};
+
+  // Collect achievements from each game (already limited to 100 per game)
+  gameIds.forEach(gameId => {
+    const gameAchievements = allAchievementsData[0]?.[`${gameId}_achievements`] || [];
+
+    achievementsByGame[`${gameId}_achievements`] = gameAchievements;
+    allAchievements.push(...gameAchievements);
+  });
+
+  // Sort all achievements by creation date (most recent first)
+  allAchievements.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
   for (const achievement of allAchievements) {
     cleanUser(achievement.userId);
@@ -85,6 +116,9 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       gameId,
       isViewingFromThinky,
       totalActiveUsers,
+      totalAchievementCount,
+      countsByGame: JSON.parse(JSON.stringify(countsByGame)),
+      achievementsByGame: JSON.parse(JSON.stringify(achievementsByGame)),
       myAchievements: JSON.parse(JSON.stringify(myAchievements)),
       achievements: JSON.parse(JSON.stringify(allAchievements)),
     },
@@ -97,6 +131,9 @@ export default function AchievementPage({
   gameId,
   isViewingFromThinky,
   totalActiveUsers,
+  totalAchievementCount,
+  countsByGame,
+  achievementsByGame,
   myAchievements,
   achievements
 }: {
@@ -104,20 +141,24 @@ export default function AchievementPage({
   gameId: GameId,
   isViewingFromThinky: boolean,
   totalActiveUsers: number,
+  totalAchievementCount: number,
+  countsByGame: Array<{ _id: GameId; count: number }>,
+  achievementsByGame: Record<string, Achievement[]>,
   myAchievements: Achievement[],
   achievements: Achievement[]
 }) {
   const { game } = useContext(AppContext);
-  const [selectedGame, setSelectedGame] = useState<GameId | 'all'>('all');
+  const [selectedGame, setSelectedGame] = useState<GameId | 'all'>(gameId !== GameId.THINKY ? gameId : 'all');
 
   // Filter achievements based on selected game
   const filteredAchievements = useMemo(() => {
-    if (selectedGame === 'all' || !isViewingFromThinky) {
+    if (selectedGame === 'all') {
       return achievements;
     }
 
-    return achievements.filter(achievement => achievement.gameId === selectedGame);
-  }, [achievements, selectedGame, isViewingFromThinky]);
+    // Return the specific achievements for the selected game (already limited to 100)
+    return achievementsByGame[`${selectedGame}_achievements`] || [];
+  }, [achievements, achievementsByGame, selectedGame]);
 
   // Get user's achievement for display (first one found, or for specific game if filtered)
   const displayAchievement = useMemo(() => {
@@ -134,8 +175,6 @@ export default function AchievementPage({
 
   // Check if this achievement type is available across multiple games
   const shouldShowGameFilters = useMemo(() => {
-    if (!isViewingFromThinky) return false;
-
     // Find which category this achievement type belongs to
     let achievementCategory: AchievementCategory | null = null;
 
@@ -148,7 +187,10 @@ export default function AchievementPage({
 
     if (!achievementCategory) return false;
 
-    // Check if this category exists in multiple games
+    // Social achievements are only on THINKY, so no need for game filters
+    if (achievementCategory === AchievementCategory.SOCIAL) return false;
+
+    // For non-social achievements, check if they exist in multiple games
     const gamesWithCategory = [GameId.PATHOLOGY, GameId.SOKOPATH].filter(gId => {
       const gameInfo = Games[gId];
 
@@ -156,70 +198,56 @@ export default function AchievementPage({
     });
 
     return gamesWithCategory.length > 1;
-  }, [type, isViewingFromThinky]);
+  }, [type]);
 
   // Calculate stats for game tiles
   const gameStats = useMemo(() => {
-    if (!isViewingFromThinky || !shouldShowGameFilters) return [];
+    if (!shouldShowGameFilters) return [];
 
-    // Find which category this achievement type belongs to
-    let achievementCategory: AchievementCategory | null = null;
-
-    for (const [category, categoryAchievements] of Object.entries(AchievementCategoryMapping)) {
-      if (type in categoryAchievements) {
-        achievementCategory = category as AchievementCategory;
-        break;
-      }
-    }
-
-    if (!achievementCategory) return [];
-
-    // Get the appropriate games for this achievement category
-    const relevantGameIds = achievementCategory === AchievementCategory.SOCIAL
-      ? [GameId.THINKY]
-      : [GameId.PATHOLOGY, GameId.SOKOPATH];
+    // For non-social achievements, show stats for both games
+    const relevantGameIds = [GameId.PATHOLOGY, GameId.SOKOPATH];
 
     const stats = relevantGameIds.map(gId => {
-      const gameAchievements = achievements.filter(ach => ach.gameId === gId);
       const gameInfo = Games[gId];
       const userHasAchievement = myAchievements.some(ach => ach.gameId === gId);
+      const gameCount = countsByGame.find(c => c._id === gId)?.count || 0;
 
       return {
         gameId: gId,
         name: gameInfo.displayName,
         logo: gameInfo.logoPng,
-        count: gameAchievements.length,
+        count: gameCount,
         unlocked: userHasAchievement
       };
-    }); // Don't filter out games with zero achievements - show them all
+    });
 
-    // Add "All Games" option if there are multiple games (even if some have 0)
+    // Add "All Games" option if there are multiple games
     if (stats.length > 1) {
       stats.unshift({
         gameId: 'all' as GameId,
         name: 'All Games',
         logo: '/logos/thinky/thinky_small.png',
-        count: achievements.length,
+        count: totalAchievementCount,
         unlocked: myAchievements.length > 0
       });
     }
 
     return stats;
-  }, [achievements, myAchievements, isViewingFromThinky, shouldShowGameFilters, type]);
+  }, [countsByGame, myAchievements, shouldShowGameFilters, totalAchievementCount]);
 
-  // Calculate rarity based on total achievement count
-  const totalAchievementCount = useMemo(() => {
+  // Calculate rarity based on total achievement count for selected game/filter
+  const displayedAchievementCount = useMemo(() => {
     if (selectedGame === 'all' || !isViewingFromThinky) {
-      return achievements.length;
+      return totalAchievementCount;
     }
 
-    return achievements.filter(ach => ach.gameId === selectedGame).length;
-  }, [achievements, selectedGame, isViewingFromThinky]);
+    return countsByGame.find(c => c._id === selectedGame)?.count || 0;
+  }, [countsByGame, selectedGame, isViewingFromThinky, totalAchievementCount]);
 
-  const rarity = getRarityFromStats(totalAchievementCount, totalActiveUsers);
+  const rarity = getRarityFromStats(displayedAchievementCount, totalActiveUsers);
   const rarityText = getRarityText(rarity);
   const rarityColor = getRarityColor(rarity);
-  const rarityTooltip = getRarityTooltip(rarity, totalAchievementCount, totalActiveUsers);
+  const rarityTooltip = getRarityTooltip(rarity, displayedAchievementCount, totalActiveUsers);
 
   return (
     <Page title='Viewing Achievement'>
@@ -249,7 +277,7 @@ export default function AchievementPage({
             <div className='bg-2 rounded-lg px-4 py-2 border border-color-3'>
               <div className='text-sm opacity-75 mb-1'>Players</div>
               <div className='text-lg font-bold'>
-                {totalAchievementCount}
+                {displayedAchievementCount}
               </div>
             </div>
           </div>
@@ -297,7 +325,16 @@ export default function AchievementPage({
         )}
         {/* Achievements Table */}
         <div className='w-full max-w-6xl'>
+          {filteredAchievements.length >= 100 && (
+            <div className='mb-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg text-center'>
+              <p className='text-sm text-yellow-800 dark:text-yellow-200'>
+                <strong>{displayedAchievementCount}</strong> users have earned this achievement.
+                Displaying the <strong>last 100 users</strong> who earned it.
+              </p>
+            </div>
+          )}
           <DataTableOffline
+            key={selectedGame} // Reset pagination when game filter changes
             columns={[
               // Add game logo column when viewing from THINKY and achievement exists in multiple games
               ...(shouldShowGameFilters ? [{

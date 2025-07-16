@@ -70,7 +70,7 @@ export function getRarityTooltip(rarity: RarityType, count?: number, totalUsers?
   if (count !== undefined && totalUsers && totalUsers > 0) {
     const percentage = ((count / totalUsers) * 100).toFixed(1);
 
-    return `${percentage}% of players (${count}/${totalUsers})`;
+    return `${percentage}% of players`;
   }
 
   // If we only have count, show count-based description

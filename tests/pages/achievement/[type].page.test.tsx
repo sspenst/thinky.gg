@@ -52,6 +52,9 @@ describe('pages/[subdomain]/achievement/[type]', () => {
         gameId: expect.any(String),
         isViewingFromThinky: expect.any(Boolean),
         totalActiveUsers: expect.any(Number),
+        totalAchievementCount: expect.any(Number),
+        countsByGame: expect.any(Array),
+        achievementsByGame: expect.any(Object),
         myAchievements: [],
         achievements: expect.any(Array),
       });
@@ -152,7 +155,7 @@ describe('pages/[subdomain]/achievement/[type]', () => {
       }
     });
 
-    test('getServerSideProps should limit achievements to 1000', async () => {
+    test('getServerSideProps should limit achievements to 100', async () => {
       const context = {
         query: {
           type: AchievementType.SOLVED_LEVELS_100,
@@ -172,7 +175,19 @@ describe('pages/[subdomain]/achievement/[type]', () => {
 
       expect(aggregateSpy).toHaveBeenCalledWith(
         expect.arrayContaining([
-          expect.objectContaining({ $limit: 1000 }),
+          expect.objectContaining({
+            $facet: expect.objectContaining({
+              thinky_achievements: expect.arrayContaining([
+                expect.objectContaining({ $limit: 100 })
+              ]),
+              pathology_achievements: expect.arrayContaining([
+                expect.objectContaining({ $limit: 100 })
+              ]),
+              sokoban_achievements: expect.arrayContaining([
+                expect.objectContaining({ $limit: 100 })
+              ])
+            })
+          }),
         ])
       );
     });
@@ -303,18 +318,24 @@ describe('pages/[subdomain]/achievement/[type]', () => {
 
       await getServerSideProps(context as unknown as GetServerSidePropsContext);
 
-      // Verify that the aggregate includes user lookup and enrichment
+      // Verify that the aggregate includes user lookup and enrichment within per-game facets
       expect(aggregateSpy).toHaveBeenCalledWith(
         expect.arrayContaining([
           expect.objectContaining({
-            $lookup: expect.objectContaining({
-              from: UserModel.collection.name,
-              localField: 'userId',
-              foreignField: '_id',
-              as: 'userId',
+            $facet: expect.objectContaining({
+              thinky_achievements: expect.arrayContaining([
+                expect.objectContaining({
+                  $lookup: expect.objectContaining({
+                    from: UserModel.collection.name,
+                    localField: 'userId',
+                    foreignField: '_id',
+                    as: 'userId',
+                  })
+                }),
+                expect.objectContaining({ $unwind: { path: '$userId' } }),
+              ])
             })
           }),
-          expect.objectContaining({ $unwind: { path: '$userId' } }),
         ])
       );
     });
