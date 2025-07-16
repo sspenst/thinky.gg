@@ -1054,13 +1054,25 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
           data={data}
           itemsPerPage={20}
           noDataComponent={
-            <div className='flex flex-col items-center p-3 gap-3'>
-              <span>No levels found...</span>
-              {query.timeRange !== TimeRange[TimeRange.All] &&
-                <span>
-                  Try <button className='underline' onClick={() => { onTimeRangeClick(TimeRange[TimeRange.All]); }}>expanding</button> the time range.
-                </span>
-              }
+            <div className='flex flex-col items-center justify-center p-8 gap-4 text-center min-h-[200px]'>
+              <SearchIcon className='w-12 h-12 text-gray-400' />
+              <div className='flex flex-col gap-2'>
+                <h3 className='text-lg font-semibold text-gray-600'>No levels found</h3>
+                <p className='text-gray-500'>Try adjusting your search criteria or filters</p>
+              </div>
+              {query.timeRange !== TimeRange[TimeRange.All] && (
+                <div className='bg-blue-50 border border-blue-200 rounded-lg p-4 max-w-md'>
+                  <p className='text-blue-800 text-sm mb-2'>
+                    Looking for more results?
+                  </p>
+                  <button 
+                    className='bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200'
+                    onClick={() => { onTimeRangeClick(TimeRange[TimeRange.All]); }}
+                  >
+                    Expand to All Time
+                  </button>
+                </div>
+              )}
             </div>
           }
           onChangePage={(pg: number) => {

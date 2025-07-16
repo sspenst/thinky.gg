@@ -49,7 +49,10 @@ describe('pages/[subdomain]/achievement/[type]', () => {
       expect(result).toHaveProperty('props');
       expect(result.props).toEqual({
         type: AchievementType.SOLVED_LEVELS_100,
-        myAchievement: null,
+        gameId: expect.any(String),
+        isViewingFromThinky: expect.any(Boolean),
+        totalActiveUsers: expect.any(Number),
+        myAchievements: [],
         achievements: expect.any(Array),
       });
     });
@@ -79,8 +82,9 @@ describe('pages/[subdomain]/achievement/[type]', () => {
         const result = await getServerSideProps(context as unknown as GetServerSidePropsContext);
 
         expect(result).toHaveProperty('props');
-        expect(result.props?.myAchievement).not.toBeNull();
-        expect(result.props?.myAchievement?._id.toString()).toBe(testAchievement._id.toString());
+        expect(result.props?.myAchievements).toEqual(expect.any(Array));
+        expect(result.props?.myAchievements?.length).toBeGreaterThan(0);
+        expect(result.props?.myAchievements?.[0]._id.toString()).toBe(testAchievement._id.toString());
         expect(result.props?.type).toBe(AchievementType.WELCOME);
         expect(result.props?.achievements).toEqual(expect.any(Array));
       } finally {
@@ -204,8 +208,8 @@ describe('pages/[subdomain]/achievement/[type]', () => {
     test('getServerSideProps should handle database errors gracefully', async () => {
       jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
-      // Mock AchievementModel.findOne to throw an error
-      const findOneSpy = jest.spyOn(AchievementModel, 'findOne').mockImplementation(() => {
+      // Mock AchievementModel.find to throw an error
+      const findSpy = jest.spyOn(AchievementModel, 'find').mockImplementation(() => {
         throw new Error('Database connection error');
       });
 
@@ -224,7 +228,7 @@ describe('pages/[subdomain]/achievement/[type]', () => {
       // The function should not throw, but should handle the error
       await expect(getServerSideProps(context as unknown as GetServerSidePropsContext)).rejects.toThrow();
 
-      findOneSpy.mockRestore();
+      findSpy.mockRestore();
     });
 
     test('getServerSideProps should handle aggregate database errors gracefully', async () => {
@@ -275,7 +279,7 @@ describe('pages/[subdomain]/achievement/[type]', () => {
         expect.arrayContaining([
           expect.objectContaining({
             $match: expect.objectContaining({
-              gameId: DEFAULT_GAME_ID
+              gameId: { $in: [DEFAULT_GAME_ID] }
             })
           }),
         ])

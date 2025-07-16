@@ -10,20 +10,22 @@ export function getRarityFromStats(count: number, totalUsers?: number): RarityTy
   // If we have total users, calculate actual percentage
   if (totalUsers && totalUsers > 0) {
     const percentage = (count / totalUsers) * 100;
+
     if (percentage < 1) return 'legendary';
     if (percentage < 5) return 'epic';
     if (percentage < 15) return 'rare';
     if (percentage < 40) return 'uncommon';
+
     return 'common';
   }
 
   // Fallback: Use achievement count thresholds (more realistic than hardcoded 1000)
-  if (count < 5) return 'legendary';      // Less than 5 people
-  if (count < 25) return 'epic';          // Less than 25 people  
-  if (count < 100) return 'rare';         // Less than 100 people
-  if (count < 250) return 'uncommon';     // Less than 250 people
-  
-  return 'common';                        // 250+ people
+  if (count < 5) return 'legendary'; // Less than 5 people
+  if (count < 25) return 'epic'; // Less than 25 people
+  if (count < 100) return 'rare'; // Less than 100 people
+  if (count < 250) return 'uncommon'; // Less than 250 people
+
+  return 'common'; // 250+ people
 }
 
 /**
@@ -67,6 +69,7 @@ export function getRarityTooltip(rarity: RarityType, count?: number, totalUsers?
   // If we have both count and total users, show percentage
   if (count !== undefined && totalUsers && totalUsers > 0) {
     const percentage = ((count / totalUsers) * 100).toFixed(1);
+
     return `${percentage}% of players (${count}/${totalUsers})`;
   }
 
