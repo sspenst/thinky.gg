@@ -24,6 +24,7 @@ export const AchievementCategoryMapping = {
   [AchievementCategory.SKILL]: AchievementRulesSkill,
   [AchievementCategory.REVIEWER]: AchievementRulesReviewer,
   [AchievementCategory.MULTIPLAYER]: AchievementRulesMultiplayer,
+  [AchievementCategory.CHAPTER_COMPLETION]: AchievementRulesChapter,
 };
 
 // dynamically calculate
