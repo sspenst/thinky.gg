@@ -90,6 +90,11 @@ const AchievementCategoryFetch = {
 
     return { rollingLevelSolvesSum: rollingLevelSolvesSum, records: records };
   },
+  [AchievementCategory.CHAPTER_COMPLETION]: async (gameId: GameId, userId: Types.ObjectId) => {
+    const userConfig = await UserConfigModel.findOne({ userId: userId, gameId: gameId }).lean<User>();
+
+    return { userConfig: userConfig };
+  },
 };
 
 /**
