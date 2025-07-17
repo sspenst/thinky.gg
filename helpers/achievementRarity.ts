@@ -1,4 +1,4 @@
-export type RarityType = 'legendary' | 'epic' | 'rare' | 'uncommon' | 'common';
+export type RarityType = 'legendary' | 'epic' | 'rare' | 'uncommon' | 'common' | 'never';
 
 /**
  * Determines rarity tier based on achievement count/stats
@@ -11,6 +11,7 @@ export function getRarityFromStats(count: number, totalUsers?: number): RarityTy
   if (totalUsers && totalUsers > 0) {
     const percentage = (count / totalUsers) * 100;
 
+    if (percentage === 0) return 'never';
     if (percentage < 1) return 'legendary';
     if (percentage < 5) return 'epic';
     if (percentage < 15) return 'rare';
@@ -20,6 +21,8 @@ export function getRarityFromStats(count: number, totalUsers?: number): RarityTy
   }
 
   // Fallback: Use achievement count thresholds (more realistic than hardcoded 1000)
+
+  if (count === 0) return 'never';
   if (count < 5) return 'legendary'; // Less than 5 people
   if (count < 25) return 'epic'; // Less than 25 people
   if (count < 100) return 'rare'; // Less than 100 people
@@ -35,6 +38,7 @@ export function getRarityFromStats(count: number, totalUsers?: number): RarityTy
  */
 export function getRarityText(rarity: RarityType): string {
   switch (rarity) {
+  case 'never': return 'Never Earned';
   case 'legendary': return 'Legendary';
   case 'epic': return 'Epic';
   case 'rare': return 'Rare';
@@ -50,6 +54,7 @@ export function getRarityText(rarity: RarityType): string {
  */
 export function getRarityColor(rarity: RarityType): string {
   switch (rarity) {
+  case 'never': return 'text-gray-500';
   case 'legendary': return 'text-purple-500';
   case 'epic': return 'text-orange-500';
   case 'rare': return 'text-blue-500';
@@ -68,6 +73,8 @@ export function getRarityColor(rarity: RarityType): string {
 export function getRarityTooltip(rarity: RarityType, count?: number, totalUsers?: number): string {
   // If we have both count and total users, show percentage
   if (count !== undefined && totalUsers && totalUsers > 0) {
+    if (count === 0) return 'No one has earned this achievement yet';
+
     const percentage = ((count / totalUsers) * 100).toFixed(1);
 
     return `${percentage}% of players`;
@@ -81,11 +88,13 @@ export function getRarityTooltip(rarity: RarityType, count?: number, totalUsers?
     case 'rare': return `${count} players - uncommon`;
     case 'uncommon': return `${count} players - moderately rare`;
     case 'common': return `${count} players - widely earned`;
+    case 'never': return 'No one has earned this achievement yet';
     }
   }
 
   // Fallback to generic descriptions
   switch (rarity) {
+  case 'never': return 'Never earned';
   case 'legendary': return 'Extremely rare achievement';
   case 'epic': return 'Very rare achievement';
   case 'rare': return 'Uncommon achievement';
