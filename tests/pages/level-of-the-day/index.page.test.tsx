@@ -1,7 +1,7 @@
 import dbConnect, { dbDisconnect } from '@root/lib/dbConnect';
 import { GetServerSidePropsContext } from 'next';
-import { getServerSideProps } from '../../../pages/[subdomain]/level-of-the-day/index';
 import * as levelPageProps from '../../../pages/[subdomain]/level/[username]/[slugName]';
+import { getServerSideProps } from '../../../pages/[subdomain]/level-of-the-day/index';
 import * as levelOfDayApi from '../../../pages/api/level-of-day';
 
 // Mock the imported modules

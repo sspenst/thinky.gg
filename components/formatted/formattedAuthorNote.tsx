@@ -1,4 +1,3 @@
-
 interface FormattedAuthorNoteProps {
   authorNote: string;
 }

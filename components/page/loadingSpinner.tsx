@@ -1,4 +1,3 @@
-
 interface LoadingSpinnerProps {
   size?: number;
 }

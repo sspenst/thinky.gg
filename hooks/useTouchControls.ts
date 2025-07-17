@@ -42,6 +42,8 @@ export default function useTouchControls({
 
   const handleTouchStartEvent = useCallback((event: TouchEvent) => {
     if (preventKeyDownEvent) {
+      console.log('[TouchDebug] Touch blocked by preventKeyDownEvent');
+
       return;
     }
 
@@ -49,6 +51,7 @@ export default function useTouchControls({
     const isValid = event.composedPath().some(e => (e as HTMLElement).id === `grid-${levelId.toString()}`);
 
     validTouchStart.current = isValid;
+    console.log('[TouchDebug] TouchStart - isValid:', isValid, 'levelId:', levelId.toString());
 
     if (isValid) {
       // store the mouse x and y position
@@ -62,6 +65,9 @@ export default function useTouchControls({
 
   const handleTouchMoveEvent = useCallback((event: TouchEvent) => {
     if (!validTouchStart.current || preventKeyDownEvent) {
+      if (!validTouchStart.current) console.log('[TouchDebug] TouchMove blocked - invalid touch start');
+      if (preventKeyDownEvent) console.log('[TouchDebug] TouchMove blocked by preventKeyDownEvent');
+
       return;
     }
 
@@ -89,6 +95,7 @@ export default function useTouchControls({
 
       if (dragDistance / timeSince > 0.3) {
         // if the user drags really fast and it was sudden, don't move on drag because it is likely a swipe
+        console.log('[TouchDebug] Fast swipe detected, switching to swipe mode');
         touchXDown.current = clientX;
         touchYDown.current = clientY;
         isSwiping.current = true;
@@ -101,6 +108,7 @@ export default function useTouchControls({
       }
 
       if (timeSince > 0) {
+        console.log('[TouchDebug] TouchMove triggering move - dx:', dx, 'dy:', dy);
         touchXDown.current = clientX;
         touchYDown.current = clientY;
         moveByDXDY(dx, dy);
@@ -110,10 +118,14 @@ export default function useTouchControls({
 
   const handleTouchEndEvent = useCallback((event: TouchEvent) => {
     if (!validTouchStart.current || preventKeyDownEvent) {
+      console.log('[TouchDebug] TouchEnd blocked');
+
       return;
     }
 
     const timeSince = Date.now() - lastTouchTimestamp.current;
+
+    console.log('[TouchDebug] TouchEnd - timeSince:', timeSince);
 
     if (timeSince <= 500 && touchXDown !== undefined && touchYDown !== undefined) {
       // for swipe control instead of drag
@@ -124,32 +136,37 @@ export default function useTouchControls({
 
       if (Math.abs(dx) <= 0.5 && Math.abs(dy) <= 0.5) {
         // Reset touch state on tap
+        console.log('[TouchDebug] Tap detected, resetting touch state');
         validTouchStart.current = false;
 
         return;
       }
 
+      console.log('[TouchDebug] TouchEnd triggering move - dx:', dx, 'dy:', dy);
       moveByDXDY(dx, dy);
       touchXDown.current = clientX;
       touchYDown.current = clientY;
     }
 
     // Reset touch state
+    console.log('[TouchDebug] Resetting all touch state');
     validTouchStart.current = false;
     isSwiping.current = false;
   }, [moveByDXDY, preventKeyDownEvent]);
 
   useEffect(() => {
+    console.log('[TouchDebug] Adding touch event listeners for level:', levelId.toString());
     document.addEventListener('touchstart', handleTouchStartEvent, { passive: false });
     document.addEventListener('touchmove', handleTouchMoveEvent, { passive: false });
     document.addEventListener('touchend', handleTouchEndEvent, { passive: false });
 
     return () => {
+      console.log('[TouchDebug] Removing touch event listeners for level:', levelId.toString());
       document.removeEventListener('touchstart', handleTouchStartEvent);
       document.removeEventListener('touchmove', handleTouchMoveEvent);
       document.removeEventListener('touchend', handleTouchEndEvent);
     };
-  }, [handleTouchMoveEvent, handleTouchStartEvent, handleTouchEndEvent]);
+  }, [handleTouchMoveEvent, handleTouchStartEvent, handleTouchEndEvent, levelId]);
 
   useEffect(() => {
     return () => {
