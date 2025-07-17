@@ -242,12 +242,13 @@ export default function AchievementsBrowser({
 
     // Add individual categories that have visible achievements
     const categoryKeyToNameAndIcon: Record<string, { name: string; icon: string }> = {
-      [AchievementCategory.SOCIAL]: { name: 'Social', icon: '👥' },
-      [AchievementCategory.PROGRESS]: { name: 'Progress', icon: '📈' },
-      [AchievementCategory.CREATOR]: { name: 'Creator', icon: '🛠️' },
-      [AchievementCategory.SKILL]: { name: 'Skill', icon: '🎯' },
-      [AchievementCategory.REVIEWER]: { name: 'Reviewer', icon: '⭐' },
-      MULTIPLAYER: { name: 'Multiplayer', icon: '🎮' },
+      [AchievementCategory.SOCIAL]: { name: getAchievementCategoryDisplayName(AchievementCategory.SOCIAL), icon: '👥' },
+      [AchievementCategory.PROGRESS]: { name: getAchievementCategoryDisplayName(AchievementCategory.PROGRESS), icon: '📈' },
+      [AchievementCategory.CREATOR]: { name: getAchievementCategoryDisplayName(AchievementCategory.CREATOR), icon: '🛠️' },
+      [AchievementCategory.SKILL]: { name: getAchievementCategoryDisplayName(AchievementCategory.SKILL), icon: '🎯' },
+      [AchievementCategory.REVIEWER]: { name: getAchievementCategoryDisplayName(AchievementCategory.REVIEWER), icon: '⭐' },
+      [AchievementCategory.MULTIPLAYER]: { name: getAchievementCategoryDisplayName(AchievementCategory.MULTIPLAYER), icon: '🎮' },
+      [AchievementCategory.CHAPTER_COMPLETION]: { name: getAchievementCategoryDisplayName(AchievementCategory.CHAPTER_COMPLETION), icon: ' 🏁' },
     };
 
     Object.entries(filteredCategories).forEach(([categoryKey, achievements]) => {
@@ -443,7 +444,8 @@ export default function AchievementsBrowser({
       ) : (
         <div className='space-y-8'>
           {Object.entries(filteredCategories).map(([categoryKey, achievements]) => {
-            const categoryName = getAchievementCategoryDisplayName(categoryKey);
+            const categoryName = getAchievementCategoryDisplayName(categoryKey as AchievementCategory);
+
             const unlockedCount = achievements.filter(a => {
               if (selectedGame === 'all') {
                 return a.gameAchievements.length > 0;
