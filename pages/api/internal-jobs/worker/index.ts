@@ -180,9 +180,9 @@ async function processQueueMessage(queueMessage: QueueMessage) {
   } else if (queueMessage.type === QueueMessageType.REFRESH_ACHIEVEMENTS) {
     const { gameId, userId, categories } = JSON.parse(queueMessage.message) as {gameId: GameId, userId: string, categories: AchievementCategory[]};
 
-    const achievementsEarned = await refreshAchievements(gameId, new Types.ObjectId(userId), categories);
+    const achievementsEarnedMap = await refreshAchievements(gameId, new Types.ObjectId(userId), categories);
 
-    log = `refreshAchievements game ${gameId} for ${userId} created ${achievementsEarned} achievements`;
+    log = `refreshAchievements game ${gameId} for ${userId} created ${JSON.stringify(achievementsEarnedMap)} achievements`;
   } else if (queueMessage.type === QueueMessageType.GEN_LEVEL_IMAGE) {
     const { levelId, postToDiscord } = JSON.parse(queueMessage.message) as { levelId: string, postToDiscord: boolean };
 

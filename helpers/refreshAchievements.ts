@@ -102,59 +102,74 @@ const AchievementCategoryFetch = {
  * @param userId
  * @return null if user not found
  */
-export async function refreshAchievements(gameId: GameId, userId: Types.ObjectId, categories: AchievementCategory[]) {
-  // it is more efficient to just grab all their achievements then to loop through and query each one if they have it
-  const game = Games[gameId];
-  const fetchPromises = [];
-  const adjustedCategories = categories.filter((category) => game.achievementCategories.includes(category));
+export async function refreshAchievements(pGameId: GameId, userId: Types.ObjectId, categories: AchievementCategory[]) {
+  let gameIds = [pGameId];
 
-  for (const category of adjustedCategories) {
-    fetchPromises.push(AchievementCategoryFetch[category](gameId, userId));
+  if (pGameId === GameId.THINKY) {
+    gameIds = [GameId.PATHOLOGY, GameId.SOKOPATH, GameId.THINKY];
   }
 
-  const [user, neededDataArray, allAchievements] = await Promise.all([
-    UserModel.findById(userId, { _id: 1, name: 1 }).lean<User>(), // TODO: this is a dup of query for USER achievement types and for any achievement without a discord notif... but maybe not a huge deal
-    Promise.all(fetchPromises),
-    AchievementModel.find({ userId: userId, gameId: gameId }, { type: 1, }).lean<Achievement[]>(),
-  ]);
-  // neededDataArray is an array of objects with unique keys. Let's combine into one big object
-  const neededData = neededDataArray.reduce((acc, cur) => ({ ...acc, ...cur }), {});
-  let achievementsCreated = 0;
+  const achievementsCreatedMap: Record<GameId, number> = {
+    [GameId.THINKY]: 0,
+    [GameId.PATHOLOGY]: 0,
+    [GameId.SOKOPATH]: 0,
+  };
 
-  for (const category of adjustedCategories) {
-    const achievementsCreatedPromises = [];
-    const categoryRulesTable = AchievementCategoryMapping[category];
+  for (const gameId of gameIds) {
+  // it is more efficient to just grab all their achievements then to loop through and query each one if they have it
+    const game = Games[gameId];
+    const fetchPromises = [];
+    const adjustedCategories = categories.filter((category) => game.achievementCategories.includes(category));
 
-    for (const achievementType in categoryRulesTable) {
-      const achievementInfo = categoryRulesTable[achievementType];
-
-      // check if the user already has the achievement and if so skip it (note we already have a unique index on userId and type)
-      if (allAchievements.some((a: Achievement) => a.type === achievementType)) {
-        continue;
-      }
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      if (achievementInfo.unlocked(neededData as any)) {
-        achievementsCreatedPromises.push(createNewAchievement(gameId, achievementType as AchievementType, userId, achievementsCreatedPromises.length > 0)); // for each category, only send one push notification
-
-        if (achievementInfo.discordNotification) {
-          // Should be "<User.name> just unlocked <Achievement.name> achievement!" where <User.name> is a link to the user's profile and <Achievement.name> is a link to the achievement's page
-          const userName = user?.name;
-          const userLinkDiscord = `${userName}`;
-          const achievementHref = game.baseUrl + '/achievement/' + achievementType;
-          const achievementLinkDiscord = `[${achievementInfo.name}](${achievementHref})`;
-          const message = `${userLinkDiscord} just unlocked the ${achievementLinkDiscord} ${achievementInfo.emoji} achievement!`;
-          const discordChannel = game.id === GameId.SOKOPATH ? DiscordChannel.Sokopath : DiscordChannel.Pathology;
-
-          // Pass the username for potential Discord mention lookup
-          achievementsCreatedPromises.push(queueDiscordWebhook(discordChannel, message, undefined, userName ? [userName] : []));
-        }
-      }
+    for (const category of adjustedCategories) {
+      fetchPromises.push(AchievementCategoryFetch[category](gameId, userId));
     }
 
-    achievementsCreated += achievementsCreatedPromises.length;
-    await Promise.all(achievementsCreatedPromises);
+    const [user, neededDataArray, allAchievements] = await Promise.all([
+      UserModel.findById(userId, { _id: 1, name: 1 }).lean<User>(), // TODO: this is a dup of query for USER achievement types and for any achievement without a discord notif... but maybe not a huge deal
+      Promise.all(fetchPromises),
+      AchievementModel.find({ userId: userId, gameId: gameId }, { type: 1, }).lean<Achievement[]>(),
+    ]);
+    // neededDataArray is an array of objects with unique keys. Let's combine into one big object
+    const neededData = neededDataArray.reduce((acc, cur) => ({ ...acc, ...cur }), {});
+    let achievementsCreated = 0;
+
+    for (const category of adjustedCategories) {
+      const achievementsCreatedPromises = [];
+      const categoryRulesTable = AchievementCategoryMapping[category];
+
+      for (const achievementType in categoryRulesTable) {
+        const achievementInfo = categoryRulesTable[achievementType];
+
+        // check if the user already has the achievement and if so skip it (note we already have a unique index on userId and type)
+        if (allAchievements.some((a: Achievement) => a.type === achievementType)) {
+          continue;
+        }
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if (achievementInfo.unlocked(neededData as any)) {
+          achievementsCreatedPromises.push(createNewAchievement(gameId, achievementType as AchievementType, userId, achievementsCreatedPromises.length > 0)); // for each category, only send one push notification
+
+          if (achievementInfo.discordNotification) {
+          // Should be "<User.name> just unlocked <Achievement.name> achievement!" where <User.name> is a link to the user's profile and <Achievement.name> is a link to the achievement's page
+            const userName = user?.name;
+            const userLinkDiscord = `${userName}`;
+            const achievementHref = game.baseUrl + '/achievement/' + achievementType;
+            const achievementLinkDiscord = `[${achievementInfo.name}](${achievementHref})`;
+            const message = `${userLinkDiscord} just unlocked the ${achievementLinkDiscord} ${achievementInfo.emoji} achievement!`;
+            const discordChannel = game.id === GameId.SOKOPATH ? DiscordChannel.Sokopath : DiscordChannel.Pathology;
+
+            // Pass the username for potential Discord mention lookup
+            achievementsCreatedPromises.push(queueDiscordWebhook(discordChannel, message, undefined, userName ? [userName] : []));
+          }
+        }
+      }
+
+      achievementsCreated += achievementsCreatedPromises.length;
+      achievementsCreatedMap[gameId] = achievementsCreated;
+      await Promise.all(achievementsCreatedPromises);
+    }
   }
 
-  return achievementsCreated;
+  return achievementsCreatedMap;
 }
