@@ -23,7 +23,7 @@ const AchievementRulesChapter: { [achievementType: string]: IAchievementInfoUser
     name: 'Brain Buster Champion',
     emoji: '🏅',
     getDescription: () => 'Completed Chapter 3',
-    discordNotification: true,
+    discordNotification: false, // TODO: should this be true?
     unlocked: ({ userConfig }) => (userConfig?.chapterUnlocked || 1) >= 4,
   },
 };
