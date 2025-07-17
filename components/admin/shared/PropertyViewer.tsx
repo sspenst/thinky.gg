@@ -1,4 +1,3 @@
-
 interface PropertyViewerProps {
   title: string;
   obj: any;

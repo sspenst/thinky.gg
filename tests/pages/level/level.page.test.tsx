@@ -51,4 +51,3 @@ it('should redirect if user is a bot', async () => {
 });
 
 export { };
-

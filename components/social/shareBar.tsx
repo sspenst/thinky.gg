@@ -1,14 +1,14 @@
 import React, { FC, JSX } from 'react';
 import toast from 'react-hot-toast';
 import {
-    FacebookIcon,
-    FacebookShareButton,
-    LinkedinIcon,
-    LinkedinShareButton,
-    RedditIcon,
-    RedditShareButton,
-    TwitterIcon,
-    TwitterShareButton,
+  FacebookIcon,
+  FacebookShareButton,
+  LinkedinIcon,
+  LinkedinShareButton,
+  RedditIcon,
+  RedditShareButton,
+  TwitterIcon,
+  TwitterShareButton,
 } from 'react-share';
 
 interface ShareBarProps {
