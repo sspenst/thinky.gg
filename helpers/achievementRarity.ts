@@ -75,9 +75,24 @@ export function getRarityTooltip(rarity: RarityType, count?: number, totalUsers?
   if (count !== undefined && totalUsers && totalUsers > 0) {
     if (count === 0) return 'No one has earned this achievement yet';
 
-    const percentage = ((count / totalUsers) * 100).toFixed(1);
+    // Always show 1 significant digit for the percentage
+    const percentageNum = (count / totalUsers) * 100;
+    let percentageStr: string;
 
-    return `${percentage}% of players`;
+    if (percentageNum === 0) {
+      percentageStr = '0';
+    } else if (percentageNum < 1) {
+      // For very small percentages, show one significant digit (e.g., 0.3, 0.04)
+      const exp = Math.floor(Math.log10(percentageNum));
+      const factor = Math.pow(10, exp - 0);
+
+      percentageStr = (Math.round(percentageNum / factor) * factor).toPrecision(1);
+    } else {
+      // For 1 or more, show one significant digit (e.g., 3, 7, 40, 90)
+      percentageStr = percentageNum.toPrecision(1).replace(/\.0+$/, '');
+    }
+
+    return `${percentageStr}% of players`;
   }
 
   // If we only have count, show count-based description
