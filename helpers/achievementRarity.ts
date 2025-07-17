@@ -88,8 +88,8 @@ export function getRarityTooltip(rarity: RarityType, count?: number, totalUsers?
 
       percentageStr = (Math.round(percentageNum / factor) * factor).toPrecision(1);
     } else {
-      // For 1 or more, show one decimal place (e.g., 3.0, 7.0, 20.0, 90.0)
-      percentageStr = percentageNum.toFixed(1).replace(/\.0+$/, '');
+      // For 1% or more, show rounded percentage (e.g., 3, 7, 20, 90)
+      percentageStr = Math.round(percentageNum).toString();
     }
 
     return `${percentageStr}% of players`;
