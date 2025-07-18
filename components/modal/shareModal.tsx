@@ -145,7 +145,7 @@ export default function ShareModal({ closeModal, isOpen, level, onSocialShare }:
           <button
             className="flex items-center gap-3 p-4 rounded-xl hover:bg-blue-50 hover:border-blue-200 border-2 border-transparent transition-all disabled:opacity-50 group"
             disabled={!levelUrl}
-            onClick={() => handleShare('LinkedIn', `https://www.linkedin.com/feed/?shareActive=true&text=${encodeURIComponent(`${linkedInText} ${levelUrl}`)}`)}>
+            onClick={() => handleShare('LinkedIn', `https://www.linkedin.com/feed/?shareActive=true&text=${encodeURIComponent(`${linkedInText} ${levelUrl}`)}`)}
           >
             <div className="w-8 h-8 bg-[#0A66C2] rounded-lg flex items-center justify-center flex-shrink-0">
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="white">
