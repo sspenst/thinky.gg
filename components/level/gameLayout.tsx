@@ -10,6 +10,7 @@ import CheckpointsModal from '../modal/checkpointsModal';
 import StyledTooltip from '../page/styledTooltip';
 import Controls from './controls';
 import Grid from './grid';
+import WebGLGrid from './webglGrid';
 import Scrubber from './scrubber';
 
 interface GameLayoutProps {
@@ -25,6 +26,9 @@ interface GameLayoutProps {
 }
 
 export default function GameLayout({ controls, disableCheckpoints, gameState, level, onCellClick, onScrub, isPro, nextLevel, prevLevel }: GameLayoutProps) {
+  // Toggle between regular Grid and WebGLGrid
+  const useWebGL = true; // Set to false to use the original Grid component
+  
   const [fullScreen, setFullScreen] = useState(false);
   const [isCheckpointOpen, setIsCheckpointOpen] = useState(false);
   const { setPreventKeyDownEvent, setShowHeader } = useContext(PageContext);
@@ -51,17 +55,30 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, le
       backgroundColor: 'var(--bg-color)',
     }}>
       <div className='flex grow relative'>
-        <Grid
-          gameState={gameState}
-          id={level._id.toString()}
-          leastMoves={level.leastMoves}
-          onCellClick={(x, y, rightClick, isDragging) => {
-            if (!rightClick && !isDragging) {
-              onCellClick(x, y);
-            }
-          }}
-          optimizeDom
-        />
+        {useWebGL ? (
+          <WebGLGrid
+            gameState={gameState}
+            id={level._id.toString()}
+            leastMoves={level.leastMoves}
+            onCellClick={(x, y, rightClick, isDragging) => {
+              if (!rightClick && !isDragging) {
+                onCellClick(x, y);
+              }
+            }}
+          />
+        ) : (
+          <Grid
+            gameState={gameState}
+            id={level._id.toString()}
+            leastMoves={level.leastMoves}
+            onCellClick={(x, y, rightClick, isDragging) => {
+              if (!rightClick && !isDragging) {
+                onCellClick(x, y);
+              }
+            }}
+            optimizeDom
+          />
+        )}
       </div>
       <div className='gap-2 mx-3 transition-opacity flex flex-col'>
         {/* Navigation buttons */}

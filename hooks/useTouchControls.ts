@@ -155,13 +155,11 @@ export default function useTouchControls({
   }, [moveByDXDY, preventKeyDownEvent]);
 
   useEffect(() => {
-    console.log('[TouchDebug] Adding touch event listeners for level:', levelId.toString());
     document.addEventListener('touchstart', handleTouchStartEvent, { passive: false });
     document.addEventListener('touchmove', handleTouchMoveEvent, { passive: false });
     document.addEventListener('touchend', handleTouchEndEvent, { passive: false });
 
     return () => {
-      console.log('[TouchDebug] Removing touch event listeners for level:', levelId.toString());
       document.removeEventListener('touchstart', handleTouchStartEvent);
       document.removeEventListener('touchmove', handleTouchMoveEvent);
       document.removeEventListener('touchend', handleTouchEndEvent);
