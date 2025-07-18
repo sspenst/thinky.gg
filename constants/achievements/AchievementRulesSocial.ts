@@ -2,7 +2,7 @@ import { IAchievementInfo } from './achievementInfo';
 import AchievementType from './achievementType';
 
 interface IAchievementInfoSocial extends IAchievementInfo {
-  unlocked: ({ commentCount, hasWelcomed }: { commentCount: number, hasWelcomed: boolean }) => boolean;
+  unlocked: ({ commentCount, hasWelcomed, hasSharedToSocial }: { commentCount: number, hasWelcomed: boolean, hasSharedToSocial: boolean }) => boolean;
 }
 
 const AchievementRulesSocial: { [achievementType: string]: IAchievementInfoSocial } = {};
@@ -55,6 +55,16 @@ AchievementRulesSocial[AchievementType.WELCOME] = {
   secret: true,
   unlocked: ({ hasWelcomed }) => {
     return hasWelcomed;
+  },
+};
+AchievementRulesSocial[AchievementType.SOCIAL_SHARE] = {
+  getDescription: () => 'Shared a level to a social network',
+  name: 'Social Sharer',
+  emoji: '📱',
+  discordNotification: true,
+  secret: true,
+  unlocked: ({ hasSharedToSocial }) => {
+    return hasSharedToSocial;
   },
 };
 
