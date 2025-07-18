@@ -19,6 +19,7 @@ import StatFilter from '@root/constants/statFilter';
 import { AppContext } from '@root/contexts/appContext';
 import { blueButton } from '@root/helpers/className';
 import { getEnrichUserConfigPipelineStage } from '@root/helpers/enrich';
+import { countUsersWhoCompletedOneLevel } from '@root/helpers/countUsersWhoCompletedOneLevel';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { getUsersWithMultiplayerProfile } from '@root/helpers/getUsersWithMultiplayerProfile';
 import isOnline from '@root/helpers/isOnline';
@@ -183,8 +184,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       targetModel: 'User',
       type: GraphType.BLOCK,
     }) : Promise.resolve(0),
-    // Get total users for rarity calculations
-    UserModel.countDocuments({}),
+    // Get total count of active users (users with calcLevelsCompletedCount > 0) for rarity calculations
+    countUsersWhoCompletedOneLevel(),
     // Get achievement statistics for rarity calculations
     profileTab === ProfileTab.Achievements ? AchievementModel.aggregate([
       {
