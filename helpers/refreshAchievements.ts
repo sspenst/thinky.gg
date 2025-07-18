@@ -13,15 +13,15 @@ import Level from '@root/models/db/level';
 import MultiplayerMatch from '@root/models/db/multiplayerMatch';
 import MultiplayerProfile from '@root/models/db/multiplayerProfile';
 import User from '@root/models/db/user';
-import { AchievementModel, CommentModel, LevelModel, MultiplayerMatchModel, MultiplayerProfileModel, ReviewModel, UserConfigModel, UserModel } from '@root/models/mongoose';
+import { AchievementModel, CommentModel, LevelModel, MultiplayerMatchModel, MultiplayerProfileModel, ReviewModel, SocialShareModel, UserConfigModel, UserModel } from '@root/models/mongoose';
 import { Types } from 'mongoose';
 import queueDiscordWebhook from './discordWebhook';
 import { getRecordsByUserId } from './getRecordsByUserId';
 
 const AchievementCategoryFetch = {
   // no game ID as this is a global
-  [AchievementCategory.SOCIAL]: async (_gameId: GameId, userId: Types.ObjectId) => {
-    const [commentCount, welcomeComments] = await Promise.all([
+  [AchievementCategory.SOCIAL]: async (gameId: GameId, userId: Types.ObjectId) => {
+    const [commentCount, welcomeComments, socialShareCount] = await Promise.all([
       CommentModel.countDocuments({
         author: userId,
         deletedAt: null,
@@ -32,7 +32,8 @@ const AchievementCategoryFetch = {
         deletedAt: null,
         target: { $ne: userId },
         text: { $regex: /welcome/i },
-      }).populate('target').lean<Comment[]>()
+      }).populate('target').lean<Comment[]>(),
+      SocialShareModel.countDocuments({ userId: userId, gameId: gameId })
     ]);
 
     const hasWelcomed = welcomeComments.some((comment) => {
@@ -46,7 +47,9 @@ const AchievementCategoryFetch = {
       return comment.createdAt.getTime() - 1000 * user.ts < 24 * 60 * 60 * 1000;
     });
 
-    return { commentCount: commentCount, hasWelcomed: hasWelcomed };
+    const hasSharedToSocial = socialShareCount > 0;
+
+    return { commentCount: commentCount, hasWelcomed: hasWelcomed, hasSharedToSocial: hasSharedToSocial };
   },
   [AchievementCategory.PROGRESS]: async (gameId: GameId, userId: Types.ObjectId) => {
     const userConfig = await UserConfigModel.findOne({ userId: userId, gameId: gameId }).lean<User>();
