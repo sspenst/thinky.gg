@@ -224,17 +224,147 @@ export default function WebGLGrid({
       vec2 fragmentToShadow = shadowWorldPos - u_tileGridPos;
       float shadowDistance = length(fragmentToShadow);
       
-      if (u_tileType == 0.0) { // Default - Simple dark background with grid
+      if (u_tileType == 0.0) { // Default - Atmospheric background with floating energy particles
         vec3 baseColor = vec3(0.05, 0.08, 0.12); // Dark blue background
         
-        // Simple static grid outlines - no animation
+        // Ambient floating particles with random positions per tile
+        for (int i = 0; i < 6; i++) {
+          float particleId = float(i);
+          
+          // Use random seed to create unique particle behavior per tile
+          float particleRandom1 = hash(vec2(u_randomSeed + particleId * 15.0, particleId * 7.3));
+          float particleRandom2 = hash(vec2(u_randomSeed + particleId * 23.0, particleId * 11.7));
+          float particleRandom3 = hash(vec2(u_randomSeed + particleId * 31.0, particleId * 13.1));
+          
+          // Create slow drifting motion
+          float driftSpeed1 = 0.3 + particleRandom1 * 0.4;
+          float driftSpeed2 = 0.2 + particleRandom2 * 0.3;
+          
+          vec2 particlePos = vec2(
+            particleRandom1 + sin(time * driftSpeed1 + particleRandom3 * 6.28) * 0.1,
+            particleRandom2 + cos(time * driftSpeed2 + particleRandom3 * 6.28) * 0.08
+          );
+          
+          // Add gravitational attraction to shadow position
+          vec2 particleWorldPos = u_tileGridPos + particlePos;
+          vec2 toShadow = u_shadowPos - particleWorldPos;
+          float shadowDist = length(toShadow);
+          
+          // Apply subtle gravitational pull (only within reasonable range)
+          if (shadowDist < 4.0) {
+            float gravityStrength = 0.08 / max(shadowDist, 0.5);
+            float gravityFalloff = 1.0 - smoothstep(0.0, 4.0, shadowDist);
+            vec2 gravityPull = normalize(toShadow) * gravityStrength * gravityFalloff;
+            particlePos += gravityPull * particleRandom3; // Random factor to vary response
+          }
+          
+          // Wrap particles to stay within tile bounds
+          particlePos = mod(particlePos, 1.0);
+          
+          float particleDist = distance(v_texCoord, particlePos);
+          
+          // Create soft glowing particles
+          float particle = exp(-particleDist * 60.0);
+          float particleGlow = exp(-particleDist * 25.0);
+          
+          // Vary particle colors slightly
+          vec3 particleColor = mix(
+            vec3(0.4, 0.7, 1.0), 
+            vec3(0.8, 0.5, 1.0), 
+            particleRandom3
+          );
+          
+          baseColor += particleColor * particle * 0.8;
+          baseColor += particleColor * particleGlow * 0.15;
+        }
+        
+        // Network connections between particles (create energy web effect)
+        for (int i = 0; i < 3; i++) {
+          float lineId = float(i);
+          float lineRandom = hash(vec2(u_randomSeed + lineId * 40.0, lineId * 17.0));
+          
+          // Create flowing energy lines
+          float lineProgress = fract(time * (0.1 + lineRandom * 0.1) + lineRandom);
+          vec2 lineStart = vec2(lineRandom, fract(lineRandom * 1.7));
+          vec2 lineEnd = vec2(fract(lineRandom * 2.3), fract(lineRandom * 3.1));
+          
+          vec2 linePos = mix(lineStart, lineEnd, lineProgress);
+          float lineDist = distance(v_texCoord, linePos);
+          
+          // Create thin flowing energy lines
+          float line = exp(-lineDist * 80.0) * smoothstep(0.0, 0.3, lineProgress) * smoothstep(1.0, 0.7, lineProgress);
+          
+          vec3 lineColor = vec3(0.2, 0.8, 1.0);
+          baseColor += lineColor * line * 0.4;
+        }
+        
+        // Mathematical web grid that vibrates with player movement
+        vec2 tileWorldPos = u_tileGridPos + v_texCoord;
+        vec2 toPlayer = u_shadowPos - tileWorldPos;
+        float playerDistance = length(toPlayer);
+        
+        // Create vibration based on player distance and movement
+        float vibrationStrength = 1.0 - smoothstep(0.0, 5.0, playerDistance);
+        float vibrationFreq = time * 2.0 + playerDistance * 0.5;
+        float vibration = sin(vibrationFreq) * vibrationStrength * 0.02;
+        
+        // Mathematical grid lines - create web pattern
+        vec2 webCoord = v_texCoord + vibration;
+        
+        // Horizontal and vertical grid lines
+        float gridSpacing = 0.15;
+        vec2 gridPos = webCoord / gridSpacing;
+        vec2 gridFract = fract(gridPos);
+        
+        // Create thin grid lines
+        float lineWidth = 0.05 + vibrationStrength * 0.03;
+        float hLine = smoothstep(lineWidth, 0.0, abs(gridFract.y - 0.5));
+        float vLine = smoothstep(lineWidth, 0.0, abs(gridFract.x - 0.5));
+        
+        // Diagonal grid lines for web effect
+        vec2 diagCoord1 = webCoord * 1.414; // Rotated 45 degrees
+        float diagPos1 = (diagCoord1.x + diagCoord1.y) / gridSpacing;
+        float diagFract1 = fract(diagPos1);
+        float dLine1 = smoothstep(lineWidth * 0.7, 0.0, abs(diagFract1 - 0.5));
+        
+        float diagPos2 = (diagCoord1.x - diagCoord1.y) / gridSpacing;
+        float diagFract2 = fract(diagPos2);
+        float dLine2 = smoothstep(lineWidth * 0.7, 0.0, abs(diagFract2 - 0.5));
+        
+        // Combine all grid lines
+        float webLines = max(max(hLine, vLine), max(dLine1, dLine2) * 0.6);
+        
+        // Add intersection points (nodes)
+        vec2 nodeCoord = fract(webCoord / gridSpacing);
+        float nodeDistance = length(nodeCoord - 0.5);
+        float nodes = smoothstep(0.08, 0.04, nodeDistance);
+        
+        // Create pulse effect at nodes based on player proximity
+        float nodePulse = sin(time * 4.0 - playerDistance * 2.0) * 0.5 + 0.5;
+        nodes *= (1.0 + vibrationStrength * nodePulse * 0.8);
+        
+        // Color the web based on proximity and vibration
+        vec3 webColor = mix(
+          vec3(0.2, 0.4, 0.8),  // Distant blue
+          vec3(0.4, 0.8, 1.0),  // Close cyan
+          vibrationStrength
+        );
+        
+        // Add energy pulse along web lines
+        float pulsePhase = time * 1.5 + hash(u_tileGridPos) * 6.28;
+        float pulse = sin(pulsePhase) * 0.3 + 0.7;
+        
+        baseColor += webColor * (webLines * 0.3 + nodes * 0.6) * pulse;
+        
+        
+        // Static grid outlines (more subtle now)
         float borderX = min(smoothstep(0.0, 0.008, v_texCoord.x), smoothstep(0.0, 0.008, 1.0 - v_texCoord.x));
         float borderY = min(smoothstep(0.0, 0.008, v_texCoord.y), smoothstep(0.0, 0.008, 1.0 - v_texCoord.y));
         float border = 1.0 - (borderX * borderY);
         
-        // Static border color
-        vec3 borderColor = neonPink;
-        baseColor += borderColor * border * 0.6;
+        // Dimmed border color to not compete with particle effects
+        vec3 borderColor = neonPink * 0.6;
+        baseColor += borderColor * border * 0.3;
         
         gl_FragColor = vec4(baseColor, 1.0);
         
@@ -258,7 +388,7 @@ export default function WebGLGrid({
           
           // Add extra glow when very close
           if (wallProximity > 0.5) {
-            float glowWidth = wallBorderWidth * 1.5;
+            float glowWidth = wallBorderWidth * 1.15;
             float glowX = min(smoothstep(0.0, glowWidth, v_texCoord.x), smoothstep(0.0, glowWidth, 1.0 - v_texCoord.x));
             float glowY = min(smoothstep(0.0, glowWidth, v_texCoord.y), smoothstep(0.0, glowWidth, 1.0 - v_texCoord.y));
             float glow = 1.0 - (glowX * glowY);
@@ -269,58 +399,34 @@ export default function WebGLGrid({
         
         gl_FragColor = vec4(baseColor, 1.0);
         
-      } else if (u_tileType == 1.0) { // Player - Gravitational orb with orbiting particles
+      } else if (u_tileType == 1.0) { // Player - Energy orb with clean particle ring
         vec3 baseColor = vec3(0.0);
         
-        // CORE ORB - Gravitational center
-        float coreRadius = 0.035 + sin(time * 6.0) * 0.003;
-        float core = 1.0 - smoothstep(coreRadius - 0.015, coreRadius, dist);
-        float coreGlow = 1.0 - smoothstep(coreRadius, coreRadius + 0.02, dist);
+        // Bright energy core
+        float core = 1.0 - smoothstep(0.03, 0.06, dist);
+        float innerGlow = 1.0 - smoothstep(0.06, 0.12, dist);
         
-        // Bright white-hot core
-        baseColor += hologramWhite * core * 3.0;
-        baseColor += neonPink * coreGlow * 1.5;
+        baseColor += hologramWhite * core * 2.5;
+        baseColor += neonPink * innerGlow * 0.8;
         
-        // Inner energy field
-        float innerField = 1.0 - smoothstep(0.02, 0.08, dist);
-        baseColor += brightMagenta * innerField * 0.4 * (0.8 + sin(time * 10.0) * 0.2);
-        
-        // Render individual particles from uniform array
-        for (int i = 0; i < 60; i++) {
-          if (float(i) >= u_particleCount) break;
+        // Clean orbiting particle ring
+        for (int i = 0; i < 8; i++) {
+          float particleId = float(i);
+          float angle = particleId * 3.141/2.0 + cos(time * 1.0); // 8 particles, rotating
+          float radius = 0.1 + sin(time * 3.0 + particleId) * 0.2;
           
-          vec4 particle = u_particles[i];
-          vec2 particlePos = particle.xy;
-          vec2 particleVel = particle.zw;
-          
-          // Calculate particle distance from this fragment
+          vec2 particlePos = vec2(cos(angle), sin(angle)) * radius;
           float particleDist = distance(uv, particlePos);
           
-          // Particle glow based on velocity
-          float speed = length(particleVel);
-          float particleSize = 0.008 + speed * 0.02;
-          float particleGlow = exp(-particleDist * (120.0 / particleSize));
+          float particle = exp(-particleDist * 25.0);
+          float pulse = 0.28 + sin(time * 4.0 + particleId * 0.5) * 0.92;
           
-          // Color based on speed and distance from core
-          float distFromCore = length(particlePos);
-          vec3 particleColor = mix(neonPink, brightMagenta, distFromCore * 2.0);
-          particleColor = mix(particleColor, hologramWhite, speed * 5.0);
-          
-          baseColor += particleColor * particleGlow * 0.8;
-          
-          // Add subtle trail based on velocity
-          vec2 trailDir = normalize(particleVel);
-          for (int t = 1; t <= 3; t++) {
-            vec2 trailPos = particlePos - trailDir * float(t) * 0.01;
-            float trailDist = distance(uv, trailPos);
-            float trail = exp(-trailDist * 200.0) * (1.0 - float(t) * 0.3);
-            baseColor += particleColor * trail * 0.3;
-          }
+          vec3 particleColor = mix(brightCyan, hologramWhite, pulse);
+          baseColor += particleColor * particle * 0.8;
         }
         
-        
         // Discard completely transparent areas
-        if (length(baseColor) < 0.01) {
+        if (length(baseColor) < 1.) {
           discard;
         }
         
@@ -385,11 +491,12 @@ export default function WebGLGrid({
         
         gl_FragColor = vec4(baseColor, 1.0);
         
-      } else if (u_tileType == 4.0) { // Hole - Simple black hole with unified particle suction
-        vec3 baseColor = vec3(0.0);
+      } else if (u_tileType == 4.0) { // Hole - Black hole with blended edges
+        // Start with background color and fade to black towards center
+        vec3 baseColor = vec3(0.05, 0.08, 0.12) * (1.0 - smoothstep(0.3, 0.5, dist));
         
-        // Event horizon
-        float horizon = smoothstep(0.4, 0.3, dist);
+        // Event horizon with softer edge blending
+        float horizon = smoothstep(0.45, 0.35, dist);
         
         // Single unified particle system - all particles spiral inward
         for (int i = 0; i < 2; i++) {
@@ -531,12 +638,12 @@ export default function WebGLGrid({
         }
         
         // Ambient energy particles (always present) with gravitational attraction
-        for (int i = 0; i < 16; i++) {
+        for (int i = 0; i < 30; i++) {
           float ambientId = float(i);
           // Add randomness to ambient particle behavior
           float ambientRandom = hash(vec2(u_randomSeed + ambientId * 30.0, ambientId * 11.7));
           float ambientAngle = ambientId * 0.392699 + time * (0.8 + ambientRandom * 0.4) + ambientRandom * 6.28;
-          float ambientDist = 0.3 + sin(time * (1.1 + ambientRandom * 0.3) + ambientId + ambientRandom * 3.14) * (0.08 + ambientRandom * 0.03);
+          float ambientDist = 0.2 + sin(time * (1.1 + ambientRandom * 0.3) + ambientId + ambientRandom * 3.141) * (0.08 + ambientRandom * 0.03);
           
           vec2 ambientPos = vec2(cos(ambientAngle), sin(ambientAngle)) * ambientDist;
           
@@ -547,7 +654,8 @@ export default function WebGLGrid({
           float shadowDistance = length(fragmentToShadow);
           
           // Gentler gravitational effect for ambient particles
-          float ambientGravityStrength = 0.15 / max(shadowDistance, 0.8);
+          float ambientGravityStrength = 0.95 / max(shadowDistance*shadowDistance, 0.18);
+          
           float ambientGravityRange = 2.5;
           float ambientGravityFalloff = 1.0 - smoothstep(0.0, ambientGravityRange, shadowDistance);
           
@@ -582,11 +690,11 @@ export default function WebGLGrid({
         float playerDist = distance(u_tileGridPos, u_currentPos);
         // If player is within 1.5 units, increase border width smoothly
         float proximity = 1.0 - smoothstep(0.0, 1.5, playerDist);
-        float borderWidth = 3.0*mix(0.06, 0.25, proximity);
+        float borderWidth = mix(0.06, 0.25, proximity);
         
         // Calculate border width based on distance to shadow position  
         float shadowProximity = 1.0 - smoothstep(0.0, 2.0, shadowDistance);
-        float realBorderWidth = 3.0*0.06; // Keep border width constant
+        float realBorderWidth = 0.06; // Keep border width constant
         
         // Color transition: cyan -> green -> bright green as proximity increases
         
@@ -608,7 +716,7 @@ export default function WebGLGrid({
 
         // Red borders for blocked sides with proximity glow
         vec3 blockedColor = vec3(1.0, 0.1, 0.2); // Red for blocked sides
-        float blockedBorderWidth = 3.0*mix(0.04, 0.18, shadowProximity); // Width increases with proximity
+        float blockedBorderWidth = mix(0.04, 0.18, shadowProximity); // Width increases with proximity
         float blockedIntensity = 0.6 + shadowProximity * 0.4; // Glow increases with proximity
         
         // Top border - blocked if can't move down
@@ -763,7 +871,6 @@ export default function WebGLGrid({
     return program;
   }, []);
 
-
   const getTileTypeValue = (tileType: TileType): number => {
     switch (tileType) {
     case TileType.Default:
@@ -914,7 +1021,6 @@ export default function WebGLGrid({
       canvas.width = displayWidth;
       canvas.height = displayHeight;
       console.log('Canvas resized to:', displayWidth, 'x', displayHeight);
-
     }
 
     gl.viewport(0, 0, canvas.width, canvas.height);
@@ -1457,7 +1563,6 @@ export default function WebGLGrid({
 
     gl.deleteBuffer(positionBuffer);
     gl.deleteBuffer(texCoordBuffer);
-
   }, [gameState, width, height, game, getInterpolatedPosition, disableAnimation]);
 
   // Detect game state changes and set up animations
@@ -1588,10 +1693,6 @@ export default function WebGLGrid({
 
       return;
     }
-
-
-
-
 
     gl.clearColor(0.0, 0.0, 0.0, 0.0); // Transparent background
     gl.enable(gl.BLEND);
