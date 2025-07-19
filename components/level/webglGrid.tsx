@@ -549,12 +549,12 @@ export default function WebGLGrid({
         float movementIntensity = length(blockMovement);
         
         // Core particle field around block with gravitational attraction to player
-        for (int i = 0; i < 2; i++) {
+        for (int i = 0; i < 20; i++) {
           float particleId = float(i);
           // Add randomness using the tile's random seed
           float randomOffset = hash(vec2(u_randomSeed + particleId, particleId * 3.7));
-          float particleAngle = particleId * 0.314159 + time * (1.2 + randomOffset * 0.3) + randomOffset * 6.28; 
-          float particleDist = 0.25 + sin(time * (1.5 + randomOffset * 0.5) + particleId + randomOffset * 3.14) * (0.06 + randomOffset * 0.02);
+          float particleAngle = particleId * 3.14159/2.0 + time * (1.2 + randomOffset * 0.3) + randomOffset * 6.28; 
+          float particleDist = 0.25*cos(time) + sin(time * (1.5 + randomOffset * 0.5) + particleId + randomOffset * 3.14) * (0.06 + randomOffset * 0.02);
           
           vec2 basePos = vec2(cos(particleAngle), sin(particleAngle)) * particleDist;
           
@@ -574,7 +574,7 @@ export default function WebGLGrid({
           vec2 laggedPos = gravitationallyAttractedPos - blockMovement * lagAmount;
           
           float distance1 = distance(uv, laggedPos);
-          float particle = exp(-distance1 * 15.0);
+          float particle = exp(-distance1 * 10.0);
           
           // Intensity increases when player is closer
           float intensity = 0.8 + gravityFalloff * 0.4;
