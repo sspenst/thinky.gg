@@ -220,6 +220,8 @@ export default function WebGLGrid({
       vec3 hologramWhite = vec3(1.0, 0.9, 0.95);
       vec3 brightCyan = vec3(0.3, 1.0, 1.0);
       vec3 neonBlue = vec3(0.2, 0.6, 1.0);
+      vec3 green = vec3(0.2, 1.0, 0.2);
+      vec3 orange = vec3(1.0, 0.5, 0.0);
       vec2 shadowWorldPos = u_shadowPos;
       vec2 fragmentToShadow = shadowWorldPos - u_tileGridPos;
       float shadowDistance = length(fragmentToShadow);
@@ -317,7 +319,7 @@ export default function WebGLGrid({
         vec2 gridFract = fract(gridPos);
         
         // Create thin grid lines
-        float lineWidth = 0.05 + vibrationStrength * 0.03;
+        float lineWidth = 0.05 + vibrationStrength * 0.03+playerDistance*100000.;
         float hLine = smoothstep(lineWidth, 0.0, abs(gridFract.y - 0.5));
         float vLine = smoothstep(lineWidth, 0.0, abs(gridFract.x - 0.5));
         
@@ -548,37 +550,94 @@ export default function WebGLGrid({
         vec2 blockMovement = (u_shadowPos - u_previousPos) * 0.015;
         float movementIntensity = length(blockMovement);
         
-        // Core particle field around block with gravitational attraction to player
-        for (int i = 0; i < 20; i++) {
-          float particleId = float(i);
-          // Add randomness using the tile's random seed
-          float randomOffset = hash(vec2(u_randomSeed + particleId, particleId * 3.7));
-          float particleAngle = particleId * 3.14159/2.0 + time * (1.2 + randomOffset * 0.3) + randomOffset * 6.28; 
-          float particleDist = 0.25*cos(time) + sin(time * (1.5 + randomOffset * 0.5) + particleId + randomOffset * 3.14) * (0.06 + randomOffset * 0.02);
-          
-          vec2 basePos = vec2(cos(particleAngle), sin(particleAngle)) * particleDist;
-          
-          // Calculate gravitational attraction based on the current fragment's world position using shadow position
-          vec2 currentFragmentWorldPos = u_tileGridPos + (v_texCoord - 0.5); // Current fragment's world position
-          
-          // Apply gravitational pull when shadow is nearby (within 3 tiles)
-          float gravityStrength = 0.3 / max(shadowDistance, 0.5); // Stronger when closer
-          float maxGravityRange = 3.0;
-          float gravityFalloff = 1.0 - smoothstep(0.0, maxGravityRange, shadowDistance);
-          
-          vec2 gravityDirection = normalize(fragmentToShadow) * gravityStrength * gravityFalloff;
-          vec2 gravitationallyAttractedPos = basePos + gravityDirection * 0.4;
-          
-          // Apply real lag effect
-          float lagAmount = 0.2 + particleId * 0.015;
-          vec2 laggedPos = gravitationallyAttractedPos - blockMovement * lagAmount;
-          
-          float distance1 = distance(uv, laggedPos);
-          float particle = exp(-distance1 * 10.0);
-          
-          // Intensity increases when player is closer
-          float intensity = 0.8 + gravityFalloff * 0.4;
-          baseColor += neonBlue * particle * intensity;
+        // Calculate shadow proximity for particle effects
+        float shadowProximity = 1.0 - smoothstep(0.0, 2.0, shadowDistance);
+        
+        // Directional flow particles showing push directions
+        float pushIntensity = 0.6 + shadowProximity * 0.4;
+        
+        // Particles flowing right (if can be pushed right)
+        if (u_canMoveRight > 0.5) {
+          for (int i = 0; i < 6; i++) {
+            float particleId = float(i);
+            float particleRandom = hash(vec2(u_randomSeed + particleId * 10.0, particleId * 7.1));
+            
+            // Flow from left to right
+            float flowProgress = fract(time * (0.8 + particleRandom * 0.4) + particleRandom);
+            vec2 particlePos = vec2(
+              flowProgress * 0.8 + 0.1,  // Move left to right
+              0.2 + particleId * 0.1 + particleRandom * 0.2  // Spread vertically
+            );
+            
+            float particleDist = distance(v_texCoord, particlePos);
+            float particle = exp(-particleDist * 40.0);
+            float brightness = (1.0 - flowProgress) * pushIntensity;
+            
+            baseColor += brightCyan * particle * brightness;
+          }
+        }
+        
+        // Particles flowing left (if can be pushed left)  
+        if (u_canMoveLeft > 0.5) {
+          for (int i = 0; i < 6; i++) {
+            float particleId = float(i);
+            float particleRandom = hash(vec2(u_randomSeed + particleId * 15.0, particleId * 8.3));
+            
+            // Flow from right to left
+            float flowProgress = fract(time * (0.8 + particleRandom * 0.4) + particleRandom);
+            vec2 particlePos = vec2(
+              0.9 - flowProgress * 0.8,  // Move right to left
+              0.2 + particleId * 0.1 + particleRandom * 0.2  // Spread vertically
+            );
+            
+            float particleDist = distance(v_texCoord, particlePos);
+            float particle = exp(-particleDist * 40.0);
+            float brightness = (1.0 - flowProgress) * pushIntensity;
+            
+            baseColor += brightCyan * particle * brightness;
+          }
+        }
+        
+        // Particles flowing down (if can be pushed down)
+        if (u_canMoveDown > 0.5) {
+          for (int i = 0; i < 6; i++) {
+            float particleId = float(i);
+            float particleRandom = hash(vec2(u_randomSeed + particleId * 20.0, particleId * 9.7));
+            
+            // Flow from top to bottom
+            float flowProgress = fract(time * (0.8 + particleRandom * 0.4) + particleRandom);
+            vec2 particlePos = vec2(
+              0.2 + particleId * 0.1 + particleRandom * 0.2,  // Spread horizontally
+              flowProgress * 0.8 + 0.1  // Move top to bottom
+            );
+            
+            float particleDist = distance(v_texCoord, particlePos);
+            float particle = exp(-particleDist * 40.0);
+            float brightness = (1.0 - flowProgress) * pushIntensity;
+            
+            baseColor += brightCyan * particle * brightness;
+          }
+        }
+        
+        // Particles flowing up (if can be pushed up)
+        if (u_canMoveUp > 0.5) {
+          for (int i = 0; i < 6; i++) {
+            float particleId = float(i);
+            float particleRandom = hash(vec2(u_randomSeed + particleId * 25.0, particleId * 11.1));
+            
+            // Flow from bottom to top
+            float flowProgress = fract(time * (0.8 + particleRandom * 0.4) + particleRandom);
+            vec2 particlePos = vec2(
+              0.2 + particleId * 0.1 + particleRandom * 0.2,  // Spread horizontally
+              0.9 - flowProgress * 0.8  // Move bottom to top
+            );
+            
+            float particleDist = distance(v_texCoord, particlePos);
+            float particle = exp(-particleDist * 40.0);
+            float brightness = (1.0 - flowProgress) * pushIntensity;
+            
+            baseColor += brightCyan * particle * brightness;
+          }
         }
         
         // SPARKING particles when being pushed
@@ -603,7 +662,7 @@ export default function WebGLGrid({
           }
           
           // Additional random flying sparks with gravitational attraction
-          for (int i = 0; i < 20; i++) {
+          for (int i = 0; i < 100; i++) {
             float flyId = float(i);
             // Add randomness to flying spark behavior
             float flyRandom = hash(vec2(u_randomSeed + flyId * 20.0, flyId * 7.1));
@@ -638,7 +697,7 @@ export default function WebGLGrid({
         }
         
         // Ambient energy particles (always present) with gravitational attraction
-        for (int i = 0; i < 30; i++) {
+        for (int i = 0; i < 1; i++) {
           float ambientId = float(i);
           // Add randomness to ambient particle behavior
           float ambientRandom = hash(vec2(u_randomSeed + ambientId * 30.0, ambientId * 11.7));
@@ -675,7 +734,7 @@ export default function WebGLGrid({
         }
         
         // Trail particles showing movement history
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 3; i++) {
           float trailId = float(i);
           vec2 trailPos = blockMovement/2.0 * (0.15  * 0.04);
           
@@ -693,13 +752,13 @@ export default function WebGLGrid({
         float borderWidth = mix(0.06, 0.25, proximity);
         
         // Calculate border width based on distance to shadow position  
-        float shadowProximity = 1.0 - smoothstep(0.0, 2.0, shadowDistance);
-        float realBorderWidth = 0.06; // Keep border width constant
+        float realBorderWidth = 0.25; // Keep border width constant
         
         // Color transition: cyan -> green -> bright green as proximity increases
         
         vec3 proximityColor = vec3(0.2, 1.0, 0.2); // Bright green
-        vec3 baseMovementColor = brightCyan * 0.9;
+
+        vec3 baseMovementColor = orange * 0.9;
         vec3 moveColor = mix(baseMovementColor, proximityColor, shadowProximity);
         
         // Dynamic stream count based on shadow distance: 1 when far, 3 when close
@@ -712,11 +771,11 @@ export default function WebGLGrid({
         float streamSpeed = baseStreamSpeed;
         
         // Glow intensity for movement borders
-        float moveGlow = 1.0 + shadowProximity/10.0 * 11.5; // Extra glow when close
+        float moveGlow = 3.;//1.0 + shadowProximity/10.0 * 11.5; // Extra glow when close
 
         // Red borders for blocked sides with proximity glow
         vec3 blockedColor = vec3(1.0, 0.1, 0.2); // Red for blocked sides
-        float blockedBorderWidth = mix(0.04, 0.18, shadowProximity); // Width increases with proximity
+        float blockedBorderWidth = mix(0.5, 0.53, shadowProximity); // Width increases with proximity
         float blockedIntensity = 0.6 + shadowProximity * 0.4; // Glow increases with proximity
         
         // Top border - blocked if can't move down
@@ -776,53 +835,27 @@ export default function WebGLGrid({
           float topBorder = 1.0 - smoothstep(0.0, realBorderWidth, v_texCoord.y);
           baseColor = mix(baseColor, moveColor, topBorder * 0.8 * moveGlow);
           
-          // Particle stream along border
-          for (int i = 0; i < maxStreamCount; i++) {
-            if (float(i) >= dynamicStreamCount) break;
-            float streamX = fract(float(i) * 0.125 + time * streamSpeed);
-            float streamDist = abs(v_texCoord.x - streamX);
-            float stream = exp(-streamDist * 20.0) * topBorder;
-            baseColor += hologramWhite * stream * moveGlow;
-          }
+         
         }
         
         if (u_canMoveUp > 0.5) {
           float bottomBorder = 1.0 - smoothstep(0.0, realBorderWidth, 1.0 - v_texCoord.y);
           baseColor = mix(baseColor, moveColor, bottomBorder * 0.8 * moveGlow);
           
-          for (int i = 0; i < maxStreamCount; i++) {
-            if (float(i) >= dynamicStreamCount) break;
-            float streamX = fract(float(i) * 0.125 - time * streamSpeed);
-            float streamDist = abs(v_texCoord.x - streamX);
-            float stream = exp(-streamDist * 20.0) * bottomBorder;
-            baseColor += hologramWhite * stream * moveGlow;
-          }
+         
         }
         
         if (u_canMoveRight > 0.5) {
           float leftBorder = 1.0 - smoothstep(0.0, realBorderWidth, v_texCoord.x);
           baseColor = mix(baseColor, moveColor, leftBorder * 0.8 * moveGlow);
-          
-          for (int i = 0; i < maxStreamCount; i++) {
-            if (float(i) >= dynamicStreamCount) break;
-            float streamY = fract(float(i) * 0.125 + time * streamSpeed);
-            float streamDist = abs(v_texCoord.y - streamY);
-            float stream = exp(-streamDist * 20.0) * leftBorder;
-            baseColor += hologramWhite * stream * moveGlow;
-          }
+        
         }
         
         if (u_canMoveLeft > 0.5) {
           float rightBorder = 1.0 - smoothstep(0.0, realBorderWidth, 1.0 - v_texCoord.x);
           baseColor = mix(baseColor, moveColor, rightBorder * 0.8 * moveGlow);
           
-          for (int i = 0; i < maxStreamCount; i++) {
-            if (float(i) >= dynamicStreamCount) break;
-            float streamY = fract(float(i) * 0.125 - time * streamSpeed);
-            float streamDist = abs(v_texCoord.y - streamY);
-            float stream = exp(-streamDist * 20.0) * rightBorder;
-            baseColor += hologramWhite * stream * moveGlow;
-          }
+          
         }
         
         
