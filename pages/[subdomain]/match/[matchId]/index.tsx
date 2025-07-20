@@ -1,6 +1,7 @@
 import LevelCard from '@root/components/cards/levelCard';
 import GameRefactored from '@root/components/level/game-refactored';
 import Grid from '@root/components/level/grid';
+import HeadToHeadDisplay from '@root/components/multiplayer/headToHeadDisplay';
 import MatchResults from '@root/components/multiplayer/matchResults';
 import { MatchGameState } from '@root/helpers/gameStateHelpers';
 import useSWRHelper from '@root/hooks/useSWRHelper';
@@ -19,15 +20,18 @@ import FormattedUser from '../../../../components/formatted/formattedUser';
 import MatchChart from '../../../../components/multiplayer/matchChart';
 import MatchStatus from '../../../../components/multiplayer/matchStatus';
 import Page from '../../../../components/page/page';
-import SkeletonPage from '../../../../components/page/skeletonPage';
 import StyledTooltip from '../../../../components/page/styledTooltip';
 import Dimensions from '../../../../constants/dimensions';
 import { AppContext } from '../../../../contexts/appContext';
+import { getGameIdFromReq } from '../../../../helpers/getGameIdFromReq';
+import { getMatch } from '../../../../helpers/match/getMatch';
+import dbConnect from '../../../../lib/dbConnect';
 import { getUserFromToken } from '../../../../lib/withAuth';
 import { MatchAction, MatchLogDataGameRecap, MatchLogDataLevelComplete, MatchLogDataUserLeveId, MultiplayerMatchState } from '../../../../models/constants/multiplayer';
 import Control from '../../../../models/control';
 import Level from '../../../../models/db/level';
 import MultiplayerMatch from '../../../../models/db/multiplayerMatch';
+import { enrichMultiplayerMatch } from '../../../../models/schemas/multiplayerMatchSchema';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const token = context.req?.cookies?.token;
@@ -43,17 +47,74 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     };
   }
 
+  await dbConnect();
+
+  const { matchId } = context.query;
+  let initialMatch = null;
+
+  try {
+    // Get the game ID from the request
+    const gameId = getGameIdFromReq(context.req);
+
+    // Use the same method as the socket server to get match data
+    const match = await getMatch(gameId, matchId as string, reqUser);
+
+    if (match) {
+      // Clone and enrich the match data
+      const matchClone = JSON.parse(JSON.stringify(match));
+
+      enrichMultiplayerMatch(matchClone, reqUser._id.toString());
+
+      // Ensure all Date objects are serialized to strings for Next.js
+      initialMatch = JSON.parse(JSON.stringify(matchClone));
+    }
+  } catch (error) {
+    console.error('Error fetching match:', error);
+  }
+
   return {
-    props: {},
+    props: {
+      initialMatch,
+    },
   };
 }
 
+interface MatchProps {
+  initialMatch?: MultiplayerMatch | null;
+}
+
 /* istanbul ignore next */
-export default function Match() {
+export default function Match({ initialMatch }: MatchProps) {
+  // Helper function to ensure dates are Date objects
+  const normalizeMatchDates = (match: MultiplayerMatch | undefined): MultiplayerMatch | undefined => {
+    if (!match) return match;
+
+    // Convert string dates back to Date objects for component logic
+    const normalized = { ...match };
+
+    if (typeof normalized.startTime === 'string') {
+      normalized.startTime = new Date(normalized.startTime);
+    }
+
+    if (typeof normalized.endTime === 'string') {
+      normalized.endTime = new Date(normalized.endTime);
+    }
+
+    if (typeof normalized.createdAt === 'string') {
+      normalized.createdAt = new Date(normalized.createdAt);
+    }
+
+    if (typeof normalized.updatedAt === 'string') {
+      normalized.updatedAt = new Date(normalized.updatedAt);
+    }
+
+    return normalized;
+  };
+
   // the current level (for users in game)
   const [activeLevel, setActiveLevel] = useState<Level | null>(null);
   const [connectedPlayersInRoom, setConnectedPlayersInRoom] = useState<{count: number, users: UserWithMultiplayerProfile[]}>();
-  const [match, setMatch] = useState<MultiplayerMatch>();
+  const [match, setMatch] = useState<MultiplayerMatch | undefined>(normalizeMatchDates(initialMatch || undefined) || undefined);
   const { game, multiplayerSocket, sounds, user } = useContext(AppContext);
   const readyMark = useRef(false);
   const router = useRouter();
@@ -140,7 +201,7 @@ export default function Match() {
       setConnectedPlayersInRoom(players as {count: number, users: UserWithMultiplayerProfile[]});
     });
     socketConn.on('match', (match: MultiplayerMatch) => {
-      setMatch(match);
+      setMatch(normalizeMatchDates(match));
     });
     socketConn.on('matchNotFound', () => {
       toast.dismiss();
@@ -312,7 +373,18 @@ export default function Match() {
   }, [match]);
 
   if (!match) {
-    return <SkeletonPage />;
+    return (
+      <Page title='Loading Match...'>
+        <div className='flex flex-col items-center justify-center min-h-[400px] gap-4'>
+          <div className='text-xl'>Loading match data...</div>
+          {initialMatch ? (
+            <div className='text-sm text-gray-500'>Connecting to live updates...</div>
+          ) : (
+            <div className='text-sm text-gray-500'>Fetching match details...</div>
+          )}
+        </div>
+      </Page>
+    );
   }
 
   match.matchLog = match.matchLog?.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()) ?? [];
@@ -439,11 +511,16 @@ export default function Match() {
           }
         </h1>
         {/* if you are in the game and the game is about to start then say Your Record */}
-        {!matchInProgress && !loadingHeadToHead && match.players.length === 2 &&
-          <h2 className='text-xl font-bold text-center p-3'>
-            {match.players[0].name} record against {match.players[1]?.name} is {headToHead?.totalWins} - {headToHead?.totalLosses} - {headToHead?.totalTies}
-          </h2>
-        }
+        {!matchInProgress && !loadingHeadToHead && match.players.length === 2 && headToHead && (
+          <HeadToHeadDisplay
+            player1Name={match.players[0].name}
+            player2Name={match.players[1]?.name || ''}
+            wins={headToHead.totalWins}
+            losses={headToHead.totalLosses}
+            ties={headToHead.totalTies}
+            className='max-w-md mx-auto mt-4'
+          />
+        )}
         { match.state === MultiplayerMatchState.ABORTED &&
           <h2>
             {playersNotMarkedReady.map(player => (

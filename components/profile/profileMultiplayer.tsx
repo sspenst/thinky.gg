@@ -100,6 +100,7 @@ export default function ProfileMultiplayer({ user }: ProfileMultiplayerProps) {
     <div className='flex flex-col gap-4 text-center justify-center items-center'>
       <div className='flex flex-row gap-2  text-center justify-center items-center'>
         <MultiSelectUser
+          className='min-w-40'
           defaultValue={compare}
           onSelect={(selected: User) => {
             setPage(0);
