@@ -1,6 +1,6 @@
 import useProStatsUser, { ProStatsUserType } from '@root/hooks/useProStatsUser';
 import dayjs from 'dayjs';
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Bar, CartesianGrid, ComposedChart, Legend, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { DateAndSum } from '../../contexts/levelContext';
 import User from '../../models/db/user';
@@ -83,6 +83,7 @@ export default function ProfileInsightsScoreChart({ user }: { user: User }) {
     <div className='w-full flex flex-col gap-2'>
       <div className='flex flex-row gap-2 justify-center align-center items-center p-1'>
         <MultiSelectUser
+          className='min-w-40'
           onSelect={(user) => {
             setCompareUser(user);
           }}

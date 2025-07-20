@@ -115,7 +115,7 @@ export default function LevelCard({ href, id, level, onClick }: LevelCardProps) 
       {showGameLabel &&
           <div className='absolute top-1 left-1 p-1' data-tooltip-content={level.gameId || pageGame.id} data-tooltip-id={'game-label-tooltip-' + level._id.toString()}>
             <GameLogo clickable gameId={level.gameId || pageGame.id} id={'level'} size={16} />
-            <StyledTooltip id={'game-label-tooltip-' + level._id.toString()} />
+            <StyledTooltip id={'game-label-tooltip-' + level._id.toString() + '-' + id} />
           </div>
       }
       <div className='flex justify-between'>
@@ -143,7 +143,7 @@ export default function LevelCard({ href, id, level, onClick }: LevelCardProps) 
               <FormattedUser
                 className='font-medium text-sm gray'
                 hideAvatar
-                id='level-card-author'
+                id={'level-card-author-' + id}
                 size={Dimensions.AvatarSizeSmall}
                 user={user}
               />
