@@ -128,10 +128,159 @@ export default function WebGLGrid({
     uniform vec2 u_mousePos; // Mouse position in grid coordinates
     uniform vec2 u_shadowPos; // Shadow position that follows player with easing
     uniform float u_randomSeed; // Random seed for this tile
+    uniform float u_currentStepCount; // Current step count from gameState.moves.length
+    uniform float u_goalStepCount; // Goal step count (leastMoves)
+    uniform float u_trailStepCount; // Step count for trail blocks
     
     // Hash function for noise
     float hash(vec2 p) {
       return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+    }
+    
+    // Bitmap font rendering function for digits 0-9 (GLSL ES 2.0 compatible)
+    float renderDigit(vec2 uv, float digit) {
+      // Normalize UV to 0-1 range for a single digit
+      vec2 duv = fract(uv * 1.0);
+      
+      // Convert UV to pixel coordinates (5x7 grid)
+      float x = floor(duv.x * 5.0);
+      float y = floor(duv.y * 7.0);
+      
+      // Use mathematical conditions instead of arrays
+      float result = 0.0;
+      
+      if (digit < 0.5) { // 0
+        if ((y == 0.0 && x >= 1.0 && x <= 3.0) ||
+            (y == 6.0 && x >= 1.0 && x <= 3.0) ||
+            ((y >= 1.0 && y <= 5.0) && (x == 0.0 || x == 4.0))) {
+          result = 1.0;
+        }
+      } else if (digit < 1.5) { // 1
+        if ((y == 0.0 && x == 2.0) ||
+            (y == 1.0 && (x == 1.0 || x == 2.0)) ||
+            ((y >= 2.0 && y <= 5.0) && x == 2.0) ||
+            (y == 6.0 && x >= 1.0 && x <= 3.0)) {
+          result = 1.0;
+        }
+      } else if (digit < 2.5) { // 2
+        if ((y == 0.0 && x >= 1.0 && x <= 3.0) ||
+            (y == 1.0 && (x == 0.0 || x == 4.0)) ||
+            (y == 2.0 && x == 4.0) ||
+            (y == 3.0 && x == 3.0) ||
+            (y == 4.0 && x == 2.0) ||
+            (y == 5.0 && x == 1.0) ||
+            (y == 6.0)) {
+          result = 1.0;
+        }
+      } else if (digit < 3.5) { // 3
+        if ((y == 0.0 && x >= 1.0 && x <= 3.0) ||
+            (y == 1.0 && (x == 0.0 || x == 4.0)) ||
+            (y == 2.0 && x == 4.0) ||
+            (y == 3.0 && x >= 2.0 && x <= 3.0) ||
+            (y == 4.0 && x == 4.0) ||
+            (y == 5.0 && (x == 0.0 || x == 4.0)) ||
+            (y == 6.0 && x >= 1.0 && x <= 3.0)) {
+          result = 1.0;
+        }
+      } else if (digit < 4.5) { // 4
+        if ((y == 0.0 && x == 3.0) ||
+            (y == 1.0 && (x == 2.0 || x == 3.0)) ||
+            (y == 2.0 && (x == 1.0 || x == 3.0)) ||
+            (y == 3.0 && (x == 0.0 || x == 3.0)) ||
+            (y == 4.0) ||
+            ((y == 5.0 || y == 6.0) && x == 3.0)) {
+          result = 1.0;
+        }
+      } else if (digit < 5.5) { // 5
+        if ((y == 0.0) ||
+            ((y == 1.0 || y == 2.0) && x == 0.0) ||
+            (y == 3.0 && x <= 3.0) ||
+            (y == 4.0 && x == 4.0) ||
+            (y == 5.0 && (x == 0.0 || x == 4.0)) ||
+            (y == 6.0 && x >= 1.0 && x <= 3.0)) {
+          result = 1.0;
+        }
+      } else if (digit < 6.5) { // 6
+        if ((y == 0.0 && x >= 1.0 && x <= 3.0) ||
+            (y == 1.0 && (x == 0.0 || x == 4.0)) ||
+            (y == 2.0 && x == 0.0) ||
+            (y == 3.0 && x <= 3.0) ||
+            ((y >= 4.0 && y <= 5.0) && (x == 0.0 || x == 4.0)) ||
+            (y == 6.0 && x >= 1.0 && x <= 3.0)) {
+          result = 1.0;
+        }
+      } else if (digit < 7.5) { // 7
+        if ((y == 0.0) ||
+            (y == 1.0 && x == 4.0) ||
+            (y == 2.0 && x == 3.0) ||
+            (y == 3.0 && x == 2.0) ||
+            ((y >= 4.0 && y <= 6.0) && x == 1.0)) {
+          result = 1.0;
+        }
+      } else if (digit < 8.5) { // 8
+        if ((y == 0.0 && x >= 1.0 && x <= 3.0) ||
+            ((y == 1.0 || y == 2.0) && (x == 0.0 || x == 4.0)) ||
+            (y == 3.0 && x >= 1.0 && x <= 3.0) ||
+            ((y == 4.0 || y == 5.0) && (x == 0.0 || x == 4.0)) ||
+            (y == 6.0 && x >= 1.0 && x <= 3.0)) {
+          result = 1.0;
+        }
+      } else if (digit < 9.5) { // 9
+        if ((y == 0.0 && x >= 1.0 && x <= 3.0) ||
+            ((y == 1.0 || y == 2.0) && (x == 0.0 || x == 4.0)) ||
+            (y == 3.0 && x >= 1.0) ||
+            (y == 4.0 && x == 4.0) ||
+            (y == 5.0 && (x == 0.0 || x == 4.0)) ||
+            (y == 6.0 && x >= 1.0 && x <= 3.0)) {
+          result = 1.0;
+        }
+      }
+      
+      return result;
+    }
+    
+    // Render multi-digit number at given position with scale
+    float renderNumber(vec2 uv, float number, vec2 position, float scale) {
+      // Offset UV by position and scale
+      vec2 numberUV = (uv - position) / scale;
+      
+      // Only render if within bounds
+      if (numberUV.x < 0.0 || numberUV.y < 0.0 || numberUV.y > 1.0) return 0.0;
+      
+      // Extract digits (support up to 3 digits)
+      float absNumber = abs(number);
+      float hundreds = floor(absNumber / 100.0);
+      float tens = floor(mod(absNumber, 100.0) / 10.0);
+      float ones = mod(absNumber, 10.0);
+      
+      // Determine number of digits to display
+      float digitCount = 1.0;
+      if (absNumber >= 10.0) digitCount = 2.0;
+      if (absNumber >= 100.0) digitCount = 3.0;
+      
+      // Total width needed for all digits
+      float totalWidth = digitCount * 0.6; // Each digit takes 0.6 width units
+      
+      // Check if we're outside the number bounds
+      if (numberUV.x > totalWidth) return 0.0;
+      
+      // Determine which digit we're in
+      float digitIndex = floor(numberUV.x / 0.6);
+      vec2 digitUV = vec2(mod(numberUV.x, 0.6) / 0.6, numberUV.y);
+      
+      float result = 0.0;
+      if (digitCount == 3.0) {
+        if (digitIndex < 0.5) result = renderDigit(digitUV, hundreds);
+        else if (digitIndex < 1.5) result = renderDigit(digitUV, tens);
+        else if (digitIndex < 2.5) result = renderDigit(digitUV, ones);
+      } else if (digitCount == 2.0) {
+        if (digitIndex < 0.5) result = renderDigit(digitUV, tens);
+        else if (digitIndex < 1.5) result = renderDigit(digitUV, ones);
+      } else {
+        if (digitIndex < 0.5) result = renderDigit(digitUV, ones);
+      }
+      
+      return result;
     }
     
     // Generate starry cosmic pattern for tiles
@@ -229,6 +378,11 @@ export default function WebGLGrid({
       if (u_tileType == 0.0) { // Default - Atmospheric background with floating energy particles
         vec3 baseColor = vec3(0.05, 0.08, 0.12); // Dark blue background
         
+        // Add solid dark purple background for visited tiles
+        if (u_trailStepCount >= 0.0) {
+          baseColor = vec3(0.15, 0.05, 0.5); // Solid dark purple background
+        }
+        
         // Ambient floating particles with random positions per tile
         for (int i = 0; i < 6; i++) {
           float particleId = float(i);
@@ -281,7 +435,7 @@ export default function WebGLGrid({
         }
         
         // Network connections between particles (create energy web effect)
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 10; i++) {
           float lineId = float(i);
           float lineRandom = hash(vec2(u_randomSeed + lineId * 40.0, lineId * 17.0));
           
@@ -368,6 +522,24 @@ export default function WebGLGrid({
         vec3 borderColor = neonPink * 0.6;
         baseColor += borderColor * border * 0.3;
         
+        // Display trail step count if this tile has been visited (centered) or if it is the start tile
+        if (u_trailStepCount >= 0.0) {
+          float numDigitsInTrailCount = 1.0;
+          if (u_trailStepCount > 9.0) {
+            numDigitsInTrailCount = 1.7;
+          }
+          if (u_trailStepCount > 99.0) {
+            numDigitsInTrailCount = 3.0;
+          }
+          float size = 0.3;
+          float xOffset = 0.52 - size/2.0 - size*(numDigitsInTrailCount-1.0)/2.0;
+          float yOffset = 0.5 - size/2.0;
+          float trailNumber = renderNumber(v_texCoord, u_trailStepCount, vec2(xOffset, yOffset), size);
+          if (trailNumber > 0.5) {
+            baseColor = mix(baseColor, vec3(1.0, 0.8, 0.0), 1.0); // Golden trail text
+          }
+        }
+        
         gl_FragColor = vec4(baseColor, 1.0);
         
       } else if (u_tileType == 0.5) { // Wall - Solid black with red proximity borders
@@ -404,6 +576,9 @@ export default function WebGLGrid({
       } else if (u_tileType == 1.0) { // Player - Energy orb with clean particle ring
         vec3 baseColor = vec3(0.0);
         
+        // Add neon pink background for the tile
+        baseColor += neonPink ;
+        
         // Bright energy core
         float core = 1.0 - smoothstep(0.03, 0.06, dist);
         float innerGlow = 1.0 - smoothstep(0.06, 0.12, dist);
@@ -411,11 +586,12 @@ export default function WebGLGrid({
         baseColor += hologramWhite * core * 2.5;
         baseColor += neonPink * innerGlow * 0.8;
         
+
         // Clean orbiting particle ring
         for (int i = 0; i < 8; i++) {
           float particleId = float(i);
           float angle = particleId * 3.141/2.0 + cos(time * 1.0); // 8 particles, rotating
-          float radius = 0.1 + sin(time * 3.0 + particleId) * 0.2;
+          float radius = 0.01 + sin(time * 3.0 + particleId) * 0.2;
           
           vec2 particlePos = vec2(cos(angle), sin(angle)) * radius;
           float particleDist = distance(uv, particlePos);
@@ -427,8 +603,29 @@ export default function WebGLGrid({
           baseColor += particleColor * particle * 0.8;
         }
         
+        // Display current step count (centered on player)
+        float numDigitsInStepCount = 1.0;
+        if (u_currentStepCount > 9.0) {
+          numDigitsInStepCount = 1.7;
+        }
+        if (u_currentStepCount > 99.0) {
+          numDigitsInStepCount = 3.0;
+        }
+        if (u_currentStepCount > 999.0) {
+          numDigitsInStepCount = 4.0;
+        }
+        float size = 0.3;
+        float xOffset = 0.55 - size/2.0 - size*(numDigitsInStepCount-1.0)/2.0;
+        float yOffset = 0.5 - size/2.0;
+        float stepNumber = renderNumber(v_texCoord, u_currentStepCount, vec2(xOffset, yOffset), size);
+        if (stepNumber > 0.5) {
+          baseColor = mix(baseColor, vec3(0.0, 0., 1.), 1.0); // Black
+        }
+                
+
+        
         // Discard completely transparent areas
-        if (length(baseColor) < 1.) {
+        if (length(baseColor) < 0.3) {
           discard;
         }
         
@@ -491,60 +688,102 @@ export default function WebGLGrid({
         float distortion = sin(dist * 20.0 - time * 3.0) * 0.1 * (1.0 - dist);
         baseColor *= (1.0 + distortion);
         
-        gl_FragColor = vec4(baseColor, 1.0);
-        
-      } else if (u_tileType == 4.0) { // Hole - Black hole with blended edges
-        // Start with background color and fade to black towards center
-        vec3 baseColor = vec3(0.05, 0.08, 0.12) * (1.0 - smoothstep(0.3, 0.5, dist));
-        
-        // Event horizon with softer edge blending
-        float horizon = smoothstep(0.45, 0.35, dist);
-        
-        // Single unified particle system - all particles spiral inward
-        for (int i = 0; i < 2; i++) {
-          float particleId = float(i);
-          
-          // Add randomness to make each black hole unique
-          float holeRandom = hash(vec2(u_randomSeed + particleId * 40.0, particleId * 13.3));
-          
-          // All particles follow the same spiral pattern but at different distances and starting positions
-          float particleAngle = particleId * 0.1078540 + time * (3.0 + holeRandom * 0.5) + holeRandom * 6.28; // Random phase offset
-          float particleProgress = fract(time * (1.8 + holeRandom * 0.3) + particleId * 0.0125 + holeRandom);
-          float particleRadius = 0.55 - particleProgress * (0.45 + holeRandom * 0.1);
-          
-          // Create tight inward spiral
-          float spiralTightness = (1.0 - particleProgress) * 2.5;
-          particleAngle += spiralTightness;
-          
-          vec2 particlePos = vec2(cos(particleAngle), sin(particleAngle)) * particleRadius;
-          float particleDistance = distance(uv, particlePos);
-          
-          float particle = exp(-particleDistance * 25.0);
-          
-          // Brightness increases as particles get closer to center
-          float brightness = (1.0 - particleProgress) * 1.5;
-          
-          // Color shifts from blue to white as particles approach event horizon
-          vec3 particleColor = mix(neonBlue, hologramWhite, 1.0 - particleProgress);
-          
-          if (particleRadius > 0.03) {
-            baseColor += particleColor * particle * brightness * (1.0 - horizon);
-          }
+        // Display goal step count (centered on exit)
+        float size = 0.3;
+        float numDigitsInGoalCount = 1.0;
+        if (u_goalStepCount > 9.0) {
+          numDigitsInGoalCount = 1.7;
+        }
+        if (u_goalStepCount > 99.0) {
+          numDigitsInGoalCount = 3.0;
+        }
+        float xOffset = 0.56 - size/2.0 - size*(numDigitsInGoalCount-1.0)/2.0;
+        float yOffset = 0.5 - size/2.0;
+        float goalNumber = renderNumber(v_texCoord, u_goalStepCount, vec2(xOffset, yOffset), size);
+        if (goalNumber > 0.5) {
+          baseColor = mix(baseColor, vec3(0.0, 0.0, 0.0), 1.0);
         }
         
-        // Event horizon ring
-        float horizonRing = abs(dist - 0.35);
-        horizonRing = 1.0 - smoothstep(0.0, 0.025, horizonRing);
-        baseColor += neonBlue * horizonRing * 0.8;
+        gl_FragColor = vec4(baseColor, 1.0);
         
-        // Central darkness (black hole core)
-        float core = 1.0 - smoothstep(0.28, 0.35, dist);
-        baseColor *= (1.0 - core * 0.9);
+      } else if (u_tileType == 4.0) { // Hole - Gravitational well viewed from above
+        vec2 holeCenter = vec2(0.5);
+        float dist = distance(v_texCoord, holeCenter);
+        
+        // Base with space distortion effect
+        vec3 baseColor = vec3(0.02, 0.05, 0.08);
+        
+        // Create gravitational distortion rings - like spacetime being warped
+        for (int ring = 1; ring <= 6; ring++) {
+          float ringRadius = float(ring) * 0.08;
+          float ringDist = abs(dist - ringRadius);
+          float ringWidth = 0.015 + ringRadius * 0.05;
+          
+          // Distortion strength increases toward center
+          float distortionStrength = 1.0 - ringRadius / 0.5;
+          float ringEffect = smoothstep(ringWidth, 0.0, ringDist) * distortionStrength;
+          
+          // Animated warping effect
+          float warpAngle = atan(v_texCoord.y - 0.5, v_texCoord.x - 0.5);
+          float warpPattern = sin(warpAngle * 8.0 + time * 2.0 - ringRadius * 10.0) * 0.5 + 0.5;
+          ringEffect *= warpPattern;
+          
+          // Color shifts from blue at edge to orange/red near center
+          vec3 ringColor = mix(vec3(0.1, 0.3, 0.8), vec3(0.8, 0.3, 0.1), distortionStrength);
+          baseColor += ringColor * ringEffect * 0.3;
+        }
+        
+        // Spiraling particles being pulled in
+        for (int i = 0; i < 12; i++) {
+          float streamId = float(i);
+          float streamRandom = hash(vec2(u_randomSeed + streamId * 15.0, streamId * 8.7));
+          
+          // Create continuous spiral streams
+          float streamAngle = streamRandom * 6.28 + time * 0.5;
+          float inwardProgress = fract(time * 0.6 + streamRandom);
+          
+          // Logarithmic spiral for more realistic gravitational pull
+          float spiralTightness = 3.0 * (1.0 - inwardProgress);
+          streamAngle += spiralTightness;
+          
+          float currentRadius = 0.5 * pow(1.0 - inwardProgress, 0.7); // Accelerates as it falls
+          vec2 particlePos = holeCenter + vec2(
+            cos(streamAngle) * currentRadius,
+            sin(streamAngle) * currentRadius
+          );
+          
+          float particleDist = distance(v_texCoord, particlePos);
+          float particleSize = 0.01 * (1.0 + (1.0 - inwardProgress));
+          float particle = smoothstep(particleSize, particleSize * 0.3, particleDist);
+          
+          // Color gets hotter as it approaches center
+          vec3 particleColor = mix(
+            vec3(0.2, 0.5, 1.0),
+            vec3(1.0, 0.6, 0.2),
+            pow(1.0 - currentRadius / 0.5, 2.0)
+          );
+          
+          float intensity = (1.0 - inwardProgress) * 0.8;
+          baseColor += particleColor * particle * intensity;
+        }
+        
+        // Event horizon glow
+        float horizonRadius = 0.15;
+        float horizonGlow = 1.0 - smoothstep(horizonRadius - 0.05, horizonRadius + 0.05, dist);
+        baseColor += vec3(1.0, 0.4, 0.1) * horizonGlow * 0.5;
+        
+        // Absolute darkness at center
+        float voidCore = 1.0 - smoothstep(horizonRadius * 0.6, horizonRadius, dist);
+        baseColor *= (1.0 - voidCore);
+        
+        // Outer edge blend
+        float edgeFade = smoothstep(0.5, 0.4, dist);
+        baseColor = mix(vec3(0.02, 0.05, 0.08), baseColor, edgeFade);
         
         gl_FragColor = vec4(baseColor, 1.0);
         
       } else if (u_tileType >= 3.0) { // Movable blocks - SPARKING PARTICLE EXPLOSION!
-        vec3 baseColor = vec3(0.12, 0.18, 0.25); // Solid base color
+        vec3 baseColor = vec3(0.0, 0.0, 0.0); // Solid black background
         
         // Real movement vector from uniforms (scale it down for slower lag)
         vec2 blockMovement = (u_shadowPos - u_previousPos) * 0.015;
@@ -1092,6 +1331,9 @@ export default function WebGLGrid({
     const u_mousePos = gl.getUniformLocation(program, 'u_mousePos');
     const u_shadowPos = gl.getUniformLocation(program, 'u_shadowPos');
     const u_randomSeed = gl.getUniformLocation(program, 'u_randomSeed');
+    const u_currentStepCount = gl.getUniformLocation(program, 'u_currentStepCount');
+    const u_goalStepCount = gl.getUniformLocation(program, 'u_goalStepCount');
+    const u_trailStepCount = gl.getUniformLocation(program, 'u_trailStepCount');
 
     if (u_resolution) gl.uniform2f(u_resolution, canvas.width, canvas.height);
     if (u_time) gl.uniform1f(u_time, time * 0.001);
@@ -1150,6 +1392,10 @@ export default function WebGLGrid({
 
     // Set shadow position uniform
     if (u_shadowPos) gl.uniform2f(u_shadowPos, shadowPosition.current.x, shadowPosition.current.y);
+
+    // Set global step count uniforms
+    if (u_currentStepCount) gl.uniform1f(u_currentStepCount, gameState.moves.length);
+    if (u_goalStepCount) gl.uniform1f(u_goalStepCount, leastMoves);
 
     // Calculate player motion for later use
     const playerMotionPrevPos = previousPositions.current.get('player-particles') || playerCurrentPos;
@@ -1231,6 +1477,12 @@ export default function WebGLGrid({
         if (u_tileType) gl.uniform1f(u_tileType, getTileTypeValue(tileType));
         if (u_glowIntensity) gl.uniform1f(u_glowIntensity, tileState.text.length > 0 ? 0.8 : 0.3);
         if (u_tileGridPos) gl.uniform2f(u_tileGridPos, x, y);
+
+        // Set trail step count - use the last number in the text array if available
+        // Use -1 to indicate "never visited" so we can distinguish from "visited at step 0"
+        const trailStepCount = tileState.text.length > 0 ? tileState.text[tileState.text.length - 1] : -1;
+
+        if (u_trailStepCount) gl.uniform1f(u_trailStepCount, trailStepCount);
 
         // Set random seed based on tile position for this specific tile's particle randomness
         const tileSeed = (x * 31.7 + y * 17.3 + getTileTypeValue(tileType) * 7.1) * 0.001;
@@ -1325,6 +1577,9 @@ export default function WebGLGrid({
           if (u_glowIntensity) gl.uniform1f(u_glowIntensity, 0.6);
           if (u_tileGridPos) gl.uniform2f(u_tileGridPos, x, y);
 
+          // For blocks, trail step count is 0 since they don't show trail numbers
+          if (u_trailStepCount) gl.uniform1f(u_trailStepCount, 0);
+
           // Set random seed based on tile position for this specific tile's particle randomness
           const tileSeed = (x * 31.7 + y * 17.3 + getTileTypeValue(tileType) * 7.1) * 0.001;
 
@@ -1401,10 +1656,10 @@ export default function WebGLGrid({
         }
       }
 
-      // Make player render area 3x larger so particles aren't clipped
-      const playerSize = tileSize * 3;
-      const left = startX + interpX * tileSize - tileSize;
-      const top = startY + interpY * tileSize - tileSize;
+      // Player render area (normal size)
+      const playerSize = tileSize;
+      const left = startX + interpX * tileSize;
+      const top = startY + interpY * tileSize;
       const right = left + playerSize;
       const bottom = top + playerSize;
 
