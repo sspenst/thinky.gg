@@ -1,4 +1,5 @@
 import { GameState } from '@root/helpers/gameStateHelpers';
+import { Redo, Undo } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import Control from '../models/control';
 
@@ -69,20 +70,20 @@ export default function useGameControls({
     );
 
     const undoTxt = isMobile ?
-      React.createElement('span', {}, '⟵') :
+      React.createElement('span', {}, React.createElement(Undo, { className: 'w-6 h-6' })) :
       React.createElement('div', {},
         React.createElement('span', { className: 'underline' }, 'U'), 'ndo'
       );
 
     const redoTxt = isMobile ?
-      React.createElement('span', {}, '⟶') :
+      React.createElement('span', {}, React.createElement(Redo, { className: 'w-6 h-6' })) :
       React.createElement('div', {},
         'Redo (', React.createElement('span', { className: 'underline' }, 'Y'), ')'
       );
 
     _controls.push(
       new Control('btn-restart', () => onKeyDown('KeyR'), restartTxt),
-      new Control('btn-undo', () => onKeyDown('Backspace'), undoTxt, false, false, () => {
+      new Control('btn-undo', () => onKeyDown('Backspace'), undoTxt, gameState.moves.length === 0, false, () => {
         onKeyDown('Backspace');
 
         return true;
