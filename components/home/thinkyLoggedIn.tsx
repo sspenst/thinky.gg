@@ -1,5 +1,4 @@
 // Optionally import the CSS
-import 'cal-heatmap/cal-heatmap.css';
 import { GameId } from '@root/constants/GameId';
 import { Games } from '@root/constants/Games';
 import useSWRHelper from '@root/hooks/useSWRHelper';
@@ -8,6 +7,7 @@ import { getStreak } from '@root/lib/cleanUser';
 import Level from '@root/models/db/level';
 import User from '@root/models/db/user';
 import UserConfig from '@root/models/db/userConfig';
+import 'cal-heatmap/cal-heatmap.css';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import FormattedUser from '../formatted/formattedUser';
@@ -165,7 +165,7 @@ export function ThinkyHomePageLoggedIn({ user }: { user: User }) {
               className='w-full'
               placeholder='Search users...'
               onSelect={(selectedItem: User) => {
-                router.push(`/users/${selectedItem._id}`);
+                router.push(`/profile/${selectedItem.name}`);
               }}
             />
           </div>
