@@ -283,6 +283,32 @@ export default function WebGLGrid({
       return result;
     }
     
+    // Render number with black outline for better readability
+    float renderNumberReadable(vec2 uv, float number, vec2 position, float scale, out float isOutline) {
+      isOutline = 0.0;
+      
+      // Main text
+      float mainText = renderNumber(uv, number, position, scale);
+      if (mainText > 0.5) return 1.0;
+      
+      // Check outline by sampling nearby pixels
+      float outlineRadius = 0.8 / scale; // Adaptive outline size
+      for (int dx = -1; dx <= 1; dx++) {
+        for (int dy = -1; dy <= 1; dy++) {
+          if (dx == 0 && dy == 0) continue;
+          
+          vec2 offset = vec2(float(dx), float(dy)) * outlineRadius;
+          float outlineText = renderNumber(uv + offset, number, position, scale);
+          if (outlineText > 0.5) {
+            isOutline = 1.0;
+            return 1.0;
+          }
+        }
+      }
+      
+      return 0.0;
+    }
+    
     // Generate starry cosmic pattern for tiles
     vec3 generateStarField(vec2 uv, float time) {
       vec3 starField = vec3(0.02, 0.03, 0.08); // Deep space blue
@@ -542,7 +568,7 @@ export default function WebGLGrid({
         
         gl_FragColor = vec4(baseColor, 1.0);
         
-      } else if (u_tileType == 0.5) { // Wall - Solid black with red proximity borders
+      } else if (u_tileType == 0.5) { // Wall - Solid black with red border only on edge closest to player
         vec3 baseColor = vec3(0.0, 0.0, 0.0); // Solid black base
         
         // Calculate proximity to shadow for wall glow
@@ -550,24 +576,40 @@ export default function WebGLGrid({
         
         if (wallProximity > 0.1) {
           vec3 wallBorderColor = vec3(1.0, 0.2, 0.2); // Red border color
-          float wallBorderWidth = mix(0.05, 0.15, wallProximity);
-          float wallIntensity = wallProximity * 0.8;
+          float wallBorderWidth = mix(0.05, .15, wallProximity)+sin(time*2.0)*0.05;
+          float wallIntensity = wallProximity * sin(time)*10.0;
           
-          // Create border on all edges
-          float borderX = min(smoothstep(0.0, wallBorderWidth, v_texCoord.x), smoothstep(0.0, wallBorderWidth, 1.0 - v_texCoord.x));
-          float borderY = min(smoothstep(0.0, wallBorderWidth, v_texCoord.y), smoothstep(0.0, wallBorderWidth, 1.0 - v_texCoord.y));
-          float border = 1.0 - (borderX * borderY);
+          // Simple coordinate comparison to determine which border to highlight
+          vec2 wallCenter = u_tileGridPos + vec2(0.5, 0.5);
+          vec2 playerPos = u_shadowPos + vec2(0.5, 0.5); // Center the player position
           
-          baseColor += wallBorderColor * border * wallIntensity;
+          vec2 diff = playerPos - wallCenter;
+          float absX = abs(diff.x);
+          float absY = abs(diff.y);
           
-          // Add extra glow when very close
-          if (wallProximity > 0.5) {
-            float glowWidth = wallBorderWidth * 1.15;
-            float glowX = min(smoothstep(0.0, glowWidth, v_texCoord.x), smoothstep(0.0, glowWidth, 1.0 - v_texCoord.x));
-            float glowY = min(smoothstep(0.0, glowWidth, v_texCoord.y), smoothstep(0.0, glowWidth, 1.0 - v_texCoord.y));
-            float glow = 1.0 - (glowX * glowY);
-            
-            baseColor += wallBorderColor * glow * (wallProximity - 0.5) * 0.4;
+          // Highlight the border closest to the player
+          if (absX > absY) {
+            // Player is more to the left or right
+            if (diff.x > 0.0) {
+              // Player to the right - highlight RIGHT border
+              float rightBorder = 1.0 - smoothstep(0.0, wallBorderWidth, 1.0 - v_texCoord.x);
+              baseColor += wallBorderColor * rightBorder * wallIntensity;
+            } else {
+              // Player to the left - highlight LEFT border
+              float leftBorder = 1.0 - smoothstep(0.0, wallBorderWidth, v_texCoord.x);
+              baseColor += wallBorderColor * leftBorder * wallIntensity;
+            }
+          } else {
+            // Player is more above or below
+            if (diff.y > 0.0) {
+              // Player below - highlight BOTTOM border
+              float bottomBorder = 1.0 - smoothstep(0.0, wallBorderWidth, 1.0 - v_texCoord.y);
+              baseColor += wallBorderColor * bottomBorder * wallIntensity;
+            } else {
+              // Player above - highlight TOP border
+              float topBorder = 1.0 - smoothstep(0.0, wallBorderWidth, v_texCoord.y);
+              baseColor += wallBorderColor * topBorder * wallIntensity;
+            }
           }
         }
         
@@ -617,9 +659,14 @@ export default function WebGLGrid({
         float size = 0.3;
         float xOffset = 0.55 - size/2.0 - size*(numDigitsInStepCount-1.0)/2.0;
         float yOffset = 0.5 - size/2.0;
-        float stepNumber = renderNumber(v_texCoord, u_currentStepCount, vec2(xOffset, yOffset), size);
+        float isOutline = 0.0;
+        float stepNumber = renderNumberReadable(v_texCoord, u_currentStepCount, vec2(xOffset, yOffset), size, isOutline);
         if (stepNumber > 0.5) {
-          baseColor = mix(baseColor, vec3(0.0, 0., 1.), 1.0); // Black
+          if (isOutline > 0.5) {
+            baseColor = mix(baseColor, vec3(1.0, 1.0, 1.0), 1.0); // White outline
+          } else {
+            baseColor = mix(baseColor, vec3(0.0, 0.0, 0.0), 1.0); // Black text
+          }
         }
                 
 
@@ -634,60 +681,90 @@ export default function WebGLGrid({
       } else if (u_tileType == 2.0) { // Exit - Holographic portal with particles
         vec3 baseColor = starField * 0.8 + reflection;
         
-        // Portal center - bright holographic core
-        float portal = 1.0 - smoothstep(0.1, 0.3, dist);
-        baseColor += hologramWhite * portal * 1.2;
         
-        // Holographic portal rings
-        float angle = atan(uv.y, uv.x);
-        for (int i = 1; i <= 4; i++) {
-          float ringDist = 0.15 + float(i) * 0.07;
-          float ring = abs(dist - ringDist);
-          ring = 1.0 - smoothstep(0.0, 0.015, ring);
+        
+        // Calculate shadow proximity for particle effects
+        float shadowProximity = 1.0 - smoothstep(0.0, 2.0, shadowDistance);
+        
+        // SPARKING particles when player is nearby
+        if (shadowProximity > 0.1) {
+          // Explosion of sparks in random directions
+          for (int i = 0; i < 8; i++) {
+            float sparkId = float(i);
+            float sparkRandom = hash(vec2(u_randomSeed + sparkId * 10.0, sparkId * 5.3));
+            float sparkAngle = sparkId * 0.785398 + time * (2.0 + sparkRandom) + sparkRandom * 6.28;
+            float sparkSpeed = 0.1 + sparkId * 0.01 + sparkRandom * 0.05;
+            float sparkTime = fract(time * (6.0 + sparkRandom * 2.0) + sparkId * 0.1 + sparkRandom);
+            
+            vec2 sparkPos = vec2(cos(sparkAngle), sin(sparkAngle)) * sparkSpeed * sparkTime;
+            
+            float sparkDistance = distance(uv, sparkPos);
+            float spark = exp(-sparkDistance * 25.0);
+            float sparkBrightness = (1.0 - sparkTime) * shadowProximity * 3.0;
+            
+            baseColor += hologramWhite * spark * sparkBrightness;
+          }
           
-          float rotation = angle + time * float(i) * 0.8;
-          float modulation = sin(rotation * 6.0) * 0.4 + 0.6;
-          
-          // Alternate between purple and cyan
-          float alternator = step(2.0, mod(float(i), 4.0));
-          vec3 ringColor = mix(neonPurple, brightCyan, alternator);
-          baseColor += ringColor * ring * modulation * 0.9;
+          // Additional random flying sparks with gravitational attraction
+          for (int i = 0; i < 50; i++) {
+            float flyId = float(i);
+            float flyRandom = hash(vec2(u_randomSeed + flyId * 20.0, flyId * 7.1));
+            float flyAngle = flyId * 0.314159 + time * (6.0 + flyRandom * 2.0) + flyRandom * 6.28;
+            float flyDist = sin(time * (4.0 + flyRandom) + flyId + flyRandom * 3.14) * (0.25 + flyRandom * 0.15);
+            
+            vec2 flyPos = vec2(cos(flyAngle), sin(flyAngle)) * flyDist;
+            
+            // Apply gravitational attraction
+            vec2 currentFragmentWorldPos = u_tileGridPos + (v_texCoord - 0.5);
+            vec2 shadowWorldPos = u_shadowPos;
+            vec2 fragmentToShadow = shadowWorldPos - currentFragmentWorldPos;
+            float shadowDist = length(fragmentToShadow);
+            
+            float sparkGravityStrength = 0.44 / max(shadowDist, 0.3);
+            float sparkGravityRange = 3.5;
+            float sparkGravityFalloff = 1.0 - smoothstep(0.0, sparkGravityRange, shadowDist);
+            
+            vec2 sparkGravityDirection = normalize(fragmentToShadow) * sparkGravityStrength * sparkGravityFalloff;
+            flyPos += sparkGravityDirection * 0.6;
+            
+            float flyDistance = distance(uv, flyPos);
+            float flySpark = exp(-flyDistance * 30.0);
+            
+            float sparkIntensity = shadowProximity * 2.0 * (1.0 + sparkGravityFalloff * 0.5);
+            baseColor += neonPurple * flySpark * sparkIntensity;
+          }
         }
         
-        // Energetic particles streaming toward portal
-        for (int i = 0; i < 16; i++) {
-          float particleId = float(i);
-          float particleAngle = particleId * 0.392699 + time * 0.5; // particles orbiting
-          float particleProgress = fract(time * 0.8 + particleId * 0.0625);
-          float particleDist = 0.5 - particleProgress * 0.4; // flowing inward
+        // Ambient energy particles (always present)
+        for (int i = 0; i < 50; i++) {
+          float ambientId = float(i);
+          float ambientRandom = hash(vec2(u_randomSeed + ambientId * 30.0, ambientId * 11.7));
+          float ambientAngle = ambientId * 0.392699 + time * (0.8 + ambientRandom * 0.4) + ambientRandom * 6.28;
+          float ambientDist = 0.2 + sin(time * (1.1 + ambientRandom * 0.3) + ambientId + ambientRandom * 3.141) * (0.08 + ambientRandom * 0.03);
           
-          vec2 particlePos = vec2(cos(particleAngle), sin(particleAngle)) * particleDist;
-          float particleDistance = distance(uv, particlePos);
+          vec2 ambientPos = vec2(cos(ambientAngle), sin(ambientAngle)) * ambientDist;
           
-          float particle = exp(-particleDistance * 25.0);
-          float particleBrightness = (1.0 - particleProgress) * 0.9;
+          // Apply gravitational attraction
+          vec2 currentFragmentWorldPos = u_tileGridPos + (v_texCoord - 0.5);
+          vec2 shadowWorldPos = u_shadowPos;
+          vec2 fragmentToShadow = shadowWorldPos - currentFragmentWorldPos;
+          float shadowDist = length(fragmentToShadow);
           
-          vec3 particleColor = mix(brightCyan, neonPurple, particleProgress);
-          baseColor += particleColor * particle * particleBrightness;
+          float ambientGravityStrength = 0.95 / max(shadowDist*shadowDist, 0.18);
+          float ambientGravityRange = 2.5;
+          float ambientGravityFalloff = 1.0 - smoothstep(0.0, ambientGravityRange, shadowDist);
+          
+          vec2 ambientGravityDirection = normalize(fragmentToShadow) * ambientGravityStrength * ambientGravityFalloff;
+          ambientPos += ambientGravityDirection * 0.3;
+          
+          float ambientDistance = distance(uv, ambientPos);
+          float ambient = exp(-ambientDistance * 18.0);
+          
+          float ambientIntensity = 0.8 + ambientGravityFalloff * 0.4;
+          baseColor += brightCyan * ambient * ambientIntensity;
         }
-        
-        // Additional swirling particles around the portal
-        for (int i = 0; i < 8; i++) {
-          float swirlId = float(i);
-          float swirlAngle = swirlId * 0.785398 + time * 2.0;
-          float swirlDist = 0.3 + sin(time * 1.5 + swirlId) * 0.08;
-          
-          vec2 swirlPos = vec2(cos(swirlAngle), sin(swirlAngle)) * swirlDist;
-          float swirlDistance = distance(uv, swirlPos);
-          
-          float swirl = exp(-swirlDistance * 20.0);
-          baseColor += hologramWhite * swirl * 0.5;
-        }
-        
-        // Holographic distortion effect
-        float distortion = sin(dist * 20.0 - time * 3.0) * 0.1 * (1.0 - dist);
-        baseColor *= (1.0 + distortion);
-        
+        // Add white background for the exit
+        baseColor += vec3(1.0, 1.0, 1.0) * 0.1;
         // Display goal step count (centered on exit)
         float size = 0.3;
         float numDigitsInGoalCount = 1.0;
@@ -708,14 +785,30 @@ export default function WebGLGrid({
         
       } else if (u_tileType == 4.0) { // Hole - Gravitational well viewed from above
         vec2 holeCenter = vec2(0.5);
-        float dist = distance(v_texCoord, holeCenter);
         
-        // Base with space distortion effect
-        vec3 baseColor = vec3(0.02, 0.05, 0.08);
+        // Apply gravitational lensing distortion to the texture coordinates
+        vec2 toCenter = v_texCoord - holeCenter;
+        float distToCenter = length(toCenter);
+        
+        // Warp the texture coordinates based on distance from center
+        float warpStrength = 0.3 * (1.0 - smoothstep(0.0, 0.5, distToCenter));
+        float warpFactor = 1.0 + warpStrength * sin(time * 2.0) * 0.2;
+        vec2 warpedCoord = holeCenter + toCenter * warpFactor;
+        
+        // Add radial distortion for edge warping
+        float angle = atan(toCenter.y, toCenter.x);
+        float radialWarp = sin(angle * 6.0 + time * 3.0) * 0.02 * warpStrength;
+        warpedCoord += vec2(cos(angle + 1.57), sin(angle + 1.57)) * radialWarp;
+        
+        // Use warped coordinates for distance calculations
+        float dist = distance(warpedCoord, holeCenter);
+        
+        // Light gray background with dark core
+        vec3 baseColor = vec3(0.07, 0.07, 0.07);
         
         // Create gravitational distortion rings - like spacetime being warped
-        for (int ring = 1; ring <= 6; ring++) {
-          float ringRadius = float(ring) * 0.08;
+        for (int ring = 1; ring <= 12; ring++) {
+          float ringRadius = float(ring) * 0.08 + sin(time*2.0)*0.05;
           float ringDist = abs(dist - ringRadius);
           float ringWidth = 0.015 + ringRadius * 0.05;
           
@@ -723,63 +816,95 @@ export default function WebGLGrid({
           float distortionStrength = 1.0 - ringRadius / 0.5;
           float ringEffect = smoothstep(ringWidth, 0.0, ringDist) * distortionStrength;
           
-          // Animated warping effect
-          float warpAngle = atan(v_texCoord.y - 0.5, v_texCoord.x - 0.5);
+          // Enhanced warping effect with edge distortion
+          float warpAngle = atan(warpedCoord.y - 0.5, warpedCoord.x - 0.5);
           float warpPattern = sin(warpAngle * 8.0 + time * 2.0 - ringRadius * 10.0) * 0.5 + 0.5;
-          ringEffect *= warpPattern;
+          
+          // Add edge ripple effects
+          float edgeRipple = sin(distToCenter * 20.0 - time * 4.0) * 0.3 + 0.7;
+          ringEffect *= warpPattern * edgeRipple;
           
           // Color shifts from blue at edge to orange/red near center
           vec3 ringColor = mix(vec3(0.1, 0.3, 0.8), vec3(0.8, 0.3, 0.1), distortionStrength);
           baseColor += ringColor * ringEffect * 0.3;
         }
         
-        // Spiraling particles being pulled in
-        for (int i = 0; i < 12; i++) {
-          float streamId = float(i);
-          float streamRandom = hash(vec2(u_randomSeed + streamId * 15.0, streamId * 8.7));
+        // Particles being sucked in from random directions around the edges
+        for (int i = 0; i < 20; i++) {
+          float particleId = float(i);
+          float particleRandom = hash(vec2(u_randomSeed + particleId * 17.3, particleId * 11.7));
+          float particleRandom2 = hash(vec2(u_randomSeed + particleId * 23.1, particleId * 13.9));
           
-          // Create continuous spiral streams
-          float streamAngle = streamRandom * 6.28 + time * 0.5;
-          float inwardProgress = fract(time * 0.6 + streamRandom);
+          // Random starting angle around the perimeter
+          float startAngle = particleRandom * 6.28318;
           
-          // Logarithmic spiral for more realistic gravitational pull
-          float spiralTightness = 3.0 * (1.0 - inwardProgress);
-          streamAngle += spiralTightness;
+          // Random starting distance from edge (0.45 to 0.5 - near the edge)
+          float startDistance = 0.45 + particleRandom2 * 0.05;
           
-          float currentRadius = 0.5 * pow(1.0 - inwardProgress, 0.7); // Accelerates as it falls
+          // Progress from edge to center over time
+          float suctionSpeed = 0.3 + particleRandom * 0.4; // Varying speeds
+          float inwardProgress = fract(time * suctionSpeed + particleRandom);
+          
+          // Current position as particle travels from edge to center
+          float currentDistance = startDistance * (1.0 - inwardProgress);
+          
+          // Add slight spiral as particles get sucked in
+          float spiralAmount = inwardProgress * 2.0 * (particleRandom - 0.5);
+          float currentAngle = startAngle + spiralAmount;
+          
           vec2 particlePos = holeCenter + vec2(
-            cos(streamAngle) * currentRadius,
-            sin(streamAngle) * currentRadius
+            cos(currentAngle) * currentDistance,
+            sin(currentAngle) * currentDistance
           );
           
-          float particleDist = distance(v_texCoord, particlePos);
-          float particleSize = 0.01 * (1.0 + (1.0 - inwardProgress));
-          float particle = smoothstep(particleSize, particleSize * 0.3, particleDist);
-          
-          // Color gets hotter as it approaches center
-          vec3 particleColor = mix(
-            vec3(0.2, 0.5, 1.0),
-            vec3(1.0, 0.6, 0.2),
-            pow(1.0 - currentRadius / 0.5, 2.0)
-          );
-          
-          float intensity = (1.0 - inwardProgress) * 0.8;
-          baseColor += particleColor * particle * intensity;
+          // Only render if particle is within tile bounds
+          if (particlePos.x >= 0.0 && particlePos.x <= 1.0 && particlePos.y >= 0.0 && particlePos.y <= 1.0) {
+            float particleDist = distance(v_texCoord, particlePos);
+            
+            // Particle size gets smaller as it approaches center
+            float particleSize = 0.008 + 0.004 * (1.0 - inwardProgress);
+            float particle = exp(-particleDist * (40.0 + inwardProgress * 80.0));
+            
+            // Color transitions from cool blue at edge to hot orange/white at center
+            vec3 particleColor = mix(
+              vec3(0.3, 0.7, 1.0),      // Cool blue at edge
+              vec3(1.0, 0.8, 0.3),      // Hot orange/white near center
+              inwardProgress
+            );
+            
+            // Brightness increases as particle approaches center (acceleration effect)
+            float brightness = (0.5 + inwardProgress) * (1.0 - fract(particleRandom * 3.0) * 0.3);
+            
+            baseColor += particleColor * particle * brightness;
+          }
         }
         
         // Event horizon glow
         float horizonRadius = 0.15;
         float horizonGlow = 1.0 - smoothstep(horizonRadius - 0.05, horizonRadius + 0.05, dist);
-        baseColor += vec3(1.0, 0.4, 0.1) * horizonGlow * 0.5;
+        baseColor += vec3(1.0, 0.4, 0.1) * horizonGlow * 1.0;
         
         // Absolute darkness at center
         float voidCore = 1.0 - smoothstep(horizonRadius * 0.6, horizonRadius, dist);
         baseColor *= (1.0 - voidCore);
         
-        // Outer edge blend
+        // Enhanced outer edge blend with warping
         float edgeFade = smoothstep(0.5, 0.4, dist);
-        baseColor = mix(vec3(0.02, 0.05, 0.08), baseColor, edgeFade);
         
+        // Create warped edge effect that distorts the boundary
+        float edgeWarp = sin(angle * 12.0 + time * 4.0) * 0.05 * (1.0 - smoothstep(0.35, 0.5, distToCenter));
+        float warpedEdgeDist = distToCenter + edgeWarp-0.3;
+        float warpedEdgeFade = 10.0*smoothstep(0.5, 0.35, warpedEdgeDist);
+        
+        // Blend the warped edge with background
+        vec3 edgeColor = mix(vec3(0.02, 0.02, 0.02), baseColor, warpedEdgeFade);
+        
+        // Add subtle pulsing at the boundary
+        float boundaryPulse = sin(time * 3.0) * 0.1 + 0.9;
+        baseColor = mix(vec3(0.02, 0.05, 0.08), edgeColor, boundaryPulse);
+        
+        
+
         gl_FragColor = vec4(baseColor, 1.0);
         
       } else if (u_tileType >= 3.0) { // Movable blocks - SPARKING PARTICLE EXPLOSION!
@@ -803,6 +928,10 @@ export default function WebGLGrid({
             
             // Flow from left to right
             float flowProgress = fract(time * (0.8 + particleRandom * 0.4) + particleRandom);
+            
+            // Stop particles at middle of journey
+            if (flowProgress > 0.25) continue;
+            
             vec2 particlePos = vec2(
               flowProgress * 0.8 + 0.1,  // Move left to right
               0.2 + particleId * 0.1 + particleRandom * 0.2  // Spread vertically
@@ -810,7 +939,7 @@ export default function WebGLGrid({
             
             float particleDist = distance(v_texCoord, particlePos);
             float particle = exp(-particleDist * 40.0);
-            float brightness = (1.0 - flowProgress) * pushIntensity;
+            float brightness = (1.0 - flowProgress * 2.0) * pushIntensity;  // Fade as approaching middle
             
             baseColor += brightCyan * particle * brightness;
           }
@@ -824,6 +953,10 @@ export default function WebGLGrid({
             
             // Flow from right to left
             float flowProgress = fract(time * (0.8 + particleRandom * 0.4) + particleRandom);
+            
+            // Stop particles at middle of journey
+            if (flowProgress > 0.25) continue;
+            
             vec2 particlePos = vec2(
               0.9 - flowProgress * 0.8,  // Move right to left
               0.2 + particleId * 0.1 + particleRandom * 0.2  // Spread vertically
@@ -831,7 +964,7 @@ export default function WebGLGrid({
             
             float particleDist = distance(v_texCoord, particlePos);
             float particle = exp(-particleDist * 40.0);
-            float brightness = (1.0 - flowProgress) * pushIntensity;
+            float brightness = (1.0 - flowProgress * 2.0) * pushIntensity;  // Fade as approaching middle
             
             baseColor += brightCyan * particle * brightness;
           }
@@ -845,6 +978,10 @@ export default function WebGLGrid({
             
             // Flow from top to bottom
             float flowProgress = fract(time * (0.8 + particleRandom * 0.4) + particleRandom);
+            
+            // Stop particles at middle of journey
+            if (flowProgress > 0.25) continue;
+            
             vec2 particlePos = vec2(
               0.2 + particleId * 0.1 + particleRandom * 0.2,  // Spread horizontally
               flowProgress * 0.8 + 0.1  // Move top to bottom
@@ -852,7 +989,7 @@ export default function WebGLGrid({
             
             float particleDist = distance(v_texCoord, particlePos);
             float particle = exp(-particleDist * 40.0);
-            float brightness = (1.0 - flowProgress) * pushIntensity;
+            float brightness = (1.0 - flowProgress * 2.0) * pushIntensity;  // Fade as approaching middle
             
             baseColor += brightCyan * particle * brightness;
           }
@@ -866,6 +1003,10 @@ export default function WebGLGrid({
             
             // Flow from bottom to top
             float flowProgress = fract(time * (0.8 + particleRandom * 0.4) + particleRandom);
+            
+            // Stop particles at middle of journey
+            if (flowProgress > 0.25) continue;
+            
             vec2 particlePos = vec2(
               0.2 + particleId * 0.1 + particleRandom * 0.2,  // Spread horizontally
               0.9 - flowProgress * 0.8  // Move bottom to top
@@ -873,104 +1014,13 @@ export default function WebGLGrid({
             
             float particleDist = distance(v_texCoord, particlePos);
             float particle = exp(-particleDist * 40.0);
-            float brightness = (1.0 - flowProgress) * pushIntensity;
+            float brightness = (1.0 - flowProgress * 2.0) * pushIntensity;  // Fade as approaching middle
             
             baseColor += brightCyan * particle * brightness;
           }
         }
         
-        // SPARKING particles when being pushed
-        if (movementIntensity > 0.01) {
-          // Explosion of sparks in movement direction
-          for (int i = 0; i < 5; i++) {
-            float sparkId = float(i);
-            // Add randomness to spark behavior
-            float sparkRandom = hash(vec2(u_randomSeed + sparkId * 10.0, sparkId * 5.3));
-            float sparkAngle = atan(blockMovement.y, blockMovement.x) + (sparkId - 15.0) * (0.2 + sparkRandom * 0.3);
-            float sparkSpeed = 0.1 + sparkId * 0.0005 + sparkRandom * 0.05;
-            float sparkTime = fract(time * (8.0 + sparkRandom * 2.0) + sparkId * 0.1 + sparkRandom);
-            
-            vec2 sparkPos = vec2(cos(sparkAngle), sin(sparkAngle)) * sparkSpeed * sparkTime;
-            sparkPos -= blockMovement * 0.3; // Trail behind movement
-            
-            float sparkDistance = distance(uv, sparkPos);
-            float spark = exp(-sparkDistance * 25.0);
-            float sparkBrightness = (1.0 - sparkTime) * movementIntensity * 5.0;
-            
-            baseColor += hologramWhite * spark * sparkBrightness;
-          }
-          
-          // Additional random flying sparks with gravitational attraction
-          for (int i = 0; i < 100; i++) {
-            float flyId = float(i);
-            // Add randomness to flying spark behavior
-            float flyRandom = hash(vec2(u_randomSeed + flyId * 20.0, flyId * 7.1));
-            float flyAngle = flyId * 0.314159 + time * (6.0 + flyRandom * 2.0) + flyRandom * 6.28;
-            float flyDist = sin(time * (4.0 + flyRandom) + flyId + flyRandom * 3.14) * (0.15 + flyRandom * 0.05);
-            
-            vec2 flyPos = vec2(cos(flyAngle), sin(flyAngle)) * flyDist;
-            
-            // Apply gravitational attraction based on current fragment's world position for sparks using shadow position
-            vec2 currentFragmentWorldPos = u_tileGridPos + (v_texCoord - 0.5); // Current fragment's world position
-            vec2 shadowWorldPos = u_shadowPos;
-            vec2 fragmentToShadow = shadowWorldPos - currentFragmentWorldPos;
-            float shadowDistance = length(fragmentToShadow);
-            
-            // Strong gravitational effect for energetic sparks
-            float sparkGravityStrength = 0.4 / max(shadowDistance, 0.3);
-            float sparkGravityRange = 3.5;
-            float sparkGravityFalloff = 1.0 - smoothstep(0.0, sparkGravityRange, shadowDistance);
-            
-            vec2 sparkGravityDirection = normalize(fragmentToShadow) * sparkGravityStrength * sparkGravityFalloff;
-            flyPos += sparkGravityDirection * 0.6;
-            
-            flyPos -= blockMovement * (  flyId * 0.02);
-            
-            float flyDistance = distance(uv, flyPos);
-            float flySpark = exp(-flyDistance * 30.0);
-            
-            // Enhanced intensity when gravitationally influenced
-            float sparkIntensity = movementIntensity * 3.0 * (1.0 + sparkGravityFalloff * 0.5);
-            baseColor += neonPurple * flySpark * sparkIntensity;
-          }
-        }
         
-        // Ambient energy particles (always present) with gravitational attraction
-        for (int i = 0; i < 1; i++) {
-          float ambientId = float(i);
-          // Add randomness to ambient particle behavior
-          float ambientRandom = hash(vec2(u_randomSeed + ambientId * 30.0, ambientId * 11.7));
-          float ambientAngle = ambientId * 0.392699 + time * (0.8 + ambientRandom * 0.4) + ambientRandom * 6.28;
-          float ambientDist = 0.2 + sin(time * (1.1 + ambientRandom * 0.3) + ambientId + ambientRandom * 3.141) * (0.08 + ambientRandom * 0.03);
-          
-          vec2 ambientPos = vec2(cos(ambientAngle), sin(ambientAngle)) * ambientDist;
-          
-          // Calculate gravitational attraction based on current fragment's world position for ambient particles using shadow position
-          vec2 currentFragmentWorldPos = u_tileGridPos + (v_texCoord - 0.5); // Current fragment's world position
-          vec2 shadowWorldPos = u_shadowPos;
-          vec2 fragmentToShadow = shadowWorldPos - currentFragmentWorldPos;
-          float shadowDistance = length(fragmentToShadow);
-          
-          // Gentler gravitational effect for ambient particles
-          float ambientGravityStrength = 0.95 / max(shadowDistance*shadowDistance, 0.18);
-          
-          float ambientGravityRange = 2.5;
-          float ambientGravityFalloff = 1.0 - smoothstep(0.0, ambientGravityRange, shadowDistance);
-          
-          vec2 ambientGravityDirection = normalize(fragmentToShadow) * ambientGravityStrength * ambientGravityFalloff;
-          ambientPos += ambientGravityDirection * 0.3;
-          
-          // Gentle lag for ambient particles
-          float ambientLag = 0.15 + ambientId * 0.01;
-          ambientPos -= blockMovement * ambientLag;
-          
-          float ambientDistance = distance(uv, ambientPos);
-          float ambient = exp(-ambientDistance * 18.0);
-          
-          // Slight intensity boost when gravitationally influenced
-          float ambientIntensity = 0.6 + ambientGravityFalloff * 0.2;
-          baseColor += brightCyan * ambient * ambientIntensity;
-        }
         
         // Trail particles showing movement history
         for (int i = 0; i < 3; i++) {
@@ -991,14 +1041,10 @@ export default function WebGLGrid({
         float borderWidth = mix(0.06, 0.25, proximity);
         
         // Calculate border width based on distance to shadow position  
-        float realBorderWidth = 0.25; // Keep border width constant
+        float realBorderWidth = 0.15; // Keep border width constant
         
-        // Color transition: cyan -> green -> bright green as proximity increases
-        
-        vec3 proximityColor = vec3(0.2, 1.0, 0.2); // Bright green
-
-        vec3 baseMovementColor = orange * 0.9;
-        vec3 moveColor = mix(baseMovementColor, proximityColor, shadowProximity);
+        // Simple consistent border color - no proximity color changes
+        vec3 moveColor = vec3(1.0, 0.6, 0.2); // Orange for pushable borders
         
         // Dynamic stream count based on shadow distance: 1 when far, 3 when close
         float dynamicStreamCount = 1.0 + shadowProximity * 10.0; // Ranges from 1 to 3
@@ -1009,92 +1055,104 @@ export default function WebGLGrid({
         float baseStreamSpeed = 0.50;
         float streamSpeed = baseStreamSpeed;
         
-        // Glow intensity for movement borders
-        float moveGlow = 3.;//1.0 + shadowProximity/10.0 * 11.5; // Extra glow when close
+        // Use dot product to determine which border faces the player
+        vec2 blockCenter = u_tileGridPos + vec2(0.5);
+        vec2 playerCenter = u_shadowPos + vec2(0.5, 0.5); // Center the player position
+        vec2 toPlayer = playerCenter - blockCenter;
+        
+        // Only highlight if player is close enough (neighboring tile)
+        float playerDistance = length(toPlayer);
+        bool isNearby = (playerDistance < 1.5);
+        
+        // Border normal vectors (pointing outward from block)
+        vec2 leftNormal = vec2(-1.0, 0.0);
+        vec2 rightNormal = vec2(1.0, 0.0);
+        vec2 topNormal = vec2(0.0, -1.0);
+        vec2 bottomNormal = vec2(0.0, 1.0);
+        
+        // Use dot product to see which direction player is from block center
+        // toPlayer vector points from block center toward player
+        float leftDot = dot(normalize(toPlayer), leftNormal);     // leftNormal = (-1, 0)
+        float rightDot = dot(normalize(toPlayer), rightNormal);   // rightNormal = (1, 0)
+        float topDot = dot(normalize(toPlayer), topNormal);       // topNormal = (0, -1)
+        float bottomDot = dot(normalize(toPlayer), bottomNormal); // bottomNormal = (0, 1)
+        
+        // Glow borders based on player direction 
+        // Left/Bottom work with positive dot, Right/Top work with negative dot due to coordinate system
+        float leftGlow = (isNearby && leftDot > 0.7) ? 1.2 : 1.0;   // Player to the left
+        float rightGlow = (isNearby && rightDot < -0.7) ? 1.2 : 1.0; // Player to the right (negative because toPlayer points left when block is right of player)
+        float topGlow = (isNearby && topDot < -0.7) ? 1.2 : 1.0;     // Player below block (negative because toPlayer points down when block is above player)
+        float bottomGlow = (isNearby && bottomDot > 0.7) ? 1.2 : 1.0; // Player below
 
-        // Red borders for blocked sides with proximity glow
-        vec3 blockedColor = vec3(1.0, 0.1, 0.2); // Red for blocked sides
-        float blockedBorderWidth = mix(0.5, 0.53, shadowProximity); // Width increases with proximity
-        float blockedIntensity = 0.6 + shadowProximity * 0.4; // Glow increases with proximity
+        // Wall-style proximity borders for blocked sides (like walls)
+        float blockDistance = distance(playerCenter, blockCenter);
+        float blockProximity = 1.0 - smoothstep(0.0, 1.5, blockDistance);
         
-        // Top border - blocked if can't move down
-        if (u_canMoveDown < 0.5) {
-          float topBlockedBorder = 1.0 - smoothstep(0.0, blockedBorderWidth, v_texCoord.y);
-          baseColor = mix(baseColor, blockedColor, topBlockedBorder * blockedIntensity);
-          
-          // Add extra glow when close
-          if (shadowProximity > 0.3) {
-            float glowSize = blockedBorderWidth * (1.0 + shadowProximity);
-            float topGlow = 1.0 - smoothstep(0.0, glowSize, v_texCoord.y);
-            baseColor += blockedColor * topGlow * shadowProximity * 0.3;
-          }
-        }
+        // Calculate proximity to shadow for wall glow
+        float wallProximity = 1.0 - smoothstep(0.0, 1.5, shadowDistance);
         
-        // Bottom border - blocked if can't move up  
-        if (u_canMoveUp < 0.5) {
-          float bottomBlockedBorder = 1.0 - smoothstep(0.0, blockedBorderWidth, 1.0 - v_texCoord.y);
-          baseColor = mix(baseColor, blockedColor, bottomBlockedBorder * blockedIntensity);
+        if (wallProximity > 0.1) {
+          vec3 wallBorderColor = vec3(1.0, 0.2, 0.2); // Red border color
+          float wallBorderWidth = mix(0.05, .15, wallProximity)+sin(time*2.0)*0.05;
+          float wallIntensity = wallProximity * sin(time)*10.0;
           
-          // Add extra glow when close
-          if (shadowProximity > 0.3) {
-            float glowSize = blockedBorderWidth * (1.0 + shadowProximity);
-            float bottomGlow = 1.0 - smoothstep(0.0, glowSize, 1.0 - v_texCoord.y);
-            baseColor += blockedColor * bottomGlow * shadowProximity * 0.3;
-          }
-        }
-        
-        // Left border - blocked if can't move right
-        if (u_canMoveRight < 0.5) {
-          float leftBlockedBorder = 1.0 - smoothstep(0.0, blockedBorderWidth, v_texCoord.x);
-          baseColor = mix(baseColor, blockedColor, leftBlockedBorder * blockedIntensity);
+          // Simple coordinate comparison to determine which border to highlight
+          vec2 wallCenter = u_tileGridPos + vec2(0.5, 0.5);
+          vec2 playerPos = u_shadowPos + vec2(0.5, 0.5); // Center the player position
           
-          // Add extra glow when close
-          if (shadowProximity > 0.3) {
-            float glowSize = blockedBorderWidth * (1.0 + shadowProximity);
-            float leftGlow = 1.0 - smoothstep(0.0, glowSize, v_texCoord.x);
-            baseColor += blockedColor * leftGlow * shadowProximity * 0.3;
-          }
-        }
-        
-        // Right border - blocked if can't move left
-        if (u_canMoveLeft < 0.5) {
-          float rightBlockedBorder = 1.0 - smoothstep(0.0, blockedBorderWidth, 1.0 - v_texCoord.x);
-          baseColor = mix(baseColor, blockedColor, rightBlockedBorder * blockedIntensity);
+          vec2 diff = playerPos - wallCenter;
+          float absX = abs(diff.x);
+          float absY = abs(diff.y);
           
-          // Add extra glow when close
-          if (shadowProximity > 0.3) {
-            float glowSize = blockedBorderWidth * (1.0 + shadowProximity);
-            float rightGlow = 1.0 - smoothstep(0.0, glowSize, 1.0 - v_texCoord.x);
-            baseColor += blockedColor * rightGlow * shadowProximity * 0.3;
+          // Highlight the border closest to the player
+          if (absX > absY) {
+            // Player is more to the left or right
+            if (diff.x > 0.0 && u_canMoveLeft <= 0.5) { 
+              // Player to the right - highlight RIGHT border only if can't move right
+              float rightBorder = 1.0 - smoothstep(0.0, wallBorderWidth, 1.0 - v_texCoord.x);
+              baseColor += wallBorderColor * rightBorder * wallIntensity;
+            } else if (diff.x <= 0.0 && u_canMoveRight <= 0.5) {
+              // Player to the left - highlight LEFT border
+              float leftBorder = 1.0 - smoothstep(0.0, wallBorderWidth, v_texCoord.x);
+              baseColor += wallBorderColor * leftBorder * wallIntensity;
+            }
+          } else {
+            // Player is more above or below
+            if (diff.y > 0.0 && u_canMoveUp <= 0.5) {
+              // Player below - highlight BOTTOM border
+              float bottomBorder = 1.0 - smoothstep(0.0, wallBorderWidth, 1.0 - v_texCoord.y);
+              baseColor += wallBorderColor * bottomBorder * wallIntensity;
+            } else if (diff.y <= 0.0 && u_canMoveDown <= 0.5) {
+              // Player above - highlight TOP border
+              float topBorder = 1.0 - smoothstep(0.0, wallBorderWidth, v_texCoord.y);
+              baseColor += wallBorderColor * topBorder * wallIntensity;
+            }
           }
         }
 
+        // Static orange borders for pushable sides (always visible)
+        vec3 pushableColor = vec3(1.0, 0.6, 0.2); // Orange for pushable borders
+        float pushableBorderWidth = 0.1;
+        float pushableIntensity = 0.95;
+        
         if (u_canMoveDown > 0.5) {
-          
-          float topBorder = 1.0 - smoothstep(0.0, realBorderWidth, v_texCoord.y);
-          baseColor = mix(baseColor, moveColor, topBorder * 0.8 * moveGlow);
-          
-         
+          float topBorder = 1.0 - smoothstep(0.0, pushableBorderWidth, v_texCoord.y);
+          baseColor = mix(baseColor, pushableColor, topBorder * pushableIntensity);
         }
         
         if (u_canMoveUp > 0.5) {
-          float bottomBorder = 1.0 - smoothstep(0.0, realBorderWidth, 1.0 - v_texCoord.y);
-          baseColor = mix(baseColor, moveColor, bottomBorder * 0.8 * moveGlow);
-          
-         
+          float bottomBorder = 1.0 - smoothstep(0.0, pushableBorderWidth, 1.0 - v_texCoord.y);
+          baseColor = mix(baseColor, pushableColor, bottomBorder * pushableIntensity);
         }
         
         if (u_canMoveRight > 0.5) {
-          float leftBorder = 1.0 - smoothstep(0.0, realBorderWidth, v_texCoord.x);
-          baseColor = mix(baseColor, moveColor, leftBorder * 0.8 * moveGlow);
-        
+          float leftBorder = 1.0 - smoothstep(0.0, pushableBorderWidth, v_texCoord.x);
+          baseColor = mix(baseColor, pushableColor, leftBorder * pushableIntensity);
         }
         
         if (u_canMoveLeft > 0.5) {
-          float rightBorder = 1.0 - smoothstep(0.0, realBorderWidth, 1.0 - v_texCoord.x);
-          baseColor = mix(baseColor, moveColor, rightBorder * 0.8 * moveGlow);
-          
-          
+          float rightBorder = 1.0 - smoothstep(0.0, pushableBorderWidth, 1.0 - v_texCoord.x);
+          baseColor = mix(baseColor, pushableColor, rightBorder * pushableIntensity);
         }
         
         
@@ -1999,6 +2057,43 @@ export default function WebGLGrid({
       }
     };
   }, [createProgram, createShader, fragmentShaderSource, render, vertexShaderSource]);
+
+  // Handle window resize to trigger canvas re-rendering
+  useEffect(() => {
+    const handleResize = () => {
+      // Just trigger a single render - the animation loop will continue on its own
+      const canvas = canvasRef.current;
+
+      if (canvas && glRef.current) {
+        // Don't interfere with the animation loop, just force one immediate render
+        const program = glRef.current.getParameter(glRef.current.CURRENT_PROGRAM);
+
+        if (program) {
+          render(glRef.current, program, performance.now());
+        }
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    // Also listen for canvas container resize (if using ResizeObserver)
+    const canvas = canvasRef.current;
+
+    if (canvas && window.ResizeObserver) {
+      const resizeObserver = new ResizeObserver(handleResize);
+
+      resizeObserver.observe(canvas.parentElement || canvas);
+
+      return () => {
+        window.removeEventListener('resize', handleResize);
+        resizeObserver.disconnect();
+      };
+    }
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [render]);
 
   const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!onCellClick) return;
