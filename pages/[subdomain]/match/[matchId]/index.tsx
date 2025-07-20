@@ -85,36 +85,10 @@ interface MatchProps {
 
 /* istanbul ignore next */
 export default function Match({ initialMatch }: MatchProps) {
-  // Helper function to ensure dates are Date objects
-  const normalizeMatchDates = (match: MultiplayerMatch | undefined): MultiplayerMatch | undefined => {
-    if (!match) return match;
-
-    // Convert string dates back to Date objects for component logic
-    const normalized = { ...match };
-
-    if (typeof normalized.startTime === 'string') {
-      normalized.startTime = new Date(normalized.startTime);
-    }
-
-    if (typeof normalized.endTime === 'string') {
-      normalized.endTime = new Date(normalized.endTime);
-    }
-
-    if (typeof normalized.createdAt === 'string') {
-      normalized.createdAt = new Date(normalized.createdAt);
-    }
-
-    if (typeof normalized.updatedAt === 'string') {
-      normalized.updatedAt = new Date(normalized.updatedAt);
-    }
-
-    return normalized;
-  };
-
   // the current level (for users in game)
   const [activeLevel, setActiveLevel] = useState<Level | null>(null);
   const [connectedPlayersInRoom, setConnectedPlayersInRoom] = useState<{count: number, users: UserWithMultiplayerProfile[]}>();
-  const [match, setMatch] = useState<MultiplayerMatch | undefined>(normalizeMatchDates(initialMatch || undefined) || undefined);
+  const [match, setMatch] = useState<MultiplayerMatch | undefined>(initialMatch || undefined);
   const { game, multiplayerSocket, sounds, user } = useContext(AppContext);
   const readyMark = useRef(false);
   const router = useRouter();
@@ -201,7 +175,7 @@ export default function Match({ initialMatch }: MatchProps) {
       setConnectedPlayersInRoom(players as {count: number, users: UserWithMultiplayerProfile[]});
     });
     socketConn.on('match', (match: MultiplayerMatch) => {
-      setMatch(normalizeMatchDates(match));
+      setMatch(match);
     });
     socketConn.on('matchNotFound', () => {
       toast.dismiss();
