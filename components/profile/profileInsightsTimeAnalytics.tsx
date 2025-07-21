@@ -167,7 +167,7 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
       .map((d, index) => {
         const group = difficultyGroups.get(d.name);
         
-        if (group && group.count > 0) {
+        if (group && group.count >= 7) {
           // User has data for this difficulty
           const userAvgPerLevel = Math.max(0.1, Math.round((group.totalTime / group.count) / 60 * 100) / 100); // User's avg per level in minutes, min 0.1
           const communityAvgPerLevel = group.otherCount > 0 
@@ -195,24 +195,11 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
             userColor: userColor, // Performance-based color for user bar
             sortOrder: d.value, // Add explicit sort order based on difficulty value
           };
-        } else {
-          // No data for this difficulty - show as 0 delta
-          return {
-            difficulty: d.name,
-            difficultyIndex: index, // Use index for X-axis ordering
-            totalTime: 0,
-            levelCount: 0,
-            avgTimePerLevel: 0.05, // Very small value for log scale visibility
-            avgTimePerLevelSeconds: 0,
-            thresholdTime: 0.05, // Very small value for log scale visibility  
-            userAvgPerLevel: 0.05,
-            percentageDelta: 0, // No delta for no data
-            color: colors[index % colors.length],
-            userColor: '#6B7280', // Gray for no data
-            sortOrder: d.value, // Add explicit sort order based on difficulty value
-          };
         }
-      }) as (TimeInvestmentData & { thresholdTime: number; userAvgPerLevel: number; avgTimePerLevelSeconds: number; sortOrder: number; difficultyIndex: number; percentageDelta: number })[];
+        // Skip difficulties with less than 7 solves
+        return null;
+      })
+      .filter(Boolean) as (TimeInvestmentData & { thresholdTime: number; userAvgPerLevel: number; avgTimePerLevelSeconds: number; sortOrder: number; difficultyIndex: number; percentageDelta: number })[];
     
     // Final sort to ensure proper order is maintained
     return orderedData.sort((a, b) => a.sortOrder - b.sortOrder);
@@ -439,6 +426,9 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
         </div>
         <p className='text-sm text-gray-400 text-center mb-2'>
           How much faster (+) or slower (-) you are compared to other players on the same levels
+          <span className='block text-xs text-gray-500 mt-1'>
+            Only shows difficulty tiers with 7+ levels solved
+          </span>
         </p>
         <div className='w-full h-96'>
           <ResponsiveContainer width='100%' height='100%'>
@@ -477,13 +467,13 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
                   if (active && payload && payload.length > 0) {
                     const data = payload[0].payload;
                     
-                    // Handle case where user has no data for this difficulty
-                    if (data.levelCount === 0) {
+                    // This case shouldn't happen since we filter out <7 solves, but keep for safety
+                    if (data.levelCount < 7) {
                       return (
                         <div className='bg-gray-800 p-3 rounded-lg shadow-lg border border-gray-600'>
                           <div className='text-sm text-gray-100'>
                             <div className='font-bold text-blue-400 mb-2'>{data.difficulty} Difficulty</div>
-                            <div className='text-gray-400 italic'>No levels solved at this difficulty yet</div>
+                            <div className='text-gray-400 italic'>Need 7+ levels for comparison ({data.levelCount} solved)</div>
                           </div>
                         </div>
                       );
@@ -639,29 +629,32 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
                               fill={period.hasData ? `url(#gradient-${index})` : '#374151'}
                               stroke="none"
                             />
-                            
-                            {/* Needle */}
-                            {period.hasData && (
-                              <g>
-                                <line
-                                  x1="50%"
-                                  y1="70%"
-                                  x2={`${50 + 40 * Math.cos(needleAngle * Math.PI / 180)}%`}
-                                  y2={`${70 - 40 * Math.sin(needleAngle * Math.PI / 180)}%`}
-                                  stroke="#FFFFFF"
-                                  strokeWidth="3"
-                                  strokeLinecap="round"
-                                />
-                                <circle
-                                  cx="50%"
-                                  cy="70%"
-                                  r="3"
-                                  fill="#FFFFFF"
-                                />
-                              </g>
-                            )}
                           </PieChart>
                         </ResponsiveContainer>
+                        
+                        {/* Needle overlay - positioned absolutely */}
+                        {period.hasData && (
+                          <svg
+                            className='absolute inset-0 w-full h-full pointer-events-none'
+                            viewBox="0 0 100 100"
+                          >
+                            <line
+                              x1="50"
+                              y1="70"
+                              x2={50 + 40 * Math.cos(needleAngle * Math.PI / 180)}
+                              y2={70 - 40 * Math.sin(needleAngle * Math.PI / 180)}
+                              stroke="#FFFFFF"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                            />
+                            <circle
+                              cx="50"
+                              cy="70"
+                              r="2"
+                              fill="#FFFFFF"
+                            />
+                          </svg>
+                        )}
                       </div>
                       
                       {/* Performance Value Display */}

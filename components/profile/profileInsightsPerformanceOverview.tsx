@@ -64,10 +64,25 @@ export default function ProfileInsightsPerformanceOverview({ user, reqUser, time
       });
     }
 
-    // Average performance vs peers - RESTORED original calculation
+    // Average performance vs peers - using only 7+ solve difficulties
     if (difficultyData && difficultyData[ProStatsUserType.DifficultyLevelsComparisons]) {
       const comparisons = difficultyData[ProStatsUserType.DifficultyLevelsComparisons] as any[];
-      const validComparisons = comparisons.filter(c => c.otherPlayattemptsAverageDuration && c.myPlayattemptsSumDuration);
+      
+      // Group by difficulty and only include those with 7+ solves
+      const difficultyGroups = new Map<string, any[]>();
+      comparisons.forEach(c => {
+        if (!c.difficulty || !c.otherPlayattemptsAverageDuration || !c.myPlayattemptsSumDuration) return;
+        const difficulty = getDifficultyFromEstimate(c.difficulty).name;
+        if (!difficultyGroups.has(difficulty)) {
+          difficultyGroups.set(difficulty, []);
+        }
+        difficultyGroups.get(difficulty)!.push(c);
+      });
+      
+      // Only include difficulties with 7+ solves
+      const validComparisons = Array.from(difficultyGroups.values())
+        .filter(group => group.length >= 7)
+        .flat();
       
       if (validComparisons.length > 0) {
         const avgPerformance = validComparisons.reduce((sum, c) => 
@@ -94,7 +109,7 @@ export default function ProfileInsightsPerformanceOverview({ user, reqUser, time
     const comparisons = difficultyData[ProStatsUserType.DifficultyLevelsComparisons] as any[];
     const difficultyBuckets = new Map<string, { faster: number, total: number, maxDifficulty: number, hasComparison: boolean }>();
 
-    // First pass: collect all difficulty levels solved, even without comparison data
+    // Collect difficulty levels solved with minimum threshold requirement
     comparisons.forEach(c => {
       if (!c.difficulty) return;
       
@@ -120,32 +135,30 @@ export default function ProfileInsightsPerformanceOverview({ user, reqUser, time
       difficultyBuckets.set(difficulty.name, bucket);
     });
 
-    // Convert to radar chart format - show ALL difficulties but only draw lines for 7+
+    // Convert to radar chart format - only include difficulties with 7+ solves
     const radarData = Array.from(difficultyBuckets.entries())
+      .filter(([difficulty, data]) => data.total >= 7) // Only include 7+ solves
       .sort((a, b) => a[1].maxDifficulty - b[1].maxDifficulty)
       .map(([difficulty, data]) => {
-        const meetsMinimum = data.total >= 7;
         const performance = data.hasComparison && data.total > 0 
           ? Math.round((data.faster / data.total) * 100)
           : 50;
         
         return {
           difficulty,
-          // Only show performance if meets minimum requirement, otherwise null (no line)
-          performance: meetsMinimum ? performance : null,
+          performance: performance,
           fullMark: 100,
           hasData: data.hasComparison,
           levelCount: data.total,
-          meetsMinimum,
+          meetsMinimum: true, // All entries now meet minimum by definition
           // Add color based on performance
           color: getPerformanceColor(performance),
         };
       });
 
-    // Calculate average performance for overall color - only from tiers that meet minimum
-    const tiersWithMinimum = radarData.filter(item => item.meetsMinimum && item.performance !== null);
-    const avgPerf = tiersWithMinimum.length > 0 
-      ? tiersWithMinimum.reduce((sum, item) => sum + (item.performance || 0), 0) / tiersWithMinimum.length
+    // Calculate average performance for overall color
+    const avgPerf = radarData.length > 0 
+      ? radarData.reduce((sum, item) => sum + (item.performance || 0), 0) / radarData.length
       : 50;
 
     return { skillRadarData: radarData, averagePerformance: avgPerf };
@@ -280,19 +293,7 @@ export default function ProfileInsightsPerformanceOverview({ user, reqUser, time
                   formatter={(value: number, name: string, props: any) => {
                     const data = props.payload;
                     
-                    // Handle case where user doesn't meet minimum requirement
-                    if (!data.meetsMinimum) {
-                      return [
-                        <div key='tooltip' className='text-sm text-gray-100'>
-                          <div className='text-red-400 font-bold mb-1'>Insufficient Data</div>
-                          <div>Levels solved: <span className='font-bold'>{data.levelCount}</span></div>
-                          <div className='text-xs text-gray-400 mt-1'>
-                            Need 7+ levels for performance analysis
-                          </div>
-                        </div>,
-                        ''
-                      ];
-                    }
+                    // All data now meets minimum requirement since we filter at source
                     
                     const performanceLevel = value >= 80 ? 'Excellent' : 
                                            value >= 65 ? 'Good' : 

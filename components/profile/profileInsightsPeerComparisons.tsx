@@ -78,7 +78,8 @@ export default function ProfileInsightsPeerComparisons({ user, reqUser, timeFilt
     
     difficultyOrder.forEach(diffName => {
       const group = difficultyGroups.get(diffName);
-      if (group && group.total > 0) {
+      // Only include difficulties with 7+ solves
+      if (group && group.total >= 7) {
         const avgPercentile = Math.round(group.sumPercentile / group.total);
 
         data.push({
@@ -88,61 +89,73 @@ export default function ProfileInsightsPeerComparisons({ user, reqUser, timeFilt
           fasterCount: group.faster,
           color: getPercentileColor(avgPercentile),
         });
-      } else {
-        // No data for this difficulty - show as neutral percentile
-        data.push({
-          difficulty: diffName,
-          percentile: 50, // Neutral percentile for no data
-          totalLevels: 0,
-          fasterCount: 0,
-          color: '#6B7280', // Gray for no data
-        });
       }
+      // Skip difficulties with fewer than 7 solves - don't show them at all
     });
 
     return data;
   }, [difficultyData]);
 
-  // Calculate simple competition score - average difficulty of levels solved
+  // Calculate weighted competition score based on percentiles
   const { competitionScore, competitionScoreDetails } = useMemo(() => {
-    if (!difficultyData || !difficultyData[ProStatsUserType.DifficultyLevelsComparisons]) {
+    if (!percentileData || percentileData.length === 0) {
       return { competitionScore: null, competitionScoreDetails: null };
     }
 
-    const comparisons = difficultyData[ProStatsUserType.DifficultyLevelsComparisons] as any[];
-    const validComparisons = comparisons.filter(c => c.difficulty);
-    
-    if (validComparisons.length === 0) return { competitionScore: null, competitionScoreDetails: null };
+    // Define weights for each difficulty (Kindergarten=1, Elementary=2, etc.)
+    const difficultyWeights: { [key: string]: number } = {
+      'Kindergarten': 1,
+      'Elementary': 2,
+      'Junior High': 3,
+      'Highschool': 4,
+      'Bachelors': 5,
+      'Masters': 6,
+      'PhD': 7,
+      'Professor': 8,
+      'Grandmaster': 9,
+      'Super Grandmaster': 10
+    };
 
-    // Simple approach: average difficulty of levels solved, scaled to 0-100
-    const difficulties = validComparisons.map(c => c.difficulty);
-    const averageDifficulty = difficulties.reduce((sum, diff) => sum + diff, 0) / difficulties.length;
-    const maxDifficulty = Math.max(...difficulties);
-    
-    // Scale average difficulty to 0-100 range
-    // 500 difficulty = 25 points, 1000 = 50 points, 1500 = 75 points, 2000+ = 100 points
-    const baseScore = Math.min(100, Math.round((averageDifficulty / 20)));
-    
-    // Bonus for attempting very high difficulty levels
-    let difficultyBonus = 0;
-    if (maxDifficulty >= 2000) difficultyBonus = 15;      // Master levels attempted
-    else if (maxDifficulty >= 1500) difficultyBonus = 10; // Expert levels attempted  
-    else if (maxDifficulty >= 1000) difficultyBonus = 5;  // Hard levels attempted
-    
-    const finalScore = Math.min(100, baseScore + difficultyBonus);
+    let weightedPercentileSum = 0;
+    let totalWeightUsed = 0;
+    let maxPossibleWeight = 0;
+    const breakdown: { [key: string]: { percentile: number; weight: number; contribution: number; levels: number } } = {};
+
+    // Calculate weighted sum for difficulties the user has played (7+ solves)
+    percentileData.forEach(item => {
+      const weight = difficultyWeights[item.difficulty] || 1;
+      maxPossibleWeight += weight;
+      
+      // Only include in calculation if meets minimum requirement (already filtered to 7+)
+      const contribution = item.percentile * weight;
+      weightedPercentileSum += contribution;
+      totalWeightUsed += weight;
+      
+      breakdown[item.difficulty] = {
+        percentile: item.percentile,
+        weight: weight,
+        contribution: contribution,
+        levels: item.totalLevels
+      };
+    });
+
+    if (totalWeightUsed === 0) return { competitionScore: null, competitionScoreDetails: null };
+
+    // Calculate final score: weighted average percentile
+    const finalScore = Math.round(weightedPercentileSum / totalWeightUsed);
     
     // Calculate details for tooltip
     const details = {
-      totalLevels: validComparisons.length,
-      averageDifficulty: Math.round(averageDifficulty),
-      maxDifficulty: maxDifficulty,
-      baseScore: baseScore,
-      difficultyBonus: difficultyBonus,
-      finalScore: finalScore
+      finalScore: finalScore,
+      totalWeightUsed: totalWeightUsed,
+      maxPossibleWeight: maxPossibleWeight,
+      weightedPercentileSum: Math.round(weightedPercentileSum),
+      breakdown: breakdown,
+      difficultiesPlayed: Object.keys(breakdown).length
     };
 
     return { competitionScore: finalScore, competitionScoreDetails: details };
-  }, [difficultyData]);
+  }, [percentileData]);
 
   const isOwnProfile = reqUser?._id === user._id;
   const isAdmin = reqUser?.roles?.includes(Role.ADMIN);
@@ -183,63 +196,58 @@ export default function ProfileInsightsPeerComparisons({ user, reqUser, timeFilt
         <div className='bg-gray-800 rounded-lg p-6 text-center'>
           <div className='flex items-center justify-center gap-2 mb-2'>
             <h2 className='text-xl font-bold'>Competition Score</h2>
-            <div className='relative'>
-              <button
-                className='w-5 h-5 rounded-full bg-gray-600 text-white text-xs flex items-center justify-center hover:bg-gray-500 cursor-help'
-                onMouseEnter={() => setShowTooltip(true)}
-                onMouseLeave={() => setShowTooltip(false)}
-                onClick={() => setShowTooltip(!showTooltip)}
-              >
-                ?
-              </button>
-              {showTooltip && (
-                <div className='absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs rounded-lg p-3 shadow-lg z-10 w-64'>
-                  <div className='font-bold mb-2'>How Competition Score Works:</div>
-                  <div className='text-left space-y-1 mb-3'>
-                    <div>• Based on average difficulty of levels you've solved</div>
-                    <div>• <span className='text-yellow-400'>Higher difficulty = higher score</span></div>
-                    <div>• Bonus for attempting the hardest levels:</div>
-                    <div className='ml-2'>Hard (1000+): +5 points</div>
-                    <div className='ml-2'>Expert (1500+): +10 points</div>
-                    <div className='ml-2'>Master (2000+): +15 points</div>
-                  </div>
-                  <div className='border-t border-gray-700 pt-2'>
-                    <div className='font-bold mb-1'>Your Score Breakdown:</div>
-                    <div className='flex justify-between text-xs mb-1'>
-                      <span>Levels completed:</span>
-                      <span>{competitionScoreDetails.totalLevels}</span>
-                    </div>
-                    <div className='flex justify-between text-xs mb-1'>
-                      <span>Average difficulty:</span>
-                      <span>{competitionScoreDetails.averageDifficulty}</span>
-                    </div>
-                    <div className='flex justify-between text-xs mb-1'>
-                      <span>Hardest level:</span>
-                      <span>{competitionScoreDetails.maxDifficulty}</span>
-                    </div>
-                    <div className='flex justify-between text-xs mb-1'>
-                      <span>Base score:</span>
-                      <span>{competitionScoreDetails.baseScore}/100</span>
-                    </div>
-                    <div className='flex justify-between text-xs mb-1'>
-                      <span>Difficulty bonus:</span>
-                      <span className='text-green-400'>+{competitionScoreDetails.difficultyBonus}</span>
-                    </div>
-                    <div className='flex justify-between text-xs font-bold'>
-                      <span>Final score:</span>
-                      <span>{competitionScoreDetails.finalScore}/100</span>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
           </div>
           <div className='text-5xl font-bold mb-2' style={{ color: competitionScore >= 75 ? '#10B981' : competitionScore >= 50 ? '#3B82F6' : competitionScore >= 25 ? '#F59E0B' : '#EF4444' }}>
             {competitionScore}
           </div>
-          <p className='text-sm text-gray-400'>
-            Based on the average difficulty of levels you've completed
+          <p className='text-sm text-gray-400 mb-3'>
+            Weighted average of your percentiles across all difficulty tiers
           </p>
+          <button
+            onClick={() => setShowTooltip(!showTooltip)}
+            className='text-blue-400 hover:text-blue-300 text-sm underline focus:outline-none'
+          >
+            {showTooltip ? 'Hide Calculation' : 'Show Calculation'}
+          </button>
+          
+          {showTooltip && (
+            <div className='mt-4 bg-gray-700 rounded-lg p-4 text-left'>
+              <div className='font-bold mb-3 text-center'>Competition Score Calculation</div>
+              
+              <div className='mb-4'>
+                <div className='font-semibold mb-2 text-yellow-400'>How it works:</div>
+                <div className='text-sm space-y-1'>
+                  <div>• Weighted average of your percentiles across difficulty tiers</div>
+                  <div>• Kindergarten (weight 1) → Super Grandmaster (weight 10)</div>
+                  <div>• Higher difficulties count more toward your final score</div>
+                </div>
+              </div>
+
+              <div className='mb-4'>
+                <div className='font-semibold mb-2 text-blue-400'>Your breakdown:</div>
+                <div className='bg-gray-800 rounded p-3 space-y-1'>
+                  {Object.entries(competitionScoreDetails.breakdown).map(([difficulty, data]) => (
+                    <div key={difficulty} className='flex justify-between text-sm'>
+                      <span>{difficulty} ({data.levels} levels):</span>
+                      <span className='font-mono'>{data.percentile}% × {data.weight} = {data.contribution}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className='border-t border-gray-600 pt-3'>
+                <div className='font-semibold mb-2 text-green-400'>Final calculation:</div>
+                <div className='bg-gray-800 rounded p-3 font-mono text-sm'>
+                  <div>Total weighted sum: {competitionScoreDetails.weightedPercentileSum}</div>
+                  <div>Total weight used: {competitionScoreDetails.totalWeightUsed}</div>
+                  <div className='border-t border-gray-600 mt-2 pt-2 font-bold'>
+                    Final score: {competitionScoreDetails.weightedPercentileSum} ÷ {competitionScoreDetails.totalWeightUsed} = {competitionScoreDetails.finalScore}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          
           <div className='mt-4 text-xs text-gray-500'>
             <span className='text-green-500'>75-100: Elite</span> • 
             <span className='text-blue-500 ml-2'>50-74: Above Average</span> • 
@@ -252,10 +260,19 @@ export default function ProfileInsightsPeerComparisons({ user, reqUser, timeFilt
       {/* Percentile Rankings by Difficulty */}
       {percentileData.length > 0 && (
         <div className='flex flex-col gap-2'>
-          <h2 className='text-xl font-bold text-center'>Percentile Rankings by Difficulty</h2>
+          <h2 className='text-xl font-bold text-center'>Player Ranking by Difficulty</h2>
           <p className='text-sm text-gray-400 text-center mb-4'>
-            Your estimated percentile ranking within each difficulty tier
+            What percentage of players you perform better than in each difficulty tier
+            <span className='block text-xs text-gray-500 mt-1'>
+              Only shows difficulty tiers with 7+ levels solved
+            </span>
           </p>
+          <div className='bg-gray-800 rounded-lg p-3 mb-4'>
+            <div className='text-xs text-gray-300 text-center'>
+              <div className='mb-1'><strong>How to read:</strong> "75th percentile" means you're faster than 75% of other players</div>
+              <div className='text-gray-400'>This shows your <em>competitive ranking</em>, not speed difference (see Time Analytics for that)</div>
+            </div>
+          </div>
           <div className='w-full h-80'>
             <ResponsiveContainer width='100%' height='100%'>
               <BarChart data={percentileData} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
@@ -269,13 +286,14 @@ export default function ProfileInsightsPeerComparisons({ user, reqUser, timeFilt
                 <YAxis 
                   domain={[0, 100]} 
                   tick={{ fill: '#9CA3AF' }}
-                  label={{ value: 'Percentile', angle: -90, position: 'insideLeft', style: { fill: '#9CA3AF' } }}
+                  tickFormatter={(value) => `${value}%`}
+                  label={{ value: 'Players You Beat (%)', angle: -90, position: 'insideLeft', style: { fill: '#9CA3AF' } }}
                 />
                 <ReferenceLine 
                   y={50} 
                   stroke='#6B7280' 
                   strokeDasharray='4 4'
-                  label={{ value: '50th Percentile (Average)', position: 'topRight', style: { fill: '#9CA3AF', fontSize: '12px' } }}
+                  label={{ value: 'Average Player (50%)', position: 'topRight', style: { fill: '#9CA3AF', fontSize: '12px' } }}
                 />
                 <Tooltip 
                   contentStyle={{
@@ -288,15 +306,18 @@ export default function ProfileInsightsPeerComparisons({ user, reqUser, timeFilt
                     const data = percentileData.find(d => d.percentile === value);
                     return [
                       <div key='tooltip' className='text-sm text-gray-100'>
-                        <div>Percentile: <span className='font-bold'>{value}%</span></div>
+                        <div className='text-lg font-bold mb-1' style={{ color: data?.color }}>
+                          {value}th percentile
+                        </div>
+                        <div className='mb-2'>
+                          You're faster than <span className='font-bold text-green-400'>{value}%</span> of players
+                        </div>
                         {data && (
                           <>
-                            <div>Levels played: {data.totalLevels}</div>
-                            {data.totalLevels > 0 ? (
-                              <div>Faster than avg: {data.fasterCount} ({Math.round(data.fasterCount / data.totalLevels * 100)}%)</div>
-                            ) : (
-                              <div className='text-gray-400 italic'>No levels solved at this difficulty</div>
-                            )}
+                            <div className='border-t border-gray-600 pt-2 mt-2 text-xs'>
+                              <div>Levels analyzed: {data.totalLevels}</div>
+                              <div>Times you beat average: {data.fasterCount} of {data.totalLevels}</div>
+                            </div>
                           </>
                         )}
                       </div>,
@@ -320,12 +341,18 @@ export default function ProfileInsightsPeerComparisons({ user, reqUser, timeFilt
 
       {/* Performance Analysis */}
       <div className='bg-gray-800 rounded-lg p-6'>
-        <h3 className='text-xl font-bold mb-4 text-center'>Performance Analysis</h3>
+        <h3 className='text-xl font-bold mb-2 text-center'>Competitive Standing Summary</h3>
+        <p className='text-sm text-gray-400 text-center mb-4'>
+          Where you rank among other players (60th percentile+ = above average)
+          <span className='block text-xs text-gray-500 mt-1'>
+            Only includes difficulty tiers with 7+ levels solved
+          </span>
+        </p>
         <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
           <div>
             <div className='flex items-center gap-2 mb-3'>
               <div className='w-3 h-3 bg-green-500 rounded-full'></div>
-              <h4 className='font-semibold text-green-400'>Your Strongest Areas</h4>
+              <h4 className='font-semibold text-green-400'>Your Strongest Difficulty Tiers</h4>
             </div>
             <div className='space-y-2'>
               {percentileData.filter(d => d.percentile >= 60).map(d => (
@@ -335,13 +362,14 @@ export default function ProfileInsightsPeerComparisons({ user, reqUser, timeFilt
                     <span className='text-green-400 font-bold'>{d.percentile}th percentile</span>
                   </div>
                   <p className='text-xs text-gray-400 mt-1'>
-                    Faster than {d.percentile}% of players ({d.fasterCount}/{d.totalLevels} levels)
+                    You beat {d.percentile}% of players in this difficulty
                   </p>
                 </div>
               ))}
               {percentileData.filter(d => d.percentile >= 60).length === 0 && (
                 <div className='text-center p-4 text-gray-500 italic'>
-                  🎯 Focus on consistency to build your strengths!
+                  🎯 Keep practicing to improve your competitive standing!<br />
+                  <span className='text-xs text-gray-600 mt-1'>Solve 7+ levels in difficulty tiers to see rankings</span>
                 </div>
               )}
             </div>
@@ -350,7 +378,7 @@ export default function ProfileInsightsPeerComparisons({ user, reqUser, timeFilt
           <div>
             <div className='flex items-center gap-2 mb-3'>
               <div className='w-3 h-3 bg-yellow-500 rounded-full'></div>
-              <h4 className='font-semibold text-yellow-400'>Growth Opportunities</h4>
+              <h4 className='font-semibold text-yellow-400'>Areas Below Average</h4>
             </div>
             <div className='space-y-2'>
               {percentileData.filter(d => d.percentile < 40).map(d => (
@@ -360,13 +388,16 @@ export default function ProfileInsightsPeerComparisons({ user, reqUser, timeFilt
                     <span className='text-yellow-400 font-bold'>{d.percentile}th percentile</span>
                   </div>
                   <p className='text-xs text-gray-400 mt-1'>
-                    Room to improve - practice these difficulty levels more
+                    You beat only {d.percentile}% of players in this difficulty
                   </p>
                 </div>
               ))}
               {percentileData.filter(d => d.percentile < 40).length === 0 && (
                 <div className='text-center p-4 text-green-400 italic'>
-                  🌟 Excellent! You're performing well across all difficulties.
+                  🌟 Great! You're above average in all difficulty tiers.
+                  <span className='block text-xs text-gray-500 mt-1'>
+                    (Based on tiers with 7+ levels solved)
+                  </span>
                 </div>
               )}
             </div>
