@@ -1,0 +1,445 @@
+import useProStatsUser, { ProStatsUserType } from '@root/hooks/useProStatsUser';
+import { useMemo, useState } from 'react';
+import User from '../../models/db/user';
+import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import dayjs from 'dayjs';
+import duration from 'dayjs/plugin/duration';
+import { getDifficultyFromEstimate, difficultyList, getDifficultyColor } from '../formatted/formattedDifficulty';
+import ProfileInsightsRecords from './profileInsightsRecords';
+import FormattedLevelLink from '../formatted/formattedLevelLink';
+import Role from '@root/constants/role';
+import { TimeFilter } from './profileInsights';
+
+dayjs.extend(duration);
+
+interface ProfileInsightsLevelMasteryProps {
+  user: User;
+  reqUser: User | null;
+  timeFilter: TimeFilter;
+}
+
+interface DifficultyProgressData {
+  name: string;
+  value: number;
+  color: string;
+  levelCount: number;
+  firstSolved?: string;
+  latestSolved?: string;
+}
+
+interface RetryAnalysisData {
+  levelName: string;
+  attempts: number;
+  finalTime: number;
+  improvement: number;
+  difficulty: string;
+}
+
+export default function ProfileInsightsLevelMastery({ user, reqUser, timeFilter }: ProfileInsightsLevelMasteryProps) {
+  const { proStatsUser: difficultyData, isLoading: isLoadingDifficulty } = useProStatsUser(user, ProStatsUserType.DifficultyLevelsComparisons, timeFilter);
+  const { proStatsUser: recordsData, isLoading: isLoadingRecords } = useProStatsUser(user, ProStatsUserType.Records, timeFilter);
+  
+  const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
+  const [timelineMode, setTimelineMode] = useState<'max' | 'average'>('average');
+
+  // Calculate difficulty progression
+  const difficultyProgression = useMemo(() => {
+    if (!difficultyData || !difficultyData[ProStatsUserType.DifficultyLevelsComparisons]) {
+      return [];
+    }
+
+    const comparisons = difficultyData[ProStatsUserType.DifficultyLevelsComparisons] as any[];
+    const progressionMap = new Map<string, DifficultyProgressData>();
+    
+    // Use actual difficulty constants with colors
+    const difficultyColors = ['#10B981', '#3B82F6', '#8B5CF6', '#EC4899', '#F59E0B', '#EF4444', '#DC2626', '#991B1B', '#6B7280', '#374151'];
+    const difficultyConfig = difficultyList
+      .filter(d => d.name !== 'Pending') // Skip pending difficulty
+      .map((d, index) => ({
+        name: d.name,
+        color: difficultyColors[index] || '#6B7280',
+        value: d.value,
+      }));
+
+    // Initialize all difficulties
+    difficultyConfig.forEach(config => {
+      progressionMap.set(config.name, {
+        name: config.name,
+        value: config.value,
+        color: config.color,
+        levelCount: 0,
+      });
+    });
+
+    // Count levels and track dates
+    comparisons.forEach(c => {
+      if (!c.difficulty) return;
+      
+      const difficulty = getDifficultyFromEstimate(c.difficulty);
+      const data = progressionMap.get(difficulty.name);
+      
+      if (data) {
+        data.levelCount++;
+        const solveDate = dayjs(c.ts * 1000).format('MMM DD, YYYY');
+        
+        if (!data.firstSolved || c.ts < dayjs(data.firstSolved).unix()) {
+          data.firstSolved = solveDate;
+        }
+        if (!data.latestSolved || c.ts > dayjs(data.latestSolved).unix()) {
+          data.latestSolved = solveDate;
+        }
+      }
+    });
+
+    return Array.from(progressionMap.values()).filter(d => d.levelCount > 0);
+  }, [difficultyData]);
+
+  // Calculate difficulty timeline with level details
+  const difficultyTimeline = useMemo(() => {
+    if (!difficultyData || !difficultyData[ProStatsUserType.DifficultyLevelsComparisons]) {
+      return [];
+    }
+
+    const comparisons = difficultyData[ProStatsUserType.DifficultyLevelsComparisons] as any[];
+    const timeline = new Map<string, { 
+      date: string, 
+      totalDifficulty: number,
+      maxDifficulty: number,
+      levelCount: number,
+      allLevels: any[],
+      monthKey: string 
+    }>();
+
+    // Group by month and collect all levels with their difficulties
+    comparisons.forEach(c => {
+      if (!c.difficulty || !c.ts) return;
+      
+      const monthKey = dayjs(c.ts * 1000).format('YYYY-MM');
+      const displayDate = dayjs(c.ts * 1000).format('MMM YYYY');
+      
+      const existing = timeline.get(monthKey);
+      if (!existing) {
+        timeline.set(monthKey, {
+          date: displayDate,
+          totalDifficulty: c.difficulty,
+          maxDifficulty: c.difficulty,
+          levelCount: 1,
+          allLevels: [c],
+          monthKey,
+        });
+      } else {
+        existing.totalDifficulty += c.difficulty;
+        existing.maxDifficulty = Math.max(existing.maxDifficulty, c.difficulty);
+        existing.levelCount++;
+        existing.allLevels.push(c);
+      }
+    });
+
+    // Convert to array and sort, calculate based on mode
+    return Array.from(timeline.values())
+      .sort((a, b) => dayjs(a.date).unix() - dayjs(b.date).unix())
+      .map(entry => {
+        const displayDifficulty = timelineMode === 'average' 
+          ? entry.totalDifficulty / entry.levelCount 
+          : entry.maxDifficulty;
+        const difficultyObj = getDifficultyFromEstimate(displayDifficulty);
+        // Find hardest levels for click details
+        const hardestLevels = entry.allLevels
+          .sort((a, b) => b.difficulty - a.difficulty)
+          .slice(0, 10);
+        
+        return {
+          date: entry.date,
+          avgDifficulty: displayDifficulty,
+          maxDifficulty: entry.maxDifficulty,
+          difficulty: difficultyObj.name,
+          difficultyRating: displayDifficulty,
+          hardestLevels: hardestLevels,
+          monthKey: entry.monthKey,
+          levelCount: entry.levelCount,
+        };
+      });
+  }, [difficultyData, timelineMode]);
+  
+  const selectedMonthData = useMemo(() => {
+    if (!selectedMonth) return null;
+    return difficultyTimeline.find(entry => entry.monthKey === selectedMonth);
+  }, [selectedMonth, difficultyTimeline]);
+
+  // Analyze retry patterns (simulated - would need actual attempt data)
+  const retryAnalysis = useMemo(() => {
+    if (!difficultyData || !difficultyData[ProStatsUserType.DifficultyLevelsComparisons]) {
+      return [];
+    }
+
+    const comparisons = difficultyData[ProStatsUserType.DifficultyLevelsComparisons] as any[];
+    
+    // Filter levels that took longer than average and preserve original level data
+    return comparisons
+      .filter(c => c.myPlayattemptsSumDuration && c.otherPlayattemptsAverageDuration && 
+                  c.myPlayattemptsSumDuration > c.otherPlayattemptsAverageDuration * 1.5)
+      .slice(0, 5)
+      .map(c => ({
+        // Preserve the original level object for FormattedLevelLink
+        _id: c._id,
+        name: c.name,
+        slug: c.slug,
+        // Add computed fields for display
+        attempts: Math.ceil(c.myPlayattemptsSumDuration / c.otherPlayattemptsAverageDuration * 2),
+        finalTime: c.myPlayattemptsSumDuration,
+        improvement: Math.round((1 - c.otherPlayattemptsAverageDuration / c.myPlayattemptsAverageDuration) * 100),
+        difficulty: getDifficultyFromEstimate(c.difficulty).name,
+        difficultyRating: c.difficulty, // Store raw difficulty for rating display
+        // Include other properties that FormattedLevelLink might need
+        ...c
+      }));
+  }, [difficultyData]);
+
+  const isOwnProfile = reqUser?._id === user._id;
+  const isAdmin = reqUser?.roles?.includes(Role.ADMIN);
+
+  // Loading component
+  const LoadingSpinner = () => (
+    <div className='flex items-center justify-center p-8'>
+      <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400'></div>
+    </div>
+  );
+
+  const LoadingSkeleton = ({ height = 'h-64' }: { height?: string }) => (
+    <div className={`bg-gray-800 rounded-lg animate-pulse ${height}`}>
+      <div className='p-4 space-y-2'>
+        <div className='h-4 bg-gray-700 rounded w-3/4'></div>
+        <div className='h-4 bg-gray-700 rounded w-1/2'></div>
+        <div className='h-4 bg-gray-700 rounded w-2/3'></div>
+      </div>
+    </div>
+  );
+
+  if (isLoadingDifficulty) {
+    return (
+      <div className='flex flex-col gap-6 w-full'>
+        <LoadingSkeleton />
+        <LoadingSkeleton />
+        <LoadingSkeleton />
+      </div>
+    );
+  }
+
+  return (
+    <div className='flex flex-col gap-6 w-full'>
+      {/* Difficulty Conquest Map */}
+      <div className='flex flex-col gap-2'>
+        <h2 className='text-xl font-bold text-center'>Difficulty Conquest Map</h2>
+        <p className='text-sm text-gray-400 text-center mb-4'>
+          Your progression through different difficulty tiers
+        </p>
+        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
+          {difficultyProgression.map((diff) => (
+            <div key={diff.name} className='bg-gray-800 rounded-lg p-4 border-2' style={{ borderColor: diff.color }}>
+              <h3 className='font-bold text-lg' style={{ color: diff.color }}>{diff.name}</h3>
+              <div className='mt-2 space-y-1 text-sm'>
+                <div>Levels conquered: <span className='font-bold'>{diff.levelCount}</span></div>
+                {diff.firstSolved && (
+                  <div className='text-xs text-gray-400'>
+                    First: {diff.firstSolved}
+                  </div>
+                )}
+                {diff.latestSolved && (
+                  <div className='text-xs text-gray-400'>
+                    Latest: {diff.latestSolved}
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Difficulty Progression Timeline */}
+      {difficultyTimeline.length > 1 && (
+        <div className='flex flex-col gap-2'>
+          <div className='flex items-center justify-between mb-2'>
+            <h2 className='text-xl font-bold'>{timelineMode === 'average' ? 'Average' : 'Maximum'} Difficulty Over Time</h2>
+            <select 
+              value={timelineMode} 
+              onChange={(e) => setTimelineMode(e.target.value as 'max' | 'average')}
+              className='bg-gray-800 text-white border border-gray-600 rounded px-3 py-1 text-sm focus:outline-none focus:border-blue-400'
+            >
+              <option value="average">Average Difficulty</option>
+              <option value="max">Maximum Difficulty</option>
+            </select>
+          </div>
+          <p className='text-sm text-gray-400 text-center mb-4'>
+            {timelineMode === 'average' 
+              ? 'Average difficulty of levels solved each month'
+              : 'Highest difficulty level reached each month'
+            }
+          </p>
+          <div className='w-full h-64'>
+            <ResponsiveContainer width='100%' height='100%'>
+              <LineChart 
+                data={difficultyTimeline} 
+                margin={{ top: 10, right: 30, left: 0, bottom: 30 }}
+                onClick={(data) => {
+                  if (data && data.activePayload && data.activePayload[0]) {
+                    const payload = data.activePayload[0].payload;
+                    setSelectedMonth(selectedMonth === payload.monthKey ? null : payload.monthKey);
+                  }
+                }}
+              >
+                <XAxis 
+                  dataKey='date' 
+                  tick={{ fill: '#9CA3AF' }}
+                  interval='preserveStartEnd'
+                />
+                <YAxis 
+                  type='number'
+                  domain={['dataMin - 50', 'dataMax + 50']}
+                  tick={{ fill: '#9CA3AF' }}
+                  tickFormatter={(value) => getDifficultyFromEstimate(value).name}
+                  label={{ value: `${timelineMode === 'average' ? 'Avg' : 'Max'} Difficulty`, angle: -90, position: 'insideLeft', style: { fill: '#9CA3AF' } }}
+                />
+                <Tooltip 
+                  contentStyle={{
+                    backgroundColor: 'rgb(31, 41, 55)',
+                    border: 'none',
+                    borderRadius: '0.5rem',
+                    color: 'rgb(229, 231, 235)',
+                  }}
+                  formatter={(value: number, name: string, props: any) => {
+                    const data = props.payload;
+                    return [
+                      <div key='tooltip' className='text-sm text-gray-100'>
+                        <div>{timelineMode === 'average' ? 'Avg' : 'Max'} Difficulty: <span className='font-bold'>{getDifficultyFromEstimate(value).name}</span></div>
+                        <div>Levels solved: <span className='font-bold'>{data.levelCount}</span></div>
+                        <div>Rating: <span className='font-bold'>{value.toFixed(0)}</span></div>
+                      </div>,
+                      ''
+                    ];
+                  }}
+                />
+                <Line 
+                  type='monotone' 
+                  dataKey='avgDifficulty' 
+                  stroke='#3B82F6' 
+                  strokeWidth={2}
+                  dot={{ fill: '#3B82F6', r: 4, cursor: 'pointer' }}
+                  activeDot={{ r: 6, fill: '#60A5FA', cursor: 'pointer' }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+          
+          {/* Selected Month Details */}
+          {selectedMonthData && (
+            <div className='mt-6 bg-gray-800 rounded-lg p-4'>
+              <div className='flex items-center justify-between mb-3'>
+                <h3 className='font-bold text-lg'>Most Difficult Levels Solved in {selectedMonthData.date}</h3>
+                <button 
+                  onClick={() => setSelectedMonth(null)}
+                  className='text-gray-400 hover:text-gray-200 text-xl'
+                >
+                  ×
+                </button>
+              </div>
+              <p className='text-sm text-gray-400 mb-4'>
+                Average Difficulty: <span className='text-blue-400 font-bold'>{selectedMonthData.difficulty}</span> 
+                (Rating: {selectedMonthData.difficultyRating.toFixed(0)}) • 
+                <span className='ml-2'>Levels Solved: <span className='text-green-400 font-bold'>{selectedMonthData.levelCount}</span></span>
+              </p>
+              <p className='text-xs text-gray-500 mb-3'>Showing the {Math.min(selectedMonthData.hardestLevels.length, 8)} hardest levels solved this month:</p>
+              <div className='space-y-2'>
+                {selectedMonthData.hardestLevels.slice(0, 8).map((level, index) => (
+                  <div key={index} className='bg-gray-700 rounded-lg p-3 flex items-center justify-between'>
+                    <div className='flex-1'>
+                      <FormattedLevelLink 
+                        id={`selected-month-level-${index}`}
+                        level={level}
+                      />
+                    </div>
+                    <div className='text-right text-sm text-gray-400'>
+                      <div>Difficulty: <span className='text-blue-400'>{getDifficultyFromEstimate(level.difficulty).name}</span></div>
+                      <div>Rating: <span className='text-gray-300'>{level.difficulty.toFixed(0)}</span></div>
+                      <div>Solved: {dayjs(level.ts * 1000).format('MMM DD')}</div>
+                    </div>
+                  </div>
+                ))}
+                {selectedMonthData.hardestLevels.length > 8 && (
+                  <div className='text-center text-sm text-gray-500 pt-2'>
+                    ...and {selectedMonthData.hardestLevels.length - 8} more levels solved this month
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Retry Analysis */}
+      {retryAnalysis.length > 0 && (
+        <div className='flex flex-col gap-2'>
+          <h2 className='text-xl font-bold text-center'>Your Most Challenging Conquests</h2>
+          <p className='text-sm text-gray-400 text-center mb-4'>
+            These levels took you longer than the average player, showing your perseverance in tackling difficult puzzles.
+            The time shown is your total solving time compared to the community average.
+          </p>
+          <div className='bg-gray-800 rounded-lg overflow-hidden'>
+            <table className='w-full text-sm'>
+              <thead className='bg-gray-700'>
+                <tr>
+                  <th className='text-left p-3'>Level</th>
+                  <th className='text-center p-3'>Difficulty</th>
+                  <th className='text-center p-3'>Your Time</th>
+                  <th className='text-center p-3'>Average Time</th>
+                  <th className='text-center p-3'>Comparison</th>
+                </tr>
+              </thead>
+              <tbody>
+                {retryAnalysis.map((level, index) => (
+                  <tr key={index} className='border-t border-gray-700'>
+                    <td className='p-3'>
+                      <FormattedLevelLink 
+                        id={`challenging-level-${index}`}
+                        level={level}
+                      />
+                    </td>
+                    <td className='text-center p-3'>
+                      <span className='px-2 py-1 rounded text-xs' style={{
+                        backgroundColor: difficultyProgression.find(d => d.name === level.difficulty)?.color + '20',
+                        color: difficultyProgression.find(d => d.name === level.difficulty)?.color,
+                      }}>
+                        {level.difficultyRating ? getDifficultyFromEstimate(level.difficultyRating).name : level.difficulty}
+                      </span>
+                    </td>
+                    <td className='text-center p-3'>{dayjs.duration(level.finalTime * 1000).format('mm:ss')}</td>
+                    <td className='text-center p-3'>{dayjs.duration(level.otherPlayattemptsAverageDuration * 1000).format('mm:ss')}</td>
+                    <td className='text-center p-3'>
+                      <div className='group relative'>
+                        <span className='text-yellow-400 cursor-help underline decoration-dashed'>
+                          {(level.finalTime / level.otherPlayattemptsAverageDuration).toFixed(1)}x longer
+                        </span>
+                        <div className='absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 whitespace-nowrap'>
+                          <div className='text-xs text-gray-300'>
+                            <div>Your time: {level.finalTime}s</div>
+                            <div>Average: {level.otherPlayattemptsAverageDuration.toFixed(1)}s</div>
+                            <div className='mt-1 text-yellow-400'>
+                              {level.finalTime}s ÷ {level.otherPlayattemptsAverageDuration.toFixed(1)}s = {(level.finalTime / level.otherPlayattemptsAverageDuration).toFixed(2)}x
+                            </div>
+                          </div>
+                          <div className='absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-700'></div>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Personal Records */}
+      <ProfileInsightsRecords user={user} />
+    </div>
+  );
+}

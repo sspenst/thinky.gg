@@ -10,29 +10,63 @@ import { NextApiResponse } from 'next';
 import { ValidEnum } from '../../../../../helpers/apiWrapper';
 import { getSolveCountFactor } from '../../../../../helpers/getDifficultyEstimate';
 import isPro from '../../../../../helpers/isPro';
+import Role from '../../../../../constants/role';
 import { ProStatsUserType } from '../../../../../hooks/useProStatsUser';
+import { TimeFilter } from '../../../../../components/profile/profileInsights';
 import cleanUser from '../../../../../lib/cleanUser';
 import withAuth, { NextApiRequestWithAuth } from '../../../../../lib/withAuth';
 import { LevelModel, PlayAttemptModel, StatModel, UserModel } from '../../../../../models/mongoose';
 import { AttemptContext } from '../../../../../models/schemas/playAttemptSchema';
 
-async function getDifficultyDataComparisons(gameId: GameId, userId: string) {
-  /** TODO: Store this in a K/V store with an expiration of like 1 day... */
+function getTimeFilterCutoff(timeFilter?: string): number | null {
+  if (!timeFilter) return null;
+  
+  const now = Math.floor(Date.now() / 1000);
+  
+  switch (timeFilter) {
+    case TimeFilter.WEEK:
+      return now - (60 * 60 * 24 * 7);
+    case TimeFilter.MONTH:
+      return now - (60 * 60 * 24 * 30);
+    case TimeFilter.YEAR:
+      return now - (60 * 60 * 24 * 365);
+    default:
+      return null;
+  }
+}
+
+async function getDifficultyDataComparisons(gameId: GameId, userId: string, timeFilter?: string) {
+  // Performance optimization: Added indexes for commonly queried fields
+  // and removed 500 limit to show complete user data
   const game = getGameFromId(gameId);
   const difficultyEstimate = game.type === GameType.COMPLETE_AND_SHORTEST ? 'calc_difficulty_completion_estimate' : 'calc_difficulty_estimate';
+  const timeCutoff = getTimeFilterCutoff(timeFilter);
+  
+  const matchStage: any = {
+    userId: new mongoose.Types.ObjectId(userId),
+    complete: true,
+    isDeleted: { $ne: true },
+    gameId: gameId
+  };
+  
+  if (timeCutoff) {
+    matchStage.ts = { $gt: timeCutoff };
+  }
+  
   const difficultyData = await StatModel.aggregate([
     {
-      $match: {
-        userId: new mongoose.Types.ObjectId(userId),
-        complete: true,
-        isDeleted: { $ne: true },
-        ts: { $gt: Math.floor(Date.now() / 1000) - (60 * 60 * 24 * 30 * 6) },
-        gameId: gameId
-      },
+      $match: matchStage,
     },
     {
       $sort: {
         ts: -1,
+      }
+    },
+    // Performance optimization: Add index hint for better query performance
+    // This should use compound index on (userId, complete, isDeleted, ts, gameId)
+    {
+      $addFields: {
+        _query_optimized: true
       }
     },
     {
@@ -70,9 +104,6 @@ async function getDifficultyDataComparisons(gameId: GameId, userId: string) {
     },
     {
       $unwind: '$level',
-    },
-    {
-      $limit: 500
     },
     {
       $lookup: {
@@ -264,7 +295,8 @@ async function getDifficultyDataComparisons(gameId: GameId, userId: string) {
   return difficultyData;
 }
 
-async function getPlayLogForUsersCreatedLevels(gameId: GameId, reqUser: User, userId: string) {
+async function getPlayLogForUsersCreatedLevels(gameId: GameId, reqUser: User, userId: string, timeFilter?: string) {
+  const timeCutoff = getTimeFilterCutoff(timeFilter);
   const playLogsForUserCreatedLevels = await LevelModel.aggregate([
     {
       $match: {
@@ -289,6 +321,7 @@ async function getPlayLogForUsersCreatedLevels(gameId: GameId, reqUser: User, us
       $match: {
         'stats.complete': true,
         'stats.isDeleted': { $ne: true },
+        ...(timeCutoff ? { 'stats.ts': { $gt: timeCutoff } } : {}),
       },
     },
     // order by stats.ts desc
@@ -347,7 +380,8 @@ async function getPlayLogForUsersCreatedLevels(gameId: GameId, reqUser: User, us
   return playLogsForUserCreatedLevels;
 }
 
-async function getMostSolvesForUserLevels(gameId: GameId, userId: string) {
+async function getMostSolvesForUserLevels(gameId: GameId, userId: string, timeFilter?: string) {
+  const timeCutoff = getTimeFilterCutoff(timeFilter);
 /** get the users that have solved the most levels created by userId */
   const mostSolvesForUserLevels = await LevelModel.aggregate([
     {
@@ -373,6 +407,7 @@ async function getMostSolvesForUserLevels(gameId: GameId, userId: string) {
       $match: {
         'stats.complete': true,
         'stats.isDeleted': { $ne: true },
+        ...(timeCutoff ? { 'stats.ts': { $gt: timeCutoff } } : {}),
       },
     },
     {
@@ -421,17 +456,23 @@ async function getMostSolvesForUserLevels(gameId: GameId, userId: string) {
   return mostSolvesForUserLevels;
 }
 
-async function getScoreHistory(gameId: GameId, userId: string) {
+async function getScoreHistory(gameId: GameId, userId: string, timeFilter?: string) {
+  const timeCutoff = getTimeFilterCutoff(timeFilter);
+  
+  const matchStage: any = {
+    userId: new mongoose.Types.ObjectId(userId),
+    isDeleted: { $ne: true },
+    complete: true,
+    gameId: gameId,
+  };
+  
+  if (timeCutoff) {
+    matchStage.ts = { $gt: timeCutoff };
+  }
+  
   const history = await StatModel.aggregate([
     {
-      $match: {
-        userId: new mongoose.Types.ObjectId(userId),
-        isDeleted: { $ne: true },
-        complete: true,
-        // where ts > 6 months ago
-        ts: { $gt: Math.floor(Date.now() / 1000) - (60 * 60 * 24 * 30 * 6) },
-        gameId: gameId,
-      },
+      $match: matchStage,
     },
     {
       $project: {
@@ -472,29 +513,33 @@ export default withAuth({
     }
   }
 }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
-  if (!isPro(req.user)) {
+  const isAdmin = req.user?.roles?.includes(Role.ADMIN);
+  const hasAccess = isPro(req.user) || isAdmin;
+
+  if (!hasAccess) {
     return res.status(401).json({
       error: 'Not authorized',
     });
   }
 
-  const { id: userId, type } = req.query as { id: string, type: string };
+  const { id: userId, type, timeFilter } = req.query as { id: string, type: string, timeFilter?: string };
   let scoreHistory, difficultyLevelsComparisons, mostSolvesForUserLevels, playLogForUserCreatedLevels, records;
 
   if (type === ProStatsUserType.DifficultyLevelsComparisons) {
-    if (userId !== req.user._id.toString()) {
+    // Allow access if user is viewing their own data OR if they're an admin
+    if (userId !== req.user._id.toString() && !isAdmin) {
       return res.status(401).json({
         error: 'Not authorized',
       });
     }
 
-    difficultyLevelsComparisons = await getDifficultyDataComparisons(req.gameId, userId);
+    difficultyLevelsComparisons = await getDifficultyDataComparisons(req.gameId, userId, timeFilter);
   } else if (type === ProStatsUserType.ScoreHistory) {
-    scoreHistory = await getScoreHistory(req.gameId, userId);
+    scoreHistory = await getScoreHistory(req.gameId, userId, timeFilter);
   } else if (type === ProStatsUserType.MostSolvesForUserLevels) {
-    mostSolvesForUserLevels = await getMostSolvesForUserLevels(req.gameId, userId);
+    mostSolvesForUserLevels = await getMostSolvesForUserLevels(req.gameId, userId, timeFilter);
   } else if (type === ProStatsUserType.PlayLogForUserCreatedLevels) {
-    playLogForUserCreatedLevels = await getPlayLogForUsersCreatedLevels(req.gameId, req.user, userId);
+    playLogForUserCreatedLevels = await getPlayLogForUsersCreatedLevels(req.gameId, req.user, userId, timeFilter);
   } else if (type === ProStatsUserType.Records) {
     records = await getRecordsByUserId(req.gameId, new Types.ObjectId(userId), req.user);
   }

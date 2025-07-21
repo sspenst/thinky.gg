@@ -3,6 +3,7 @@ import { DifficultyLevelComparison } from '../components/profile/profileInsights
 import { DateAndSum, UserAndSum, UserLevelAndStatTs } from '../contexts/levelContext';
 import User from '../models/db/user';
 import useSWRHelper from './useSWRHelper';
+import { TimeFilter } from '../components/profile/profileInsights';
 
 export enum ProStatsUserType {
   DifficultyLevelsComparisons = 'difficulty-levels-comparisons',
@@ -21,8 +22,9 @@ export interface ProStatsUser {
   [ProStatsUserType.Records]?: LevelWithRecordHistory[];
 }
 
-export default function useProStatsUser(user: User | null, type: ProStatsUserType) {
-  const { data, error, isLoading, mutate } = useSWRHelper<ProStatsUser>('/api/user/' + user?._id + '/prostats/' + type, {}, {
+export default function useProStatsUser(user: User | null, type: ProStatsUserType, timeFilter: TimeFilter = TimeFilter.ALL) {
+  const timeParam = timeFilter !== TimeFilter.ALL ? `?timeFilter=${timeFilter}` : '';
+  const { data, error, isLoading, mutate } = useSWRHelper<ProStatsUser>('/api/user/' + user?._id + '/prostats/' + type + timeParam, {}, {
     revalidateOnFocus: false,
   }, !user);
 
