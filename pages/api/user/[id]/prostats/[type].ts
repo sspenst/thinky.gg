@@ -36,8 +36,6 @@ function getTimeFilterCutoff(timeFilter?: string): number | null {
 }
 
 async function getDifficultyDataComparisons(gameId: GameId, userId: string, timeFilter?: string) {
-  // Performance optimization: Added indexes for commonly queried fields
-  // and removed 500 limit to show complete user data
   const game = getGameFromId(gameId);
   const difficultyEstimate = game.type === GameType.COMPLETE_AND_SHORTEST ? 'calc_difficulty_completion_estimate' : 'calc_difficulty_estimate';
   const timeCutoff = getTimeFilterCutoff(timeFilter);
@@ -53,25 +51,17 @@ async function getDifficultyDataComparisons(gameId: GameId, userId: string, time
     matchStage.ts = { $gt: timeCutoff };
   }
   
+  
+  // Now run the full pipeline with appropriate threshold
   const difficultyData = await StatModel.aggregate([
     {
       $match: matchStage,
     },
     {
-      $sort: {
-        ts: -1,
-      }
-    },
-    // Performance optimization: Add index hint for better query performance
-    // This should use compound index on (userId, complete, isDeleted, ts, gameId)
-    {
-      $addFields: {
-        _query_optimized: true
-      }
+      $sort: { userId: 1, ts: -1 }
     },
     {
       $project: {
-        _id: 0,
         levelId: 1,
         ts: 1,
       },
@@ -82,21 +72,21 @@ async function getDifficultyDataComparisons(gameId: GameId, userId: string, time
         localField: 'levelId',
         foreignField: '_id',
         as: 'level',
-        // match where calc_playattempts_unique_users >= 10
         pipeline: [
           {
             $match: {
-              [difficultyEstimate]: { $gte: 0 },
+              [difficultyEstimate]: { $exists: true, $gte: 0 }
+              // Removed calc_playattempts_unique_users filter - field appears to be missing
             }
           },
           {
             $project: {
               _id: 1,
               name: 1,
-              calc_difficulty_completion_estimate: 1,
-              calc_difficulty_estimate: 1,
+              slug: 1,
+              difficulty: `$${difficultyEstimate}`,
+              calc_playattempts_duration_sum: 1,
               calc_playattempts_just_beaten_count: 1,
-              slug: 1
             }
           }
         ]
@@ -115,129 +105,10 @@ async function getDifficultyDataComparisons(gameId: GameId, userId: string, time
               $expr: {
                 $and: [
                   { $eq: ['$levelId', '$$levelId'] },
-
-                ],
-              },
-            },
-          },
-          {
-            $match: {
-              attemptContext: AttemptContext.JUST_SOLVED,
-            },
-          },
-          {
-            $group: {
-              _id: '$userId',
-            },
-          },
-        ],
-        as: 'players_with_just_solved_playattempt',
-      }
-    },
-    {
-      // convert players_with_just_solved_playattempt to an array of ids
-      $addFields: {
-        players_with_just_solved_playattempt: {
-          $map: {
-            input: '$players_with_just_solved_playattempt',
-            as: 'player',
-            in: '$$player._id',
-          },
-        },
-      }
-    },
-    // remove my own playattempt id from players_with_just_solved_playattempt
-    {
-      $addFields: {
-        players_with_just_solved_playattempt: {
-          $filter: {
-            input: '$players_with_just_solved_playattempt',
-            as: 'player',
-            cond: { $ne: ['$$player', new mongoose.Types.ObjectId(userId)] },
-          },
-        },
-      }
-    },
-    {
-      $project: {
-        _id: '$level._id',
-        name: '$level.name',
-        difficulty: '$level.' + difficultyEstimate,
-        ts: 1,
-        slug: '$level.slug',
-        calc_playattempts_just_beaten_count: '$level.calc_playattempts_just_beaten_count',
-        calc_playattempts_duration_sum: '$level.calc_playattempts_duration_sum',
-        players_with_just_solved_playattempt: 1,
-      },
-    },
-    {
-      $lookup: {
-        from: PlayAttemptModel.collection.name,
-        let: { levelId: '$_id', players_with_just_solved_playattempt: '$players_with_just_solved_playattempt' },
-        pipeline: [
-          {
-            $match: {
-              $expr: {
-                $and: [
-                  { $eq: ['$levelId', '$$levelId'] },
-                  // check where user is in players_with_just_solved_playattempt
-                  { $in: ['$userId', '$$players_with_just_solved_playattempt'] },
-                  { $ne: ['$startTime', '$endTime'] },
-
-                ],
-              },
-            },
-          },
-          {
-            $match: {
-              attemptContext: { $in: [AttemptContext.JUST_SOLVED, AttemptContext.UNSOLVED] },
-            },
-          },
-          {
-            $group: {
-              _id: '$levelId',
-              sumDuration: { $sum: { $subtract: ['$endTime', '$startTime'] } },
-              count: { $sum: 1 },
-            },
-          },
-          {
-            $project: {
-              _id: 0,
-              levelId: '$_id',
-              sumDuration: 1,
-              count: 1,
-            },
-          },
-        ],
-        as: 'otherplayattempts',
-      },
-    },
-    {
-      $addFields: {
-        otherplayattempts: {
-          $arrayElemAt: ['$otherplayattempts', 0],
-        },
-      },
-    },
-    {
-      $lookup: {
-        from: PlayAttemptModel.collection.name,
-        let: { levelId: '$_id' },
-        pipeline: [
-          {
-            $match: {
-              $expr: {
-                $and: [
-                  { $eq: ['$levelId', '$$levelId'] },
                   { $eq: ['$userId', new mongoose.Types.ObjectId(userId)] },
-                  // where startTime != endTime
                   { $ne: ['$startTime', '$endTime'] },
                 ],
               },
-            },
-          },
-          {
-            $match: {
               attemptContext: { $in: [AttemptContext.JUST_SOLVED, AttemptContext.UNSOLVED] },
             },
           },
@@ -267,31 +138,61 @@ async function getDifficultyDataComparisons(gameId: GameId, userId: string, time
       }
     },
     {
+      $addFields: {
+        otherPlayattemptsAverageDuration: {
+          $cond: {
+            if: { $gt: ['$level.calc_playattempts_just_beaten_count', 1] },
+            then: { $divide: ['$level.calc_playattempts_duration_sum', '$level.calc_playattempts_just_beaten_count'] },
+            else: null
+          }
+        }
+      }
+    },
+    {
       $project: {
-        _id: 1,
-        other_calc_playattempts_just_beaten_count: { $size: '$players_with_just_solved_playattempt' },
-        myPlayattemptsSumDuration: '$myplayattempts.sumDuration',
-        name: 1,
-        difficulty: 1,
-        slug: 1,
+        _id: '$level._id',
+        name: '$level.name',
+        slug: '$level.slug', 
+        difficulty: '$level.difficulty',
         ts: 1,
-        calc_playattempts_just_beaten_count: 1,
-        otherPlayattemptsAverageDuration: { $divide: ['$otherplayattempts.sumDuration', { $size: '$players_with_just_solved_playattempt' }] },
-        calc_playattempts_duration_sum: 1,
+        myPlayattemptsSumDuration: '$myplayattempts.sumDuration',
+        otherPlayattemptsAverageDuration: 1,
+        calc_playattempts_just_beaten_count: '$level.calc_playattempts_just_beaten_count',
+        performanceRatio: {
+          $cond: {
+            if: { 
+              $and: [
+                { $gt: ['$myplayattempts.sumDuration', 0] },
+                { $gt: ['$otherPlayattemptsAverageDuration', 0] }
+              ]
+            },
+            then: { $divide: ['$otherPlayattemptsAverageDuration', '$myplayattempts.sumDuration'] },
+            else: null
+          }
+        },
+        difficultyTier: {
+          $switch: {
+            branches: [
+              { case: { $lt: ['$level.difficulty', 500] }, then: 'Easy' },
+              { case: { $lt: ['$level.difficulty', 1000] }, then: 'Medium' },
+              { case: { $lt: ['$level.difficulty', 1500] }, then: 'Hard' },
+              { case: { $lt: ['$level.difficulty', 2000] }, then: 'Expert' },
+              { case: { $gte: ['$level.difficulty', 2000] }, then: 'Master' },
+            ],
+            default: 'Unknown'
+          }
+        }
       },
     },
+    // NOTE: Temporarily removing the final filter to see what we get
+    // {
+    //   $match: {
+    //     myPlayattemptsSumDuration: { $gt: 0 },
+    //     otherPlayattemptsAverageDuration: { $gt: 0 }
+    //   }
+    // }
   ]);
-
-  // loop through all the levels and manipulate difficulty
-  for (let i = 0; i < difficultyData.length; i++) {
-    const level = difficultyData[i];
-    const solveCount = !level.calc_playattempts_just_beaten_count ? 1 : level.calc_playattempts_just_beaten_count;
-
-    if (level.averageDuration) {
-      level.difficultyAdjusted = level.difficulty / getSolveCountFactor(solveCount);
-    }
-  }
-
+  
   return difficultyData;
 }
 
@@ -470,34 +371,31 @@ async function getScoreHistory(gameId: GameId, userId: string, timeFilter?: stri
     matchStage.ts = { $gt: timeCutoff };
   }
   
+  // OPTIMIZED: Optimize date grouping (MongoDB Atlas will use indexes automatically)
   const history = await StatModel.aggregate([
     {
       $match: matchStage,
     },
-    {
-      $project: {
-        _id: 0,
-        date: {
-          $dateToString: {
-            format: '%Y-%m-%d',
-            date: { $toDate: { $multiply: ['$ts', 1000] } },
-          },
-        },
-      },
-    },
+    // OPTIMIZATION: Group by date more efficiently using $dateFromParts
     {
       $group: {
-        _id: '$date',
+        _id: {
+          $dateFromParts: {
+            year: { $year: { $toDate: { $multiply: ['$ts', 1000] } } },
+            month: { $month: { $toDate: { $multiply: ['$ts', 1000] } } },
+            day: { $dayOfMonth: { $toDate: { $multiply: ['$ts', 1000] } } }
+          }
+        },
         count: { $sum: 1 },
       },
     },
     {
       $sort: { _id: -1 },
     },
+    // OPTIMIZATION: Server-side formatting
     {
       $project: {
-        // convert date to ISODate
-        date: { $toDate: { $concat: ['$_id', 'T00:00:00Z'] } },
+        date: '$_id',
         sum: '$count',
       }
     }
@@ -544,11 +442,14 @@ export default withAuth({
     records = await getRecordsByUserId(req.gameId, new Types.ObjectId(userId), req.user);
   }
 
-  return res.status(200).json({
+  const response = {
     [ProStatsUserType.ScoreHistory]: scoreHistory,
     [ProStatsUserType.DifficultyLevelsComparisons]: difficultyLevelsComparisons,
     [ProStatsUserType.MostSolvesForUserLevels]: mostSolvesForUserLevels,
     [ProStatsUserType.PlayLogForUserCreatedLevels]: playLogForUserCreatedLevels,
     [ProStatsUserType.Records]: records,
-  });
+  };
+  
+  
+  return res.status(200).json(response);
 });

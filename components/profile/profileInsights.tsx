@@ -92,30 +92,19 @@ export default function ProfileInsights({ reqUser, user }: ProfileInsightsProps)
   const { game } = useContext(AppContext);
   const router = useRouter();
   
-  // Initialize tab from URL query or default to PERFORMANCE
-  const getInitialTab = (): InsightsTab => {
-    const urlTab = router.query.tab as string;
-    return URL_TAB_MAPPING[urlTab] || InsightsTab.PERFORMANCE;
-  };
-  
-  // Initialize time filter from URL query or default to ALL
-  const getInitialTimeFilter = (): TimeFilter => {
-    const urlTimeFilter = router.query.timeFilter as string;
-    return Object.values(TimeFilter).includes(urlTimeFilter as TimeFilter)
-      ? (urlTimeFilter as TimeFilter)
-      : TimeFilter.ALL;
-  };
-  
-  const [activeTab, setActiveTab] = useState<InsightsTab>(getInitialTab());
-  const [timeFilter, setTimeFilter] = useState<TimeFilter>(getInitialTimeFilter());
+  const [activeTab, setActiveTab] = useState<InsightsTab>(InsightsTab.PERFORMANCE);
+  const [timeFilter, setTimeFilter] = useState<TimeFilter>(TimeFilter.ALL);
+  const [isInitialized, setIsInitialized] = useState(false);
   
   // Update URL when tab changes
   const handleTabChange = (tab: InsightsTab) => {
     setActiveTab(tab);
-    const newQuery = { ...router.query, tab: TAB_URL_MAPPING[tab] };
+    // Keep current path, update subtab query parameter (avoiding conflict with dynamic route)
+    const { subdomain, tab: routeTab, ...cleanQuery } = router.query;
+    const newQuery = { ...cleanQuery, subtab: TAB_URL_MAPPING[tab], timeFilter };
     router.push(
       {
-        pathname: router.asPath.split('?')[0], // Use asPath without query params
+        pathname: router.asPath.split('?')[0],
         query: newQuery
       },
       undefined,
@@ -126,10 +115,12 @@ export default function ProfileInsights({ reqUser, user }: ProfileInsightsProps)
   // Update URL when time filter changes
   const handleTimeFilterChange = (filter: TimeFilter) => {
     setTimeFilter(filter);
-    const newQuery = { ...router.query, timeFilter: filter };
+    // Keep current path, just update time filter query param
+    const { subdomain, tab: routeTab, ...cleanQuery } = router.query;
+    const newQuery = { ...cleanQuery, timeFilter: filter };
     router.push(
       {
-        pathname: router.asPath.split('?')[0], // Use asPath without query params
+        pathname: router.asPath.split('?')[0],
         query: newQuery
       },
       undefined,
@@ -137,18 +128,61 @@ export default function ProfileInsights({ reqUser, user }: ProfileInsightsProps)
     );
   };
   
-  // Update tab and time filter when URL changes
+  // Initialize from URL query parameters when router is ready
   useEffect(() => {
-    const urlTab = router.query.tab as string;
-    if (urlTab && URL_TAB_MAPPING[urlTab]) {
-      setActiveTab(URL_TAB_MAPPING[urlTab]);
+    if (!router.isReady) return;
+    
+    console.log('🔍 Router query:', router.query);
+    console.log('🔍 Router pathname:', router.pathname);
+    console.log('🔍 Router asPath:', router.asPath);
+    console.log('🔍 All query keys:', Object.keys(router.query));
+    
+    // Check for tab parameter conflict (dynamic route vs query param)
+    const routeTabArray = router.query.tab;
+    const queryTabParam = router.query.tab;
+    console.log('🔍 Route tab array:', routeTabArray);
+    console.log('🔍 Is tab an array?', Array.isArray(routeTabArray));
+    
+    // Get subtab from query parameter (avoiding conflict with dynamic route 'tab')
+    const urlSubtab = router.query.subtab as string;
+    
+    console.log('🔍 URL subtab parameter:', urlSubtab);
+    console.log('🔍 URL_TAB_MAPPING:', URL_TAB_MAPPING);
+    
+    if (urlSubtab && URL_TAB_MAPPING[urlSubtab]) {
+      console.log('✅ Setting tab to:', URL_TAB_MAPPING[urlSubtab]);
+      setActiveTab(URL_TAB_MAPPING[urlSubtab]);
+    } else {
+      console.log('⚠️ No valid subtab found, defaulting to PERFORMANCE');
+      setActiveTab(InsightsTab.PERFORMANCE);
     }
     
+    // Initialize time filter from URL query
     const urlTimeFilter = router.query.timeFilter as string;
     if (urlTimeFilter && Object.values(TimeFilter).includes(urlTimeFilter as TimeFilter)) {
       setTimeFilter(urlTimeFilter as TimeFilter);
+    } else {
+      setTimeFilter(TimeFilter.ALL);
     }
-  }, [router.query.tab, router.query.timeFilter]);
+    
+    setIsInitialized(true);
+  }, [router.isReady, router.query.subtab, router.query.timeFilter, router.asPath]);
+
+  // Update state when URL changes (for navigation)
+  useEffect(() => {
+    if (!isInitialized) return;
+    
+    const urlSubtab = router.query.subtab as string;
+    
+    if (urlSubtab && URL_TAB_MAPPING[urlSubtab] && URL_TAB_MAPPING[urlSubtab] !== activeTab) {
+      setActiveTab(URL_TAB_MAPPING[urlSubtab]);
+    }
+    
+    const urlTimeFilter = router.query.timeFilter as string;
+    if (urlTimeFilter && Object.values(TimeFilter).includes(urlTimeFilter as TimeFilter) && urlTimeFilter !== timeFilter) {
+      setTimeFilter(urlTimeFilter as TimeFilter);
+    }
+  }, [router.query.subtab, router.query.timeFilter, isInitialized, activeTab, timeFilter]);
 
   const isAdmin = reqUser?.roles?.includes(Role.ADMIN);
   const hasAccess = isPro(reqUser) || isAdmin;

@@ -4,6 +4,9 @@ import User from '../../models/db/user';
 import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
+import timezone from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
+import advancedFormat from 'dayjs/plugin/advancedFormat';
 import { getDifficultyFromEstimate, difficultyList, getDifficultyColor } from '../formatted/formattedDifficulty';
 import ProfileInsightsRecords from './profileInsightsRecords';
 import FormattedLevelLink from '../formatted/formattedLevelLink';
@@ -11,6 +14,9 @@ import Role from '@root/constants/role';
 import { TimeFilter } from './profileInsights';
 
 dayjs.extend(duration);
+dayjs.extend(utc);
+dayjs.extend(timezone);
+dayjs.extend(advancedFormat);
 
 interface ProfileInsightsLevelMasteryProps {
   user: User;
@@ -51,13 +57,12 @@ export default function ProfileInsightsLevelMastery({ user, reqUser, timeFilter 
     const comparisons = difficultyData[ProStatsUserType.DifficultyLevelsComparisons] as any[];
     const progressionMap = new Map<string, DifficultyProgressData>();
     
-    // Use actual difficulty constants with colors
-    const difficultyColors = ['#10B981', '#3B82F6', '#8B5CF6', '#EC4899', '#F59E0B', '#EF4444', '#DC2626', '#991B1B', '#6B7280', '#374151'];
+    // Use official difficulty colors from the helper function
     const difficultyConfig = difficultyList
       .filter(d => d.name !== 'Pending') // Skip pending difficulty
-      .map((d, index) => ({
+      .map((d) => ({
         name: d.name,
-        color: difficultyColors[index] || '#6B7280',
+        color: getDifficultyColor(d.value, 60), // Use official color function with 60% lightness
         value: d.value,
       }));
 
@@ -359,8 +364,7 @@ export default function ProfileInsightsLevelMastery({ user, reqUser, timeFilter 
                     </div>
                     <div className='text-right text-sm text-gray-400'>
                       <div>Difficulty: <span className='text-blue-400'>{getDifficultyFromEstimate(level.difficulty).name}</span></div>
-                      <div>Rating: <span className='text-gray-300'>{level.difficulty.toFixed(0)}</span></div>
-                      <div>Solved: {dayjs(level.ts * 1000).format('MMM DD')}</div>
+                      <div>Solved: {dayjs(level.ts * 1000).tz(dayjs.tz.guess()).format('MMM Do h:mmA zzz')}</div>
                     </div>
                   </div>
                 ))}
