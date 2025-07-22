@@ -619,7 +619,8 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
                             
                             {/* Background semicircle */}
                             <Pie
-                              data={[{ value: 100 }]}
+                              data={[{ value: 100, name: 'gauge' }]}
+                              dataKey="value"
                               startAngle={180}
                               endAngle={0}
                               cx="50%"

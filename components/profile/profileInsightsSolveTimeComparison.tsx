@@ -8,6 +8,7 @@ import { Brush, ReferenceArea, ReferenceLine, ResponsiveContainer, Scatter, Scat
 import User from '../../models/db/user';
 import { difficultyList, getDifficultyColor, getDifficultyFromEstimate } from '../formatted/formattedDifficulty';
 import StyledTooltip from '../page/styledTooltip';
+import { TimeFilter } from './profileInsights';
 
 export interface DifficultyLevelComparison {
   _id: string;
@@ -30,8 +31,13 @@ function dotColor(percent: number) {
   return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
 }
 
-export default function ProfileInsightsSolveTimeComparison({ user }: { user: User }) {
-  const { proStatsUser: difficultyComparisonData } = useProStatsUser(user, ProStatsUserType.DifficultyLevelsComparisons);
+interface ProfileInsightsSolveTimeComparisonProps {
+  user: User;
+  timeFilter?: TimeFilter;
+}
+
+export default function ProfileInsightsSolveTimeComparison({ user, timeFilter }: ProfileInsightsSolveTimeComparisonProps) {
+  const { proStatsUser: difficultyComparisonData } = useProStatsUser(user, ProStatsUserType.DifficultyLevelsComparisons, timeFilter);
   const router = useRouter();
   const [hideAnomalies, setHideAnomalies] = useState(false);
   const [percentile, setPercentile] = useState(0.01);
@@ -78,7 +84,13 @@ export default function ProfileInsightsSolveTimeComparison({ user }: { user: Use
     <div className='flex flex-col gap-2 max-w-full'>
       <h2 className='text-xl font-bold'>{difficutlyType} Time Comparisons</h2>
       <p className='text-sm break-words'>
-        This chart shows solve time vs average {difficutlyType.toLowerCase()} time for the levels {user.name} has solved in the last 6 months.
+        This chart shows solve time vs average {difficutlyType.toLowerCase()} time for the levels {user.name} has solved
+        {timeFilter && timeFilter !== 'all' ? (
+          timeFilter === '30d' ? ' in the last 30 days' :
+          timeFilter === '90d' ? ' in the last 90 days' :
+          timeFilter === '6m' ? ' in the last 6 months' :
+          timeFilter === '1y' ? ' in the last year' : ''
+        ) : ''}.
         <br />
         Green indicates it took {user.name} less time to solve the level than the average user.
       </p>

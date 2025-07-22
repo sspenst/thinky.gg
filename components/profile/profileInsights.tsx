@@ -100,7 +100,7 @@ export default function ProfileInsights({ reqUser, user }: ProfileInsightsProps)
   const handleTabChange = (tab: InsightsTab) => {
     setActiveTab(tab);
     // Keep current path, update subtab query parameter (avoiding conflict with dynamic route)
-    const { subdomain, tab: routeTab, ...cleanQuery } = router.query;
+    const { subdomain, tab: routeTab, name, ...cleanQuery } = router.query;
     const newQuery = { ...cleanQuery, subtab: TAB_URL_MAPPING[tab], timeFilter };
     router.push(
       {
@@ -116,7 +116,7 @@ export default function ProfileInsights({ reqUser, user }: ProfileInsightsProps)
   const handleTimeFilterChange = (filter: TimeFilter) => {
     setTimeFilter(filter);
     // Keep current path, just update time filter query param
-    const { subdomain, tab: routeTab, ...cleanQuery } = router.query;
+    const { subdomain, tab: routeTab, name, ...cleanQuery } = router.query;
     const newQuery = { ...cleanQuery, timeFilter: filter };
     router.push(
       {
