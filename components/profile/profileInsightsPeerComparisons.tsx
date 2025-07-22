@@ -19,6 +19,7 @@ interface PercentileData {
   totalLevels: number;
   fasterCount: number;
   color: string;
+  allPercentiles?: number[];
 }
 
 export default function ProfileInsightsPeerComparisons({ user, reqUser, timeFilter }: ProfileInsightsPeerComparisonsProps) {
@@ -32,26 +33,49 @@ export default function ProfileInsightsPeerComparisons({ user, reqUser, timeFilt
     }
 
     const comparisons = difficultyData[ProStatsUserType.DifficultyLevelsComparisons] as any[];
-    const difficultyGroups = new Map<string, { faster: number, total: number, sumPercentile: number }>();
+    const difficultyGroups = new Map<string, { faster: number, total: number, allPercentiles: number[] }>();
 
+    // First pass: collect all performance ratios for each difficulty
     comparisons.forEach(c => {
       if (!c.difficulty || !c.otherPlayattemptsAverageDuration || !c.myPlayattemptsSumDuration) return;
       
       const difficulty = getDifficultyFromEstimate(c.difficulty);
-      const group = difficultyGroups.get(difficulty.name) || { faster: 0, total: 0, sumPercentile: 0 };
+      const group = difficultyGroups.get(difficulty.name) || { faster: 0, total: 0, allPercentiles: [] };
       
       group.total++;
       const performanceRatio = c.otherPlayattemptsAverageDuration / c.myPlayattemptsSumDuration;
       
+      // Calculate actual percentile for this level
+      // Performance ratio > 1 means user was faster than average
+      // We need to convert this to a percentile (0-100)
+      let levelPercentile: number;
+      if (performanceRatio >= 3) {
+        // Much faster than average - top 5%
+        levelPercentile = 95;
+      } else if (performanceRatio >= 2) {
+        // Very fast - scale from 80% to 95%
+        levelPercentile = 80 + ((performanceRatio - 2) / 1) * 15;
+      } else if (performanceRatio >= 1.5) {
+        // Fast - scale from 70% to 80%
+        levelPercentile = 70 + ((performanceRatio - 1.5) / 0.5) * 10;
+      } else if (performanceRatio >= 1) {
+        // Faster than average - scale from 50% to 70%
+        levelPercentile = 50 + ((performanceRatio - 1) / 0.5) * 20;
+      } else if (performanceRatio >= 0.67) {
+        // Slower than average - scale from 30% to 50%
+        levelPercentile = 30 + ((performanceRatio - 0.67) / 0.33) * 20;
+      } else if (performanceRatio >= 0.5) {
+        // Much slower - scale from 20% to 30%
+        levelPercentile = 20 + ((performanceRatio - 0.5) / 0.17) * 10;
+      } else {
+        // Very slow - bottom 20%
+        levelPercentile = Math.max(5, 20 * performanceRatio / 0.5);
+      }
+      
+      group.allPercentiles.push(Math.round(levelPercentile));
+      
       if (performanceRatio > 1) {
         group.faster++;
-        // Estimate percentile based on performance ratio
-        // This is a simplified calculation - in production you'd want actual percentile data
-        const percentile = Math.min(99, 50 + (performanceRatio - 1) * 25);
-        group.sumPercentile += percentile;
-      } else {
-        const percentile = Math.max(1, 50 - (1 - performanceRatio) * 40);
-        group.sumPercentile += percentile;
       }
       
       difficultyGroups.set(difficulty.name, group);
@@ -64,23 +88,12 @@ export default function ProfileInsightsPeerComparisons({ user, reqUser, timeFilt
       .sort((a, b) => a.value - b.value) // Sort by difficulty value ascending
       .map(d => d.name);
     
-    // Gradient color based on percentile (red to yellow to green)
-    const getPercentileColor = (percentile: number) => {
-      if (percentile >= 80) return '#10B981'; // Green
-      if (percentile >= 70) return '#22C55E'; // Light green
-      if (percentile >= 60) return '#84CC16'; // Lime
-      if (percentile >= 50) return '#EAB308'; // Yellow
-      if (percentile >= 40) return '#F59E0B'; // Orange
-      if (percentile >= 30) return '#F97316'; // Dark orange
-      if (percentile >= 20) return '#EA580C'; // Red-orange
-      return '#DC2626'; // Red
-    };
-    
     difficultyOrder.forEach(diffName => {
       const group = difficultyGroups.get(diffName);
       // Only include difficulties with 7+ solves
       if (group && group.total >= 7) {
-        const avgPercentile = Math.round(group.sumPercentile / group.total);
+        // Calculate average percentile across all levels in this difficulty
+        const avgPercentile = Math.round(group.allPercentiles.reduce((sum, p) => sum + p, 0) / group.allPercentiles.length);
         const percentileDelta = avgPercentile - 50; // Delta from 50th percentile (average)
         const deltaColor = percentileDelta > 0 ? '#10B981' : percentileDelta < 0 ? '#EF4444' : '#6B7280';
 
@@ -92,6 +105,7 @@ export default function ProfileInsightsPeerComparisons({ user, reqUser, timeFilt
           fasterCount: group.faster,
           color: deltaColor,
           difficultyIndex: difficultyOrder.findIndex(d => d === diffName), // For X-axis ordering
+          allPercentiles: group.allPercentiles, // Store for Super GM bonus calculation
         });
       }
       // Skip difficulties with fewer than 7 solves - don't show them at all
@@ -120,9 +134,21 @@ export default function ProfileInsightsPeerComparisons({ user, reqUser, timeFilt
 
   // Calculate weighted competition score based on percentiles
   const { competitionScore, competitionScoreDetails } = useMemo(() => {
-    if (!percentileData || percentileData.length === 0) {
+    if (!percentileData || percentileData.length === 0 || !difficultyData) {
       return { competitionScore: null, competitionScoreDetails: null };
     }
+
+    // Recreate difficultyGroups for unplayed difficulty checking
+    const comparisons = difficultyData[ProStatsUserType.DifficultyLevelsComparisons] as any[];
+    const difficultyGroups = new Map<string, { total: number }>();
+    
+    comparisons.forEach(c => {
+      if (!c.difficulty) return;
+      const difficulty = getDifficultyFromEstimate(c.difficulty);
+      const group = difficultyGroups.get(difficulty.name) || { total: 0 };
+      group.total++;
+      difficultyGroups.set(difficulty.name, group);
+    });
 
     // Define weights for each difficulty (Kindergarten=1, Elementary=2, etc.)
     const difficultyWeights: { [key: string]: number } = {
@@ -159,20 +185,69 @@ export default function ProfileInsightsPeerComparisons({ user, reqUser, timeFilt
       }
     });
 
+    // Add Super GM bonus to max possible weight if player has Super GM levels
+    const superGmData = percentileData.find(item => item.difficulty === 'Super Grandmaster');
+    if (superGmData && superGmData.totalLevels > 7) {
+      const superGmBonus = superGmData.totalLevels - 7;
+      maxPossibleWeight += superGmBonus;
+    }
+    
+    // Add GM bonus to max possible weight if player has GM levels
+    const gmData = percentileData.find(item => item.difficulty === 'Grandmaster');
+    if (gmData && gmData.totalLevels > 7) {
+      const gmBonus = (gmData.totalLevels - 7) * 0.25;
+      maxPossibleWeight += gmBonus;
+    }
+
     // Calculate weighted sum for difficulties the user has played (7+ solves)
     percentileData.forEach(item => {
-      const weight = difficultyWeights[item.difficulty] || 1;
+      let weight = difficultyWeights[item.difficulty] || 1;
+      let bonusWeight = 0;
+      let finalPercentile = item.percentile;
+      
+      // Special bonus for Super Grandmaster levels
+      if (item.difficulty === 'Super Grandmaster' && item.totalLevels > 7) {
+        const additionalLevels = item.totalLevels - 7; // Levels beyond the minimum 7
+        bonusWeight = additionalLevels; // +1 weight per bonus level
+        weight += bonusWeight;
+        
+        // For each bonus Super GM level, treat it as if they scored 100% on one additional level
+        const originalSum = item.percentile * 7; // Original 7 levels contribution
+        const bonusSum = additionalLevels * 100; // Each bonus level counts as 100%
+        const totalLevels = 7 + additionalLevels;
+        
+        // New average including bonus levels at 100%
+        finalPercentile = Math.round((originalSum + bonusSum) / totalLevels);
+      }
+      
+      // Special bonus for Grandmaster levels (smaller bonus)
+      if (item.difficulty === 'Grandmaster' && item.totalLevels > 7) {
+        const additionalLevels = item.totalLevels - 7; // Levels beyond the minimum 7
+        bonusWeight = additionalLevels * 0.25; // +0.25 weight per bonus level
+        weight += bonusWeight;
+        
+        // For each bonus GM level, treat it as if they scored 100% on one additional level
+        const originalSum = item.percentile * 7; // Original 7 levels contribution
+        const bonusSum = additionalLevels * 100; // Each bonus level counts as 100%
+        const totalLevels = 7 + additionalLevels;
+        
+        // New average including bonus levels at 100%
+        finalPercentile = Math.round((originalSum + bonusSum) / totalLevels);
+      }
       
       // Only include in calculation if meets minimum requirement (already filtered to 7+)
-      const contribution = item.percentile * weight;
+      const contribution = finalPercentile * weight;
       weightedPercentileSum += contribution;
       totalWeightUsed += weight;
       
       breakdown[item.difficulty] = {
-        percentile: item.percentile,
+        percentile: finalPercentile,
         weight: weight,
         contribution: contribution,
-        levels: item.totalLevels
+        levels: item.totalLevels,
+        bonusWeight: bonusWeight > 0 ? bonusWeight : undefined,
+        bonusLevels: item.totalLevels > 7 ? item.totalLevels - 7 : undefined,
+        originalPercentile: (item.difficulty === 'Super Grandmaster' || item.difficulty === 'Grandmaster') && finalPercentile !== item.percentile ? item.percentile : undefined
       };
     });
 
@@ -190,17 +265,19 @@ export default function ProfileInsightsPeerComparisons({ user, reqUser, timeFilt
     });
 
     // Build the full breakdown including unplayed difficulties
-    const fullBreakdown: { [key: string]: { percentile: number; weight: number; contribution: number; levels: number; played: boolean } } = {};
+    const fullBreakdown: { [key: string]: { percentile: number; weight: number; contribution: number; levels: number; played: boolean; bonusWeight?: number; bonusLevels?: number; originalPercentile?: number } } = {};
     includedDifficulties.forEach(difficulty => {
       const weight = difficultyWeights[difficulty];
       if (breakdown[difficulty]) {
         fullBreakdown[difficulty] = { ...breakdown[difficulty], played: true };
       } else {
+        // Check if user has some levels but not enough for minimum
+        const group = difficultyGroups.get(difficulty);
         fullBreakdown[difficulty] = {
           percentile: 0,
           weight: weight,
           contribution: 0,
-          levels: 0,
+          levels: group ? group.total : 0,
           played: false
         };
       }
@@ -219,7 +296,7 @@ export default function ProfileInsightsPeerComparisons({ user, reqUser, timeFilt
     };
 
     return { competitionScore: finalScore, competitionScoreDetails: details };
-  }, [percentileData]);
+  }, [percentileData, difficultyData]);
 
   const isOwnProfile = reqUser?._id === user._id;
   const isAdmin = reqUser?.roles?.includes(Role.ADMIN);
@@ -286,6 +363,9 @@ export default function ProfileInsightsPeerComparisons({ user, reqUser, timeFilt
                   <div>• Kindergarten (weight 1) → Super Grandmaster (weight 10)</div>
                   <div>• Higher difficulties count more toward your final score</div>
                   <div>• Includes {competitionScoreDetails.lowestDifficulty} and all higher difficulties</div>
+                  <div>• Super GM Bonus: +1.0 weight per level beyond 7</div>
+                  <div>• GM Bonus: +0.25 weight per level beyond 7</div>
+                  <div>• Each bonus level counts as 100th percentile performance</div>
                 </div>
               </div>
 
@@ -293,14 +373,24 @@ export default function ProfileInsightsPeerComparisons({ user, reqUser, timeFilt
                 <div className='font-semibold mb-2 text-blue-400'>Your breakdown:</div>
                 <div className='bg-gray-800 rounded p-3 space-y-1'>
                   {Object.entries(competitionScoreDetails.breakdown)
-                    .sort((a, b) => a[1].weight - b[1].weight)
+                    .sort((a, b) => (a[1].weight - (a[1].bonusWeight || 0)) - (b[1].weight - (b[1].bonusWeight || 0)))
                     .map(([difficulty, data]) => (
                       <div key={difficulty} className='flex justify-between text-sm'>
                         <span className={data.played ? '' : 'text-gray-500'}>
-                          {difficulty} {data.played ? `(${data.levels} levels)` : '(not played)'}:
+                          {difficulty} {data.played ? `(${data.levels} levels)` : data.levels > 0 ? `(${data.levels} levels - min 7 required)` : '(not played)'}
+                          {data.bonusLevels && (difficulty === 'Super Grandmaster' || difficulty === 'Grandmaster') && (
+                            <span className='text-green-400 ml-1'>
+                              +{data.bonusLevels} bonus (+{data.bonusWeight?.toFixed(2)} weight)
+                            </span>
+                          )}
+                          {data.originalPercentile && (
+                            <span className='text-blue-400 ml-1'>
+                              ({data.originalPercentile}% → {data.percentile}%)
+                            </span>
+                          )}:
                         </span>
-                        <span className={`font-mono ${data.played ? '' : 'text-gray-500'}`}>
-                          {data.percentile}% × {data.weight} = {data.contribution}
+                        <span className={`font-mono ${data.played ? '' : 'text-gray-500'} text-right`}>
+                          {data.percentile.toString().padStart(3)}% × {data.weight.toString().padStart(2)} = {data.contribution.toString().padStart(5)}
                         </span>
                       </div>
                     ))}
@@ -531,7 +621,7 @@ export default function ProfileInsightsPeerComparisons({ user, reqUser, timeFilt
               <h4 className='font-semibold text-yellow-400'>Areas Below Average</h4>
             </div>
             <div className='space-y-2'>
-              {percentileData.filter(d => d.percentile < 40).map(d => (
+              {percentileData.filter(d => d.percentile < 50).map(d => (
                 <div key={d.difficulty} className='bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-3'>
                   <div className='flex justify-between items-center'>
                     <span className='font-medium'>{d.difficulty}</span>
@@ -542,7 +632,7 @@ export default function ProfileInsightsPeerComparisons({ user, reqUser, timeFilt
                   </p>
                 </div>
               ))}
-              {percentileData.filter(d => d.percentile < 40).length === 0 && (
+              {percentileData.filter(d => d.percentile < 50).length === 0 && (
                 <div className='text-center p-4 text-green-400 italic'>
                   🌟 Great! You're above average in all difficulty tiers.
                   <span className='block text-xs text-gray-500 mt-1'>
