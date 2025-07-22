@@ -83,7 +83,7 @@ export default function useGameControls({
 
     _controls.push(
       new Control('btn-restart', () => onKeyDown('KeyR'), restartTxt),
-      new Control('btn-undo', () => onKeyDown('Backspace'), undoTxt, gameState.moves.length === 0, false, () => {
+      new Control('btn-undo', () => onKeyDown('Backspace'), undoTxt, false, false, () => {
         onKeyDown('Backspace');
 
         return true;
@@ -139,7 +139,7 @@ export default function useGameControls({
     } else {
       setControls(_controls);
     }
-  }, [extraControls, gameState.redoStack.length, onKeyDown, isMobile, onNext, onPrev, isPro]);
+  }, [extraControls, gameState.redoStack.length, onKeyDown, isMobile, onNext, onPrev, isPro, gameState.moves.length]);
 
   return {
     controls,
