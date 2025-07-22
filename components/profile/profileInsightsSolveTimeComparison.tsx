@@ -191,13 +191,13 @@ export default function ProfileInsightsSolveTimeComparison({ user, timeFilter }:
                     <div className='p-2 bg-gray-800 text-sm'>
                       <span className='font-bold'>{`${name} (${getDifficultyFromEstimate(difficulty).name})`}</span>
                       <div className='flex flex-col'>
-                        <span>You: <span className='font-bold'>{timeTakenToSolve}</span></span>
+                        <span>{user.name}: <span className='font-bold'>{timeTakenToSolve}</span></span>
                         <span>Others: <span className='font-bold'>{timeTakenForOthersToSolve}</span></span>
                       </div>
                       <span className='text-xs'>
                         {`${multiplier}x ${(diff >= 1 ? 'faster' : 'slower')} than average`}
                         <br />
-                        You solved <span className='font-bold text-xs'>{dayjs(ts).fromNow()}</span>
+                        {user.name} solved <span className='font-bold text-xs'>{dayjs(ts).fromNow()}</span>
                       </span>
                     </div>
                   );

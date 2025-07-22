@@ -75,7 +75,9 @@ async function getDifficultyDataComparisons(gameId: GameId, userId: string, time
         pipeline: [
           {
             $match: {
-              [difficultyEstimate]: { $exists: true, $gte: 0 }
+              [difficultyEstimate]: { $exists: true, $gte: 0 },
+              // Only include levels that are at least 7 days old (ts is in seconds)
+              ts: { $lt: Math.floor(Date.now() / 1000) - (7 * 24 * 60 * 60) }
               // Removed calc_playattempts_unique_users filter - field appears to be missing
             }
           },
