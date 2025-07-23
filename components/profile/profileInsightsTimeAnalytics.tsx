@@ -1,13 +1,13 @@
-import useProStatsUser, { ProStatsUserType } from '@root/hooks/useProStatsUser';
-import { useMemo, useState } from 'react';
-import User from '../../models/db/user';
-import { Area, AreaChart, Bar, BarChart, Cell, ComposedChart, Line, LineChart, Pie, PieChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import dayjs from 'dayjs';
-import { getDifficultyFromEstimate, difficultyList } from '../formatted/formattedDifficulty';
 import Role from '@root/constants/role';
 import { DateAndSum } from '@root/contexts/levelContext';
+import useProStatsUser, { ProStatsUserType } from '@root/hooks/useProStatsUser';
+import dayjs from 'dayjs';
+import { Moon, Star, Sun, Sunrise, Sunset } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import { Area, AreaChart, Bar, BarChart, Cell, ComposedChart, Line, LineChart, Pie, PieChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import User from '../../models/db/user';
+import { difficultyList, getDifficultyFromEstimate } from '../formatted/formattedDifficulty';
 import { TimeFilter } from './profileInsights';
-import { Moon, Sunrise, Sun, Sunset, Star } from 'lucide-react';
 
 interface ProfileInsightsTimeAnalyticsProps {
   user: User;
@@ -28,6 +28,13 @@ interface TimeInvestmentData {
   levelCount: number;
   avgTimePerLevel: number;
   color: string;
+  thresholdTime: number;
+  userAvgPerLevel: number;
+  avgTimePerLevelSeconds: number;
+  sortOrder: number;
+  difficultyIndex: number;
+  percentageDelta: number;
+  userColor: string;
 }
 
 // Helper function to format duration intelligently
@@ -37,14 +44,17 @@ function formatDuration(minutes: number): string {
   } else if (minutes < 1440) { // Less than 24 hours
     const hours = Math.floor(minutes / 60);
     const remainingMinutes = minutes % 60;
+
     return remainingMinutes > 0 ? `${hours}h ${remainingMinutes}m` : `${hours}h`;
   } else if (minutes < 43200) { // Less than 30 days
     const days = Math.floor(minutes / 1440);
     const remainingHours = Math.floor((minutes % 1440) / 60);
+
     return remainingHours > 0 ? `${days}d ${remainingHours}h` : `${days}d`;
   } else { // More than 30 days
     const months = Math.floor(minutes / 43200);
     const remainingDays = Math.floor((minutes % 43200) / 1440);
+
     return remainingDays > 0 ? `${months}mo ${remainingDays}d` : `${months}mo`;
   }
 }
@@ -55,11 +65,13 @@ function formatTimePerLevel(seconds: number): string {
     return `${Math.round(seconds)} sec`;
   } else {
     const minutes = Math.round(seconds / 60);
+
     if (minutes < 60) {
       return `${minutes} min`;
     } else {
       const hours = Math.floor(minutes / 60);
       const remainingMinutes = minutes % 60;
+
       return remainingMinutes > 0 ? `${hours}h ${remainingMinutes}m` : `${hours}h`;
     }
   }
@@ -68,7 +80,7 @@ function formatTimePerLevel(seconds: number): string {
 export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter }: ProfileInsightsTimeAnalyticsProps) {
   const { proStatsUser: scoreHistory, isLoading: isLoadingScoreHistory } = useProStatsUser(user, ProStatsUserType.ScoreHistory, timeFilter);
   const { proStatsUser: difficultyData, isLoading: isLoadingDifficulty } = useProStatsUser(user, ProStatsUserType.DifficultyLevelsComparisons, timeFilter);
-  
+
   const [scaleType, setScaleType] = useState<'linear' | 'log'>('log');
 
   // Calculate activity heatmap data
@@ -78,7 +90,7 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
     }
 
     const history = scoreHistory[ProStatsUserType.ScoreHistory] as DateAndSum[];
-    
+
     if (!history || history.length === 0) {
       return [];
     }
@@ -92,7 +104,7 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
       const date = dayjs(entry.date);
       const dayOfWeek = date.format('ddd');
       const count = entry.sum;
-      
+
       dayActivityData[dayOfWeek] = (dayActivityData[dayOfWeek] || 0) + count;
       totalByDay[dayOfWeek] = (totalByDay[dayOfWeek] || 0) + 1;
     });
@@ -100,7 +112,7 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
     // Convert to average activity per day
     const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const avgByDay: { [key: string]: number } = {};
-    
+
     days.forEach(day => {
       if (totalByDay[day] > 0) {
         avgByDay[day] = dayActivityData[day] / totalByDay[day];
@@ -125,36 +137,36 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
     }
 
     const comparisons = difficultyData[ProStatsUserType.DifficultyLevelsComparisons] as any[];
-    const difficultyGroups = new Map<string, { 
-      totalTime: number, 
-      count: number, 
+    const difficultyGroups = new Map<string, {
+      totalTime: number,
+      count: number,
       maxDiff: number,
       totalOtherTime: number,
-      otherCount: number 
+      otherCount: number
     }>();
 
     comparisons.forEach(c => {
       if (!c.difficulty || !c.myPlayattemptsSumDuration) return;
-      
+
       const difficulty = getDifficultyFromEstimate(c.difficulty);
-      const group = difficultyGroups.get(difficulty.name) || { 
-        totalTime: 0, 
-        count: 0, 
+      const group = difficultyGroups.get(difficulty.name) || {
+        totalTime: 0,
+        count: 0,
         maxDiff: 0,
         totalOtherTime: 0,
         otherCount: 0
       };
-      
+
       group.totalTime += c.myPlayattemptsSumDuration;
       group.count++;
       group.maxDiff = Math.max(group.maxDiff, c.difficulty);
-      
+
       // Only track community average for the SAME levels the user solved
       if (c.otherPlayattemptsAverageDuration) {
         group.totalOtherTime += c.otherPlayattemptsAverageDuration;
         group.otherCount++;
       }
-      
+
       difficultyGroups.set(difficulty.name, group);
     });
 
@@ -166,21 +178,21 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
       .sort((a, b) => a.value - b.value) // Sort by difficulty value ascending
       .map((d, index) => {
         const group = difficultyGroups.get(d.name);
-        
+
         if (group && group.count >= 7) {
           // User has data for this difficulty
           const userAvgPerLevel = Math.max(0.1, Math.round((group.totalTime / group.count) / 60 * 100) / 100); // User's avg per level in minutes, min 0.1
-          const communityAvgPerLevel = group.otherCount > 0 
+          const communityAvgPerLevel = group.otherCount > 0
             ? Math.max(0.1, Math.round((group.totalOtherTime / group.otherCount) / 60 * 100) / 100) // Community avg per level in minutes, min 0.1
             : Math.max(0.1, userAvgPerLevel * 0.8); // Default to slightly below user avg for comparison
-            
+
           // Calculate percentage difference from community average (invert so faster = positive, slower = negative)
           const percentageDelta = ((communityAvgPerLevel - userAvgPerLevel) / communityAvgPerLevel) * 100;
           const userColor = percentageDelta > 0 ? '#10B981' : '#EF4444'; // Green if faster (positive), red if slower (negative)
-          
+
           // Keep the actual positive/negative values for the chart
           const roundedDelta = Math.round(percentageDelta);
-          
+
           return {
             difficulty: d.name,
             difficultyIndex: index, // Use index for X-axis ordering
@@ -190,17 +202,18 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
             avgTimePerLevelSeconds: Math.round(group.totalTime / group.count), // Keep in seconds for tooltip display
             thresholdTime: communityAvgPerLevel, // Community average time per level
             userAvgPerLevel: userAvgPerLevel, // User's average time per level for comparison
-            percentageDelta: roundedDelta, // Rounded percentage difference for chart (positive = faster, negative = slower) 
+            percentageDelta: roundedDelta, // Rounded percentage difference for chart (positive = faster, negative = slower)
             color: colors[index % colors.length],
             userColor: userColor, // Performance-based color for user bar
             sortOrder: d.value, // Add explicit sort order based on difficulty value
           };
         }
+
         // Skip difficulties with less than 7 solves
         return null;
       })
       .filter(Boolean) as (TimeInvestmentData & { thresholdTime: number; userAvgPerLevel: number; avgTimePerLevelSeconds: number; sortOrder: number; difficultyIndex: number; percentageDelta: number })[];
-    
+
     // Final sort to ensure proper order is maintained
     return orderedData.sort((a, b) => a.sortOrder - b.sortOrder);
   }, [difficultyData]);
@@ -208,25 +221,26 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
   // Calculate min/max values for centered Y-axis domain
   const yAxisDomain = useMemo(() => {
     if (!timeInvestmentData.length) return [-50, 50];
-    
+
     const allDeltas = timeInvestmentData.map(d => d.percentageDelta).filter(v => v !== 0);
+
     if (allDeltas.length === 0) return [-50, 50];
-    
+
     const min = Math.min(...allDeltas);
     const max = Math.max(...allDeltas);
-    
+
     // Make sure 0 is centered by using the larger absolute value for both bounds
     const maxAbsValue = Math.max(Math.abs(min), Math.abs(max));
     const padding = maxAbsValue * 0.2; // 20% padding
     const bound = Math.ceil(maxAbsValue + padding);
-    
+
     return [-bound, bound];
   }, [timeInvestmentData]);
 
   // Calculate peak performance days
   const peakDays = useMemo(() => {
     if (!activityHeatmap || activityHeatmap.length === 0) return [];
-    
+
     return [...activityHeatmap]
       .sort((a, b) => b.avgSolves - a.avgSolves)
       .slice(0, 3)
@@ -241,11 +255,11 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
     }
 
     const history = scoreHistory[ProStatsUserType.ScoreHistory] as DateAndSum[];
-    
+
     if (!history || history.length === 0) {
       return [];
     }
-    
+
     // Sort by date and take last 30 entries
     const sortedHistory = history
       .map(entry => ({
@@ -254,10 +268,12 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
       }))
       .sort((a, b) => a.parsedDate.unix() - b.parsedDate.unix())
       .slice(-30);
-    
+
     let cumulativeSum = 0;
+
     return sortedHistory.map(entry => {
       cumulativeSum += entry.sum;
+
       return {
         date: entry.parsedDate.format('MMM DD'),
         solves: entry.sum,
@@ -273,7 +289,7 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
     }
 
     const comparisons = difficultyData[ProStatsUserType.DifficultyLevelsComparisons] as any[];
-    const validComparisons = comparisons.filter(c => 
+    const validComparisons = comparisons.filter(c =>
       c.myPlayattemptsSumDuration && c.otherPlayattemptsAverageDuration && c.ts
     );
 
@@ -281,14 +297,15 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
 
     // Get user's timezone
     const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    
+
     // Calculate user's overall average performance ratio
-    const overallAvgRatio = validComparisons.reduce((sum, c) => 
+    const overallAvgRatio = validComparisons.reduce((sum, c) =>
       sum + (c.otherPlayattemptsAverageDuration / c.myPlayattemptsSumDuration), 0
     ) / validComparisons.length;
 
     // Initialize hourly data
     const hourlyData: { [hour: number]: { sumRatio: number, count: number } } = {};
+
     for (let i = 0; i < 24; i++) {
       hourlyData[i] = { sumRatio: 0, count: 0 };
     }
@@ -298,13 +315,24 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
       const date = new Date(c.ts * 1000);
       const hour = date.getHours();
       const performanceRatio = c.otherPlayattemptsAverageDuration / c.myPlayattemptsSumDuration;
-      
+
       hourlyData[hour].count++;
       hourlyData[hour].sumRatio += performanceRatio;
     });
 
     // Create clock data (5 natural time periods)
-    const clockData = [];
+    const clockData: { 
+      period: string; 
+      sublabel: string; 
+      periodNum: number; 
+      icon: any; 
+      performance: number; 
+      relativePerformance: number; 
+      levelCount: number; 
+      color: string; 
+      hasData: boolean; 
+      fullMark: number; 
+    }[] = [];
     let bestPeriod = -1;
     let bestPerformance = -Infinity;
     let worstPeriod = -1;
@@ -322,10 +350,11 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
     periods.forEach((period) => {
       let totalRatio = 0;
       let totalCount = 0;
-      
+
       // Aggregate data for this 3-hour period
       for (let hour = period.start; hour <= period.end; hour++) {
         const data = hourlyData[hour];
+
         if (data.count > 0) {
           totalRatio += data.sumRatio;
           totalCount += data.count;
@@ -340,20 +369,22 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
       if (totalCount > 0) {
         hasData = true;
         const avgRatio = totalRatio / totalCount;
+
         relativePerformance = (avgRatio / overallAvgRatio - 1) * 100;
         // Scale to 0-100 for radar chart (50 is average)
         performance = Math.max(0, Math.min(100, 50 + relativePerformance));
-        
+
         // Track best/worst periods
         if (relativePerformance > bestPerformance) {
           bestPerformance = relativePerformance;
           bestPeriod = period.position;
         }
+
         if (relativePerformance < worstPerformance) {
           worstPerformance = relativePerformance;
           worstPeriod = period.position;
         }
-        
+
         // Color based on performance
         if (relativePerformance > 10) color = '#10B981'; // Green
         else if (relativePerformance > 5) color = '#22C55E';
@@ -395,9 +426,9 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
   const LoadingSkeleton = ({ height = 'h-64' }: { height?: string }) => (
     <div className={`bg-gray-800 rounded-lg animate-pulse ${height}`}>
       <div className='p-4 space-y-2'>
-        <div className='h-4 bg-gray-700 rounded w-3/4'></div>
-        <div className='h-4 bg-gray-700 rounded w-1/2'></div>
-        <div className='h-4 bg-gray-700 rounded w-2/3'></div>
+        <div className='h-4 bg-gray-700 rounded w-3/4' />
+        <div className='h-4 bg-gray-700 rounded w-1/2' />
+        <div className='h-4 bg-gray-700 rounded w-2/3' />
       </div>
     </div>
   );
@@ -433,9 +464,9 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
         <div className='w-full h-96'>
           <ResponsiveContainer width='100%' height='100%'>
             <ComposedChart data={timeInvestmentData} margin={{ top: 60, right: 30, left: 0, bottom: 20 }}>
-              <XAxis 
+              <XAxis
                 dataKey='difficultyIndex'
-                type="number"
+                type='number'
                 domain={[-0.5, difficultyList.filter(d => d.name !== 'Pending').length - 0.5]}
                 orientation='top'
                 tick={{ fill: '#9CA3AF', fontSize: 11 }}
@@ -444,19 +475,20 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
                   const sortedDifficulties = difficultyList
                     .filter(d => d.name !== 'Pending')
                     .sort((a, b) => a.value - b.value);
+
                   return sortedDifficulties[value]?.name || '';
                 }}
                 axisLine={false}
                 tickLine={false}
               />
-              <YAxis 
-                type="number"
+              <YAxis
+                type='number'
                 domain={yAxisDomain}
                 tick={{ fill: '#9CA3AF', fontSize: 12 }}
                 tickFormatter={(value) => `${value > 0 ? '+' : ''}${value}%`}
                 allowDataOverflow={false}
               />
-              <Tooltip 
+              <Tooltip
                 contentStyle={{
                   backgroundColor: 'rgb(31, 41, 55)',
                   border: 'none',
@@ -466,7 +498,7 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
                 content={({ active, payload, label }) => {
                   if (active && payload && payload.length > 0) {
                     const data = payload[0].payload;
-                    
+
                     // This case shouldn't happen since we filter out <7 solves, but keep for safety
                     if (data.levelCount < 7) {
                       return (
@@ -478,7 +510,7 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
                         </div>
                       );
                     }
-                    
+
                     return (
                       <div className='bg-gray-800 p-3 rounded-lg shadow-lg border border-gray-600'>
                         <div className='text-sm text-gray-100'>
@@ -491,11 +523,11 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
                               </span>
                             </div>
                             <div className='text-xs text-gray-400'>
-                              {data.percentageDelta > 0 ? 
+                              {data.percentageDelta > 0 ?
                                 `⚡ ${data.percentageDelta}% faster than community average` :
                                 data.percentageDelta < 0 ?
-                                `🐌 ${Math.abs(data.percentageDelta)}% slower than community average` :
-                                '📊 Same as community average'
+                                  `🐌 ${Math.abs(data.percentageDelta)}% slower than community average` :
+                                  '📊 Same as community average'
                               }
                             </div>
                             <div className='mt-2 text-xs text-gray-500'>
@@ -509,32 +541,33 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
                       </div>
                     );
                   }
+
                   return null;
                 }}
               />
-              <ReferenceLine 
-                y={0} 
-                stroke='#6B7280' 
+              <ReferenceLine
+                y={0}
+                stroke='#6B7280'
                 strokeDasharray='2 2'
-                label={{ value: 'Community Average', position: 'topRight', style: { fill: '#9CA3AF', fontSize: '12px' } }}
+                label={{ value: 'Community Average', position: 'insideTopRight' as const, style: { fill: '#9CA3AF', fontSize: '12px' } }}
               />
-              <Bar 
-                dataKey='percentageDelta' 
-                name="Performance vs Community"
+              <Bar
+                dataKey='percentageDelta'
+                name='Performance vs Community'
                 fillOpacity={0.5}
               >
                 {timeInvestmentData.map((entry, index) => (
-                  <Cell 
-                    key={`cell-${index}`} 
+                  <Cell
+                    key={`cell-${index}`}
                     fill={entry.userColor}
                     style={{
                       transition: 'opacity 0.2s ease-in-out',
                     }}
-                    onMouseEnter={(e) => {
-                      e.target.style.fillOpacity = '1';
+                    onMouseEnter={(e: React.MouseEvent<SVGElement>) => {
+                      (e.target as SVGElement).style.fillOpacity = '1';
                     }}
-                    onMouseLeave={(e) => {
-                      e.target.style.fillOpacity = '0.5';
+                    onMouseLeave={(e: React.MouseEvent<SVGElement>) => {
+                      (e.target as SVGElement).style.fillOpacity = '0.5';
                     }}
                   />
                 ))}
@@ -545,21 +578,20 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
         <div className='bg-gray-800 rounded-lg p-3 mt-2'>
           <div className='flex items-center justify-center gap-6 text-sm flex-wrap'>
             <div className='flex items-center gap-2'>
-              <div className='w-3 h-3 bg-green-500 rounded'></div>
+              <div className='w-3 h-3 bg-green-500 rounded' />
               <span className='text-gray-300'>Faster than average (above baseline)</span>
             </div>
             <div className='flex items-center gap-2'>
-              <div className='w-3 h-3 bg-red-500 rounded'></div>
+              <div className='w-3 h-3 bg-red-500 rounded' />
               <span className='text-gray-300'>Slower than average (below baseline)</span>
             </div>
             <div className='flex items-center gap-2'>
-              <div className='w-4 h-1 bg-gray-500 rounded border-t border-dashed border-gray-500'></div>
+              <div className='w-4 h-1 bg-gray-500 rounded border-t border-dashed border-gray-500' />
               <span className='text-gray-300'>Community baseline (0%)</span>
             </div>
           </div>
         </div>
       </div>
-
       {/* Time-of-Day Performance Analysis - Clock Visualization */}
       {timeOfDayPerformance && (
         <div className='flex flex-col gap-2'>
@@ -575,23 +607,23 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
             <div className='grid grid-cols-2 md:grid-cols-5 gap-4 mb-4'>
               {timeOfDayPerformance.clockData.map((period, index) => {
                 const relPerf = period.relativePerformance;
-                
+
                 // Create gauge data - performance range from -50 to +50, centered at 0
                 const normalizedPerf = Math.max(-50, Math.min(50, relPerf));
                 const gaugeValue = 50 + normalizedPerf; // Convert to 0-100 scale
-                
+
                 // Create pie chart data for the gauge
                 const gaugeData = [
                   { name: 'performance', value: gaugeValue, fill: period.hasData ? period.color : '#374151' },
                   { name: 'remaining', value: 100 - gaugeValue, fill: 'transparent' }
                 ];
-                
+
                 // Needle angle calculation: 0% performance = 90° (pointing up/north)
                 // Left side (180°) = worst performance (-50%), Right side (0°) = best performance (+50%)
                 const needleAngle = 180 - (gaugeValue / 100) * 180;
-                
+
                 const IconComponent = period.icon;
-                
+
                 return (
                   <div key={index} className='group relative'>
                     <div className='bg-gray-800 rounded-lg border border-gray-600 p-2 text-center hover:shadow-lg transition-all min-h-[170px] flex flex-col'>
@@ -608,27 +640,27 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
                         <ResponsiveContainer width='100%' height='100%'>
                           <PieChart>
                             <defs>
-                              <linearGradient id={`gradient-${index}`} x1="0" y1="0" x2="1" y2="0">
-                                <stop offset="0%" stopColor="#DC2626" />
-                                <stop offset="25%" stopColor="#F97316" />
-                                <stop offset="50%" stopColor="#F59E0B" />
-                                <stop offset="75%" stopColor="#84CC16" />
-                                <stop offset="100%" stopColor="#10B981" />
+                              <linearGradient id={`gradient-${index}`} x1='0' y1='0' x2='1' y2='0'>
+                                <stop offset='0%' stopColor='#DC2626' />
+                                <stop offset='25%' stopColor='#F97316' />
+                                <stop offset='50%' stopColor='#F59E0B' />
+                                <stop offset='75%' stopColor='#84CC16' />
+                                <stop offset='100%' stopColor='#10B981' />
                               </linearGradient>
                             </defs>
                             
                             {/* Background semicircle */}
                             <Pie
                               data={[{ value: 100, name: 'gauge' }]}
-                              dataKey="value"
+                              dataKey='value'
                               startAngle={180}
                               endAngle={0}
-                              cx="50%"
-                              cy="70%"
-                              innerRadius="25%"
-                              outerRadius="85%"
+                              cx='50%'
+                              cy='70%'
+                              innerRadius='25%'
+                              outerRadius='85%'
                               fill={period.hasData ? `url(#gradient-${index})` : '#374151'}
-                              stroke="none"
+                              stroke='none'
                             />
                           </PieChart>
                         </ResponsiveContainer>
@@ -637,22 +669,22 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
                         {period.hasData && (
                           <svg
                             className='absolute inset-0 w-full h-full pointer-events-none'
-                            viewBox="0 0 100 100"
+                            viewBox='0 0 100 100'
                           >
                             <line
-                              x1="50"
-                              y1="70"
+                              x1='50'
+                              y1='70'
                               x2={50 + 40 * Math.cos(needleAngle * Math.PI / 180)}
                               y2={70 - 40 * Math.sin(needleAngle * Math.PI / 180)}
-                              stroke="#FFFFFF"
-                              strokeWidth="2"
-                              strokeLinecap="round"
+                              stroke='#FFFFFF'
+                              strokeWidth='2'
+                              strokeLinecap='round'
                             />
                             <circle
-                              cx="50"
-                              cy="70"
-                              r="2"
-                              fill="#FFFFFF"
+                              cx='50'
+                              cy='70'
+                              r='2'
+                              fill='#FFFFFF'
                             />
                           </svg>
                         )}
@@ -683,7 +715,7 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
                       {period.hasData ? (
                         <>
                           <div className='flex items-center gap-1 mb-1'>
-                            <div className='w-2 h-2 rounded-full' style={{ backgroundColor: period.color }}></div>
+                            <div className='w-2 h-2 rounded-full' style={{ backgroundColor: period.color }} />
                             <span>
                               {Math.abs(relPerf).toFixed(1)}% {relPerf >= 0 ? 'better' : 'worse'} than your average
                             </span>
@@ -710,11 +742,11 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
                       key={i}
                       className='w-6 h-4 rounded'
                       style={{
-                        backgroundColor: val > 10 ? '#10B981' : 
-                                       val > 5 ? '#22C55E' :
-                                       val > 0 ? '#84CC16' :
-                                       val > -5 ? '#F59E0B' :
-                                       val > -10 ? '#F97316' : '#DC2626'
+                        backgroundColor: val > 10 ? '#10B981' :
+                          val > 5 ? '#22C55E' :
+                            val > 0 ? '#84CC16' :
+                              val > -5 ? '#F59E0B' :
+                                val > -10 ? '#F97316' : '#DC2626'
                       }}
                     />
                   ))}
@@ -742,15 +774,15 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
                 <h3 className='font-bold mb-2'>Performance Legend</h3>
                 <div className='flex flex-wrap gap-2 text-xs'>
                   <div className='flex items-center gap-1'>
-                    <div className='w-2 h-2 bg-green-500 rounded-full'></div>
+                    <div className='w-2 h-2 bg-green-500 rounded-full' />
                     <span>Better (+10%+)</span>
                   </div>
                   <div className='flex items-center gap-1'>
-                    <div className='w-2 h-2 bg-orange-500 rounded-full'></div>
+                    <div className='w-2 h-2 bg-orange-500 rounded-full' />
                     <span>Slightly worse</span>
                   </div>
                   <div className='flex items-center gap-1'>
-                    <div className='w-2 h-2 bg-red-500 rounded-full'></div>
+                    <div className='w-2 h-2 bg-red-500 rounded-full' />
                     <span>Much worse (-10%+)</span>
                   </div>
                 </div>
@@ -759,7 +791,6 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
           </div>
         </div>
       )}
-
       {/* Activity by Day of Week */}
       <div className='flex flex-col gap-2'>
         <h2 className='text-xl font-bold text-center'>Activity by Day of Week</h2>
@@ -769,15 +800,15 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
         <div className='w-full h-64'>
           <ResponsiveContainer width='100%' height='100%'>
             <BarChart data={activityHeatmap} margin={{ top: 20, right: 30, left: 20, bottom: 40 }}>
-              <XAxis 
-                dataKey='day' 
+              <XAxis
+                dataKey='day'
                 tick={{ fill: '#9CA3AF' }}
               />
-              <YAxis 
+              <YAxis
                 tick={{ fill: '#9CA3AF' }}
                 label={{ value: 'Avg Levels/Day', angle: -90, position: 'insideLeft', style: { fill: '#9CA3AF' } }}
               />
-              <Tooltip 
+              <Tooltip
                 contentStyle={{
                   backgroundColor: 'rgb(31, 41, 55)',
                   border: 'none',
@@ -786,6 +817,7 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
                 }}
                 formatter={(value: number, name: string, props: any) => {
                   const data = props.payload;
+
                   return [
                     <div key='tooltip' className='text-sm text-gray-100'>
                       <div>Avg levels per day: <span className='font-bold'>{value.toFixed(1)}</span></div>
@@ -801,7 +833,6 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
           </ResponsiveContainer>
         </div>
       </div>
-
       {/* Monthly Activity Trend */}
       {monthlyTrend.length > 0 && (
         <div className='flex flex-col gap-2'>
@@ -809,13 +840,13 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
           <div className='w-full h-64'>
             <ResponsiveContainer width='100%' height='100%'>
               <AreaChart data={monthlyTrend} margin={{ top: 10, right: 30, left: 0, bottom: 30 }}>
-                <XAxis 
-                  dataKey='date' 
+                <XAxis
+                  dataKey='date'
                   tick={{ fill: '#9CA3AF' }}
                   interval='preserveStartEnd'
                 />
                 <YAxis tick={{ fill: '#9CA3AF' }} />
-                <Tooltip 
+                <Tooltip
                   contentStyle={{
                     backgroundColor: 'rgb(31, 41, 55)',
                     border: 'none',
@@ -823,11 +854,11 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
                     color: 'rgb(229, 231, 235)',
                   }}
                 />
-                <Area 
-                  type='monotone' 
-                  dataKey='solves' 
-                  stroke='#3B82F6' 
-                  fill='#3B82F6' 
+                <Area
+                  type='monotone'
+                  dataKey='solves'
+                  stroke='#3B82F6'
+                  fill='#3B82F6'
                   fillOpacity={0.6}
                 />
               </AreaChart>
@@ -835,7 +866,6 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
           </div>
         </div>
       )}
-
       {/* Time Analytics Summary */}
       <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
         <div className='bg-gray-800 rounded-lg p-4'>

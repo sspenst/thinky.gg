@@ -1,6 +1,6 @@
 import Role from '@root/constants/role';
 import useProStatsUser, { ProStatsUserType } from '@root/hooks/useProStatsUser';
-import { useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Bar, Cell, ComposedChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import User from '../../models/db/user';
 import { difficultyList, getDifficultyFromEstimate } from '../formatted/formattedDifficulty';
@@ -16,9 +16,11 @@ interface ProfileInsightsPeerComparisonsProps {
 interface PercentileData {
   difficulty: string;
   percentile: number;
+  percentileDelta: number;
   totalLevels: number;
   fasterCount: number;
   color: string;
+  difficultyIndex: number;
   allPercentiles?: number[];
 }
 
@@ -172,7 +174,7 @@ export default function ProfileInsightsPeerComparisons({ user, reqUser, timeFilt
 
     let weightedPercentileSum = 0;
     let totalWeightUsed = 0;
-    const breakdown: { [key: string]: { percentile: number; weight: number; contribution: number; levels: number } } = {};
+    const breakdown: { [key: string]: { percentile: number; weight: number; contribution: number; levels: number; bonusWeight?: number; bonusLevels?: number; originalPercentile?: number } } = {};
 
     // Find the lowest difficulty the player has played (7+ solves)
     let lowestDifficultyWeight = 11; // Start higher than max
@@ -361,7 +363,7 @@ export default function ProfileInsightsPeerComparisons({ user, reqUser, timeFilt
             {competitionScore}
           </div>
           <p className='text-sm text-gray-400 mb-3'>
-            Weighted average of {user.name}'s performance scores across all difficulty tiers
+            Weighted average of {user.name}&apos;s performance scores across all difficulty tiers
           </p>
           <button
             onClick={() => setShowTooltip(!showTooltip)}
@@ -375,9 +377,9 @@ export default function ProfileInsightsPeerComparisons({ user, reqUser, timeFilt
               <div className='mb-4'>
                 <div className='font-semibold mb-2 text-yellow-400'>How it works:</div>
                 <div className='text-sm space-y-1'>
-                  <div>• Weighted average of {user.name}'s performance scores across difficulty tiers</div>
+                  <div>• Weighted average of {user.name}&apos;s performance scores across difficulty tiers</div>
                   <div>• Kindergarten (weight 1) → Super Grandmaster (weight 10)</div>
-                  <div>• Higher difficulties count more toward {user.name}'s final score</div>
+                  <div>• Higher difficulties count more toward {user.name}&apos;s final score</div>
                   <div>• Includes {competitionScoreDetails.lowestDifficulty} and all higher difficulties</div>
                   <div>• Super GM Bonus: +1 weight per level beyond 7</div>
                   <div>• GM Bonus: +0.25 weight per level beyond 7</div>
@@ -385,7 +387,7 @@ export default function ProfileInsightsPeerComparisons({ user, reqUser, timeFilt
                 </div>
               </div>
               <div className='mb-4'>
-                <div className='font-semibold mb-2 text-blue-400'>{user.name}'s breakdown:</div>
+                <div className='font-semibold mb-2 text-blue-400'>{user.name}&apos;s breakdown:</div>
                 <div className='bg-gray-800 rounded p-3 space-y-1'>
                   {Object.entries(competitionScoreDetails.breakdown)
                     .sort((a, b) => (a[1].weight - (a[1].bonusWeight || 0)) - (b[1].weight - (b[1].bonusWeight || 0)))
@@ -450,7 +452,6 @@ export default function ProfileInsightsPeerComparisons({ user, reqUser, timeFilt
               </div>
             </div>
           )}
-          
           <div className='mt-4 text-xs text-gray-500'>
             <span className='text-green-500'>75-100: Elite</span> •
             <span className='text-blue-500 ml-2'>50-74: Above Average</span> •
@@ -476,7 +477,7 @@ export default function ProfileInsightsPeerComparisons({ user, reqUser, timeFilt
           <div className='bg-gray-800 rounded-lg p-3 mb-4'>
             <div className='text-xs text-gray-300 text-center'>
               <div className='mb-1'><strong>How to read:</strong> +25 means 75 score (25 points above average)</div>
-              <div className='text-gray-400'>This shows {user.name}'s <em>competitive ranking delta</em>, not speed difference (see Time Analytics for that)</div>
+              <div className='text-gray-400'>This shows {user.name}&apos;s <em>competitive ranking delta</em>, not speed difference (see Time Analytics for that)</div>
             </div>
           </div>
           <div className='w-full h-80'>
@@ -507,7 +508,7 @@ export default function ProfileInsightsPeerComparisons({ user, reqUser, timeFilt
                   y={0}
                   stroke='#6B7280'
                   strokeDasharray='2 2'
-                  label={{ value: 'Average (50 score)', position: 'topRight', style: { fill: '#9CA3AF', fontSize: '12px' } }}
+                  label={{ value: 'Average (50 score)', position: 'insideTopRight' as const, style: { fill: '#9CA3AF', fontSize: '12px' } }}
                 />
                 <Tooltip
                   contentStyle={{
@@ -516,7 +517,7 @@ export default function ProfileInsightsPeerComparisons({ user, reqUser, timeFilt
                     borderRadius: '0.5rem',
                     color: 'rgb(229, 231, 235)',
                   }}
-                  content={({ active, payload, label }) => {
+                  content={({ active, payload }) => {
                     if (active && payload && payload.length > 0) {
                       const data = payload[0].payload;
 
@@ -563,11 +564,11 @@ export default function ProfileInsightsPeerComparisons({ user, reqUser, timeFilt
                       style={{
                         transition: 'opacity 0.2s ease-in-out',
                       }}
-                      onMouseEnter={(e) => {
-                        e.target.style.fillOpacity = '1';
+                      onMouseEnter={(e: React.MouseEvent<SVGElement>) => {
+                        (e.target as SVGElement).style.fillOpacity = '1';
                       }}
-                      onMouseLeave={(e) => {
-                        e.target.style.fillOpacity = '0.5';
+                      onMouseLeave={(e: React.MouseEvent<SVGElement>) => {
+                        (e.target as SVGElement).style.fillOpacity = '0.5';
                       }}
                     />
                   ))}
@@ -608,7 +609,7 @@ export default function ProfileInsightsPeerComparisons({ user, reqUser, timeFilt
           <div>
             <div className='flex items-center gap-2 mb-3'>
               <div className='w-3 h-3 bg-green-500 rounded-full' />
-              <h4 className='font-semibold text-green-400'>{user.name}'s Strongest Difficulty Tiers</h4>
+              <h4 className='font-semibold text-green-400'>{user.name}&apos;s Strongest Difficulty Tiers</h4>
             </div>
             <div className='space-y-2'>
               {percentileData.filter(d => d.percentile >= 60).map(d => (
@@ -624,13 +625,12 @@ export default function ProfileInsightsPeerComparisons({ user, reqUser, timeFilt
               ))}
               {percentileData.filter(d => d.percentile >= 60).length === 0 && (
                 <div className='text-center p-4 text-gray-500 italic'>
-                  🎯 Keep practicing to improve {user.name}'s competitive standing!<br />
+                  🎯 Keep practicing to improve {user.name}&apos;s competitive standing!<br />
                   <span className='text-xs text-gray-600 mt-1'>Solve 7+ levels in difficulty tiers to see rankings</span>
                 </div>
               )}
             </div>
           </div>
-          
           <div>
             <div className='flex items-center gap-2 mb-3'>
               <div className='w-3 h-3 bg-yellow-500 rounded-full' />

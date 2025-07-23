@@ -1,9 +1,9 @@
 import { LevelWithRecordHistory } from '@root/helpers/getRecordsByUserId';
+import { TimeFilter } from '../components/profile/profileInsights';
 import { DifficultyLevelComparison } from '../components/profile/profileInsightsSolveTimeComparison';
 import { DateAndSum, UserAndSum, UserLevelAndStatTs } from '../contexts/levelContext';
 import User from '../models/db/user';
 import useSWRHelper from './useSWRHelper';
-import { TimeFilter } from '../components/profile/profileInsights';
 
 export enum ProStatsUserType {
   DifficultyLevelsComparisons = 'difficulty-levels-comparisons',

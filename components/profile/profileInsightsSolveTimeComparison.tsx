@@ -87,9 +87,8 @@ export default function ProfileInsightsSolveTimeComparison({ user, timeFilter }:
         This chart shows solve time vs average {difficutlyType.toLowerCase()} time for the levels {user.name} has solved
         {timeFilter && timeFilter !== 'all' ? (
           timeFilter === '30d' ? ' in the last 30 days' :
-          timeFilter === '90d' ? ' in the last 90 days' :
-          timeFilter === '6m' ? ' in the last 6 months' :
-          timeFilter === '1y' ? ' in the last year' : ''
+            timeFilter === '7d' ? ' in the last 7 days' :
+              timeFilter === '1y' ? ' in the last year' : ''
         ) : ''}.
         <br />
         Green indicates it took {user.name} less time to solve the level than the average user.

@@ -7,12 +7,12 @@ import { USER_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import User from '@root/models/db/user';
 import mongoose, { PipelineStage, Types } from 'mongoose';
 import { NextApiResponse } from 'next';
+import { TimeFilter } from '../../../../../components/profile/profileInsights';
+import Role from '../../../../../constants/role';
 import { ValidEnum } from '../../../../../helpers/apiWrapper';
 import { getSolveCountFactor } from '../../../../../helpers/getDifficultyEstimate';
 import isPro from '../../../../../helpers/isPro';
-import Role from '../../../../../constants/role';
 import { ProStatsUserType } from '../../../../../hooks/useProStatsUser';
-import { TimeFilter } from '../../../../../components/profile/profileInsights';
 import cleanUser from '../../../../../lib/cleanUser';
 import withAuth, { NextApiRequestWithAuth } from '../../../../../lib/withAuth';
 import { LevelModel, PlayAttemptModel, StatModel, UserModel } from '../../../../../models/mongoose';
@@ -20,18 +20,18 @@ import { AttemptContext } from '../../../../../models/schemas/playAttemptSchema'
 
 function getTimeFilterCutoff(timeFilter?: string): number | null {
   if (!timeFilter) return null;
-  
+
   const now = Math.floor(Date.now() / 1000);
-  
+
   switch (timeFilter) {
-    case TimeFilter.WEEK:
-      return now - (60 * 60 * 24 * 7);
-    case TimeFilter.MONTH:
-      return now - (60 * 60 * 24 * 30);
-    case TimeFilter.YEAR:
-      return now - (60 * 60 * 24 * 365);
-    default:
-      return null;
+  case TimeFilter.WEEK:
+    return now - (60 * 60 * 24 * 7);
+  case TimeFilter.MONTH:
+    return now - (60 * 60 * 24 * 30);
+  case TimeFilter.YEAR:
+    return now - (60 * 60 * 24 * 365);
+  default:
+    return null;
   }
 }
 
@@ -39,19 +39,18 @@ async function getDifficultyDataComparisons(gameId: GameId, userId: string, time
   const game = getGameFromId(gameId);
   const difficultyEstimate = game.type === GameType.COMPLETE_AND_SHORTEST ? 'calc_difficulty_completion_estimate' : 'calc_difficulty_estimate';
   const timeCutoff = getTimeFilterCutoff(timeFilter);
-  
+
   const matchStage: any = {
     userId: new mongoose.Types.ObjectId(userId),
     complete: true,
     isDeleted: { $ne: true },
     gameId: gameId
   };
-  
+
   if (timeCutoff) {
     matchStage.ts = { $gt: timeCutoff };
   }
-  
-  
+
   // Now run the full pipeline with appropriate threshold
   const difficultyData = await StatModel.aggregate([
     {
@@ -154,7 +153,7 @@ async function getDifficultyDataComparisons(gameId: GameId, userId: string, time
       $project: {
         _id: '$level._id',
         name: '$level.name',
-        slug: '$level.slug', 
+        slug: '$level.slug',
         difficulty: '$level.difficulty',
         ts: 1,
         myPlayattemptsSumDuration: '$myplayattempts.sumDuration',
@@ -162,7 +161,7 @@ async function getDifficultyDataComparisons(gameId: GameId, userId: string, time
         calc_playattempts_just_beaten_count: '$level.calc_playattempts_just_beaten_count',
         performanceRatio: {
           $cond: {
-            if: { 
+            if: {
               $and: [
                 { $gt: ['$myplayattempts.sumDuration', 0] },
                 { $gt: ['$otherPlayattemptsAverageDuration', 0] }
@@ -194,7 +193,7 @@ async function getDifficultyDataComparisons(gameId: GameId, userId: string, time
     //   }
     // }
   ]);
-  
+
   return difficultyData;
 }
 
@@ -285,7 +284,7 @@ async function getPlayLogForUsersCreatedLevels(gameId: GameId, reqUser: User, us
 
 async function getMostSolvesForUserLevels(gameId: GameId, userId: string, timeFilter?: string) {
   const timeCutoff = getTimeFilterCutoff(timeFilter);
-/** get the users that have solved the most levels created by userId */
+  /** get the users that have solved the most levels created by userId */
   const mostSolvesForUserLevels = await LevelModel.aggregate([
     {
       $match: {
@@ -361,18 +360,18 @@ async function getMostSolvesForUserLevels(gameId: GameId, userId: string, timeFi
 
 async function getScoreHistory(gameId: GameId, userId: string, timeFilter?: string) {
   const timeCutoff = getTimeFilterCutoff(timeFilter);
-  
+
   const matchStage: any = {
     userId: new mongoose.Types.ObjectId(userId),
     isDeleted: { $ne: true },
     complete: true,
     gameId: gameId,
   };
-  
+
   if (timeCutoff) {
     matchStage.ts = { $gt: timeCutoff };
   }
-  
+
   // OPTIMIZED: Optimize date grouping (MongoDB Atlas will use indexes automatically)
   const history = await StatModel.aggregate([
     {
@@ -451,7 +450,6 @@ export default withAuth({
     [ProStatsUserType.PlayLogForUserCreatedLevels]: playLogForUserCreatedLevels,
     [ProStatsUserType.Records]: records,
   };
-  
-  
+
   return res.status(200).json(response);
 });

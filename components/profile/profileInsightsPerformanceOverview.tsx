@@ -5,6 +5,7 @@ import { PolarAngleAxis, PolarGrid, PolarRadiusAxis, Radar, RadarChart, Responsi
 import User from '../../models/db/user';
 import { getDifficultyFromEstimate } from '../formatted/formattedDifficulty';
 import { TimeFilter } from './profileInsights';
+import { DifficultyLevelComparison } from './profileInsightsSolveTimeComparison';
 import ProfileInsightsScoreChart from './profileInsightsScoreChart';
 
 interface ProfileInsightsPerformanceOverviewProps {
@@ -31,9 +32,9 @@ function getPerformanceColor(performance: number): string {
 }
 
 export default function ProfileInsightsPerformanceOverview({ user, reqUser, timeFilter }: ProfileInsightsPerformanceOverviewProps) {
-  const { game } = useContext(AppContext);
+  const { game: _game } = useContext(AppContext);
   const { proStatsUser: difficultyData, isLoading: isLoadingDifficulty } = useProStatsUser(user, ProStatsUserType.DifficultyLevelsComparisons, timeFilter);
-  const { proStatsUser: scoreHistory, isLoading: isLoadingScoreHistory } = useProStatsUser(user, ProStatsUserType.ScoreHistory, timeFilter);
+  const { proStatsUser: _scoreHistory, isLoading: isLoadingScoreHistory } = useProStatsUser(user, ProStatsUserType.ScoreHistory, timeFilter);
 
   // Calculate performance metrics
   const performanceMetrics = useMemo(() => {
@@ -42,34 +43,35 @@ export default function ProfileInsightsPerformanceOverview({ user, reqUser, time
     // Total solves
     metrics.push({
       label: 'Total Solves',
-      value: user.score || 0,
+      value: user.config?.calcLevelsSolvedCount || 0,
       color: 'text-blue-400',
     });
 
     // Current streak
-    if (user.calc_streak_days && user.calc_streak_days > 0) {
+    if (user.config?.calcCurrentStreak && user.config?.calcCurrentStreak > 0) {
       metrics.push({
         label: 'Current Streak',
-        value: `${user.calc_streak_days} days`,
+        value: `${user.config.calcCurrentStreak} days`,
         color: 'text-orange-400',
       });
     }
 
     // Max streak
-    if (user.calc_max_streak_days && user.calc_max_streak_days > 0) {
-      metrics.push({
-        label: 'Best Streak',
-        value: `${user.calc_max_streak_days} days`,
-        color: 'text-purple-400',
-      });
-    }
+    // Note: max streak is not currently tracked in UserConfig, so commenting out for now
+    // if (user.config?.calc_max_streak_days && user.config?.calc_max_streak_days > 0) {
+    //   metrics.push({
+    //     label: 'Best Streak',
+    //     value: `${user.config.calc_max_streak_days} days`,
+    //     color: 'text-purple-400',
+    //   });
+    // }
 
     // Average performance vs peers - using only 7+ solve difficulties
     if (difficultyData && difficultyData[ProStatsUserType.DifficultyLevelsComparisons]) {
-      const comparisons = difficultyData[ProStatsUserType.DifficultyLevelsComparisons] as any[];
+      const comparisons = difficultyData[ProStatsUserType.DifficultyLevelsComparisons] as DifficultyLevelComparison[];
 
       // Group by difficulty and only include those with 7+ solves
-      const difficultyGroups = new Map<string, any[]>();
+      const difficultyGroups = new Map<string, DifficultyLevelComparison[]>();
 
       comparisons.forEach(c => {
         if (!c.difficulty || !c.otherPlayattemptsAverageDuration || !c.myPlayattemptsSumDuration) return;
@@ -109,7 +111,7 @@ export default function ProfileInsightsPerformanceOverview({ user, reqUser, time
       return { skillRadarData: [], averagePerformance: 50 };
     }
 
-    const comparisons = difficultyData[ProStatsUserType.DifficultyLevelsComparisons] as any[];
+    const comparisons = difficultyData[ProStatsUserType.DifficultyLevelsComparisons] as DifficultyLevelComparison[];
     const difficultyBuckets = new Map<string, { faster: number, total: number, maxDifficulty: number, hasComparison: boolean }>();
 
     // Collect difficulty levels solved with minimum threshold requirement
@@ -141,7 +143,7 @@ export default function ProfileInsightsPerformanceOverview({ user, reqUser, time
 
     // Convert to radar chart format - only include difficulties with 7+ solves
     const radarData = Array.from(difficultyBuckets.entries())
-      .filter(([difficulty, data]) => data.total >= 7) // Only include 7+ solves
+      .filter(([_difficulty, data]) => data.total >= 7) // Only include 7+ solves
       .sort((a, b) => a[1].maxDifficulty - b[1].maxDifficulty)
       .map(([difficulty, data]) => {
         const performance = data.hasComparison && data.total > 0
@@ -168,11 +170,11 @@ export default function ProfileInsightsPerformanceOverview({ user, reqUser, time
     return { skillRadarData: radarData, averagePerformance: avgPerf };
   }, [difficultyData]);
 
-  const isOwnProfile = reqUser?._id === user._id;
+  const _isOwnProfile = reqUser?._id === user._id;
   const isLoading = isLoadingDifficulty || isLoadingScoreHistory;
 
   // Loading components
-  const LoadingSpinner = () => (
+  const _LoadingSpinner = () => (
     <div className='flex items-center justify-center p-8'>
       <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400' />
     </div>
@@ -206,7 +208,7 @@ export default function ProfileInsightsPerformanceOverview({ user, reqUser, time
     );
   }
 
-  function renderPolarAngleAxis({ payload, x, y, cx, cy, ...rest }) {
+  function renderPolarAngleAxis({ payload, x, y, cx, cy, ...rest }: { payload: any; x: number; y: number; cx: number; cy: number; [key: string]: any }) {
     return (
       <Text
         {...rest}

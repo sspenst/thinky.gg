@@ -1,15 +1,15 @@
+import Role from '@root/constants/role';
 import { AppContext } from '@root/contexts/appContext';
 import isPro from '@root/helpers/isPro';
 import Link from 'next/link';
-import { useContext, useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
+import { useContext, useEffect, useState } from 'react';
 import User from '../../models/db/user';
-import Role from '@root/constants/role';
-import ProfileInsightsPerformanceOverview from './profileInsightsPerformanceOverview';
-import ProfileInsightsPeerComparisons from './profileInsightsPeerComparisons';
-import ProfileInsightsTimeAnalytics from './profileInsightsTimeAnalytics';
-import ProfileInsightsLevelMastery from './profileInsightsLevelMastery';
 import ProfileInsightsCreatorDashboard from './profileInsightsCreatorDashboard';
+import ProfileInsightsLevelMastery from './profileInsightsLevelMastery';
+import ProfileInsightsPeerComparisons from './profileInsightsPeerComparisons';
+import ProfileInsightsPerformanceOverview from './profileInsightsPerformanceOverview';
+import ProfileInsightsTimeAnalytics from './profileInsightsTimeAnalytics';
 
 interface ProfileInsightsProps {
   reqUser: User | null;
@@ -27,7 +27,7 @@ export enum InsightsTab {
 // Map tab enums to user-friendly URL parameter names
 const TAB_URL_MAPPING = {
   [InsightsTab.PERFORMANCE]: 'overview',
-  [InsightsTab.PEERS]: 'comparisons', 
+  [InsightsTab.PEERS]: 'comparisons',
   [InsightsTab.TIME]: 'activity',
   [InsightsTab.MASTERY]: 'mastery',
   [InsightsTab.CREATOR]: 'creator',
@@ -36,6 +36,7 @@ const TAB_URL_MAPPING = {
 // Reverse mapping for URL to tab enum
 const URL_TAB_MAPPING = Object.entries(TAB_URL_MAPPING).reduce((acc, [key, value]) => {
   acc[value] = key as InsightsTab;
+
   return acc;
 }, {} as Record<string, InsightsTab>);
 
@@ -91,17 +92,18 @@ const TABS: TabConfig[] = [
 export default function ProfileInsights({ reqUser, user }: ProfileInsightsProps) {
   const { game } = useContext(AppContext);
   const router = useRouter();
-  
+
   const [activeTab, setActiveTab] = useState<InsightsTab>(InsightsTab.PERFORMANCE);
   const [timeFilter, setTimeFilter] = useState<TimeFilter>(TimeFilter.ALL);
   const [isInitialized, setIsInitialized] = useState(false);
-  
+
   // Update URL when tab changes
   const handleTabChange = (tab: InsightsTab) => {
     setActiveTab(tab);
     // Keep current path, update subtab query parameter (avoiding conflict with dynamic route)
     const { subdomain, tab: routeTab, name, ...cleanQuery } = router.query;
     const newQuery = { ...cleanQuery, subtab: TAB_URL_MAPPING[tab], timeFilter };
+
     router.push(
       {
         pathname: router.asPath.split('?')[0],
@@ -111,13 +113,14 @@ export default function ProfileInsights({ reqUser, user }: ProfileInsightsProps)
       { shallow: true }
     );
   };
-  
+
   // Update URL when time filter changes
   const handleTimeFilterChange = (filter: TimeFilter) => {
     setTimeFilter(filter);
     // Keep current path, just update time filter query param
     const { subdomain, tab: routeTab, name, ...cleanQuery } = router.query;
     const newQuery = { ...cleanQuery, timeFilter: filter };
+
     router.push(
       {
         pathname: router.asPath.split('?')[0],
@@ -127,28 +130,29 @@ export default function ProfileInsights({ reqUser, user }: ProfileInsightsProps)
       { shallow: true }
     );
   };
-  
+
   // Initialize from URL query parameters when router is ready
   useEffect(() => {
     if (!router.isReady) return;
-    
+
     console.log('🔍 Router query:', router.query);
     console.log('🔍 Router pathname:', router.pathname);
     console.log('🔍 Router asPath:', router.asPath);
     console.log('🔍 All query keys:', Object.keys(router.query));
-    
+
     // Check for tab parameter conflict (dynamic route vs query param)
     const routeTabArray = router.query.tab;
     const queryTabParam = router.query.tab;
+
     console.log('🔍 Route tab array:', routeTabArray);
     console.log('🔍 Is tab an array?', Array.isArray(routeTabArray));
-    
+
     // Get subtab from query parameter (avoiding conflict with dynamic route 'tab')
     const urlSubtab = router.query.subtab as string;
-    
+
     console.log('🔍 URL subtab parameter:', urlSubtab);
     console.log('🔍 URL_TAB_MAPPING:', URL_TAB_MAPPING);
-    
+
     if (urlSubtab && URL_TAB_MAPPING[urlSubtab]) {
       console.log('✅ Setting tab to:', URL_TAB_MAPPING[urlSubtab]);
       setActiveTab(URL_TAB_MAPPING[urlSubtab]);
@@ -156,29 +160,31 @@ export default function ProfileInsights({ reqUser, user }: ProfileInsightsProps)
       console.log('⚠️ No valid subtab found, defaulting to PERFORMANCE');
       setActiveTab(InsightsTab.PERFORMANCE);
     }
-    
+
     // Initialize time filter from URL query
     const urlTimeFilter = router.query.timeFilter as string;
+
     if (urlTimeFilter && Object.values(TimeFilter).includes(urlTimeFilter as TimeFilter)) {
       setTimeFilter(urlTimeFilter as TimeFilter);
     } else {
       setTimeFilter(TimeFilter.ALL);
     }
-    
+
     setIsInitialized(true);
   }, [router.isReady, router.query.subtab, router.query.timeFilter, router.asPath]);
 
   // Update state when URL changes (for navigation)
   useEffect(() => {
     if (!isInitialized) return;
-    
+
     const urlSubtab = router.query.subtab as string;
-    
+
     if (urlSubtab && URL_TAB_MAPPING[urlSubtab] && URL_TAB_MAPPING[urlSubtab] !== activeTab) {
       setActiveTab(URL_TAB_MAPPING[urlSubtab]);
     }
-    
+
     const urlTimeFilter = router.query.timeFilter as string;
+
     if (urlTimeFilter && Object.values(TimeFilter).includes(urlTimeFilter as TimeFilter) && urlTimeFilter !== timeFilter) {
       setTimeFilter(urlTimeFilter as TimeFilter);
     }
@@ -198,8 +204,8 @@ export default function ProfileInsights({ reqUser, user }: ProfileInsightsProps)
   }
 
   // Filter tabs based on whether user has created levels
-  const availableTabs = TABS.filter(tab => 
-    !tab.showForCreators || (user.calc_levels_created_count && user.calc_levels_created_count > 0)
+  const availableTabs = TABS.filter(tab =>
+    !tab.showForCreators || (user.config?.calcLevelsCreatedCount && user.config?.calcLevelsCreatedCount > 0)
   );
 
   const activeTabConfig = availableTabs.find(tab => tab.id === activeTab) || availableTabs[0];
@@ -211,12 +217,11 @@ export default function ProfileInsights({ reqUser, user }: ProfileInsightsProps)
       {isAdmin && reqUser?._id !== user._id && (
         <div className='bg-yellow-900 border border-yellow-600 rounded-lg p-3 text-center'>
           <p className='text-yellow-200 text-sm'>
-            🔒 <strong>Admin View:</strong> You're viewing {user.name}'s insights with admin privileges. 
+            🔒 <strong>Admin View:</strong> You&apos;re viewing {user.name}&apos;s insights with admin privileges.
             This view may show additional data not visible to the profile owner.
           </p>
         </div>
       )}
-
       {/* Tab Navigation */}
       <div className='flex flex-col gap-4'>
         <div className='flex flex-wrap gap-2 justify-center'>
@@ -250,8 +255,8 @@ export default function ProfileInsights({ reqUser, user }: ProfileInsightsProps)
                 }`}
               >
                 {filter === TimeFilter.WEEK ? 'Last 7 days' :
-                 filter === TimeFilter.MONTH ? 'Last 30 days' :
-                 filter === TimeFilter.YEAR ? 'Last year' : 'All time'}
+                  filter === TimeFilter.MONTH ? 'Last 30 days' :
+                    filter === TimeFilter.YEAR ? 'Last year' : 'All time'}
               </button>
             ))}
           </div>
@@ -262,7 +267,6 @@ export default function ProfileInsights({ reqUser, user }: ProfileInsightsProps)
           {activeTabConfig.description}
         </p>
       </div>
-
       {/* Tab Content */}
       <div className='w-full'>
         <ActiveComponent user={user} reqUser={reqUser} timeFilter={timeFilter} />

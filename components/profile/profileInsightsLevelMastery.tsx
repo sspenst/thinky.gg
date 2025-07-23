@@ -1,17 +1,17 @@
+import Role from '@root/constants/role';
 import useProStatsUser, { ProStatsUserType } from '@root/hooks/useProStatsUser';
-import { useMemo, useState } from 'react';
-import User from '../../models/db/user';
-import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import dayjs from 'dayjs';
+import advancedFormat from 'dayjs/plugin/advancedFormat';
 import duration from 'dayjs/plugin/duration';
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
-import advancedFormat from 'dayjs/plugin/advancedFormat';
-import { getDifficultyFromEstimate, difficultyList, getDifficultyColor } from '../formatted/formattedDifficulty';
-import ProfileInsightsRecords from './profileInsightsRecords';
+import { useMemo, useState } from 'react';
+import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import User from '../../models/db/user';
+import { difficultyList, getDifficultyColor, getDifficultyFromEstimate } from '../formatted/formattedDifficulty';
 import FormattedLevelLink from '../formatted/formattedLevelLink';
-import Role from '@root/constants/role';
 import { TimeFilter } from './profileInsights';
+import ProfileInsightsRecords from './profileInsightsRecords';
 
 dayjs.extend(duration);
 dayjs.extend(utc);
@@ -44,7 +44,7 @@ interface RetryAnalysisData {
 export default function ProfileInsightsLevelMastery({ user, reqUser, timeFilter }: ProfileInsightsLevelMasteryProps) {
   const { proStatsUser: difficultyData, isLoading: isLoadingDifficulty } = useProStatsUser(user, ProStatsUserType.DifficultyLevelsComparisons, timeFilter);
   const { proStatsUser: recordsData, isLoading: isLoadingRecords } = useProStatsUser(user, ProStatsUserType.Records, timeFilter);
-  
+
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
   const [timelineMode, setTimelineMode] = useState<'max' | 'average'>('average');
 
@@ -56,7 +56,7 @@ export default function ProfileInsightsLevelMastery({ user, reqUser, timeFilter 
 
     const comparisons = difficultyData[ProStatsUserType.DifficultyLevelsComparisons] as any[];
     const progressionMap = new Map<string, DifficultyProgressData>();
-    
+
     // Use official difficulty colors from the helper function
     const difficultyConfig = difficultyList
       .filter(d => d.name !== 'Pending') // Skip pending difficulty
@@ -79,17 +79,18 @@ export default function ProfileInsightsLevelMastery({ user, reqUser, timeFilter 
     // Count levels and track dates
     comparisons.forEach(c => {
       if (!c.difficulty) return;
-      
+
       const difficulty = getDifficultyFromEstimate(c.difficulty);
       const data = progressionMap.get(difficulty.name);
-      
+
       if (data) {
         data.levelCount++;
         const solveDate = dayjs(c.ts * 1000).format('MMM DD, YYYY');
-        
+
         if (!data.firstSolved || c.ts < dayjs(data.firstSolved).unix()) {
           data.firstSolved = solveDate;
         }
+
         if (!data.latestSolved || c.ts > dayjs(data.latestSolved).unix()) {
           data.latestSolved = solveDate;
         }
@@ -106,23 +107,24 @@ export default function ProfileInsightsLevelMastery({ user, reqUser, timeFilter 
     }
 
     const comparisons = difficultyData[ProStatsUserType.DifficultyLevelsComparisons] as any[];
-    const timeline = new Map<string, { 
-      date: string, 
+    const timeline = new Map<string, {
+      date: string,
       totalDifficulty: number,
       maxDifficulty: number,
       levelCount: number,
       allLevels: any[],
-      monthKey: string 
+      monthKey: string
     }>();
 
     // Group by month and collect all levels with their difficulties
     comparisons.forEach(c => {
       if (!c.difficulty || !c.ts) return;
-      
+
       const monthKey = dayjs(c.ts * 1000).format('YYYY-MM');
       const displayDate = dayjs(c.ts * 1000).format('MMM YYYY');
-      
+
       const existing = timeline.get(monthKey);
+
       if (!existing) {
         timeline.set(monthKey, {
           date: displayDate,
@@ -144,15 +146,15 @@ export default function ProfileInsightsLevelMastery({ user, reqUser, timeFilter 
     return Array.from(timeline.values())
       .sort((a, b) => dayjs(a.date).unix() - dayjs(b.date).unix())
       .map(entry => {
-        const displayDifficulty = timelineMode === 'average' 
-          ? entry.totalDifficulty / entry.levelCount 
+        const displayDifficulty = timelineMode === 'average'
+          ? entry.totalDifficulty / entry.levelCount
           : entry.maxDifficulty;
         const difficultyObj = getDifficultyFromEstimate(displayDifficulty);
         // Find hardest levels for click details
         const hardestLevels = entry.allLevels
           .sort((a, b) => b.difficulty - a.difficulty)
           .slice(0, 10);
-        
+
         return {
           date: entry.date,
           avgDifficulty: displayDifficulty,
@@ -165,9 +167,10 @@ export default function ProfileInsightsLevelMastery({ user, reqUser, timeFilter 
         };
       });
   }, [difficultyData, timelineMode]);
-  
+
   const selectedMonthData = useMemo(() => {
     if (!selectedMonth) return null;
+
     return difficultyTimeline.find(entry => entry.monthKey === selectedMonth);
   }, [selectedMonth, difficultyTimeline]);
 
@@ -178,10 +181,10 @@ export default function ProfileInsightsLevelMastery({ user, reqUser, timeFilter 
     }
 
     const comparisons = difficultyData[ProStatsUserType.DifficultyLevelsComparisons] as any[];
-    
+
     // Filter levels that took longer than average and preserve original level data
     return comparisons
-      .filter(c => c.myPlayattemptsSumDuration && c.otherPlayattemptsAverageDuration && 
+      .filter(c => c.myPlayattemptsSumDuration && c.otherPlayattemptsAverageDuration &&
                   c.myPlayattemptsSumDuration > c.otherPlayattemptsAverageDuration * 1.5)
       .slice(0, 5)
       .map(c => ({
@@ -206,16 +209,16 @@ export default function ProfileInsightsLevelMastery({ user, reqUser, timeFilter 
   // Loading component
   const LoadingSpinner = () => (
     <div className='flex items-center justify-center p-8'>
-      <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400'></div>
+      <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400' />
     </div>
   );
 
   const LoadingSkeleton = ({ height = 'h-64' }: { height?: string }) => (
     <div className={`bg-gray-800 rounded-lg animate-pulse ${height}`}>
       <div className='p-4 space-y-2'>
-        <div className='h-4 bg-gray-700 rounded w-3/4'></div>
-        <div className='h-4 bg-gray-700 rounded w-1/2'></div>
-        <div className='h-4 bg-gray-700 rounded w-2/3'></div>
+        <div className='h-4 bg-gray-700 rounded w-3/4' />
+        <div className='h-4 bg-gray-700 rounded w-1/2' />
+        <div className='h-4 bg-gray-700 rounded w-2/3' />
       </div>
     </div>
   );
@@ -259,52 +262,52 @@ export default function ProfileInsightsLevelMastery({ user, reqUser, timeFilter 
           ))}
         </div>
       </div>
-
       {/* Difficulty Progression Timeline */}
       {difficultyTimeline.length > 1 && (
         <div className='flex flex-col gap-2'>
           <div className='flex items-center justify-between mb-2'>
             <h2 className='text-xl font-bold'>{timelineMode === 'average' ? 'Average' : 'Maximum'} Difficulty Over Time</h2>
-            <select 
-              value={timelineMode} 
+            <select
+              value={timelineMode}
               onChange={(e) => setTimelineMode(e.target.value as 'max' | 'average')}
               className='bg-gray-800 text-white border border-gray-600 rounded px-3 py-1 text-sm focus:outline-none focus:border-blue-400'
             >
-              <option value="average">Average Difficulty</option>
-              <option value="max">Maximum Difficulty</option>
+              <option value='average'>Average Difficulty</option>
+              <option value='max'>Maximum Difficulty</option>
             </select>
           </div>
           <p className='text-sm text-gray-400 text-center mb-4'>
-            {timelineMode === 'average' 
+            {timelineMode === 'average'
               ? 'Average difficulty of levels solved each month'
               : 'Highest difficulty level reached each month'
             }
           </p>
           <div className='w-full h-64'>
             <ResponsiveContainer width='100%' height='100%'>
-              <LineChart 
-                data={difficultyTimeline} 
+              <LineChart
+                data={difficultyTimeline}
                 margin={{ top: 10, right: 30, left: 0, bottom: 30 }}
                 onClick={(data) => {
                   if (data && data.activePayload && data.activePayload[0]) {
                     const payload = data.activePayload[0].payload;
+
                     setSelectedMonth(selectedMonth === payload.monthKey ? null : payload.monthKey);
                   }
                 }}
               >
-                <XAxis 
-                  dataKey='date' 
+                <XAxis
+                  dataKey='date'
                   tick={{ fill: '#9CA3AF' }}
                   interval='preserveStartEnd'
                 />
-                <YAxis 
+                <YAxis
                   type='number'
                   domain={['dataMin - 50', 'dataMax + 50']}
                   tick={{ fill: '#9CA3AF' }}
                   tickFormatter={(value) => getDifficultyFromEstimate(value).name}
                   label={{ value: `${timelineMode === 'average' ? 'Avg' : 'Max'} Difficulty`, angle: -90, position: 'insideLeft', style: { fill: '#9CA3AF' } }}
                 />
-                <Tooltip 
+                <Tooltip
                   contentStyle={{
                     backgroundColor: 'rgb(31, 41, 55)',
                     border: 'none',
@@ -313,6 +316,7 @@ export default function ProfileInsightsLevelMastery({ user, reqUser, timeFilter 
                   }}
                   formatter={(value: number, name: string, props: any) => {
                     const data = props.payload;
+
                     return [
                       <div key='tooltip' className='text-sm text-gray-100'>
                         <div>{timelineMode === 'average' ? 'Avg' : 'Max'} Difficulty: <span className='font-bold'>{getDifficultyFromEstimate(value).name}</span></div>
@@ -323,10 +327,10 @@ export default function ProfileInsightsLevelMastery({ user, reqUser, timeFilter 
                     ];
                   }}
                 />
-                <Line 
-                  type='monotone' 
-                  dataKey='avgDifficulty' 
-                  stroke='#3B82F6' 
+                <Line
+                  type='monotone'
+                  dataKey='avgDifficulty'
+                  stroke='#3B82F6'
                   strokeWidth={2}
                   dot={{ fill: '#3B82F6', r: 4, cursor: 'pointer' }}
                   activeDot={{ r: 6, fill: '#60A5FA', cursor: 'pointer' }}
@@ -340,7 +344,7 @@ export default function ProfileInsightsLevelMastery({ user, reqUser, timeFilter 
             <div className='mt-6 bg-gray-800 rounded-lg p-4'>
               <div className='flex items-center justify-between mb-3'>
                 <h3 className='font-bold text-lg'>Most Difficult Levels Solved in {selectedMonthData.date}</h3>
-                <button 
+                <button
                   onClick={() => setSelectedMonth(null)}
                   className='text-gray-400 hover:text-gray-200 text-xl'
                 >
@@ -348,8 +352,8 @@ export default function ProfileInsightsLevelMastery({ user, reqUser, timeFilter 
                 </button>
               </div>
               <p className='text-sm text-gray-400 mb-4'>
-                Average Difficulty: <span className='text-blue-400 font-bold'>{selectedMonthData.difficulty}</span> 
-                (Rating: {selectedMonthData.difficultyRating.toFixed(0)}) • 
+                Average Difficulty: <span className='text-blue-400 font-bold'>{selectedMonthData.difficulty}</span>
+                (Rating: {selectedMonthData.difficultyRating.toFixed(0)}) •
                 <span className='ml-2'>Levels Solved: <span className='text-green-400 font-bold'>{selectedMonthData.levelCount}</span></span>
               </p>
               <p className='text-xs text-gray-500 mb-3'>Showing the {Math.min(selectedMonthData.hardestLevels.length, 8)} hardest levels solved this month:</p>
@@ -357,7 +361,7 @@ export default function ProfileInsightsLevelMastery({ user, reqUser, timeFilter 
                 {selectedMonthData.hardestLevels.slice(0, 8).map((level, index) => (
                   <div key={index} className='bg-gray-700 rounded-lg p-3 flex items-center justify-between'>
                     <div className='flex-1'>
-                      <FormattedLevelLink 
+                      <FormattedLevelLink
                         id={`selected-month-level-${index}`}
                         level={level}
                       />
@@ -378,7 +382,6 @@ export default function ProfileInsightsLevelMastery({ user, reqUser, timeFilter 
           )}
         </div>
       )}
-
       {/* Retry Analysis */}
       {retryAnalysis.length > 0 && (
         <div className='flex flex-col gap-2'>
@@ -402,7 +405,7 @@ export default function ProfileInsightsLevelMastery({ user, reqUser, timeFilter 
                 {retryAnalysis.map((level, index) => (
                   <tr key={index} className='border-t border-gray-700'>
                     <td className='p-3'>
-                      <FormattedLevelLink 
+                      <FormattedLevelLink
                         id={`challenging-level-${index}`}
                         level={level}
                       />
@@ -430,7 +433,7 @@ export default function ProfileInsightsLevelMastery({ user, reqUser, timeFilter 
                               {level.finalTime}s ÷ {level.otherPlayattemptsAverageDuration.toFixed(1)}s = {(level.finalTime / level.otherPlayattemptsAverageDuration).toFixed(2)}x
                             </div>
                           </div>
-                          <div className='absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-700'></div>
+                          <div className='absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-700' />
                         </div>
                       </div>
                     </td>
@@ -441,7 +444,6 @@ export default function ProfileInsightsLevelMastery({ user, reqUser, timeFilter 
           </div>
         </div>
       )}
-
       {/* Personal Records */}
       <ProfileInsightsRecords user={user} />
     </div>

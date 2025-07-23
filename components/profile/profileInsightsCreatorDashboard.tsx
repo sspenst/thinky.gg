@@ -1,11 +1,11 @@
 import useProStatsUser, { ProStatsUserType } from '@root/hooks/useProStatsUser';
+import dayjs from 'dayjs';
+import { useMemo } from 'react';
+import { Area, AreaChart, Bar, BarChart, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import User from '../../models/db/user';
+import { TimeFilter } from './profileInsights';
 import ProfileInsightsLevelPlayLog from './profileInsightsLevelPlayLog';
 import ProfileInsightsMostSolves from './profileInsightsMostSolves';
-import { Area, AreaChart, Bar, BarChart, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { useMemo } from 'react';
-import dayjs from 'dayjs';
-import { TimeFilter } from './profileInsights';
 
 interface ProfileInsightsCreatorDashboardProps {
   user: User;
@@ -21,14 +21,14 @@ interface LevelPopularityData {
 
 interface LevelEngagementData {
   metric: string;
-  value: number;
+  value: number | string;
   color: string;
   description: string;
 }
 
-export default function ProfileInsightsCreatorDashboard({ user, reqUser, timeFilter }: ProfileInsightsCreatorDashboardProps) {
+export default function ProfileInsightsCreatorDashboard({ user, reqUser: _reqUser, timeFilter }: ProfileInsightsCreatorDashboardProps) {
   const { proStatsUser: playLogData, isLoading: isLoadingPlayLog } = useProStatsUser(user, ProStatsUserType.PlayLogForUserCreatedLevels, timeFilter);
-  const { proStatsUser: solvesData, isLoading: isLoadingSolves } = useProStatsUser(user, ProStatsUserType.MostSolvesForUserLevels, timeFilter);
+  const { proStatsUser: _solvesData, isLoading: isLoadingSolves } = useProStatsUser(user, ProStatsUserType.MostSolvesForUserLevels, timeFilter);
 
   // Calculate level popularity trends (simulated)
   const popularityTrends = useMemo(() => {
@@ -39,11 +39,11 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser, timeFil
     // Simulate 30-day trend data
     const data: LevelPopularityData[] = [];
     const baseActivity = 10 + Math.random() * 20;
-    
+
     for (let i = 29; i >= 0; i--) {
       const date = dayjs().subtract(i, 'days');
       const dayVariation = Math.sin(i / 7) * 5 + Math.random() * 10;
-      
+
       data.push({
         date: date.format('MMM DD'),
         plays: Math.round(baseActivity + dayVariation),
@@ -60,6 +60,7 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser, timeFil
 
     // Total plays (simulated)
     const totalPlays = Math.round(1000 + Math.random() * 5000);
+
     metrics.push({
       metric: 'Total Plays',
       value: totalPlays,
@@ -69,6 +70,7 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser, timeFil
 
     // Average completion rate (simulated)
     const completionRate = 60 + Math.random() * 30;
+
     metrics.push({
       metric: 'Completion Rate',
       value: Math.round(completionRate),
@@ -78,6 +80,7 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser, timeFil
 
     // Average difficulty rating (simulated)
     const difficultyRating = 2 + Math.random() * 3;
+
     metrics.push({
       metric: 'Avg Difficulty',
       value: difficultyRating.toFixed(1),
@@ -87,6 +90,7 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser, timeFil
 
     // Player retention (simulated)
     const retention = 40 + Math.random() * 40;
+
     metrics.push({
       metric: 'Return Rate',
       value: Math.round(retention),
@@ -120,9 +124,9 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser, timeFil
   const LoadingSkeleton = ({ height = 'h-64' }: { height?: string }) => (
     <div className={`bg-gray-800 rounded-lg animate-pulse ${height}`}>
       <div className='p-4 space-y-2'>
-        <div className='h-4 bg-gray-700 rounded w-3/4'></div>
-        <div className='h-4 bg-gray-700 rounded w-1/2'></div>
-        <div className='h-4 bg-gray-700 rounded w-2/3'></div>
+        <div className='h-4 bg-gray-700 rounded w-3/4' />
+        <div className='h-4 bg-gray-700 rounded w-1/2' />
+        <div className='h-4 bg-gray-700 rounded w-2/3' />
       </div>
     </div>
   );
@@ -134,9 +138,9 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser, timeFil
         <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
           {Array.from({ length: 3 }).map((_, i) => (
             <div key={i} className='bg-gray-800 rounded-lg p-4 animate-pulse'>
-              <div className='h-4 bg-gray-700 rounded mb-2'></div>
-              <div className='h-8 bg-gray-700 rounded mb-2'></div>
-              <div className='h-3 bg-gray-700 rounded w-2/3'></div>
+              <div className='h-4 bg-gray-700 rounded mb-2' />
+              <div className='h-8 bg-gray-700 rounded mb-2' />
+              <div className='h-3 bg-gray-700 rounded w-2/3' />
             </div>
           ))}
         </div>
@@ -158,8 +162,8 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser, timeFil
           <div key={index} className='bg-gray-800 rounded-lg p-4'>
             <h3 className='text-sm text-gray-400 mb-1'>{metric.metric}</h3>
             <p className='text-2xl font-bold' style={{ color: metric.color }}>
-              {typeof metric.value === 'number' && metric.value > 100 
-                ? metric.value.toLocaleString() 
+              {typeof metric.value === 'number' && metric.value > 100
+                ? metric.value.toLocaleString()
                 : metric.value}
               {metric.metric.includes('Rate') && '%'}
             </p>
@@ -167,7 +171,6 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser, timeFil
           </div>
         ))}
       </div>
-
       {/* Level Popularity Trends */}
       <div className='flex flex-col gap-2'>
         <h2 className='text-xl font-bold text-center'>30-Day Activity Trends</h2>
@@ -177,13 +180,13 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser, timeFil
         <div className='w-full h-64'>
           <ResponsiveContainer width='100%' height='100%'>
             <AreaChart data={popularityTrends} margin={{ top: 10, right: 30, left: 0, bottom: 30 }}>
-              <XAxis 
-                dataKey='date' 
+              <XAxis
+                dataKey='date'
                 tick={{ fill: '#9CA3AF' }}
                 interval='preserveStartEnd'
               />
               <YAxis tick={{ fill: '#9CA3AF' }} />
-              <Tooltip 
+              <Tooltip
                 contentStyle={{
                   backgroundColor: 'rgb(31, 41, 55)',
                   border: 'none',
@@ -191,21 +194,21 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser, timeFil
                   color: 'rgb(229, 231, 235)',
                 }}
               />
-              <Area 
-                type='monotone' 
-                dataKey='plays' 
+              <Area
+                type='monotone'
+                dataKey='plays'
                 stackId='1'
-                stroke='#3B82F6' 
-                fill='#3B82F6' 
+                stroke='#3B82F6'
+                fill='#3B82F6'
                 fillOpacity={0.6}
                 name='Total Plays'
               />
-              <Area 
-                type='monotone' 
-                dataKey='uniquePlayers' 
+              <Area
+                type='monotone'
+                dataKey='uniquePlayers'
                 stackId='2'
-                stroke='#10B981' 
-                fill='#10B981' 
+                stroke='#10B981'
+                fill='#10B981'
                 fillOpacity={0.6}
                 name='Unique Players'
               />
@@ -213,7 +216,6 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser, timeFil
           </ResponsiveContainer>
         </div>
       </div>
-
       {/* Top Performing Levels */}
       <div className='flex flex-col gap-2'>
         <h2 className='text-xl font-bold text-center'>Top Performing Levels</h2>
@@ -223,29 +225,35 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser, timeFil
         <div className='w-full h-64'>
           <ResponsiveContainer width='100%' height='100%'>
             <BarChart data={levelPerformance} margin={{ top: 20, right: 30, left: 40, bottom: 60 }}>
-              <XAxis 
-                dataKey='name' 
-                angle={-45} 
+              <XAxis
+                dataKey='name'
+                angle={-45}
                 textAnchor='end'
                 tick={{ fill: '#9CA3AF' }}
               />
-              <YAxis 
+              <YAxis
                 tick={{ fill: '#9CA3AF' }}
                 label={{ value: 'Play Count', angle: -90, position: 'insideLeft', style: { fill: '#9CA3AF' } }}
               />
-              <Tooltip 
+              <Tooltip
                 contentStyle={{
                   backgroundColor: 'rgb(31, 41, 55)',
                   border: 'none',
                   borderRadius: '0.5rem',
                   color: 'rgb(229, 231, 235)',
                 }}
-                formatter={(value: number, name: string, props: any) => {
+                // eslint-disable-next-line react/prop-types
+                formatter={(value: number, _name: string, props: { payload?: { rating: number; completion: number } }) => {
+                  // eslint-disable-next-line react/prop-types
                   const level = props.payload;
+                  if (!level) return [null, ''];
+
                   return [
                     <div key='tooltip' className='text-sm'>
                       <div>Plays: <span className='font-bold'>{value.toLocaleString()}</span></div>
+                      {/* eslint-disable-next-line react/prop-types */}
                       <div>Rating: <span className='font-bold'>⭐ {level.rating}</span></div>
+                      {/* eslint-disable-next-line react/prop-types */}
                       <div>Completion: <span className='font-bold'>{level.completion}%</span></div>
                     </div>,
                     ''
@@ -261,22 +269,20 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser, timeFil
           </ResponsiveContainer>
         </div>
       </div>
-
       {/* Existing Components */}
       <div className='flex flex-col md:flex-row gap-3'>
         <ProfileInsightsLevelPlayLog user={user} />
         <ProfileInsightsMostSolves user={user} />
       </div>
-
       {/* Creator Tips */}
       <div className='bg-gray-800 rounded-lg p-6'>
         <h3 className='text-lg font-bold mb-4'>Creator Insights</h3>
         <div className='grid grid-cols-1 md:grid-cols-2 gap-4 text-sm'>
           <div>
-            <h4 className='font-semibold text-blue-400 mb-2'>What's Working Well</h4>
+            <h4 className='font-semibold text-blue-400 mb-2'>What&apos;s Working Well</h4>
             <ul className='space-y-1 text-gray-300'>
-              {engagementMetrics[1].value > 70 && <li>• High completion rates show good difficulty balance</li>}
-              {engagementMetrics[3].value > 60 && <li>• Strong player retention across your levels</li>}
+              {(typeof engagementMetrics[1].value === 'number' && engagementMetrics[1].value > 70) && <li>• High completion rates show good difficulty balance</li>}
+              {(typeof engagementMetrics[3].value === 'number' && engagementMetrics[3].value > 60) && <li>• Strong player retention across your levels</li>}
               {levelPerformance[0].rating >= 4.5 && <li>• Top levels are highly rated by players</li>}
               <li>• Consistent player engagement over time</li>
             </ul>
@@ -284,8 +290,8 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser, timeFil
           <div>
             <h4 className='font-semibold text-yellow-400 mb-2'>Areas to Explore</h4>
             <ul className='space-y-1 text-gray-300'>
-              {engagementMetrics[1].value < 50 && <li>• Consider adjusting difficulty for better completion</li>}
-              {engagementMetrics[3].value < 40 && <li>• Try creating level series to improve retention</li>}
+              {(typeof engagementMetrics[1].value === 'number' && engagementMetrics[1].value < 50) && <li>• Consider adjusting difficulty for better completion</li>}
+              {(typeof engagementMetrics[3].value === 'number' && engagementMetrics[3].value < 40) && <li>• Try creating level series to improve retention</li>}
               <li>• Experiment with different puzzle mechanics</li>
               <li>• Engage with player feedback in comments</li>
             </ul>
