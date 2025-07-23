@@ -5,6 +5,7 @@ import { Bar, CartesianGrid, ComposedChart, Legend, Line, ResponsiveContainer, T
 import { DateAndSum } from '../../contexts/levelContext';
 import User from '../../models/db/user';
 import MultiSelectUser from '../page/multiSelectUser';
+import { TimeFilter } from './profileInsights';
 
 const getCumulativeScores = (scores: DateAndSum[]): DateAndSum[] => {
   let cumulativeSum = 0;
@@ -45,12 +46,12 @@ const mergeData = (data1: DateAndSum[], data2: DateAndSum[]) => {
   });
 };
 
-export default function ProfileInsightsScoreChart({ user }: { user: User }) {
+export default function ProfileInsightsScoreChart({ user, timeFilter }: { user: User; timeFilter?: TimeFilter }) {
   const [compareUser, setCompareUser] = useState<User | null>(null);
   const [enableCumulative, setEnableCumulative] = useState(false);
   const [enableDaily, setEnableDaily] = useState(true);
-  const { proStatsUser: scoreChartData } = useProStatsUser(user, ProStatsUserType.ScoreHistory);
-  const { proStatsUser: compareUserData } = useProStatsUser(compareUser, ProStatsUserType.ScoreHistory);
+  const { proStatsUser: scoreChartData } = useProStatsUser(user, ProStatsUserType.ScoreHistory, timeFilter);
+  const { proStatsUser: compareUserData } = useProStatsUser(compareUser, ProStatsUserType.ScoreHistory, timeFilter);
   const compareData = compareUserData?.[ProStatsUserType.ScoreHistory];
 
   const scores = scoreChartData?.[ProStatsUserType.ScoreHistory] as DateAndSum[] || [];

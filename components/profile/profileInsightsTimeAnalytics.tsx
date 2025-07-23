@@ -4,7 +4,7 @@ import useProStatsUser, { ProStatsUserType } from '@root/hooks/useProStatsUser';
 import dayjs from 'dayjs';
 import { Moon, Star, Sun, Sunrise, Sunset } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
-import { Area, AreaChart, Bar, BarChart, Cell, ComposedChart, Line, LineChart, Pie, PieChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { Area, AreaChart, Bar, BarChart, Cell, ComposedChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import User from '../../models/db/user';
 import { difficultyList, getDifficultyFromEstimate } from '../formatted/formattedDifficulty';
 import { TimeFilter } from './profileInsights';
@@ -15,12 +15,6 @@ interface ProfileInsightsTimeAnalyticsProps {
   timeFilter: TimeFilter;
 }
 
-interface HeatmapData {
-  day: string;
-  hour: number;
-  count: number;
-  avgTime: number;
-}
 
 interface TimeInvestmentData {
   difficulty: string;
@@ -81,7 +75,6 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
   const { proStatsUser: scoreHistory, isLoading: isLoadingScoreHistory } = useProStatsUser(user, ProStatsUserType.ScoreHistory, timeFilter);
   const { proStatsUser: difficultyData, isLoading: isLoadingDifficulty } = useProStatsUser(user, ProStatsUserType.DifficultyLevelsComparisons, timeFilter);
 
-  const [scaleType, setScaleType] = useState<'linear' | 'log'>('log');
 
   // Calculate activity heatmap data
   const activityHeatmap = useMemo(() => {
@@ -136,7 +129,11 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
       return [];
     }
 
-    const comparisons = difficultyData[ProStatsUserType.DifficultyLevelsComparisons] as any[];
+    const comparisons = difficultyData[ProStatsUserType.DifficultyLevelsComparisons] as Array<{
+      difficulty: number;
+      myPlayattemptsSumDuration: number;
+      otherPlayattemptsAverageDuration?: number;
+    }>;
     const difficultyGroups = new Map<string, {
       totalTime: number,
       count: number,
@@ -248,39 +245,6 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
       .map(d => d.day);
   }, [activityHeatmap]);
 
-  // Monthly activity trend
-  const monthlyTrend = useMemo(() => {
-    if (!scoreHistory || !scoreHistory[ProStatsUserType.ScoreHistory]) {
-      return [];
-    }
-
-    const history = scoreHistory[ProStatsUserType.ScoreHistory] as DateAndSum[];
-
-    if (!history || history.length === 0) {
-      return [];
-    }
-
-    // Sort by date and take last 30 entries
-    const sortedHistory = history
-      .map(entry => ({
-        ...entry,
-        parsedDate: dayjs(entry.date)
-      }))
-      .sort((a, b) => a.parsedDate.unix() - b.parsedDate.unix())
-      .slice(-30);
-
-    let cumulativeSum = 0;
-
-    return sortedHistory.map(entry => {
-      cumulativeSum += entry.sum;
-
-      return {
-        date: entry.parsedDate.format('MMM DD'),
-        solves: entry.sum,
-        cumulative: cumulativeSum,
-      };
-    });
-  }, [scoreHistory]);
 
   // Time-of-day performance analysis with hourly data for clock visualization
   const timeOfDayPerformance = useMemo(() => {
@@ -288,7 +252,11 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
       return null;
     }
 
-    const comparisons = difficultyData[ProStatsUserType.DifficultyLevelsComparisons] as any[];
+    const comparisons = difficultyData[ProStatsUserType.DifficultyLevelsComparisons] as Array<{
+      ts: number;
+      myPlayattemptsSumDuration: number;
+      otherPlayattemptsAverageDuration: number;
+    }>;
     const validComparisons = comparisons.filter(c =>
       c.myPlayattemptsSumDuration && c.otherPlayattemptsAverageDuration && c.ts
     );
@@ -324,14 +292,14 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
     const clockData: { 
       period: string; 
       sublabel: string; 
-      periodNum: number; 
-      icon: any; 
-      performance: number; 
-      relativePerformance: number; 
-      levelCount: number; 
-      color: string; 
-      hasData: boolean; 
-      fullMark: number; 
+      periodNum: number;
+      icon: React.ComponentType<{ size?: number }>;
+      performance: number;
+      relativePerformance: number;
+      levelCount: number;
+      color: string;
+      hasData: boolean;
+      fullMark: number;
     }[] = [];
     let bestPeriod = -1;
     let bestPerformance = -Infinity;
@@ -418,8 +386,6 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
     };
   }, [difficultyData]);
 
-  const isOwnProfile = reqUser?._id === user._id;
-  const isAdmin = reqUser?.roles?.includes(Role.ADMIN);
   const isLoading = isLoadingScoreHistory || isLoadingDifficulty;
 
   // Loading components
@@ -495,7 +461,7 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
                   borderRadius: '0.5rem',
                   color: 'rgb(229, 231, 235)',
                 }}
-                content={({ active, payload, label }) => {
+                content={({ active, payload }) => {
                   if (active && payload && payload.length > 0) {
                     const data = payload[0].payload;
 
@@ -612,11 +578,6 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
                 const normalizedPerf = Math.max(-50, Math.min(50, relPerf));
                 const gaugeValue = 50 + normalizedPerf; // Convert to 0-100 scale
 
-                // Create pie chart data for the gauge
-                const gaugeData = [
-                  { name: 'performance', value: gaugeValue, fill: period.hasData ? period.color : '#374151' },
-                  { name: 'remaining', value: 100 - gaugeValue, fill: 'transparent' }
-                ];
 
                 // Needle angle calculation: 0% performance = 90° (pointing up/north)
                 // Left side (180°) = worst performance (-50%), Right side (0°) = best performance (+50%)
@@ -637,33 +598,38 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
                       
                       {/* Gauge Chart */}
                       <div className='relative h-32 w-full flex-1 -mt-1'>
-                        <ResponsiveContainer width='100%' height='100%'>
-                          <PieChart>
-                            <defs>
-                              <linearGradient id={`gradient-${index}`} x1='0' y1='0' x2='1' y2='0'>
-                                <stop offset='0%' stopColor='#DC2626' />
-                                <stop offset='25%' stopColor='#F97316' />
-                                <stop offset='50%' stopColor='#F59E0B' />
-                                <stop offset='75%' stopColor='#84CC16' />
-                                <stop offset='100%' stopColor='#10B981' />
-                              </linearGradient>
-                            </defs>
-                            
-                            {/* Background semicircle */}
-                            <Pie
-                              data={[{ value: 100, name: 'gauge' }]}
-                              dataKey='value'
-                              startAngle={180}
-                              endAngle={0}
-                              cx='50%'
-                              cy='70%'
-                              innerRadius='25%'
-                              outerRadius='85%'
-                              fill={period.hasData ? `url(#gradient-${index})` : '#374151'}
-                              stroke='none'
-                            />
-                          </PieChart>
-                        </ResponsiveContainer>
+                        <svg
+                          className='w-full h-full'
+                          viewBox='0 0 100 100'
+                          preserveAspectRatio='xMidYMid meet'
+                        >
+                          <defs>
+                            <linearGradient id={`gradient-${index}`} x1='0' y1='0' x2='1' y2='0'>
+                              <stop offset='0%' stopColor='#DC2626' />
+                              <stop offset='25%' stopColor='#F97316' />
+                              <stop offset='50%' stopColor='#F59E0B' />
+                              <stop offset='75%' stopColor='#84CC16' />
+                              <stop offset='100%' stopColor='#10B981' />
+                            </linearGradient>
+                          </defs>
+                          
+                          {/* Background semicircle arc */}
+                          <path
+                            d='M 15 70 A 35 35 0 0 1 85 70'
+                            fill='none'
+                            stroke={period.hasData ? `url(#gradient-${index})` : '#374151'}
+                            strokeWidth='8'
+                            strokeLinecap='round'
+                          />
+                          
+                          {/* Inner arc for depth */}
+                          <path
+                            d='M 20 70 A 30 30 0 0 1 80 70'
+                            fill='none'
+                            stroke='rgba(0, 0, 0, 0.3)'
+                            strokeWidth='2'
+                          />
+                        </svg>
                         
                         {/* Needle overlay - positioned absolutely */}
                         {period.hasData && (
@@ -809,23 +775,43 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
                 label={{ value: 'Avg Levels/Day', angle: -90, position: 'insideLeft', style: { fill: '#9CA3AF' } }}
               />
               <Tooltip
-                contentStyle={{
-                  backgroundColor: 'rgb(31, 41, 55)',
-                  border: 'none',
-                  borderRadius: '0.5rem',
-                  color: 'rgb(229, 231, 235)',
-                }}
-                formatter={(value: number, name: string, props: any) => {
-                  const data = props.payload;
-
-                  return [
-                    <div key='tooltip' className='text-sm text-gray-100'>
-                      <div>Avg levels per day: <span className='font-bold'>{value.toFixed(1)}</span></div>
-                      <div>Total levels solved: <span className='font-bold'>{data.totalSolves}</span></div>
-                      <div>Days active: <span className='font-bold'>{data.daysActive}</span></div>
-                    </div>,
-                    ''
-                  ];
+                content={({ active, payload, label }) => {
+                  if (active && payload && payload.length > 0 && payload[0].payload) {
+                    const data = payload[0].payload;
+                    const value = payload[0].value as number;
+                    
+                    return (
+                      <div className='bg-gray-800 p-4 rounded-xl shadow-lg border border-gray-600'>
+                        <div className='text-center mb-3'>
+                          <h4 className='font-bold text-blue-400 text-lg'>{label}</h4>
+                          <div className='w-8 h-0.5 bg-blue-400 mx-auto mt-1'></div>
+                        </div>
+                        <div className='space-y-2 text-sm'>
+                          <div className='flex items-center justify-between gap-4'>
+                            <span className='text-gray-300'>Average per day:</span>
+                            <span className='font-bold text-white text-lg'>{value.toFixed(1)} levels</span>
+                          </div>
+                          <div className='flex items-center justify-between gap-4'>
+                            <span className='text-gray-300'>Total solved:</span>
+                            <span className='font-semibold text-blue-300'>{data.totalSolves} levels</span>
+                          </div>
+                          <div className='flex items-center justify-between gap-4'>
+                            <span className='text-gray-300'>Active days:</span>
+                            <span className='font-semibold text-green-300'>{data.daysActive} days</span>
+                          </div>
+                          {data.daysActive > 0 && (
+                            <div className='pt-2 mt-2 border-t border-gray-600'>
+                              <div className='text-xs text-gray-400 text-center'>
+                                {data.daysActive === 1 ? 'Single active day' : 
+                                 `Averaged across ${data.daysActive} active days`}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  }
+                  return null;
                 }}
               />
               <Bar dataKey='avgSolves' fill='#3B82F6' radius={[8, 8, 0, 0]} />
@@ -833,39 +819,6 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
           </ResponsiveContainer>
         </div>
       </div>
-      {/* Monthly Activity Trend */}
-      {monthlyTrend.length > 0 && (
-        <div className='flex flex-col gap-2'>
-          <h2 className='text-xl font-bold text-center'>30-Day Activity Trend</h2>
-          <div className='w-full h-64'>
-            <ResponsiveContainer width='100%' height='100%'>
-              <AreaChart data={monthlyTrend} margin={{ top: 10, right: 30, left: 0, bottom: 30 }}>
-                <XAxis
-                  dataKey='date'
-                  tick={{ fill: '#9CA3AF' }}
-                  interval='preserveStartEnd'
-                />
-                <YAxis tick={{ fill: '#9CA3AF' }} />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: 'rgb(31, 41, 55)',
-                    border: 'none',
-                    borderRadius: '0.5rem',
-                    color: 'rgb(229, 231, 235)',
-                  }}
-                />
-                <Area
-                  type='monotone'
-                  dataKey='solves'
-                  stroke='#3B82F6'
-                  fill='#3B82F6'
-                  fillOpacity={0.6}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-      )}
       {/* Time Analytics Summary */}
       <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
         <div className='bg-gray-800 rounded-lg p-4'>

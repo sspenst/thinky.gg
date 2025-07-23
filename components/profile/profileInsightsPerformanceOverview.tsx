@@ -236,7 +236,7 @@ export default function ProfileInsightsPerformanceOverview({ user, reqUser, time
         ))}
       </div>
       {/* Score History Chart */}
-      <ProfileInsightsScoreChart user={user} />
+      <ProfileInsightsScoreChart user={user} timeFilter={timeFilter} />
       {/* Skill Radar Chart */}
       {skillRadarData.length > 0 && (
         <div className='flex flex-col gap-2'>
