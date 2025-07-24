@@ -398,6 +398,19 @@ export default function ProfileInsightsPerformanceOverview({ user, reqUser, time
     </div>
   );
 
+  // Access control - only show Score Chart and Records for non-own profiles
+  const canViewFullOverview = (reqUser?._id === user._id) || (reqUser?.roles?.includes(Role.ADMIN));
+
+  // For non-own profiles, only show Score Chart and Records
+  if (!canViewFullOverview) {
+    return (
+      <div className='flex flex-col gap-6 w-full'>
+        <ProfileInsightsScoreChart user={user} timeFilter={timeFilter} />
+        <ProfileInsightsRecords user={user} />
+      </div>
+    );
+  }
+
   if (isLoading) {
     return (
       <div className='flex flex-col gap-6 w-full'>

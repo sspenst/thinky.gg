@@ -1,3 +1,4 @@
+import Role from '@root/constants/role';
 import useProStatsUser, { ProStatsUserType } from '@root/hooks/useProStatsUser';
 import dayjs from 'dayjs';
 import timezone from 'dayjs/plugin/timezone';
@@ -33,7 +34,7 @@ interface LevelEngagementData {
   description: string;
 }
 
-export default function ProfileInsightsCreatorDashboard({ user, reqUser: _reqUser, timeFilter }: ProfileInsightsCreatorDashboardProps) {
+export default function ProfileInsightsCreatorDashboard({ user, reqUser, timeFilter }: ProfileInsightsCreatorDashboardProps) {
   const { proStatsUser: playLogData, isLoading: isLoadingPlayLog } = useProStatsUser(user, ProStatsUserType.PlayLogForUserCreatedLevels, timeFilter);
   const { proStatsUser: followerData, isLoading: isLoadingFollowers } = useProStatsUser(user, ProStatsUserType.FollowerActivityPatterns, timeFilter);
 
@@ -299,6 +300,19 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser: _reqUse
       missingDifficulties: missingDifficulties.map(d => d.name)
     };
   }, [playLogData, user.name]);
+
+  // Access control - only show for own profile or admin
+  const isAdmin = reqUser?.roles?.includes(Role.ADMIN);
+  const isOwnProfile = reqUser?._id === user._id;
+  const canViewCreatorDashboard = isOwnProfile || isAdmin;
+
+  if (!canViewCreatorDashboard) {
+    return (
+      <div className='text-center text-lg text-gray-400'>
+        <p>Creator dashboard data is only available for your own profile.</p>
+      </div>
+    );
+  }
 
   const isLoading = isLoadingPlayLog || isLoadingFollowers;
 

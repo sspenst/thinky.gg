@@ -365,6 +365,17 @@ export default function ProfileInsightsPeerComparisons({ user, reqUser, timeFilt
     </div>
   );
 
+  // Access control - only show for own profile or admin (use existing variables)
+  const canViewPeerComparisons = (reqUser?._id === user._id) || (reqUser?.roles?.includes(Role.ADMIN));
+
+  if (!canViewPeerComparisons) {
+    return (
+      <div className='text-center text-lg text-gray-400'>
+        <p>Peer comparison data is only available for your own profile.</p>
+      </div>
+    );
+  }
+
   if (isLoading) {
     return (
       <div className='flex flex-col gap-6 w-full'>

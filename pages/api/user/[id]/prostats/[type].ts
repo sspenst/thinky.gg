@@ -924,14 +924,24 @@ export default withAuth({
   const { id: userId, type, timeFilter } = req.query as { id: string, type: string, timeFilter?: string };
   let scoreHistory, difficultyLevelsComparisons, mostSolvesForUserLevels, playLogForUserCreatedLevels, records, followerActivityPatterns;
 
-  if (type === ProStatsUserType.DifficultyLevelsComparisons) {
-    // Allow access if user is viewing their own data OR if they're an admin
+  // Define which endpoints require own profile or admin access
+  const restrictedEndpoints = [
+    ProStatsUserType.DifficultyLevelsComparisons,
+    ProStatsUserType.MostSolvesForUserLevels,
+    ProStatsUserType.PlayLogForUserCreatedLevels,
+    ProStatsUserType.FollowerActivityPatterns,
+  ];
+
+  // Check access for restricted endpoints
+  if (restrictedEndpoints.includes(type as ProStatsUserType)) {
     if (userId !== req.user._id.toString() && !isAdmin) {
       return res.status(401).json({
         error: 'Not authorized',
       });
     }
+  }
 
+  if (type === ProStatsUserType.DifficultyLevelsComparisons) {
     difficultyLevelsComparisons = await getDifficultyDataComparisons(req.gameId, userId, timeFilter);
   } else if (type === ProStatsUserType.ScoreHistory) {
     scoreHistory = await getScoreHistory(req.gameId, userId, timeFilter);

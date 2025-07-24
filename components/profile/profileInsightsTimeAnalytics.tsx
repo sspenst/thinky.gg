@@ -1,4 +1,5 @@
 import { DateAndSum } from '@root/contexts/levelContext';
+import Role from '@root/constants/role';
 import useProStatsUser, { ProStatsUserType } from '@root/hooks/useProStatsUser';
 import dayjs from 'dayjs';
 import timezone from 'dayjs/plugin/timezone';
@@ -406,6 +407,19 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
       </div>
     </div>
   );
+
+  // Access control - only show for own profile or admin
+  const isAdmin = reqUser?.roles?.includes(Role.ADMIN);
+  const isOwnProfile = reqUser?._id === user._id;
+  const canViewTimeAnalytics = isOwnProfile || isAdmin;
+
+  if (!canViewTimeAnalytics) {
+    return (
+      <div className='text-center text-lg text-gray-400'>
+        <p>Time analytics data is only available for your own profile.</p>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
