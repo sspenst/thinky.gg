@@ -169,26 +169,11 @@ describe('api/user/[id]/prostats/[type]', () => {
       }
     });
   });
-  test('should be able to get Records with Pro and verify record data structure', async () => {
+  test('should be able to get Records with Pro', async () => {
     await UserModel.findByIdAndUpdate(TestId.USER_B, {
       $addToSet: {
         roles: Role.PRO
       }
-    });
-
-    // Create additional test stats to ensure we have record data
-    const recordTime = Math.floor(Date.now() / 1000);
-    await StatModel.create({
-      userId: TestId.USER_B,
-      levelId: TestId.LEVEL_3,
-      complete: true,
-      moves: 8, // This should be a record if it's the best score
-      attempts: 1,
-      ts: recordTime,
-      gameId: GameId.THINKY,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      isDeleted: false
     });
 
     await query({
@@ -196,27 +181,12 @@ describe('api/user/[id]/prostats/[type]', () => {
       type: ProStatsUserType.Records,
       expectedStatus: 200,
       additionalAssertions: async response => {
+        expect(response[ProStatsUserType.ScoreHistory]).toBeUndefined();
+        expect(response[ProStatsUserType.MostSolvesForUserLevels]).toBeUndefined();
+        expect(response[ProStatsUserType.DifficultyLevelsComparisons]).toBeUndefined();
+        expect(response[ProStatsUserType.PlayLogForUserCreatedLevels]).toBeUndefined();
         expect(response[ProStatsUserType.Records]).toBeDefined();
-        const records = response[ProStatsUserType.Records];
-        expect(Array.isArray(records)).toBe(true);
-        
-        // Verify record structure if any records exist
-        if (records.length > 0) {
-          const record = records[0];
-          expect(record).toHaveProperty('_id');
-          expect(record).toHaveProperty('name');
-          expect(record).toHaveProperty('ts'); // Level creation timestamp
-          expect(record).toHaveProperty('records');
-          expect(Array.isArray(record.records)).toBe(true);
-          
-          if (record.records.length > 0) {
-            const recordData = record.records[0];
-            expect(recordData).toHaveProperty('moves');
-            expect(recordData).toHaveProperty('ts'); // Record achievement timestamp
-            expect(typeof recordData.moves).toBe('number');
-            expect(typeof recordData.ts).toBe('number');
-          }
-        }
+        expect(response[ProStatsUserType.Records].length).toBe(1);
       }
     });
   });
