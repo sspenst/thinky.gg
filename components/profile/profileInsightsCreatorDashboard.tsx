@@ -1,11 +1,18 @@
 import useProStatsUser, { ProStatsUserType } from '@root/hooks/useProStatsUser';
 import dayjs from 'dayjs';
+import timezone from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
 import { useMemo } from 'react';
 import { Area, AreaChart, Bar, BarChart, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import TileType from '../../constants/tileType';
 import User from '../../models/db/user';
+import { difficultyList, getDifficultyFromEstimate } from '../formatted/formattedDifficulty';
 import { TimeFilter } from './profileInsights';
 import ProfileInsightsLevelPlayLog from './profileInsightsLevelPlayLog';
 import ProfileInsightsMostSolves from './profileInsightsMostSolves';
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 interface ProfileInsightsCreatorDashboardProps {
   user: User;
@@ -28,75 +35,53 @@ interface LevelEngagementData {
 
 export default function ProfileInsightsCreatorDashboard({ user, reqUser: _reqUser, timeFilter }: ProfileInsightsCreatorDashboardProps) {
   const { proStatsUser: playLogData, isLoading: isLoadingPlayLog } = useProStatsUser(user, ProStatsUserType.PlayLogForUserCreatedLevels, timeFilter);
-  const { proStatsUser: solvesData, isLoading: isLoadingSolves } = useProStatsUser(user, ProStatsUserType.MostSolvesForUserLevels, timeFilter);
   const { proStatsUser: followerData, isLoading: isLoadingFollowers } = useProStatsUser(user, ProStatsUserType.FollowerActivityPatterns, timeFilter);
 
-  // Calculate level popularity trends based on real data
+  // Get user's timezone
+  const userTimezone = useMemo(() => {
+    const tz = dayjs.tz.guess();
+    const abbreviation = dayjs().tz(tz).format('zzz');
+
+    return abbreviation;
+  }, []);
+
+  // Get pre-aggregated popularity trends from API
   const { popularityTrends, trendPeriodLabel } = useMemo(() => {
     if (!playLogData || !playLogData[ProStatsUserType.PlayLogForUserCreatedLevels]) {
       return { popularityTrends: [], trendPeriodLabel: 'Activity Trends' };
     }
 
     const trendData = playLogData[ProStatsUserType.PlayLogForUserCreatedLevels];
-    const playLog = trendData.playLog as Array<{
-      statTs: number;
-      user: { _id: string } | null;
-      levelId: any;
-    }>;
+    const apiTrends = trendData.popularityTrends || [];
 
-    // Determine grouping and label based on time filter
+    // Determine label based on time filter
     let label: string;
     let dateFormat: string;
-    let groupBy: 'day' | 'week';
 
     switch (timeFilter) {
     case '7d':
       label = '7-Day Activity Trends';
       dateFormat = 'ddd'; // Mon, Tue, Wed
-      groupBy = 'day';
       break;
     case '30d':
       label = '30-Day Activity Trends';
       dateFormat = 'MMM DD';
-      groupBy = 'day';
       break;
     case '1y':
       label = 'Weekly Activity Trends (Past Year)';
       dateFormat = 'MMM DD';
-      groupBy = 'week';
       break;
     default:
       label = 'Recent Activity Trends';
       dateFormat = 'MMM DD';
-      groupBy = 'day';
     }
 
-    // Group play log data by time period (note: this counts solves, not total attempts)
-    const grouped: { [key: string]: { plays: number; uniqueUsers: Set<string> } } = {};
-
-    playLog.forEach(entry => {
-      const date = dayjs(entry.statTs * 1000);
-      const key = groupBy === 'week'
-        ? date.startOf('week').format(dateFormat)
-        : date.format(dateFormat);
-
-      if (!grouped[key]) {
-        grouped[key] = { plays: 0, uniqueUsers: new Set() };
-      }
-
-      grouped[key].plays++;
-
-      if (entry.user?._id) {
-        grouped[key].uniqueUsers.add(entry.user._id);
-      }
-    });
-
-    // Convert to array format for chart
-    const data: LevelPopularityData[] = Object.entries(grouped)
-      .map(([date, stats]) => ({
-        date,
-        plays: stats.plays,
-        uniquePlayers: stats.uniqueUsers.size,
+    // Convert API data to chart format
+    const data: LevelPopularityData[] = apiTrends
+      .map(trend => ({
+        date: dayjs(trend.date).format(dateFormat),
+        plays: trend.totalSolves,
+        uniquePlayers: trend.uniquePlayers,
       }))
       .sort((a, b) => {
         // Sort chronologically
@@ -109,25 +94,16 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser: _reqUse
     return { popularityTrends: data, trendPeriodLabel: label };
   }, [playLogData, timeFilter]);
 
-  // Calculate real engagement metrics from data
+  // Get pre-aggregated engagement metrics from API
   const engagementMetrics = useMemo(() => {
     const metrics: LevelEngagementData[] = [];
 
     const metricsData = playLogData?.[ProStatsUserType.PlayLogForUserCreatedLevels];
-    const playLog = metricsData?.playLog as Array<{
-      statTs: number;
-      user: { _id: string } | null;
-      levelId: any;
-    }> || [];
-    const creatorLevels = metricsData?.creatorLevels || [];
+    const engagementData = metricsData?.engagementMetrics;
+    const topSolverData = metricsData?.topSolver;
 
-    const solvesDataArray = solvesData?.[ProStatsUserType.MostSolvesForUserLevels] as Array<{
-      sum: number;
-      user: any;
-    }> || [];
-
-    // Total solves from play log
-    const totalSolves = playLog.length;
+    // Total solves from pre-aggregated data
+    const totalSolves = engagementData?.totalSolves || 0;
 
     metrics.push({
       metric: 'Total Solves',
@@ -136,63 +112,195 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser: _reqUse
       description: 'Across all your levels',
     });
 
-    // Unique players count
-    const uniquePlayerIds = new Set(
-      playLog
-        .map(p => p.user?._id)
-        .filter(Boolean)
-    );
+    // Unique players count from pre-aggregated data
+    const uniquePlayersCount = engagementData?.uniquePlayersCount || 0;
 
     metrics.push({
       metric: 'Unique Players',
-      value: uniquePlayerIds.size,
+      value: uniquePlayersCount,
       color: '#10B981',
       description: 'Different players who solved your levels',
     });
 
-    // Most active solver
-    const topSolver = solvesDataArray[0];
-
+    // Top solver from pre-aggregated data
     metrics.push({
       metric: 'Top Solver',
-      value: topSolver ? `${topSolver.sum} levels` : '0 levels',
+      value: topSolverData ? `${topSolverData.solveCount} levels` : '0 levels',
       color: '#8B5CF6',
       description: 'Most levels solved by one player',
     });
 
     return metrics;
-  }, [playLogData, solvesData]);
+  }, [playLogData]);
 
-  // Level performance breakdown using schema data
+  // Get pre-aggregated level performance data from API
   const levelPerformance = useMemo(() => {
     if (!playLogData || !playLogData[ProStatsUserType.PlayLogForUserCreatedLevels]) {
       return [];
     }
 
     const performanceData = playLogData[ProStatsUserType.PlayLogForUserCreatedLevels];
-    const creatorLevels = performanceData.creatorLevels || [];
-
-    // Use the schema data directly instead of complex calculations
-    const levels = creatorLevels
-      .map(level => ({
-        name: level.name,
-        slug: level.slug,
-        plays: level.calc_stats_completed_count,
-        uniquePlayers: level.calc_playattempts_unique_users?.length || 0,
-      }))
-      .filter(level => level.plays > 0) // Only show levels with solves
-      .sort((a, b) => b.plays - a.plays)
-      .slice(0, 5); // Top 5 levels
+    const apiLevelPerformance = performanceData.levelPerformance || [];
 
     const colors = ['#3B82F6', '#10B981', '#8B5CF6', '#F59E0B', '#EF4444'];
 
-    return levels.map((level, index) => ({
-      ...level,
-      color: colors[index] || '#6B7280',
-    }));
+    return apiLevelPerformance
+      .slice(0, 5) // Top 5 levels
+      .map((level, index) => ({
+        name: level.name,
+        slug: level.slug,
+        plays: level.solveCount,
+        uniquePlayers: level.uniquePlayers,
+        color: colors[index] || '#6B7280',
+      }));
   }, [playLogData]);
 
-  const isLoading = isLoadingPlayLog || isLoadingSolves || isLoadingFollowers;
+  // Analyze tile types used in creator's levels to suggest unused mechanics
+  const mechanicSuggestions = useMemo(() => {
+    if (!playLogData || !playLogData[ProStatsUserType.PlayLogForUserCreatedLevels]) {
+      return { suggestions: [], analysis: { used: [], unused: [], totalCategories: 0 } };
+    }
+
+    const performanceData = playLogData[ProStatsUserType.PlayLogForUserCreatedLevels];
+    const creatorLevels = performanceData.creatorLevels || [];
+
+    // Collect all tile types used across all levels
+    const usedTileTypes = new Set<string>();
+
+    creatorLevels.forEach(level => {
+      if (level.data) {
+        // Parse the level data to extract tile types
+        const levelData = level.data;
+
+        // Check for each tile type character in the level data
+        Object.values(TileType).forEach(tileType => {
+          if (levelData.includes(tileType)) {
+            usedTileTypes.add(tileType);
+          }
+        });
+      }
+    });
+
+    // Define interesting mechanics to suggest
+    const mechanicCategories = [
+      {
+        name: 'Holes',
+        tiles: [TileType.Hole], // '5'
+        tileNames: ['Hole tiles']
+      },
+      {
+        name: 'Directional Movement',
+        tiles: [TileType.Left, TileType.Up, TileType.Right, TileType.Down], // '6', '7', '8', '9'
+        tileNames: ['Left', 'Up', 'Right', 'Down']
+      },
+      {
+        name: 'Diagonal Movement',
+        tiles: [TileType.UpLeft, TileType.UpRight, TileType.DownLeft, TileType.DownRight], // 'A', 'B', 'D', 'C'
+        tileNames: ['UpLeft', 'UpRight', 'DownLeft', 'DownRight']
+      },
+      {
+        name: 'Restricted Movement',
+        tiles: [TileType.NotLeft, TileType.NotUp, TileType.NotRight, TileType.NotDown], // 'E', 'F', 'G', 'H'
+        tileNames: ['NotLeft', 'NotUp', 'NotRight', 'NotDown']
+      },
+      {
+        name: 'Bidirectional Movement',
+        tiles: [TileType.LeftRight, TileType.UpDown], // 'I', 'J'
+        tileNames: ['LeftRight', 'UpDown']
+      }
+    ];
+
+    // Find used and unused mechanics
+    const usedCategories = mechanicCategories.filter(category => {
+      return category.tiles.some(tile => usedTileTypes.has(tile));
+    });
+
+    const unusedCategories = mechanicCategories.filter(category => {
+      return !category.tiles.some(tile => usedTileTypes.has(tile));
+    });
+
+    return {
+      suggestions: unusedCategories.slice(0, 3), // Limit to top 3 suggestions
+      analysis: {
+        used: usedCategories.map(c => c.name),
+        unused: unusedCategories.map(c => c.name),
+        totalCategories: mechanicCategories.length
+      }
+    };
+  }, [playLogData]);
+
+  // Analyze difficulty range of creator's levels
+  const difficultyAnalysis = useMemo(() => {
+    if (!playLogData || !playLogData[ProStatsUserType.PlayLogForUserCreatedLevels]) {
+      return { suggestions: [], totalLevels: 0, coveredDifficulties: [], missingDifficulties: [] };
+    }
+
+    const performanceData = playLogData[ProStatsUserType.PlayLogForUserCreatedLevels];
+    const creatorLevels = performanceData.creatorLevels || [];
+    const totalLevels = creatorLevels.length;
+
+    // Track which difficulty levels the creator has made levels for
+    const coveredDifficulties = new Set<string>();
+
+    creatorLevels.forEach(level => {
+      if (level.calc_difficulty_estimate && level.calc_difficulty_estimate > 0) {
+        const difficulty = getDifficultyFromEstimate(level.calc_difficulty_estimate);
+
+        if (difficulty.name !== 'Pending') {
+          coveredDifficulties.add(difficulty.name);
+        }
+      }
+    });
+
+    // Find missing difficulty levels (excluding Pending)
+    const allDifficulties = difficultyList.filter(d => d.name !== 'Pending');
+    const missingDifficulties = allDifficulties.filter(d => !coveredDifficulties.has(d.name));
+
+    // Generate suggestions
+    const suggestions = [];
+
+    if (totalLevels < 5) {
+      suggestions.push({
+        category: 'Level Creation',
+        suggestion: 'Create more levels to build your portfolio',
+        reason: `Only ${totalLevels} published levels`
+      });
+    }
+
+    // Suggest trying different difficulty levels
+    if (missingDifficulties.length > 0) {
+      // Prioritize suggesting easier difficulties if they only have hard ones, and vice versa
+      const easierDifficulties = missingDifficulties.filter(d => d.value <= 600); // Up to Bachelors
+      const harderDifficulties = missingDifficulties.filter(d => d.value > 600); // Masters and above
+
+      if (easierDifficulties.length > 0 && coveredDifficulties.size > 0) {
+        const suggestionList = easierDifficulties.slice(0, 3).map(d => `${d.emoji} ${d.name}`).join(', ');
+
+        suggestions.push({
+          category: 'Difficulty Exploration',
+          suggestion: `Try creating levels for these difficulty ranges: ${suggestionList}`,
+          reason: `${user.name} has only made levels for ${coveredDifficulties.size}/${allDifficulties.length} difficulty levels`
+        });
+      } else if (harderDifficulties.length > 0 && coveredDifficulties.size > 0) {
+        const suggestionList = harderDifficulties.slice(0, 3).map(d => `${d.emoji} ${d.name}`).join(', ');
+
+        suggestions.push({
+          category: 'Challenge Creation',
+          suggestion: `Try creating harder levels: ${suggestionList}`,
+          reason: `${user.name} has only made levels for ${coveredDifficulties.size}/${allDifficulties.length} difficulty levels`
+        });
+      }
+    }
+
+    return {
+      suggestions,
+      totalLevels,
+      coveredDifficulties: Array.from(coveredDifficulties),
+      missingDifficulties: missingDifficulties.map(d => d.name)
+    };
+  }, [playLogData, user.name]);
+
+  const isLoading = isLoadingPlayLog || isLoadingFollowers;
 
   // Loading components
   const LoadingSkeleton = ({ height = 'h-64' }: { height?: string }) => (
@@ -340,11 +448,11 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser: _reqUse
                         </div>
                         <div className='space-y-2 text-sm'>
                           <div className='flex items-center justify-between gap-4'>
-                            <span className='text-gray-300'>Completed:</span>
+                            <span className='text-gray-300'>Solves (filtered):</span>
                             <span className='font-bold text-white text-lg'>{completedCount.toLocaleString()}</span>
                           </div>
                           <div className='flex items-center justify-between gap-4'>
-                            <span className='text-gray-300'>Solved:</span>
+                            <span className='text-gray-300'>Total solves:</span>
                             <span className='font-bold text-green-300 text-lg'>{solvedCount.toLocaleString()}</span>
                           </div>
                           <div className='flex items-center justify-between gap-4'>
@@ -375,151 +483,353 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser: _reqUse
           <ProfileInsightsMostSolves user={user} timeFilter={timeFilter} />
         </div>
       </div>
-
       {/* Follower Activity Analysis */}
-      {followerData && followerData[ProStatsUserType.FollowerActivityPatterns] && followerData[ProStatsUserType.FollowerActivityPatterns].followerCount >= 5 && (
-        <div className='flex flex-col gap-2'>
-          <h2 className='text-xl font-bold text-center'>Best Time to Publish</h2>
-          <p className='text-sm text-gray-400 text-center mb-4'>
-            Optimal timing based on when your {followerData[ProStatsUserType.FollowerActivityPatterns].activeFollowerCount} active followers are most engaged
-            <span className='block text-xs text-gray-500 mt-1'>
+      {followerData && followerData[ProStatsUserType.FollowerActivityPatterns] && followerData[ProStatsUserType.FollowerActivityPatterns].followerCount >= 5 && <div className='flex flex-col gap-2'>
+        <h2 className='text-xl font-bold text-center'>Best Time to Publish</h2>
+        <p className='text-sm text-gray-400 text-center mb-4'>
+            Optimal timing based on when your {followerData[ProStatsUserType.FollowerActivityPatterns]?.activeFollowerCount} active followers are most engaged
+          <span className='block text-xs text-gray-500 mt-1'>
               Analyzing activity patterns from the last 30 days
-            </span>
-          </p>
+          </span>
+        </p>
           
           {/* Recommendations */}
-          <div className='grid grid-cols-1 md:grid-cols-2 gap-4 mb-6'>
-            <div className='bg-gray-800 rounded-lg p-4 text-center border-2 border-green-500'>
-              <h3 className='text-green-400 font-bold text-lg mb-2'>🕐 Best Time of Day</h3>
-              <p className='text-2xl font-bold text-white mb-1'>
-                {followerData[ProStatsUserType.FollowerActivityPatterns].recommendations.bestTimeLabel}
-              </p>
-              <p className='text-sm text-gray-400'>
-                Activity Score: {followerData[ProStatsUserType.FollowerActivityPatterns].recommendations.activityScore}%
-              </p>
-            </div>
-            <div className='bg-gray-800 rounded-lg p-4 text-center border-2 border-blue-500'>
-              <h3 className='text-blue-400 font-bold text-lg mb-2'>📅 Best Day of Week</h3>
-              <p className='text-2xl font-bold text-white mb-1'>
-                {followerData[ProStatsUserType.FollowerActivityPatterns].recommendations.bestDayLabel}
-              </p>
-              <p className='text-sm text-gray-400'>
-                Most active followers online
-              </p>
-            </div>
+        <div className='grid grid-cols-1 md:grid-cols-2 gap-4 mb-6'>
+          <div className='bg-gray-800 rounded-lg p-4 text-center border-2 border-green-500'>
+            <h3 className='text-green-400 font-bold text-lg mb-2'>🕐 Best Time of Day</h3>
+            <p className='text-2xl font-bold text-white mb-1'>
+              {followerData[ProStatsUserType.FollowerActivityPatterns]?.recommendations.bestTimeLabel}
+            </p>
+            <p className='text-sm text-gray-400'>
+                Peak follower activity time ({userTimezone})
+            </p>
           </div>
+          <div className='bg-gray-800 rounded-lg p-4 text-center border-2 border-blue-500'>
+            <h3 className='text-blue-400 font-bold text-lg mb-2'>📅 Best Day of Week</h3>
+            <p className='text-2xl font-bold text-white mb-1'>
+              {followerData[ProStatsUserType.FollowerActivityPatterns]?.recommendations.bestDayLabel}
+            </p>
+            <p className='text-sm text-gray-400'>
+                Most active followers online
+            </p>
+          </div>
+        </div>
+        {/* Activity Heatmap */}
+        <div className='bg-gray-800 rounded-lg p-4'>
+          <h4 className='font-bold text-lg mb-3 text-center'>Follower Activity Heatmap ({userTimezone})</h4>
+          <p className='text-xs text-gray-400 text-center mb-4'>Darker colors indicate more active followers at that time</p>
+            
+            <div className='w-full overflow-x-auto'>
+            <div className='min-w-[800px]'>
+              {/* Hour labels */}
+              <div className='flex'>
+                <div className='w-16' /> {/* Space for day labels */}
+                {Array.from({ length: 24 }, (_, hour) => {
+                  const hourLabels = [
+                    '12A', '1A', '2A', '3A', '4A', '5A', '6A', '7A', '8A', '9A', '10A', '11A',
+                    '12P', '1P', '2P', '3P', '4P', '5P', '6P', '7P', '8P', '9P', '10P', '11P'
+                  ];
 
-          {/* Activity Charts */}
-          <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
-            {/* Hourly Activity */}
-            <div className='bg-gray-800 rounded-lg p-4'>
-              <h4 className='font-bold text-lg mb-3 text-center'>Activity by Hour</h4>
-              <div className='w-full h-48'>
-                <ResponsiveContainer width='100%' height='100%'>
-                  <BarChart data={followerData[ProStatsUserType.FollowerActivityPatterns].hourlyActivity}>
-                    <XAxis 
-                      dataKey='hour' 
-                      tick={{ fill: '#9CA3AF' }}
-                      tickFormatter={(hour) => {
-                        const hourLabels = [
-                          '12A', '1A', '2A', '3A', '4A', '5A', '6A', '7A', '8A', '9A', '10A', '11A',
-                          '12P', '1P', '2P', '3P', '4P', '5P', '6P', '7P', '8P', '9P', '10P', '11P'
-                        ];
-                        return hourLabels[hour];
-                      }}
-                    />
-                    <YAxis tick={{ fill: '#9CA3AF' }} />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: 'rgb(31, 41, 55)',
-                        border: 'none',
-                        borderRadius: '0.5rem',
-                        color: 'rgb(229, 231, 235)',
-                      }}
-                      formatter={(value: number, name: string) => {
-                        if (name === 'activeFollowers') {
-                          return [`${value} followers`, 'Active Followers'];
-                        }
-                        return [`${value} activities`, 'Total Activities'];
-                      }}
-                      labelFormatter={(hour: number) => {
-                        const hourLabels = [
-                          '12 AM', '1 AM', '2 AM', '3 AM', '4 AM', '5 AM', '6 AM', '7 AM', '8 AM', '9 AM', '10 AM', '11 AM',
-                          '12 PM', '1 PM', '2 PM', '3 PM', '4 PM', '5 PM', '6 PM', '7 PM', '8 PM', '9 PM', '10 PM', '11 PM'
-                        ];
-                        return hourLabels[hour];
-                      }}
-                    />
-                    <Bar dataKey='activeFollowers' fill='#3B82F6' name='activeFollowers' />
-                  </BarChart>
-                </ResponsiveContainer>
+                  return (
+                    <div key={hour} className='flex-1 text-xs text-gray-400 text-center py-1 min-w-[28px]'>
+                      {hourLabels[hour]}
+                    </div>
+                  );
+                })}
               </div>
-            </div>
+              {/* Heatmap grid */}
+              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((dayLabel, dayIndex) => {
+                const dayOfWeek = dayIndex + 1; // MongoDB uses 1-based indexing
 
-            {/* Daily Activity */}
-            <div className='bg-gray-800 rounded-lg p-4'>
-              <h4 className='font-bold text-lg mb-3 text-center'>Activity by Day</h4>
-              <div className='w-full h-48'>
-                <ResponsiveContainer width='100%' height='100%'>
-                  <BarChart data={followerData[ProStatsUserType.FollowerActivityPatterns].dailyActivity}>
-                    <XAxis 
-                      dataKey='dayOfWeek' 
-                      tick={{ fill: '#9CA3AF' }}
-                      tickFormatter={(day) => {
-                        const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-                        return dayLabels[day - 1]; // MongoDB dayOfWeek is 1-based
-                      }}
-                    />
-                    <YAxis tick={{ fill: '#9CA3AF' }} />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: 'rgb(31, 41, 55)',
-                        border: 'none',
-                        borderRadius: '0.5rem',
-                        color: 'rgb(229, 231, 235)',
-                      }}
-                      formatter={(value: number, name: string) => {
-                        if (name === 'activeFollowers') {
-                          return [`${value} followers`, 'Active Followers'];
-                        }
-                        return [`${value} activities`, 'Total Activities'];
-                      }}
-                      labelFormatter={(day: number) => {
-                        const dayLabels = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-                        return dayLabels[day - 1]; // Convert to 0-based index
-                      }}
-                    />
-                    <Bar dataKey='activeFollowers' fill='#10B981' name='activeFollowers' />
-                  </BarChart>
-                </ResponsiveContainer>
+                return (
+                  <div key={dayLabel} className='flex items-center'>
+                    {/* Day label */}
+                    <div className='w-16 text-xs text-gray-400 text-right pr-3 py-1'>
+                      {dayLabel}
+                    </div>
+                      
+                      {/* Hour cells for this day */}
+                    {Array.from({ length: 24 }, (_, hour) => {
+                      // Find the specific day-hour combination data
+                      const heatmapEntry = followerData[ProStatsUserType.FollowerActivityPatterns]?.heatmapData.find(
+                        entry => entry.dayOfWeek === dayOfWeek && entry.hour === hour
+                      );
+
+                      const activeFollowers = heatmapEntry?.activeFollowers || 0;
+
+                      // Only show data if we have 4+ followers for this specific day-hour combination
+                      const hasEnoughData = activeFollowers >= 4;
+
+                      // Calculate opacity based on activity (0 to 1)
+                      const maxActivity = Math.max(
+                        ...followerData[ProStatsUserType.FollowerActivityPatterns]?.heatmapData?.map(entry => entry.activeFollowers) || []
+                      );
+                      const opacity = hasEnoughData && maxActivity > 0 ? activeFollowers / maxActivity : 0;
+
+                      const hourLabels = [
+                        '12 AM', '1 AM', '2 AM', '3 AM', '4 AM', '5 AM', '6 AM', '7 AM', '8 AM', '9 AM', '10 AM', '11 AM',
+                        '12 PM', '1 PM', '2 PM', '3 PM', '4 PM', '5 PM', '6 PM', '7 PM', '8 PM', '9 PM', '10 PM', '11 PM'
+                      ];
+
+                      return (
+                        <div
+                          key={`${dayLabel}-${hour}`}
+                          className='flex-1 aspect-square border border-gray-700 min-w-[28px] min-h-[28px] flex items-center justify-center relative group cursor-pointer'
+                          style={{
+                            backgroundColor: hasEnoughData ? `rgba(59, 130, 246, ${opacity})` : 'rgba(75, 85, 99, 0.3)',
+                          }}
+                          title={hasEnoughData
+                            ? `${dayLabel} ${hourLabels[hour]}: ${activeFollowers} active followers`
+                            : `${dayLabel} ${hourLabels[hour]}: Not enough data (< 4 followers)`
+                          }
+                        >
+                          {/* Tooltip */}
+                          <div className='absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-10 whitespace-nowrap pointer-events-none'>
+                            <div className='font-medium'>{dayLabel} {hourLabels[hour]}</div>
+                            <div className='text-gray-300'>
+                              {hasEnoughData
+                                ? `${activeFollowers} active followers`
+                                : 'Not enough data (< 4 followers)'
+                              }
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })}
+              {/* Legend */}
+              <div className='flex items-center justify-center mt-4 space-x-4'>
+                <div className='flex items-center space-x-2'>
+                  <div className='w-4 h-4 bg-gray-600 border border-gray-700' />
+                  <span className='text-xs text-gray-400'>No data</span>
+                </div>
+                <div className='flex items-center space-x-2'>
+                  <div className='w-4 h-4 border border-gray-700' style={{ backgroundColor: 'rgba(59, 130, 246, 0.3)' }} />
+                  <span className='text-xs text-gray-400'>Low activity</span>
+                </div>
+                <div className='flex items-center space-x-2'>
+                  <div className='w-4 h-4 border border-gray-700' style={{ backgroundColor: 'rgba(59, 130, 246, 0.7)' }} />
+                  <span className='text-xs text-gray-400'>High activity</span>
+                </div>
+                <div className='flex items-center space-x-2'>
+                  <div className='w-4 h-4 bg-blue-500 border border-gray-700' />
+                  <span className='text-xs text-gray-400'>Peak activity</span>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      )}
-
-      {/* Creator Tips */}
-      <div className='bg-gray-800 rounded-lg p-6'>
-        <h3 className='text-lg font-bold mb-4'>Creator Insights</h3>
-        <div className='grid grid-cols-1 md:grid-cols-2 gap-4 text-sm'>
-          <div>
-            <h4 className='font-semibold text-blue-400 mb-2'>What&apos;s Working Well</h4>
-            <ul className='space-y-1 text-gray-300'>
-              {engagementMetrics[0] && typeof engagementMetrics[0].value === 'number' && engagementMetrics[0].value > 50 && <li>• Strong level activity with {engagementMetrics[0].value} total plays</li>}
-              {engagementMetrics[1] && typeof engagementMetrics[1].value === 'number' && engagementMetrics[1].value > 10 && <li>• Good reach with {engagementMetrics[1].value} unique players</li>}
-              {engagementMetrics[2] && typeof engagementMetrics[2].value === 'string' && engagementMetrics[2].value.includes('levels') && <li>• Top solver is very engaged with {engagementMetrics[2].value}</li>}
-              {levelPerformance.length > 0 && <li>• Your most popular level has {levelPerformance[0].plays} plays</li>}
-            </ul>
+      </div>}
+      {/* Creator Insights */}
+      <div className='bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-6 border border-gray-700 shadow-lg'>
+        <div className='flex items-center gap-3 mb-6'>
+          <div className='w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg flex items-center justify-center'>
+            <span className='text-xl'>🚀</span>
           </div>
           <div>
-            <h4 className='font-semibold text-yellow-400 mb-2'>Areas to Explore</h4>
-            <ul className='space-y-1 text-gray-300'>
-              {engagementMetrics[0] && typeof engagementMetrics[0].value === 'number' && engagementMetrics[0].value < 10 && <li>• Consider promoting your levels to increase visibility</li>}
-              {engagementMetrics[1] && typeof engagementMetrics[1].value === 'number' && engagementMetrics[1].value < 5 && <li>• Try different difficulty levels to reach more players</li>}
-              {levelPerformance.length > 0 && levelPerformance[0].engagement < 50 && <li>• Focus on levels that encourage repeat attempts</li>}
-              <li>• Experiment with different puzzle mechanics</li>
-              <li>• Engage with player feedback in comments</li>
-            </ul>
+            <h3 className='text-xl font-bold text-white'>Creator Insights</h3>
+            <p className='text-sm text-gray-400'>Insights about levels {user.name} has created</p>
+          </div>
+        </div>
+        
+        <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
+          {/* What's Working Well */}
+          <div className='bg-gradient-to-br from-green-900/30 to-emerald-900/20 rounded-lg p-4 border border-green-500/20'>
+            <div className='flex items-center gap-2 mb-4'>
+              <div className='w-6 h-6 bg-green-500 rounded-full flex items-center justify-center'>
+                <span className='text-xs'>✓</span>
+              </div>
+              <h4 className='font-bold text-green-400 text-lg'>What&apos;s Working Well</h4>
+            </div>
+            <div className='space-y-3'>
+              {engagementMetrics[0] && typeof engagementMetrics[0].value === 'number' && engagementMetrics[0].value > 50 && (
+                <div className='flex items-start gap-3 p-3 bg-green-500/10 rounded-lg border-l-4 border-green-500'>
+                  <span className='text-green-400 text-lg'>📈</span>
+                  <div>
+                    <p className='text-white font-medium'>Strong Engagement</p>
+                    <p className='text-sm text-gray-300'>{engagementMetrics[0].value.toLocaleString()} total solves across your levels</p>
+                  </div>
+                </div>
+              )}
+              {engagementMetrics[1] && typeof engagementMetrics[1].value === 'number' && engagementMetrics[1].value > 10 && (
+                <div className='flex items-start gap-3 p-3 bg-green-500/10 rounded-lg border-l-4 border-green-500'>
+                  <span className='text-green-400 text-lg'>👥</span>
+                  <div>
+                    <p className='text-white font-medium'>Great Reach</p>
+                    <p className='text-sm text-gray-300'>{engagementMetrics[1].value} unique players have enjoyed your content</p>
+                  </div>
+                </div>
+              )}
+              {engagementMetrics[2] && typeof engagementMetrics[2].value === 'string' && engagementMetrics[2].value.includes('levels') && (
+                <div className='flex items-start gap-3 p-3 bg-green-500/10 rounded-lg border-l-4 border-green-500'>
+                  <span className='text-green-400 text-lg'>🏆</span>
+                  <div>
+                    <p className='text-white font-medium'>Dedicated Fans</p>
+                    <p className='text-sm text-gray-300'>Your top solver has completed {engagementMetrics[2].value}</p>
+                  </div>
+                </div>
+              )}
+              {levelPerformance.length > 0 && (
+                <div className='flex items-start gap-3 p-3 bg-green-500/10 rounded-lg border-l-4 border-green-500'>
+                  <span className='text-green-400 text-lg'>⭐</span>
+                  <div>
+                    <p className='text-white font-medium'>Popular Content</p>
+                    <p className='text-sm text-gray-300'>"{levelPerformance[0].name}" has {levelPerformance[0].plays} completions</p>
+                  </div>
+                </div>
+              )}
+              {/* Add follower engagement if available */}
+              {followerData && followerData[ProStatsUserType.FollowerActivityPatterns] && followerData[ProStatsUserType.FollowerActivityPatterns].activeFollowerCount > 0 && (
+                <div className='flex items-start gap-3 p-3 bg-green-500/10 rounded-lg border-l-4 border-green-500'>
+                  <span className='text-green-400 text-lg'>💫</span>
+                  <div>
+                    <p className='text-white font-medium'>Active Community</p>
+                    <p className='text-sm text-gray-300'>{followerData[ProStatsUserType.FollowerActivityPatterns].activeFollowerCount} followers actively playing in the last 30 days</p>
+                  </div>
+                </div>
+              )}
+              {/* Mechanic mastery - moved from Growth Opportunities */}
+              {mechanicSuggestions.suggestions.length === 0 && mechanicSuggestions.analysis.used.length >= 4 && (
+                <div className='flex items-start gap-3 p-3 bg-green-500/10 rounded-lg border-l-4 border-green-500'>
+                  <span className='text-green-400 text-lg'>🏆</span>
+                  <div>
+                    <p className='text-white font-medium'>Mechanic Master</p>
+                    <p className='text-sm text-gray-300'>{user.name} has experimented with {mechanicSuggestions.analysis.used.length}/{mechanicSuggestions.analysis.totalCategories} different tile types</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+          {/* Growth Opportunities */}
+          <div className='bg-gradient-to-br from-amber-900/30 to-orange-900/20 rounded-lg p-4 border border-amber-500/20'>
+            <div className='flex items-center gap-2 mb-4'>
+              <div className='w-6 h-6 bg-amber-500 rounded-full flex items-center justify-center'>
+                <span className='text-xs'>💡</span>
+              </div>
+              <h4 className='font-bold text-amber-400 text-lg'>Growth Opportunities</h4>
+            </div>
+            <div className='space-y-3'>
+              {/* Difficulty and creation analysis */}
+              {difficultyAnalysis.suggestions.map((suggestion, index) => (
+                <div key={index} className='flex items-start gap-3 p-3 bg-amber-500/10 rounded-lg border-l-4 border-amber-500'>
+                  <span className='text-amber-400 text-lg'>
+                    {suggestion.category === 'Level Creation' ? '📝' :
+                      suggestion.category === 'Difficulty Balance' ? '⚖️' : '🏔️'}
+                  </span>
+                  <div>
+                    <p className='text-white font-medium'>{suggestion.category}</p>
+                    <p className='text-sm text-gray-300'>{suggestion.suggestion}</p>
+                    <p className='text-xs text-gray-500 mt-1'>📊 {suggestion.reason}</p>
+                  </div>
+                </div>
+              ))}
+              {/* Engagement-based suggestions */}
+              {engagementMetrics[0] && typeof engagementMetrics[0].value === 'number' && engagementMetrics[0].value < 10 && (
+                <div className='flex items-start gap-3 p-3 bg-amber-500/10 rounded-lg border-l-4 border-amber-500'>
+                  <span className='text-amber-400 text-lg'>📢</span>
+                  <div>
+                    <p className='text-white font-medium'>Boost Visibility</p>
+                    <p className='text-sm text-gray-300'>Consider sharing your levels on social media or community forums</p>
+                    <p className='text-xs text-gray-500 mt-1'>⚠️ {user.name}'s levels have only {engagementMetrics[0].value} total solves</p>
+                  </div>
+                </div>
+              )}
+              {engagementMetrics[1] && typeof engagementMetrics[1].value === 'number' && engagementMetrics[1].value < 5 && (
+                <div className='flex items-start gap-3 p-3 bg-amber-500/10 rounded-lg border-l-4 border-amber-500'>
+                  <span className='text-amber-400 text-lg'>🎯</span>
+                  <div>
+                    <p className='text-white font-medium'>Expand Your Audience</p>
+                    <p className='text-sm text-gray-300'>Try creating levels with different difficulty ranges</p>
+                    <p className='text-xs text-gray-500 mt-1'>📊 Only {engagementMetrics[1].value} unique players have tried {user.name}'s levels</p>
+                  </div>
+                </div>
+              )}
+              {mechanicSuggestions.suggestions.length > 0 && (
+                <div className='flex items-start gap-3 p-3 bg-amber-500/10 rounded-lg border-l-4 border-amber-500'>
+                  <span className='text-amber-400 text-lg'>🔧</span>
+                  <div>
+                    <p className='text-white font-medium'>Try New Tile Types</p>
+                    <p className='text-sm text-gray-300 mb-2'>{user.name} hasn&apos;t used these tile types yet:</p>
+                    <div className='text-xs text-gray-400 space-y-1'>
+                      {mechanicSuggestions.suggestions.map((suggestion, index) => (
+                        <div key={index} className='flex items-start gap-1'>
+                          <span className='text-amber-400 mt-0.5'>•</span>
+                          <span><span className='text-amber-300 font-medium'>{suggestion.name}</span>: {suggestion.tileNames.join(', ')}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <p className='text-xs text-gray-500 mt-2'>
+                      🔍 Analysis found: {user.name} uses {mechanicSuggestions.analysis.used.length}/{mechanicSuggestions.analysis.totalCategories} tile type categories
+                      {mechanicSuggestions.analysis.used.length > 0 && (
+                        <span className='block mt-1'>
+                          ✅ Currently using: {mechanicSuggestions.analysis.used.join(', ')}
+                        </span>
+                      )}
+                    </p>
+                  </div>
+                </div>
+              )}
+              {(!followerData || !followerData[ProStatsUserType.FollowerActivityPatterns] || !followerData[ProStatsUserType.FollowerActivityPatterns].hasDiscordConnected) && (
+                <div className='flex items-start gap-3 p-3 bg-amber-500/10 rounded-lg border-l-4 border-amber-500'>
+                  <span className='text-amber-400 text-lg'>💬</span>
+                  <div>
+                    <p className='text-white font-medium'>Connect Discord for Community Engagement</p>
+                    <p className='text-sm text-gray-300'>Connect your Discord account to engage with the community and share your levels</p>
+                    <p className='text-xs text-gray-500 mt-1'>
+                      🔗 Connect Discord from your account settings •
+                      <a href='https://discord.gg/j6RxRdqq4A' target='_blank' rel='noopener noreferrer' className='text-blue-400 hover:text-blue-300 ml-1'>
+                        Join our Discord
+                      </a> if you haven't already
+                    </p>
+                  </div>
+                </div>
+              )}
+              {followerData && followerData[ProStatsUserType.FollowerActivityPatterns] && followerData[ProStatsUserType.FollowerActivityPatterns].followerCount >= 5 && (
+                <div className='flex items-start gap-3 p-3 bg-amber-500/10 rounded-lg border-l-4 border-amber-500'>
+                  <span className='text-amber-400 text-lg'>⏰</span>
+                  <div>
+                    <p className='text-white font-medium'>Optimal Timing</p>
+                    <p className='text-sm text-gray-300'>Publish levels on {followerData[ProStatsUserType.FollowerActivityPatterns]?.recommendations.bestDayLabel}s around {followerData[ProStatsUserType.FollowerActivityPatterns]?.recommendations.bestTimeLabel} for maximum engagement</p>
+                    <p className='text-xs text-gray-500 mt-1'>📊 Based on activity patterns of your {followerData[ProStatsUserType.FollowerActivityPatterns]?.activeFollowerCount} active followers</p>
+                  </div>
+                </div>
+              )}
+              {(!followerData || !followerData[ProStatsUserType.FollowerActivityPatterns] || followerData[ProStatsUserType.FollowerActivityPatterns].followerCount < 5) && (
+                <div className='flex items-start gap-3 p-3 bg-amber-500/10 rounded-lg border-l-4 border-amber-500'>
+                  <span className='text-amber-400 text-lg'>👥</span>
+                  <div>
+                    <p className='text-white font-medium'>Build Your Following</p>
+                    <p className='text-sm text-gray-300'>Gain followers to unlock personalized publishing time recommendations</p>
+                    <p className='text-xs text-gray-500 mt-1'>🎯 You currently have {followerData?.[ProStatsUserType.FollowerActivityPatterns]?.followerCount || 0} followers (need 5+ for timing analysis)</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+        {/* Bottom Stats Bar */}
+        <div className='mt-6 pt-4 border-t border-gray-700'>
+          <div className='flex flex-wrap items-center justify-center gap-6 text-sm'>
+            <div className='flex items-center gap-2'>
+              <div className='w-3 h-3 bg-blue-500 rounded-full' />
+              <span className='text-gray-400'>Total Solves: <span className='text-white font-medium'>{engagementMetrics[0]?.value || 0}</span></span>
+            </div>
+            <div className='flex items-center gap-2'>
+              <div className='w-3 h-3 bg-green-500 rounded-full' />
+              <span className='text-gray-400'>Unique Players: <span className='text-white font-medium'>{engagementMetrics[1]?.value || 0}</span></span>
+            </div>
+            <div className='flex items-center gap-2'>
+              <div className='w-3 h-3 bg-purple-500 rounded-full' />
+              <span className='text-gray-400'>Published Levels: <span className='text-white font-medium'>{levelPerformance.length}</span></span>
+            </div>
+            {followerData && followerData[ProStatsUserType.FollowerActivityPatterns] && (
+              <div className='flex items-center gap-2'>
+                <div className='w-3 h-3 bg-yellow-500 rounded-full' />
+                <span className='text-gray-400'>Followers: <span className='text-white font-medium'>{followerData[ProStatsUserType.FollowerActivityPatterns].followerCount}</span></span>
+              </div>
+            )}
           </div>
         </div>
       </div>

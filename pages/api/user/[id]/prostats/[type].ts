@@ -1,22 +1,22 @@
 import { GameId } from '@root/constants/GameId';
 import { GameType } from '@root/constants/Games';
 import GraphType from '@root/constants/graphType';
-import { getEnrichLevelsPipelineSteps, getEnrichUserConfigPipelineStage } from '@root/helpers/enrich';
+import { getEnrichUserConfigPipelineStage } from '@root/helpers/enrich';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import { getRecordsByUserId } from '@root/helpers/getRecordsByUserId';
 import { USER_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import User from '@root/models/db/user';
-import mongoose, { PipelineStage, Types } from 'mongoose';
+import { AuthProvider } from '@root/models/db/userAuth';
+import mongoose, { Types } from 'mongoose';
 import { NextApiResponse } from 'next';
 import { TimeFilter } from '../../../../../components/profile/profileInsights';
 import Role from '../../../../../constants/role';
 import { ValidEnum } from '../../../../../helpers/apiWrapper';
-import { getSolveCountFactor } from '../../../../../helpers/getDifficultyEstimate';
 import isPro from '../../../../../helpers/isPro';
 import { ProStatsUserType } from '../../../../../hooks/useProStatsUser';
 import cleanUser from '../../../../../lib/cleanUser';
 import withAuth, { NextApiRequestWithAuth } from '../../../../../lib/withAuth';
-import { GraphModel, LevelModel, PlayAttemptModel, StatModel, UserModel } from '../../../../../models/mongoose';
+import { GraphModel, LevelModel, PlayAttemptModel, StatModel, UserAuthModel, UserModel } from '../../../../../models/mongoose';
 import { AttemptContext } from '../../../../../models/schemas/playAttemptSchema';
 
 function getTimeFilterCutoff(timeFilter?: string): number | null {
@@ -200,105 +200,403 @@ async function getDifficultyDataComparisons(gameId: GameId, userId: string, time
 
 async function getPlayLogForUsersCreatedLevels(gameId: GameId, reqUser: User, userId: string, timeFilter?: string) {
   const timeCutoff = getTimeFilterCutoff(timeFilter);
-  
-  // Get creator's levels with solve counts
-  const creatorLevels = await LevelModel.find({
-    userId: new mongoose.Types.ObjectId(userId),
-    isDraft: { $ne: true },
-    isDeleted: { $ne: true },
-    gameId: gameId,
-  }).select({
-    _id: 1,
-    name: 1,
-    slug: 1,
-    calc_stats_completed_count: 1,
-    calc_playattempts_unique_users: 1,
-  }).lean();
 
-  const playLogsForUserCreatedLevels = await LevelModel.aggregate([
-    {
-      $match: {
-        userId: new mongoose.Types.ObjectId(userId),
-        isDraft: { $ne: true },
-        isDeleted: { $ne: true },
-        gameId: gameId,
-      },
-    },
-    {
-      $lookup: {
-        from: StatModel.collection.name,
-        localField: '_id',
-        foreignField: 'levelId',
-        as: 'stats',
-      },
-    },
-    {
-      $unwind: '$stats',
-    },
-    {
-      $match: {
-        'stats.complete': true,
-        'stats.isDeleted': { $ne: true },
-        ...(timeCutoff ? { 'stats.ts': { $gt: timeCutoff } } : {}),
-      },
-    },
-    // order by stats.ts desc
-    {
-      $sort: {
-        'stats.ts': -1,
-      }
-    },
-    {
-      $limit: 1000,
-    },
-    {
-      $lookup: {
-        from: UserModel.collection.name,
-        localField: 'stats.userId',
-        foreignField: '_id',
-        as: 'user',
-      },
-    },
-    {
-      $unwind: '$user',
-    },
-    {
-      $project: {
-        _id: 0,
-        levelId: '$_id',
-        statTs: '$stats.ts',
-        user: {
-          ...USER_DEFAULT_PROJECTION
+  try {
+    // Create a combined aggregation that gets both engagement metrics AND creator levels in one query
+    const engagementAndLevelsPromise = LevelModel.aggregate([
+      {
+        $match: {
+          userId: new mongoose.Types.ObjectId(userId),
+          isDraft: { $ne: true },
+          isDeleted: { $ne: true },
+          gameId: gameId,
         },
       },
-    },
-    ...getEnrichUserConfigPipelineStage(gameId, { excludeCalcs: true, localField: 'user._id', lookupAs: 'user.config' }),
-    // also get the level
-    {
-      $lookup: {
-        from: LevelModel.collection.name,
-        localField: 'levelId',
-        foreignField: '_id',
-        as: 'levelId',
-        pipeline: [
-          ...getEnrichLevelsPipelineSteps(reqUser) as PipelineStage.Lookup[],
-        ]
+      {
+        $sort: { _id: -1 }
       },
-    },
-    {
-      $unwind: '$levelId',
-    },
-  ]);
+      {
+        $limit: 100000 // Last 100 levels only
+      },
+      {
+        $lookup: {
+          from: StatModel.collection.name,
+          localField: '_id',
+          foreignField: 'levelId',
+          as: 'stats',
+          pipeline: [
+            {
+              $match: {
+                complete: true,
+                isDeleted: { $ne: true },
+                gameId: gameId,
+                ...(timeCutoff ? { ts: { $gt: timeCutoff } } : {}),
+              }
+            }
+          ]
+        },
+      },
+      {
+        $facet: {
+          // Get the creator levels data
+          creatorLevels: [
+            {
+              $project: {
+                _id: 1,
+                name: 1,
+                slug: 1,
+                data: 1,
+                calc_difficulty_estimate: 1,
+                calc_stats_completed_count: 1,
+                calc_playattempts_unique_users: 1,
+              }
+            }
+          ],
+          // Get engagement metrics from the stats
+          engagementMetrics: [
+            {
+              $unwind: {
+                path: '$stats',
+                preserveNullAndEmptyArrays: true
+              }
+            },
+            {
+              $match: {
+                stats: { $exists: true }
+              }
+            },
+            {
+              $group: {
+                _id: null,
+                totalSolves: { $sum: 1 },
+                uniquePlayerIds: { $addToSet: '$stats.userId' },
+              }
+            },
+            {
+              $project: {
+                _id: 0,
+                totalSolves: 1,
+                uniquePlayersCount: { $size: '$uniquePlayerIds' },
+              }
+            }
+          ]
+        }
+      }
+    ]);
 
-  // cleanUser for each user
-  playLogsForUserCreatedLevels.forEach((userAndStatTs) => {
-    cleanUser(userAndStatTs.user);
-  });
+    const topSolverPromise = LevelModel.aggregate([
+      {
+        $match: {
+          userId: new mongoose.Types.ObjectId(userId),
+          isDraft: { $ne: true },
+          isDeleted: { $ne: true },
+          gameId: gameId,
+        },
+      },
+      {
+        $sort: { _id: -1 }
+      },
+      {
+        $limit: 10000
+      },
+      {
+        $lookup: {
+          from: StatModel.collection.name,
+          localField: '_id',
+          foreignField: 'levelId',
+          as: 'stats',
+          pipeline: [
+            {
+              $match: {
+                complete: true,
+                isDeleted: { $ne: true },
+                gameId: gameId,
+                ...(timeCutoff ? { ts: { $gt: timeCutoff } } : {}),
+              }
+            }
+          ]
+        },
+      },
+      {
+        $unwind: '$stats'
+      },
+      {
+        $group: {
+          _id: '$stats.userId',
+          solveCount: { $sum: 1 },
+        },
+      },
+      {
+        $sort: { solveCount: -1 }
+      },
+      {
+        $limit: 1
+      },
+      {
+        $lookup: {
+          from: UserModel.collection.name,
+          localField: '_id',
+          foreignField: '_id',
+          as: 'user',
+          pipeline: [
+            {
+              $project: {
+                ...USER_DEFAULT_PROJECTION
+              }
+            }
+          ]
+        },
+      },
+      {
+        $unwind: '$user',
+      },
+      {
+        $project: {
+          _id: 0,
+          solveCount: 1,
+          user: 1,
+        },
+      },
+    ]);
 
-  return {
-    playLog: playLogsForUserCreatedLevels,
-    creatorLevels: creatorLevels
-  };
+    // Simplified popularity trends
+    const trendLimit = timeCutoff ? 90 : 30;
+    const trendCutoff = Math.max(timeCutoff || 0, Math.floor(Date.now() / 1000) - (trendLimit * 24 * 60 * 60));
+
+    const popularityTrendsPromise = LevelModel.aggregate([
+      {
+        $match: {
+          userId: new mongoose.Types.ObjectId(userId),
+          isDraft: { $ne: true },
+          isDeleted: { $ne: true },
+          gameId: gameId,
+        },
+      },
+      {
+        $sort: { ts: -1 }
+      },
+      {
+        $limit: 10000 // last 100 levels only
+      },
+      {
+        $lookup: {
+          from: StatModel.collection.name,
+          localField: '_id',
+          foreignField: 'levelId',
+          as: 'stats',
+          pipeline: [
+            {
+              $match: {
+                complete: true,
+                isDeleted: { $ne: true },
+                gameId: gameId,
+                ts: { $gt: trendCutoff },
+              }
+            }
+          ]
+        },
+      },
+      {
+        $unwind: '$stats'
+      },
+      {
+        $group: {
+          _id: {
+            $dateFromParts: {
+              year: { $year: { $toDate: { $multiply: ['$stats.ts', 1000] } } },
+              month: { $month: { $toDate: { $multiply: ['$stats.ts', 1000] } } },
+              day: { $dayOfMonth: { $toDate: { $multiply: ['$stats.ts', 1000] } } }
+            }
+          },
+          totalSolves: { $sum: 1 },
+          uniquePlayerIds: { $addToSet: '$stats.userId' },
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          date: '$_id',
+          totalSolves: 1,
+          uniquePlayers: { $size: '$uniquePlayerIds' },
+        }
+      },
+      {
+        $sort: { date: -1 }
+      },
+      {
+        $limit: 90
+      }
+    ]);
+
+    const recentPlayLogPromise = LevelModel.aggregate([
+      {
+        $match: {
+          userId: new mongoose.Types.ObjectId(userId),
+          isDraft: { $ne: true },
+          isDeleted: { $ne: true },
+          gameId: gameId,
+        },
+      },
+      {
+        $sort: { _id: -1 }
+      },
+      {
+        $limit: 10000
+      },
+      {
+        $lookup: {
+          from: StatModel.collection.name,
+          localField: '_id',
+          foreignField: 'levelId',
+          as: 'stats',
+          pipeline: [
+            {
+              $match: {
+                complete: true,
+                isDeleted: { $ne: true },
+                gameId: gameId,
+                ...(timeCutoff ? { ts: { $gt: timeCutoff } } : {}),
+              }
+            },
+            {
+              $sort: { ts: -1 }
+            },
+            {
+              $limit: 25
+            }
+          ]
+        },
+      },
+      {
+        $unwind: '$stats'
+      },
+      {
+        $sort: { 'stats.ts': -1 }
+      },
+      {
+        $limit: 25
+      },
+      {
+        $lookup: {
+          from: UserModel.collection.name,
+          localField: 'stats.userId',
+          foreignField: '_id',
+          as: 'user',
+          pipeline: [
+            {
+              $project: {
+                ...USER_DEFAULT_PROJECTION
+              }
+            }
+          ]
+        },
+      },
+      {
+        $unwind: '$user',
+      },
+      {
+        $project: {
+          _id: 0,
+          levelId: {
+            _id: '$_id',
+            name: '$name',
+            slug: '$slug'
+          },
+          statTs: '$stats.ts',
+          user: 1,
+        },
+      },
+    ]);
+
+    // Execute all queries in parallel
+    const [
+      engagementAndLevelsResult,
+      topSolverData,
+      popularityTrends,
+      recentPlayLog
+    ] = await Promise.all([
+      engagementAndLevelsPromise,
+      topSolverPromise,
+      popularityTrendsPromise,
+      recentPlayLogPromise
+    ]);
+
+    // Extract results from facet
+    const creatorLevels = engagementAndLevelsResult[0]?.creatorLevels || [];
+    const engagementMetrics = engagementAndLevelsResult[0]?.engagementMetrics[0] || { totalSolves: 0, uniquePlayersCount: 0 };
+
+    // Level performance from the creator levels we already have
+    const levelPerformance = creatorLevels
+      .filter(level => (level.calc_stats_completed_count || 0) > 0)
+      .map(level => ({
+        name: level.name,
+        slug: level.slug,
+        solveCount: level.calc_stats_completed_count || 0,
+        uniquePlayers: level.calc_playattempts_unique_users?.length || 0,
+        calc_stats_completed_count: level.calc_stats_completed_count || 0,
+      }))
+      .sort((a, b) => b.solveCount - a.solveCount)
+      .slice(0, 10);
+
+    // Clean user data
+    recentPlayLog.forEach((entry) => {
+      if (entry.user) {
+        cleanUser(entry.user);
+      }
+    });
+
+    if (topSolverData.length > 0 && topSolverData[0].user) {
+      cleanUser(topSolverData[0].user);
+    }
+
+    return {
+      creatorLevels,
+      engagementMetrics,
+      topSolver: topSolverData[0] || null,
+      popularityTrends,
+      levelPerformance,
+      playLog: recentPlayLog
+    };
+  } catch (error) {
+    console.error('Error in getPlayLogForUsersCreatedLevels:', error);
+
+    // Return minimal fallback data on timeout/error - also limit to last 100 levels
+    const creatorLevels = await LevelModel.find({
+      userId: new mongoose.Types.ObjectId(userId),
+      isDraft: { $ne: true },
+      isDeleted: { $ne: true },
+      gameId: gameId,
+    }).select({
+      _id: 1,
+      name: 1,
+      slug: 1,
+      data: 1,
+      calc_difficulty_estimate: 1,
+      calc_stats_completed_count: 1,
+      calc_playattempts_unique_users: 1,
+    }).sort({ _id: -1 }).lean().limit(100);
+
+    return {
+      creatorLevels,
+      engagementMetrics: {
+        totalSolves: 0,
+        uniquePlayersCount: 0,
+      },
+      topSolver: null,
+      popularityTrends: [],
+      levelPerformance: creatorLevels
+        .filter(level => (level.calc_stats_completed_count || 0) > 0)
+        .slice(0, 10)
+        .map(level => ({
+          name: level.name,
+          slug: level.slug,
+          solveCount: level.calc_stats_completed_count || 0,
+          uniquePlayers: level.calc_playattempts_unique_users?.length || 0,
+          calc_stats_completed_count: level.calc_stats_completed_count || 0,
+        })),
+      playLog: []
+    };
+  }
 }
 
 async function getMostSolvesForUserLevels(gameId: GameId, userId: string, timeFilter?: string) {
@@ -428,6 +726,12 @@ async function getFollowerActivityPatterns(gameId: GameId, userId: string) {
   // Only analyze last 30 days for follower activity
   const thirtyDaysAgo = Math.floor(Date.now() / 1000) - (30 * 24 * 60 * 60);
 
+  // Check if user has Discord connected
+  const discordConnection = await UserAuthModel.findOne({
+    userId: new mongoose.Types.ObjectId(userId),
+    provider: AuthProvider.DISCORD
+  });
+
   // Get all followers of this user
   const followers = await GraphModel.aggregate([
     {
@@ -459,6 +763,7 @@ async function getFollowerActivityPatterns(gameId: GameId, userId: string) {
     return {
       followerCount: followers.length,
       activeFollowerCount: 0,
+      hasDiscordConnected: !!discordConnection,
       hourlyActivity: [],
       dailyActivity: [],
       recommendations: {
@@ -501,6 +806,7 @@ async function getFollowerActivityPatterns(gameId: GameId, userId: string) {
     return {
       followerCount: followers.length,
       activeFollowerCount: activeFollowerCount,
+      hasDiscordConnected: !!discordConnection,
       hourlyActivity: [],
       dailyActivity: [],
       recommendations: {
@@ -513,11 +819,48 @@ async function getFollowerActivityPatterns(gameId: GameId, userId: string) {
     };
   }
 
-  // Aggregate by hour (0-23)
+  // Create a comprehensive day-hour heatmap data (7 days x 24 hours = 168 combinations)
+  const heatmapData: Array<{
+    dayOfWeek: number;
+    hour: number;
+    activityCount: number;
+    activeFollowers: number;
+  }> = [];
+
+  // Generate all day-hour combinations
+  for (let dayOfWeek = 1; dayOfWeek <= 7; dayOfWeek++) { // 1=Sunday, 7=Saturday
+    for (let hour = 0; hour < 24; hour++) {
+      const dayHourActivities = followerActivity.filter(a =>
+        a.dayOfWeek === dayOfWeek && a.hour === hour
+      );
+      const activeFollowersThisDayHour = new Set(dayHourActivities.map(a => a.userId.toString())).size;
+
+      heatmapData.push({
+        dayOfWeek,
+        hour,
+        activityCount: dayHourActivities.length,
+        activeFollowers: activeFollowersThisDayHour
+      });
+    }
+  }
+
+  // Find best time - prioritize active followers, with activity count as tiebreaker
+  const bestTimeData = heatmapData.reduce((best, current) => {
+    if (current.activeFollowers > best.activeFollowers) {
+      return current;
+    } else if (current.activeFollowers === best.activeFollowers) {
+      // Tiebreaker: use activity count
+      return current.activityCount > best.activityCount ? current : best;
+    }
+
+    return best;
+  });
+
+  // Legacy hourly and daily aggregations for backward compatibility
   const hourlyActivity = Array.from({ length: 24 }, (_, hour) => {
     const hourActivities = followerActivity.filter(a => a.hour === hour);
     const activeFollowersThisHour = new Set(hourActivities.map(a => a.userId.toString())).size;
-    
+
     return {
       hour,
       activityCount: hourActivities.length,
@@ -525,30 +868,16 @@ async function getFollowerActivityPatterns(gameId: GameId, userId: string) {
     };
   });
 
-  // Aggregate by day of week (1=Sunday, 2=Monday, ..., 7=Saturday)
   const dailyActivity = Array.from({ length: 7 }, (_, index) => {
     const dayOfWeek = index + 1; // MongoDB dayOfWeek is 1-based
     const dayActivities = followerActivity.filter(a => a.dayOfWeek === dayOfWeek);
     const activeFollowersThisDay = new Set(dayActivities.map(a => a.userId.toString())).size;
-    
+
     return {
       dayOfWeek,
       activityCount: dayActivities.length,
       activeFollowers: activeFollowersThisDay
     };
-  });
-
-  // Find best times - prioritize hours/days with most active followers and activity
-  const bestHourData = hourlyActivity.reduce((best, current) => {
-    const currentScore = current.activeFollowers * 2 + current.activityCount;
-    const bestScore = best.activeFollowers * 2 + best.activityCount;
-    return currentScore > bestScore ? current : best;
-  });
-
-  const bestDayData = dailyActivity.reduce((best, current) => {
-    const currentScore = current.activeFollowers * 2 + current.activityCount;
-    const bestScore = best.activeFollowers * 2 + best.activityCount;
-    return currentScore > bestScore ? current : best;
   });
 
   // Create readable labels
@@ -562,14 +891,16 @@ async function getFollowerActivityPatterns(gameId: GameId, userId: string) {
   return {
     followerCount: followers.length,
     activeFollowerCount: activeFollowerCount,
-    hourlyActivity,
-    dailyActivity,
+    hasDiscordConnected: !!discordConnection,
+    heatmapData,
+    hourlyActivity, // Keep for backward compatibility
+    dailyActivity, // Keep for backward compatibility
     recommendations: {
-      bestHour: bestHourData.hour,
-      bestDay: bestDayData.dayOfWeek - 1, // Convert to 0-based index (0=Sunday, 1=Monday, etc.)
-      bestTimeLabel: hourLabels[bestHourData.hour],
-      bestDayLabel: dayLabels[bestDayData.dayOfWeek - 1], // Convert to 0-based index
-      activityScore: Math.round((bestHourData.activeFollowers * 2 + bestHourData.activityCount) / activeFollowerCount * 100)
+      bestHour: bestTimeData.hour,
+      bestDay: bestTimeData.dayOfWeek - 1, // Convert to 0-based index (0=Sunday, 1=Monday, etc.)
+      bestTimeLabel: hourLabels[bestTimeData.hour],
+      bestDayLabel: dayLabels[bestTimeData.dayOfWeek - 1], // Convert to 0-based index
+      activityScore: Math.round((bestTimeData.activeFollowers * 2 + bestTimeData.activityCount) / activeFollowerCount * 100)
     }
   };
 }

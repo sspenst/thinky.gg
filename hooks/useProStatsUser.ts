@@ -20,19 +20,45 @@ export interface ProStatsUser {
   [ProStatsUserType.DifficultyLevelsComparisons]?: DifficultyLevelComparison[];
   [ProStatsUserType.MostSolvesForUserLevels]?: UserAndSum[];
   [ProStatsUserType.PlayLogForUserCreatedLevels]?: {
-    playLog: UserLevelAndStatTs[];
     creatorLevels: Array<{
       _id: string;
       name: string;
       slug: string;
+      data: string;
+      calc_difficulty_estimate: number;
       calc_stats_completed_count: number;
       calc_playattempts_unique_users: string[];
     }>;
+    engagementMetrics: {
+      totalSolves: number;
+      uniquePlayersCount: number;
+      uniquePlayerIds: string[];
+      solvesByUser: Array<{ userId: string; levelId: string }>;
+    };
+    topSolver: {
+      solveCount: number;
+      user: User;
+    } | null;
+    popularityTrends: Array<{
+      date: Date;
+      totalSolves: number;
+      uniquePlayers: number;
+    }>;
+    levelPerformance: Array<{
+      name: string;
+      slug: string;
+      solveCount: number;
+      uniquePlayers: number;
+      calc_stats_completed_count: number;
+    }>;
+    playLog: UserLevelAndStatTs[]; // Limited sample for backward compatibility
   };
   [ProStatsUserType.Records]?: LevelWithRecordHistory[];
   [ProStatsUserType.FollowerActivityPatterns]?: {
     followerCount: number;
     activeFollowerCount: number;
+    hasDiscordConnected: boolean;
+    heatmapData: Array<{ dayOfWeek: number; hour: number; activityCount: number; activeFollowers: number }>;
     hourlyActivity: Array<{ hour: number; activityCount: number; activeFollowers: number }>;
     dailyActivity: Array<{ dayOfWeek: number; activityCount: number; activeFollowers: number }>;
     recommendations: {
