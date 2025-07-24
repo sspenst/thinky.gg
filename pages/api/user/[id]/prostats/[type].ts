@@ -199,6 +199,21 @@ async function getDifficultyDataComparisons(gameId: GameId, userId: string, time
 
 async function getPlayLogForUsersCreatedLevels(gameId: GameId, reqUser: User, userId: string, timeFilter?: string) {
   const timeCutoff = getTimeFilterCutoff(timeFilter);
+  
+  // Get creator's levels with solve counts
+  const creatorLevels = await LevelModel.find({
+    userId: new mongoose.Types.ObjectId(userId),
+    isDraft: { $ne: true },
+    isDeleted: { $ne: true },
+    gameId: gameId,
+  }).select({
+    _id: 1,
+    name: 1,
+    slug: 1,
+    calc_stats_completed_count: 1,
+    calc_playattempts_unique_users: 1,
+  }).lean();
+
   const playLogsForUserCreatedLevels = await LevelModel.aggregate([
     {
       $match: {
@@ -233,7 +248,7 @@ async function getPlayLogForUsersCreatedLevels(gameId: GameId, reqUser: User, us
       }
     },
     {
-      $limit: 50,
+      $limit: 1000,
     },
     {
       $lookup: {
@@ -279,7 +294,10 @@ async function getPlayLogForUsersCreatedLevels(gameId: GameId, reqUser: User, us
     cleanUser(userAndStatTs.user);
   });
 
-  return playLogsForUserCreatedLevels;
+  return {
+    playLog: playLogsForUserCreatedLevels,
+    creatorLevels: creatorLevels
+  };
 }
 
 async function getMostSolvesForUserLevels(gameId: GameId, userId: string, timeFilter?: string) {

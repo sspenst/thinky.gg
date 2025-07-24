@@ -6,7 +6,6 @@ import { useRouter } from 'next/router';
 import { useContext, useEffect, useState } from 'react';
 import User from '../../models/db/user';
 import ProfileInsightsCreatorDashboard from './profileInsightsCreatorDashboard';
-import ProfileInsightsLevelMastery from './profileInsightsLevelMastery';
 import ProfileInsightsPeerComparisons from './profileInsightsPeerComparisons';
 import ProfileInsightsPerformanceOverview from './profileInsightsPerformanceOverview';
 import ProfileInsightsTimeAnalytics from './profileInsightsTimeAnalytics';
@@ -20,7 +19,6 @@ export enum InsightsTab {
   PERFORMANCE = 'performance',
   PEERS = 'peers',
   TIME = 'time',
-  MASTERY = 'mastery',
   CREATOR = 'creator',
 }
 
@@ -29,7 +27,6 @@ const TAB_URL_MAPPING = {
   [InsightsTab.PERFORMANCE]: 'overview',
   [InsightsTab.PEERS]: 'comparisons',
   [InsightsTab.TIME]: 'activity',
-  [InsightsTab.MASTERY]: 'mastery',
   [InsightsTab.CREATOR]: 'creator',
 } as const;
 
@@ -58,31 +55,25 @@ interface TabConfig {
 const TABS: TabConfig[] = [
   {
     id: InsightsTab.PERFORMANCE,
-    label: 'Performance Overview',
+    label: '📊 Performance Overview',
     description: 'Track your overall progress and key metrics',
     component: ProfileInsightsPerformanceOverview,
   },
   {
     id: InsightsTab.PEERS,
-    label: 'Peer Comparisons',
+    label: '⚔️ Peer Comparisons',
     description: 'See how you stack up against other players',
     component: ProfileInsightsPeerComparisons,
   },
   {
     id: InsightsTab.TIME,
-    label: 'Time Analytics',
+    label: '⏰ Time Analytics',
     description: 'Analyze your solving patterns and time investment',
     component: ProfileInsightsTimeAnalytics,
   },
   {
-    id: InsightsTab.MASTERY,
-    label: 'Level Mastery',
-    description: 'Track your progression through difficulty levels',
-    component: ProfileInsightsLevelMastery,
-  },
-  {
     id: InsightsTab.CREATOR,
-    label: 'Creator Dashboard',
+    label: '🎨 Creator Dashboard',
     description: 'Insights about levels you\'ve created',
     component: ProfileInsightsCreatorDashboard,
     showForCreators: true,

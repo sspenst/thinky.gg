@@ -4,9 +4,10 @@ import useProStatsUser, { ProStatsUserType } from '@root/hooks/useProStatsUser';
 import dayjs from 'dayjs';
 import { Moon, Star, Sun, Sunrise, Sunset } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
-import { Area, AreaChart, Bar, BarChart, Cell, ComposedChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { Area, AreaChart, Bar, BarChart, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import User from '../../models/db/user';
 import { difficultyList, getDifficultyFromEstimate } from '../formatted/formattedDifficulty';
+import FormattedLevelLink from '../formatted/formattedLevelLink';
 import { TimeFilter } from './profileInsights';
 
 interface ProfileInsightsTimeAnalyticsProps {
@@ -74,6 +75,11 @@ function formatTimePerLevel(seconds: number): string {
 export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter }: ProfileInsightsTimeAnalyticsProps) {
   const { proStatsUser: scoreHistory, isLoading: isLoadingScoreHistory } = useProStatsUser(user, ProStatsUserType.ScoreHistory, timeFilter);
   const { proStatsUser: difficultyData, isLoading: isLoadingDifficulty } = useProStatsUser(user, ProStatsUserType.DifficultyLevelsComparisons, timeFilter);
+  
+  const [selectedTimePeriod, setSelectedTimePeriod] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [sortColumn, setSortColumn] = useState<'yourTime' | 'averageTime' | 'comparison'>('comparison');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
 
 
   // Calculate activity heatmap data
@@ -215,24 +221,6 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
     return orderedData.sort((a, b) => a.sortOrder - b.sortOrder);
   }, [difficultyData]);
 
-  // Calculate min/max values for centered Y-axis domain
-  const yAxisDomain = useMemo(() => {
-    if (!timeInvestmentData.length) return [-50, 50];
-
-    const allDeltas = timeInvestmentData.map(d => d.percentageDelta).filter(v => v !== 0);
-
-    if (allDeltas.length === 0) return [-50, 50];
-
-    const min = Math.min(...allDeltas);
-    const max = Math.max(...allDeltas);
-
-    // Make sure 0 is centered by using the larger absolute value for both bounds
-    const maxAbsValue = Math.max(Math.abs(min), Math.abs(max));
-    const padding = maxAbsValue * 0.2; // 20% padding
-    const bound = Math.ceil(maxAbsValue + padding);
-
-    return [-bound, bound];
-  }, [timeInvestmentData]);
 
   // Calculate peak performance days
   const peakDays = useMemo(() => {
@@ -256,6 +244,11 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
       ts: number;
       myPlayattemptsSumDuration: number;
       otherPlayattemptsAverageDuration: number;
+      _id: string;
+      name: string;
+      slug: string;
+      difficulty: number;
+      calc_playattempts_just_beaten_count: number;
     }>;
     const validComparisons = comparisons.filter(c =>
       c.myPlayattemptsSumDuration && c.otherPlayattemptsAverageDuration && c.ts
@@ -271,11 +264,11 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
       sum + (c.otherPlayattemptsAverageDuration / c.myPlayattemptsSumDuration), 0
     ) / validComparisons.length;
 
-    // Initialize hourly data
-    const hourlyData: { [hour: number]: { sumRatio: number, count: number } } = {};
+    // Initialize hourly data with level details
+    const hourlyData: { [hour: number]: { sumRatio: number, count: number, levels: typeof validComparisons } } = {};
 
     for (let i = 0; i < 24; i++) {
-      hourlyData[i] = { sumRatio: 0, count: 0 };
+      hourlyData[i] = { sumRatio: 0, count: 0, levels: [] };
     }
 
     // Group by hour
@@ -286,6 +279,7 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
 
       hourlyData[hour].count++;
       hourlyData[hour].sumRatio += performanceRatio;
+      hourlyData[hour].levels.push(c);
     });
 
     // Create clock data (5 natural time periods)
@@ -300,6 +294,7 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
       color: string;
       hasData: boolean;
       fullMark: number;
+      levels: typeof validComparisons;
     }[] = [];
     let bestPeriod = -1;
     let bestPerformance = -Infinity;
@@ -318,14 +313,16 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
     periods.forEach((period) => {
       let totalRatio = 0;
       let totalCount = 0;
+      let periodLevels: typeof validComparisons = [];
 
-      // Aggregate data for this 3-hour period
+      // Aggregate data for this time period
       for (let hour = period.start; hour <= period.end; hour++) {
         const data = hourlyData[hour];
 
         if (data.count > 0) {
           totalRatio += data.sumRatio;
           totalCount += data.count;
+          periodLevels.push(...data.levels);
         }
       }
 
@@ -334,13 +331,20 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
       let color = '#374151'; // Dark gray for no data
       let hasData = false;
 
-      if (totalCount > 0) {
+      if (totalCount >= 7) {
         hasData = true;
         const avgRatio = totalRatio / totalCount;
 
-        relativePerformance = (avgRatio / overallAvgRatio - 1) * 100;
-        // Scale to 0-100 for radar chart (50 is average)
-        performance = Math.max(0, Math.min(100, 50 + relativePerformance));
+        // Calculate what percentage of levels in this period beat community average
+        const levelsBeatCommunity = periodLevels.filter(level => {
+          const ratio = level.otherPlayattemptsAverageDuration / level.myPlayattemptsSumDuration;
+          return ratio >= 1.0; // Faster than community
+        }).length;
+        
+        const percentageBeatingCommunity = (levelsBeatCommunity / totalCount) * 100;
+        relativePerformance = percentageBeatingCommunity;
+        // Use percentage directly for radar chart (50% would be middle performance)
+        performance = Math.max(0, Math.min(100, percentageBeatingCommunity));
 
         // Track best/worst periods
         if (relativePerformance > bestPerformance) {
@@ -353,13 +357,13 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
           worstPeriod = period.position;
         }
 
-        // Color based on performance
-        if (relativePerformance > 10) color = '#10B981'; // Green
-        else if (relativePerformance > 5) color = '#22C55E';
-        else if (relativePerformance > 0) color = '#84CC16';
-        else if (relativePerformance > -5) color = '#F59E0B';
-        else if (relativePerformance > -10) color = '#F97316';
-        else color = '#DC2626'; // Red
+        // Color based on percentage of levels beat community average
+        if (relativePerformance >= 80) color = '#10B981'; // Green - 80%+ beat community
+        else if (relativePerformance >= 65) color = '#22C55E'; // Light green - 65%+ 
+        else if (relativePerformance >= 50) color = '#84CC16'; // Yellow-green - 50%+ (average)
+        else if (relativePerformance >= 35) color = '#F59E0B'; // Orange - 35%+
+        else if (relativePerformance >= 20) color = '#F97316'; // Red-orange - 20%+
+        else color = '#DC2626'; // Red - <20% beat community
       }
 
       clockData.push({
@@ -373,6 +377,7 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
         color,
         hasData,
         fullMark: 100,
+        levels: periodLevels,
       });
     });
 
@@ -416,154 +421,15 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
 
   return (
     <div className='flex flex-col gap-6 w-full'>
-      {/* Time Investment by Difficulty */}
-      <div className='flex flex-col gap-2'>
-        <div className='flex items-center justify-center mb-2'>
-          <h2 className='text-xl font-bold'>Performance vs Community Average</h2>
-        </div>
-        <p className='text-sm text-gray-400 text-center mb-2'>
-          How much faster (+) or slower (-) you are compared to other players on the same levels
-          <span className='block text-xs text-gray-500 mt-1'>
-            Only shows difficulty tiers with 7+ levels solved
-          </span>
-        </p>
-        <div className='w-full h-96'>
-          <ResponsiveContainer width='100%' height='100%'>
-            <ComposedChart data={timeInvestmentData} margin={{ top: 60, right: 30, left: 0, bottom: 20 }}>
-              <XAxis
-                dataKey='difficultyIndex'
-                type='number'
-                domain={[-0.5, difficultyList.filter(d => d.name !== 'Pending').length - 0.5]}
-                orientation='top'
-                tick={{ fill: '#9CA3AF', fontSize: 11 }}
-                ticks={Array.from({ length: difficultyList.filter(d => d.name !== 'Pending').length }, (_, i) => i)}
-                tickFormatter={(value) => {
-                  const sortedDifficulties = difficultyList
-                    .filter(d => d.name !== 'Pending')
-                    .sort((a, b) => a.value - b.value);
-
-                  return sortedDifficulties[value]?.name || '';
-                }}
-                axisLine={false}
-                tickLine={false}
-              />
-              <YAxis
-                type='number'
-                domain={yAxisDomain}
-                tick={{ fill: '#9CA3AF', fontSize: 12 }}
-                tickFormatter={(value) => `${value > 0 ? '+' : ''}${value}%`}
-                allowDataOverflow={false}
-              />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: 'rgb(31, 41, 55)',
-                  border: 'none',
-                  borderRadius: '0.5rem',
-                  color: 'rgb(229, 231, 235)',
-                }}
-                content={({ active, payload }) => {
-                  if (active && payload && payload.length > 0) {
-                    const data = payload[0].payload;
-
-                    // This case shouldn't happen since we filter out <7 solves, but keep for safety
-                    if (data.levelCount < 7) {
-                      return (
-                        <div className='bg-gray-800 p-3 rounded-lg shadow-lg border border-gray-600'>
-                          <div className='text-sm text-gray-100'>
-                            <div className='font-bold text-blue-400 mb-2'>{data.difficulty} Difficulty</div>
-                            <div className='text-gray-400 italic'>Need 7+ levels for comparison ({data.levelCount} solved)</div>
-                          </div>
-                        </div>
-                      );
-                    }
-
-                    return (
-                      <div className='bg-gray-800 p-3 rounded-lg shadow-lg border border-gray-600'>
-                        <div className='text-sm text-gray-100'>
-                          <div className='font-bold text-blue-400 mb-2'>{data.difficulty} Difficulty</div>
-                          <div>Levels solved: <span className='font-bold'>{data.levelCount}</span></div>
-                          <div className='border-t border-gray-600 mt-2 pt-2'>
-                            <div className='text-lg font-bold mb-1'>
-                              <span style={{ color: data.userColor }}>
-                                {data.percentageDelta > 0 ? '+' : ''}{data.percentageDelta}%
-                              </span>
-                            </div>
-                            <div className='text-xs text-gray-400'>
-                              {data.percentageDelta > 0 ?
-                                `⚡ ${data.percentageDelta}% faster than community average` :
-                                data.percentageDelta < 0 ?
-                                  `🐌 ${Math.abs(data.percentageDelta)}% slower than community average` :
-                                  '📊 Same as community average'
-                              }
-                            </div>
-                            <div className='mt-2 text-xs text-gray-500'>
-                              <div>Your average: {formatTimePerLevel(data.avgTimePerLevelSeconds)}</div>
-                              {data.thresholdTime > 0.1 && (
-                                <div>Community average: {formatTimePerLevel(data.thresholdTime * 60)}</div>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  }
-
-                  return null;
-                }}
-              />
-              <ReferenceLine
-                y={0}
-                stroke='#6B7280'
-                strokeDasharray='2 2'
-                label={{ value: 'Community Average', position: 'insideTopRight' as const, style: { fill: '#9CA3AF', fontSize: '12px' } }}
-              />
-              <Bar
-                dataKey='percentageDelta'
-                name='Performance vs Community'
-                fillOpacity={0.5}
-              >
-                {timeInvestmentData.map((entry, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={entry.userColor}
-                    style={{
-                      transition: 'opacity 0.2s ease-in-out',
-                    }}
-                    onMouseEnter={(e: React.MouseEvent<SVGElement>) => {
-                      (e.target as SVGElement).style.fillOpacity = '1';
-                    }}
-                    onMouseLeave={(e: React.MouseEvent<SVGElement>) => {
-                      (e.target as SVGElement).style.fillOpacity = '0.5';
-                    }}
-                  />
-                ))}
-              </Bar>
-            </ComposedChart>
-          </ResponsiveContainer>
-        </div>
-        <div className='bg-gray-800 rounded-lg p-3 mt-2'>
-          <div className='flex items-center justify-center gap-6 text-sm flex-wrap'>
-            <div className='flex items-center gap-2'>
-              <div className='w-3 h-3 bg-green-500 rounded' />
-              <span className='text-gray-300'>Faster than average (above baseline)</span>
-            </div>
-            <div className='flex items-center gap-2'>
-              <div className='w-3 h-3 bg-red-500 rounded' />
-              <span className='text-gray-300'>Slower than average (below baseline)</span>
-            </div>
-            <div className='flex items-center gap-2'>
-              <div className='w-4 h-1 bg-gray-500 rounded border-t border-dashed border-gray-500' />
-              <span className='text-gray-300'>Community baseline (0%)</span>
-            </div>
-          </div>
-        </div>
-      </div>
       {/* Time-of-Day Performance Analysis - Clock Visualization */}
       {timeOfDayPerformance && (
         <div className='flex flex-col gap-2'>
           <h2 className='text-xl font-bold text-center'>Performance by Time of Day</h2>
           <p className='text-sm text-gray-400 text-center mb-2'>
-            When do you perform best compared to your own average?
+            What percentage of levels you solve faster than community average, by time of day
+            <span className='block text-xs text-gray-500 mt-1'>
+              💡 Click on any time period with 7+ levels to see detailed breakdown
+            </span>
           </p>
           <p className='text-xs text-gray-500 text-center mb-4'>
             Timezone: {timeOfDayPerformance.timezone}
@@ -587,7 +453,19 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
 
                 return (
                   <div key={index} className='group relative'>
-                    <div className='bg-gray-800 rounded-lg border border-gray-600 p-2 text-center hover:shadow-lg transition-all min-h-[170px] flex flex-col'>
+                    <div 
+                      className={`bg-gray-800 rounded-lg border border-gray-600 p-2 text-center hover:shadow-lg transition-all min-h-[170px] flex flex-col ${period.hasData ? 'cursor-pointer hover:border-blue-500' : ''}`}
+                      onClick={() => {
+                        if (period.hasData) {
+                          const newPeriod = selectedTimePeriod === period.period ? null : period.period;
+                          setSelectedTimePeriod(newPeriod);
+                          // Reset pagination and sorting when changing periods
+                          setCurrentPage(1);
+                          setSortColumn('comparison');
+                          setSortDirection('desc');
+                        }
+                      }}
+                    >
                       <div className='text-sm font-bold text-white flex items-center justify-center gap-2'>
                         <IconComponent size={16} />
                         {period.period}
@@ -661,7 +539,7 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
                         {period.hasData ? (
                           <>
                             <div className='text-xl font-bold text-white'>
-                              {relPerf >= 0 ? '+' : ''}{relPerf.toFixed(0)}%
+                              {relPerf.toFixed(0)}%
                             </div>
                             <div className='text-xs text-gray-300'>
                               {period.levelCount} levels solved
@@ -683,13 +561,18 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
                           <div className='flex items-center gap-1 mb-1'>
                             <div className='w-2 h-2 rounded-full' style={{ backgroundColor: period.color }} />
                             <span>
-                              {Math.abs(relPerf).toFixed(1)}% {relPerf >= 0 ? 'better' : 'worse'} than your average
+                              {relPerf.toFixed(1)}% of levels solved faster than community average
                             </span>
                           </div>
                           <div>Levels solved: <span className='font-bold'>{period.levelCount}</span></div>
                         </>
                       ) : (
-                        <div className='text-gray-400'>No data for this time period</div>
+                        <div className='text-gray-400'>
+                          {period.levelCount > 0 ? 
+                            `Need 7+ levels (${period.levelCount} solved)` :
+                            'No data for this time period'
+                          }
+                        </div>
                       )}
                     </div>
                   </div>
@@ -701,29 +584,236 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
             <div className='bg-gray-800 rounded-lg p-4 text-center'>
               <h4 className='font-bold mb-3'>Performance Scale</h4>
               <div className='flex items-center justify-center gap-4 mb-2'>
-                <span className='text-xs text-gray-400'>Much worse</span>
+                <span className='text-xs text-gray-400'>Poor (0%)</span>
                 <div className='flex items-center gap-1'>
-                  {[-20, -10, 0, 10, 20].map((val, i) => (
+                  {[20, 35, 50, 65, 80].map((val, i) => (
                     <div
                       key={i}
                       className='w-6 h-4 rounded'
                       style={{
-                        backgroundColor: val > 10 ? '#10B981' :
-                          val > 5 ? '#22C55E' :
-                            val > 0 ? '#84CC16' :
-                              val > -5 ? '#F59E0B' :
-                                val > -10 ? '#F97316' : '#DC2626'
+                        backgroundColor: val >= 80 ? '#10B981' :
+                          val >= 65 ? '#22C55E' :
+                            val >= 50 ? '#84CC16' :
+                              val >= 35 ? '#F59E0B' :
+                                val >= 20 ? '#F97316' : '#DC2626'
                       }}
                     />
                   ))}
                 </div>
-                <span className='text-xs text-gray-400'>Much better</span>
+                <span className='text-xs text-gray-400'>Excellent (100%)</span>
               </div>
               <div className='text-xs text-gray-500'>
-                Color intensity shows how much your performance differs from your average
+                Percentage of levels solved faster than community average during each time period
               </div>
             </div>
           </div>
+          
+          {/* Selected Time Period Details */}
+          {selectedTimePeriod && (() => {
+            const selectedPeriodData = timeOfDayPerformance.clockData.find(p => p.period === selectedTimePeriod);
+            if (!selectedPeriodData || !selectedPeriodData.hasData) return null;
+            
+            // Process and sort levels based on current sort settings
+            const processedLevels = selectedPeriodData.levels.map(level => ({
+              ...level,
+              performanceRatio: level.otherPlayattemptsAverageDuration / level.myPlayattemptsSumDuration,
+              dateSolved: dayjs(level.ts * 1000).format('MMM DD, YYYY h:mmA'),
+            }));
+
+            // Sort levels based on current sort column and direction
+            const sortedLevels = [...processedLevels].sort((a, b) => {
+              let aVal: number, bVal: number;
+              
+              switch (sortColumn) {
+                case 'yourTime':
+                  aVal = a.myPlayattemptsSumDuration;
+                  bVal = b.myPlayattemptsSumDuration;
+                  break;
+                case 'averageTime':
+                  aVal = a.otherPlayattemptsAverageDuration;
+                  bVal = b.otherPlayattemptsAverageDuration;
+                  break;
+                case 'comparison':
+                default:
+                  aVal = a.performanceRatio;
+                  bVal = b.performanceRatio;
+                  break;
+              }
+              
+              return sortDirection === 'desc' ? bVal - aVal : aVal - bVal;
+            });
+
+            // Pagination
+            const itemsPerPage = 10;
+            const totalPages = Math.ceil(sortedLevels.length / itemsPerPage);
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const paginatedLevels = sortedLevels.slice(startIndex, startIndex + itemsPerPage);
+
+            const handleSort = (column: typeof sortColumn) => {
+              if (sortColumn === column) {
+                setSortDirection(sortDirection === 'desc' ? 'asc' : 'desc');
+              } else {
+                setSortColumn(column);
+                setSortDirection('desc');
+              }
+              setCurrentPage(1); // Reset to first page when sorting
+            };
+
+            const getSortIcon = (column: typeof sortColumn) => {
+              if (sortColumn !== column) return '↕️';
+              return sortDirection === 'desc' ? '↓' : '↑';
+            };
+            
+            return (
+              <div className='mt-6 bg-gray-800 rounded-lg p-4'>
+                <div className='flex items-center justify-between mb-3'>
+                  <h3 className='font-bold text-lg'>Levels Solved During {selectedPeriodData.period} ({selectedPeriodData.sublabel})</h3>
+                  <button
+                    onClick={() => setSelectedTimePeriod(null)}
+                    className='text-gray-400 hover:text-gray-200 text-xl'
+                  >
+                    ×
+                  </button>
+                </div>
+                <p className='text-sm text-gray-400 mb-4'>
+                  Performance: <span className='text-green-400 font-bold'>
+                    {selectedPeriodData.relativePerformance.toFixed(1)}% of levels faster than community
+                  </span> • 
+                  <span className='ml-2'>Levels solved: <span className='text-blue-400 font-bold'>{selectedPeriodData.levelCount}</span></span>
+                </p>
+                <p className='text-xs text-gray-500 mb-3'>
+                  Showing {paginatedLevels.length} of {sortedLevels.length} levels solved during this time period:
+                </p>
+                <div className='bg-gray-800 rounded-lg overflow-hidden'>
+                  <table className='w-full text-sm'>
+                    <thead className='bg-gray-700'>
+                      <tr>
+                        <th className='text-left p-3'>Level</th>
+                        <th className='text-center p-3'>Difficulty</th>
+                        <th className='text-center p-3'>Date Solved</th>
+                        <th 
+                          className='text-center p-3 cursor-pointer hover:bg-gray-600 select-none'
+                          onClick={() => handleSort('yourTime')}
+                        >
+                          Your Time {getSortIcon('yourTime')}
+                        </th>
+                        <th 
+                          className='text-center p-3 cursor-pointer hover:bg-gray-600 select-none'
+                          onClick={() => handleSort('averageTime')}
+                        >
+                          Average Time {getSortIcon('averageTime')}
+                        </th>
+                        <th 
+                          className='text-center p-3 cursor-pointer hover:bg-gray-600 select-none'
+                          onClick={() => handleSort('comparison')}
+                        >
+                          Comparison {getSortIcon('comparison')}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {paginatedLevels.map((level, index) => (
+                        <tr key={index} className='border-t border-gray-700'>
+                          <td className='p-3'>
+                            <FormattedLevelLink
+                              id={`time-period-level-${index}`}
+                              level={level}
+                            />
+                          </td>
+                          <td className='text-center p-3'>
+                            <span className='px-2 py-1 rounded text-xs' style={{
+                              backgroundColor: difficultyList.find(d => d.name === getDifficultyFromEstimate(level.difficulty).name)?.color + '20',
+                              color: difficultyList.find(d => d.name === getDifficultyFromEstimate(level.difficulty).name)?.color,
+                            }}>
+                              {getDifficultyFromEstimate(level.difficulty).name}
+                            </span>
+                          </td>
+                          <td className='text-center p-3 text-xs'>{level.dateSolved}</td>
+                          <td className='text-center p-3'>{dayjs.duration(level.myPlayattemptsSumDuration * 1000).format('mm:ss')}</td>
+                          <td className='text-center p-3'>{dayjs.duration(level.otherPlayattemptsAverageDuration * 1000).format('mm:ss')}</td>
+                          <td className='text-center p-3'>
+                            <div className='group relative'>
+                              <span className={`cursor-help underline decoration-dashed ${level.performanceRatio >= 1 ? 'text-green-400' : 'text-red-400'}`}>
+                                {level.performanceRatio >= 1 ? 
+                                  `${((level.performanceRatio - 1) * 100).toFixed(0)}% faster` :
+                                  `${((1 - level.performanceRatio) * 100).toFixed(0)}% slower`
+                                }
+                              </span>
+                              <div className='absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 whitespace-nowrap'>
+                                <div className='text-xs text-gray-300'>
+                                  <div>Your time: {level.myPlayattemptsSumDuration.toFixed(1)}s</div>
+                                  <div>Community average: {level.otherPlayattemptsAverageDuration.toFixed(1)}s</div>
+                                  <div>vs {level.calc_playattempts_just_beaten_count} solvers</div>
+                                  <div className={`mt-1 ${level.performanceRatio >= 1 ? 'text-green-400' : 'text-red-400'}`}>
+                                    {level.otherPlayattemptsAverageDuration.toFixed(1)}s ÷ {level.myPlayattemptsSumDuration.toFixed(1)}s = {level.performanceRatio.toFixed(2)}x
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                
+                {/* Pagination Controls */}
+                {totalPages > 1 && (
+                  <div className='flex items-center justify-between mt-4'>
+                    <div className='text-sm text-gray-400'>
+                      Page {currentPage} of {totalPages} ({sortedLevels.length} total levels)
+                    </div>
+                    <div className='flex items-center gap-2'>
+                      <button
+                        onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                        disabled={currentPage === 1}
+                        className='px-3 py-1 bg-gray-700 text-white rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-600'
+                      >
+                        Previous
+                      </button>
+                      
+                      {/* Page numbers */}
+                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                        let pageNum: number;
+                        if (totalPages <= 5) {
+                          pageNum = i + 1;
+                        } else if (currentPage <= 3) {
+                          pageNum = i + 1;
+                        } else if (currentPage >= totalPages - 2) {
+                          pageNum = totalPages - 4 + i;
+                        } else {
+                          pageNum = currentPage - 2 + i;
+                        }
+                        
+                        return (
+                          <button
+                            key={pageNum}
+                            onClick={() => setCurrentPage(pageNum)}
+                            className={`px-3 py-1 rounded text-sm ${
+                              currentPage === pageNum
+                                ? 'bg-blue-600 text-white'
+                                : 'bg-gray-700 text-white hover:bg-gray-600'
+                            }`}
+                          >
+                            {pageNum}
+                          </button>
+                        );
+                      })}
+                      
+                      <button
+                        onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                        disabled={currentPage === totalPages}
+                        className='px-3 py-1 bg-gray-700 text-white rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-600'
+                      >
+                        Next
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+          
           <div className='bg-gray-800 rounded-lg p-4'>
             <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
               <div>
@@ -741,15 +831,15 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
                 <div className='flex flex-wrap gap-2 text-xs'>
                   <div className='flex items-center gap-1'>
                     <div className='w-2 h-2 bg-green-500 rounded-full' />
-                    <span>Better (+10%+)</span>
+                    <span>Excellent (80%+)</span>
                   </div>
                   <div className='flex items-center gap-1'>
-                    <div className='w-2 h-2 bg-orange-500 rounded-full' />
-                    <span>Slightly worse</span>
+                    <div className='w-2 h-2 bg-yellow-500 rounded-full' />
+                    <span>Average (50%)</span>
                   </div>
                   <div className='flex items-center gap-1'>
                     <div className='w-2 h-2 bg-red-500 rounded-full' />
-                    <span>Much worse (-10%+)</span>
+                    <span>Poor (20%-)</span>
                   </div>
                 </div>
               </div>

@@ -28,95 +28,168 @@ interface LevelEngagementData {
 
 export default function ProfileInsightsCreatorDashboard({ user, reqUser: _reqUser, timeFilter }: ProfileInsightsCreatorDashboardProps) {
   const { proStatsUser: playLogData, isLoading: isLoadingPlayLog } = useProStatsUser(user, ProStatsUserType.PlayLogForUserCreatedLevels, timeFilter);
-  const { proStatsUser: _solvesData, isLoading: isLoadingSolves } = useProStatsUser(user, ProStatsUserType.MostSolvesForUserLevels, timeFilter);
+  const { proStatsUser: solvesData, isLoading: isLoadingSolves } = useProStatsUser(user, ProStatsUserType.MostSolvesForUserLevels, timeFilter);
 
-  // Calculate level popularity trends (simulated)
-  const popularityTrends = useMemo(() => {
+  // Calculate level popularity trends based on real data
+  const { popularityTrends, trendPeriodLabel } = useMemo(() => {
     if (!playLogData || !playLogData[ProStatsUserType.PlayLogForUserCreatedLevels]) {
-      return [];
+      return { popularityTrends: [], trendPeriodLabel: 'Activity Trends' };
     }
 
-    // Simulate 30-day trend data
-    const data: LevelPopularityData[] = [];
-    const baseActivity = 10 + Math.random() * 20;
+    const trendData = playLogData[ProStatsUserType.PlayLogForUserCreatedLevels];
+    const playLog = trendData.playLog as Array<{
+      statTs: number;
+      user: { _id: string } | null;
+      levelId: any;
+    }>;
 
-    for (let i = 29; i >= 0; i--) {
-      const date = dayjs().subtract(i, 'days');
-      const dayVariation = Math.sin(i / 7) * 5 + Math.random() * 10;
+    // Determine grouping and label based on time filter
+    let label: string;
+    let dateFormat: string;
+    let groupBy: 'day' | 'week';
 
-      data.push({
-        date: date.format('MMM DD'),
-        plays: Math.round(baseActivity + dayVariation),
-        uniquePlayers: Math.round((baseActivity + dayVariation) * 0.7),
+    switch (timeFilter) {
+    case '7d':
+      label = '7-Day Activity Trends';
+      dateFormat = 'ddd'; // Mon, Tue, Wed
+      groupBy = 'day';
+      break;
+    case '30d':
+      label = '30-Day Activity Trends';
+      dateFormat = 'MMM DD';
+      groupBy = 'day';
+      break;
+    case '1y':
+      label = 'Weekly Activity Trends (Past Year)';
+      dateFormat = 'MMM DD';
+      groupBy = 'week';
+      break;
+    default:
+      label = 'Recent Activity Trends';
+      dateFormat = 'MMM DD';
+      groupBy = 'day';
+    }
+
+    // Group play log data by time period (note: this counts solves, not total attempts)
+    const grouped: { [key: string]: { plays: number; uniqueUsers: Set<string> } } = {};
+
+    playLog.forEach(entry => {
+      const date = dayjs(entry.statTs * 1000);
+      const key = groupBy === 'week'
+        ? date.startOf('week').format(dateFormat)
+        : date.format(dateFormat);
+
+      if (!grouped[key]) {
+        grouped[key] = { plays: 0, uniqueUsers: new Set() };
+      }
+
+      grouped[key].plays++;
+
+      if (entry.user?._id) {
+        grouped[key].uniqueUsers.add(entry.user._id);
+      }
+    });
+
+    // Convert to array format for chart
+    const data: LevelPopularityData[] = Object.entries(grouped)
+      .map(([date, stats]) => ({
+        date,
+        plays: stats.plays,
+        uniquePlayers: stats.uniqueUsers.size,
+      }))
+      .sort((a, b) => {
+        // Sort chronologically
+        const dateA = dayjs(a.date, dateFormat);
+        const dateB = dayjs(b.date, dateFormat);
+
+        return dateA.isBefore(dateB) ? -1 : dateA.isAfter(dateB) ? 1 : 0;
       });
-    }
 
-    return data;
-  }, [playLogData]);
+    return { popularityTrends: data, trendPeriodLabel: label };
+  }, [playLogData, timeFilter]);
 
-  // Calculate engagement metrics
+  // Calculate real engagement metrics from data
   const engagementMetrics = useMemo(() => {
     const metrics: LevelEngagementData[] = [];
 
-    // Total plays (simulated)
-    const totalPlays = Math.round(1000 + Math.random() * 5000);
+    const metricsData = playLogData?.[ProStatsUserType.PlayLogForUserCreatedLevels];
+    const playLog = metricsData?.playLog as Array<{
+      statTs: number;
+      user: { _id: string } | null;
+      levelId: any;
+    }> || [];
+    const creatorLevels = metricsData?.creatorLevels || [];
+
+    const solvesDataArray = solvesData?.[ProStatsUserType.MostSolvesForUserLevels] as Array<{
+      sum: number;
+      user: any;
+    }> || [];
+
+    // Total solves from play log
+    const totalSolves = playLog.length;
 
     metrics.push({
-      metric: 'Total Plays',
-      value: totalPlays,
+      metric: 'Total Solves',
+      value: totalSolves,
       color: '#3B82F6',
       description: 'Across all your levels',
     });
 
-    // Average completion rate (simulated)
-    const completionRate = 60 + Math.random() * 30;
+    // Unique players count
+    const uniquePlayerIds = new Set(
+      playLog
+        .map(p => p.user?._id)
+        .filter(Boolean)
+    );
 
     metrics.push({
-      metric: 'Completion Rate',
-      value: Math.round(completionRate),
-      color: completionRate > 70 ? '#10B981' : '#F59E0B',
-      description: 'Players who finish your levels',
+      metric: 'Unique Players',
+      value: uniquePlayerIds.size,
+      color: '#10B981',
+      description: 'Different players who solved your levels',
     });
 
-    // Average difficulty rating (simulated)
-    const difficultyRating = 2 + Math.random() * 3;
+    // Most active solver
+    const topSolver = solvesDataArray[0];
 
     metrics.push({
-      metric: 'Avg Difficulty',
-      value: difficultyRating.toFixed(1),
+      metric: 'Top Solver',
+      value: topSolver ? `${topSolver.sum} levels` : '0 levels',
       color: '#8B5CF6',
-      description: 'Player-rated difficulty (1-5)',
-    });
-
-    // Player retention (simulated)
-    const retention = 40 + Math.random() * 40;
-
-    metrics.push({
-      metric: 'Return Rate',
-      value: Math.round(retention),
-      color: retention > 60 ? '#10B981' : '#EF4444',
-      description: 'Players who attempt multiple levels',
+      description: 'Most levels solved by one player',
     });
 
     return metrics;
-  }, []);
+  }, [playLogData, solvesData]);
 
-  // Level performance breakdown (simulated)
+  // Level performance breakdown using schema data
   const levelPerformance = useMemo(() => {
-    // Simulate data for top performing levels
-    const levels = [
-      { name: 'Puzzle Master', plays: 2500, rating: 4.8, completion: 85 },
-      { name: 'Mind Bender', plays: 1800, rating: 4.5, completion: 72 },
-      { name: 'Logic Gates', plays: 1200, rating: 4.2, completion: 65 },
-      { name: 'Time Trial', plays: 900, rating: 4.0, completion: 58 },
-      { name: 'Pattern Quest', plays: 600, rating: 3.8, completion: 45 },
-    ];
+    if (!playLogData || !playLogData[ProStatsUserType.PlayLogForUserCreatedLevels]) {
+      return [];
+    }
+
+    const performanceData = playLogData[ProStatsUserType.PlayLogForUserCreatedLevels];
+    const creatorLevels = performanceData.creatorLevels || [];
+
+    // Use the schema data directly instead of complex calculations
+    const levels = creatorLevels
+      .map(level => ({
+        name: level.name,
+        slug: level.slug,
+        plays: level.calc_stats_completed_count,
+        uniquePlayers: level.calc_playattempts_unique_users?.length || 0,
+      }))
+      .filter(level => level.plays > 0) // Only show levels with solves
+      .sort((a, b) => b.plays - a.plays)
+      .slice(0, 5); // Top 5 levels
+
+    const colors = ['#3B82F6', '#10B981', '#8B5CF6', '#F59E0B', '#EF4444'];
 
     return levels.map((level, index) => ({
       ...level,
-      color: ['#3B82F6', '#10B981', '#8B5CF6', '#F59E0B', '#EF4444'][index],
+      color: colors[index] || '#6B7280',
     }));
-  }, []);
+  }, [playLogData]);
 
   const isLoading = isLoadingPlayLog || isLoadingSolves;
 
@@ -157,25 +230,30 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser: _reqUse
   return (
     <div className='flex flex-col gap-6 w-full'>
       {/* Creator Stats Overview */}
-      <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
-        {engagementMetrics.map((metric, index) => (
-          <div key={index} className='bg-gray-800 rounded-lg p-4'>
-            <h3 className='text-sm text-gray-400 mb-1'>{metric.metric}</h3>
-            <p className='text-2xl font-bold' style={{ color: metric.color }}>
-              {typeof metric.value === 'number' && metric.value > 100
-                ? metric.value.toLocaleString()
-                : metric.value}
-              {metric.metric.includes('Rate') && '%'}
-            </p>
-            <p className='text-xs text-gray-500 mt-1'>{metric.description}</p>
-          </div>
-        ))}
+      <div className='flex justify-center'>
+        <div className='grid grid-cols-2 md:grid-cols-3 gap-4 max-w-4xl'>
+          {engagementMetrics.map((metric, index) => (
+            <div key={index} className='bg-gray-800 rounded-lg p-4 text-center'>
+              <h3 className='text-sm text-gray-400 mb-1'>{metric.metric}</h3>
+              <p className='text-2xl font-bold' style={{ color: metric.color }}>
+                {typeof metric.value === 'number' && metric.value > 100
+                  ? metric.value.toLocaleString()
+                  : metric.value}
+                {metric.metric.includes('Rate') && '%'}
+              </p>
+              <p className='text-xs text-gray-500 mt-1'>{metric.description}</p>
+            </div>
+          ))}
+        </div>
       </div>
       {/* Level Popularity Trends */}
       <div className='flex flex-col gap-2'>
-        <h2 className='text-xl font-bold text-center'>30-Day Activity Trends</h2>
+        <h2 className='text-xl font-bold text-center'>{trendPeriodLabel}</h2>
         <p className='text-sm text-gray-400 text-center mb-4'>
-          Player engagement with your levels over time
+          Player engagement with your levels {timeFilter && timeFilter !== 'all' ?
+            `over the ${timeFilter === '7d' ? 'last 7 days' : timeFilter === '30d' ? 'last 30 days' : timeFilter === '1y' ? 'past year' : 'selected period'}` :
+            'over time'
+          }
         </p>
         <div className='w-full h-64'>
           <ResponsiveContainer width='100%' height='100%'>
@@ -201,7 +279,7 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser: _reqUse
                 stroke='#3B82F6'
                 fill='#3B82F6'
                 fillOpacity={0.6}
-                name='Total Plays'
+                name='Total Solves'
               />
               <Area
                 type='monotone'
@@ -220,7 +298,7 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser: _reqUse
       <div className='flex flex-col gap-2'>
         <h2 className='text-xl font-bold text-center'>Top Performing Levels</h2>
         <p className='text-sm text-gray-400 text-center mb-4'>
-          Your most popular levels by play count
+          Your most popular levels by solve count
         </p>
         <div className='w-full h-64'>
           <ResponsiveContainer width='100%' height='100%'>
@@ -242,22 +320,42 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser: _reqUse
                   borderRadius: '0.5rem',
                   color: 'rgb(229, 231, 235)',
                 }}
-                // eslint-disable-next-line react/prop-types
-                formatter={(value: number, _name: string, props: { payload?: { rating: number; completion: number } }) => {
-                  // eslint-disable-next-line react/prop-types
-                  const level = props.payload;
-                  if (!level) return [null, ''];
+                content={({ active, payload, label }) => {
+                  if (active && payload && payload.length > 0 && payload[0].payload) {
+                    const level = payload[0].payload;
+                    const completedCount = payload[0].value as number;
 
-                  return [
-                    <div key='tooltip' className='text-sm'>
-                      <div>Plays: <span className='font-bold'>{value.toLocaleString()}</span></div>
-                      {/* eslint-disable-next-line react/prop-types */}
-                      <div>Rating: <span className='font-bold'>⭐ {level.rating}</span></div>
-                      {/* eslint-disable-next-line react/prop-types */}
-                      <div>Completion: <span className='font-bold'>{level.completion}%</span></div>
-                    </div>,
-                    ''
-                  ];
+                    // Find the corresponding level data to get additional info
+                    const tooltipData = playLogData?.[ProStatsUserType.PlayLogForUserCreatedLevels];
+                    const creatorLevels = tooltipData?.creatorLevels || [];
+                    const levelData = creatorLevels.find(l => l.name === label);
+                    const solvedCount = levelData?.calc_stats_completed_count || completedCount;
+
+                    return (
+                      <div className='bg-gray-800 p-4 rounded-xl shadow-lg border border-gray-600'>
+                        <div className='text-center mb-3'>
+                          <h4 className='font-bold text-blue-400 text-lg'>{label}</h4>
+                          <div className='w-12 h-0.5 bg-blue-400 mx-auto mt-1' />
+                        </div>
+                        <div className='space-y-2 text-sm'>
+                          <div className='flex items-center justify-between gap-4'>
+                            <span className='text-gray-300'>Completed:</span>
+                            <span className='font-bold text-white text-lg'>{completedCount.toLocaleString()}</span>
+                          </div>
+                          <div className='flex items-center justify-between gap-4'>
+                            <span className='text-gray-300'>Solved:</span>
+                            <span className='font-bold text-green-300 text-lg'>{solvedCount.toLocaleString()}</span>
+                          </div>
+                          <div className='flex items-center justify-between gap-4'>
+                            <span className='text-gray-300'>Unique players:</span>
+                            <span className='font-semibold text-blue-300'>{level.uniquePlayers}</span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  return null;
                 }}
               />
               <Bar dataKey='plays' radius={[8, 8, 0, 0]}>
@@ -270,9 +368,11 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser: _reqUse
         </div>
       </div>
       {/* Existing Components */}
-      <div className='flex flex-col md:flex-row gap-3'>
-        <ProfileInsightsLevelPlayLog user={user} />
-        <ProfileInsightsMostSolves user={user} />
+      <div className='flex justify-center'>
+        <div className='grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-6xl'>
+          <ProfileInsightsLevelPlayLog user={user} timeFilter={timeFilter} />
+          <ProfileInsightsMostSolves user={user} timeFilter={timeFilter} />
+        </div>
       </div>
       {/* Creator Tips */}
       <div className='bg-gray-800 rounded-lg p-6'>
@@ -281,17 +381,18 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser: _reqUse
           <div>
             <h4 className='font-semibold text-blue-400 mb-2'>What&apos;s Working Well</h4>
             <ul className='space-y-1 text-gray-300'>
-              {(typeof engagementMetrics[1].value === 'number' && engagementMetrics[1].value > 70) && <li>• High completion rates show good difficulty balance</li>}
-              {(typeof engagementMetrics[3].value === 'number' && engagementMetrics[3].value > 60) && <li>• Strong player retention across your levels</li>}
-              {levelPerformance[0].rating >= 4.5 && <li>• Top levels are highly rated by players</li>}
-              <li>• Consistent player engagement over time</li>
+              {engagementMetrics[0] && typeof engagementMetrics[0].value === 'number' && engagementMetrics[0].value > 50 && <li>• Strong level activity with {engagementMetrics[0].value} total plays</li>}
+              {engagementMetrics[1] && typeof engagementMetrics[1].value === 'number' && engagementMetrics[1].value > 10 && <li>• Good reach with {engagementMetrics[1].value} unique players</li>}
+              {engagementMetrics[2] && typeof engagementMetrics[2].value === 'string' && engagementMetrics[2].value.includes('levels') && <li>• Top solver is very engaged with {engagementMetrics[2].value}</li>}
+              {levelPerformance.length > 0 && <li>• Your most popular level has {levelPerformance[0].plays} plays</li>}
             </ul>
           </div>
           <div>
             <h4 className='font-semibold text-yellow-400 mb-2'>Areas to Explore</h4>
             <ul className='space-y-1 text-gray-300'>
-              {(typeof engagementMetrics[1].value === 'number' && engagementMetrics[1].value < 50) && <li>• Consider adjusting difficulty for better completion</li>}
-              {(typeof engagementMetrics[3].value === 'number' && engagementMetrics[3].value < 40) && <li>• Try creating level series to improve retention</li>}
+              {engagementMetrics[0] && typeof engagementMetrics[0].value === 'number' && engagementMetrics[0].value < 10 && <li>• Consider promoting your levels to increase visibility</li>}
+              {engagementMetrics[1] && typeof engagementMetrics[1].value === 'number' && engagementMetrics[1].value < 5 && <li>• Try different difficulty levels to reach more players</li>}
+              {levelPerformance.length > 0 && levelPerformance[0].engagement < 50 && <li>• Focus on levels that encourage repeat attempts</li>}
               <li>• Experiment with different puzzle mechanics</li>
               <li>• Engage with player feedback in comments</li>
             </ul>

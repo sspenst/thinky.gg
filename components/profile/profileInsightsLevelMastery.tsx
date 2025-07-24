@@ -174,34 +174,6 @@ export default function ProfileInsightsLevelMastery({ user, reqUser, timeFilter 
     return difficultyTimeline.find(entry => entry.monthKey === selectedMonth);
   }, [selectedMonth, difficultyTimeline]);
 
-  // Analyze retry patterns (simulated - would need actual attempt data)
-  const retryAnalysis = useMemo(() => {
-    if (!difficultyData || !difficultyData[ProStatsUserType.DifficultyLevelsComparisons]) {
-      return [];
-    }
-
-    const comparisons = difficultyData[ProStatsUserType.DifficultyLevelsComparisons] as any[];
-
-    // Filter levels that took longer than average and preserve original level data
-    return comparisons
-      .filter(c => c.myPlayattemptsSumDuration && c.otherPlayattemptsAverageDuration &&
-                  c.myPlayattemptsSumDuration > c.otherPlayattemptsAverageDuration * 1.5)
-      .slice(0, 5)
-      .map(c => ({
-        // Preserve the original level object for FormattedLevelLink
-        _id: c._id,
-        name: c.name,
-        slug: c.slug,
-        // Add computed fields for display
-        attempts: Math.ceil(c.myPlayattemptsSumDuration / c.otherPlayattemptsAverageDuration * 2),
-        finalTime: c.myPlayattemptsSumDuration,
-        improvement: Math.round((1 - c.otherPlayattemptsAverageDuration / c.myPlayattemptsAverageDuration) * 100),
-        difficulty: getDifficultyFromEstimate(c.difficulty).name,
-        difficultyRating: c.difficulty, // Store raw difficulty for rating display
-        // Include other properties that FormattedLevelLink might need
-        ...c
-      }));
-  }, [difficultyData]);
 
   const isOwnProfile = reqUser?._id === user._id;
   const isAdmin = reqUser?.roles?.includes(Role.ADMIN);
@@ -281,6 +253,9 @@ export default function ProfileInsightsLevelMastery({ user, reqUser, timeFilter 
               ? 'Average difficulty of levels solved each month'
               : 'Highest difficulty level reached each month'
             }
+            <span className='block text-xs text-gray-500 mt-1'>
+              💡 Click on any data point to see the hardest levels solved that month
+            </span>
           </p>
           <div className='w-full h-64'>
             <ResponsiveContainer width='100%' height='100%'>
@@ -310,18 +285,31 @@ export default function ProfileInsightsLevelMastery({ user, reqUser, timeFilter 
                 <Tooltip
                   contentStyle={{
                     backgroundColor: 'rgb(31, 41, 55)',
-                    border: 'none',
+                    border: '1px solid rgb(75, 85, 99)',
                     borderRadius: '0.5rem',
                     color: 'rgb(229, 231, 235)',
+                    boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
                   }}
                   formatter={(value: number, name: string, props: any) => {
                     const data = props.payload;
 
                     return [
-                      <div key='tooltip' className='text-sm text-gray-100'>
-                        <div>{timelineMode === 'average' ? 'Avg' : 'Max'} Difficulty: <span className='font-bold'>{getDifficultyFromEstimate(value).name}</span></div>
-                        <div>Levels solved: <span className='font-bold'>{data.levelCount}</span></div>
-                        <div>Rating: <span className='font-bold'>{value.toFixed(0)}</span></div>
+                      <div key='tooltip' className='text-sm'>
+                        <div className='font-bold text-blue-400 mb-2'>{data.date}</div>
+                        <div className='space-y-1'>
+                          <div>{timelineMode === 'average' ? 'Average' : 'Maximum'} Difficulty: 
+                            <span className='font-bold text-green-400 ml-1'>{getDifficultyFromEstimate(value).name}</span>
+                          </div>
+                          <div>Levels solved this month: <span className='font-bold text-yellow-400'>{data.levelCount}</span></div>
+                          {timelineMode === 'average' && data.maxDifficulty !== value && (
+                            <div className='text-xs text-gray-400'>
+                              Hardest level: {getDifficultyFromEstimate(data.maxDifficulty).name}
+                            </div>
+                          )}
+                        </div>
+                        <div className='text-xs text-blue-300 mt-2 pt-2 border-t border-gray-600'>
+                          🖱️ Click to see the hardest levels from this month
+                        </div>
                       </div>,
                       ''
                     ];
@@ -380,68 +368,6 @@ export default function ProfileInsightsLevelMastery({ user, reqUser, timeFilter 
               </div>
             </div>
           )}
-        </div>
-      )}
-      {/* Retry Analysis */}
-      {retryAnalysis.length > 0 && (
-        <div className='flex flex-col gap-2'>
-          <h2 className='text-xl font-bold text-center'>Your Most Challenging Conquests</h2>
-          <p className='text-sm text-gray-400 text-center mb-4'>
-            These levels took you longer than the average player, showing your perseverance in tackling difficult puzzles.
-            The time shown is your total solving time compared to the community average.
-          </p>
-          <div className='bg-gray-800 rounded-lg overflow-hidden'>
-            <table className='w-full text-sm'>
-              <thead className='bg-gray-700'>
-                <tr>
-                  <th className='text-left p-3'>Level</th>
-                  <th className='text-center p-3'>Difficulty</th>
-                  <th className='text-center p-3'>Your Time</th>
-                  <th className='text-center p-3'>Average Time</th>
-                  <th className='text-center p-3'>Comparison</th>
-                </tr>
-              </thead>
-              <tbody>
-                {retryAnalysis.map((level, index) => (
-                  <tr key={index} className='border-t border-gray-700'>
-                    <td className='p-3'>
-                      <FormattedLevelLink
-                        id={`challenging-level-${index}`}
-                        level={level}
-                      />
-                    </td>
-                    <td className='text-center p-3'>
-                      <span className='px-2 py-1 rounded text-xs' style={{
-                        backgroundColor: difficultyProgression.find(d => d.name === level.difficulty)?.color + '20',
-                        color: difficultyProgression.find(d => d.name === level.difficulty)?.color,
-                      }}>
-                        {level.difficultyRating ? getDifficultyFromEstimate(level.difficultyRating).name : level.difficulty}
-                      </span>
-                    </td>
-                    <td className='text-center p-3'>{dayjs.duration(level.finalTime * 1000).format('mm:ss')}</td>
-                    <td className='text-center p-3'>{dayjs.duration(level.otherPlayattemptsAverageDuration * 1000).format('mm:ss')}</td>
-                    <td className='text-center p-3'>
-                      <div className='group relative'>
-                        <span className='text-yellow-400 cursor-help underline decoration-dashed'>
-                          {(level.finalTime / level.otherPlayattemptsAverageDuration).toFixed(1)}x longer
-                        </span>
-                        <div className='absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 whitespace-nowrap'>
-                          <div className='text-xs text-gray-300'>
-                            <div>Your time: {level.finalTime}s</div>
-                            <div>Average: {level.otherPlayattemptsAverageDuration.toFixed(1)}s</div>
-                            <div className='mt-1 text-yellow-400'>
-                              {level.finalTime}s ÷ {level.otherPlayattemptsAverageDuration.toFixed(1)}s = {(level.finalTime / level.otherPlayattemptsAverageDuration).toFixed(2)}x
-                            </div>
-                          </div>
-                          <div className='absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-700' />
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
         </div>
       )}
       {/* Personal Records */}

@@ -21,7 +21,7 @@ export default function ProfileInsightsRecords({ user }: {user: User}) {
 
   return (<>
     <h2 className='text-xl font-bold break-words max-w-full'>Level Records by {user.name}</h2>
-    <div className='w-full max-w-lg'>
+    <div className='w-full'>
       <DataTableOffline
         columns={[
           {

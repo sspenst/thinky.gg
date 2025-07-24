@@ -18,7 +18,16 @@ export interface ProStatsUser {
   [ProStatsUserType.ScoreHistory]?: DateAndSum[];
   [ProStatsUserType.DifficultyLevelsComparisons]?: DifficultyLevelComparison[];
   [ProStatsUserType.MostSolvesForUserLevels]?: UserAndSum[];
-  [ProStatsUserType.PlayLogForUserCreatedLevels]?: UserLevelAndStatTs[];
+  [ProStatsUserType.PlayLogForUserCreatedLevels]?: {
+    playLog: UserLevelAndStatTs[];
+    creatorLevels: Array<{
+      _id: string;
+      name: string;
+      slug: string;
+      calc_stats_completed_count: number;
+      calc_playattempts_unique_users: string[];
+    }>;
+  };
   [ProStatsUserType.Records]?: LevelWithRecordHistory[];
 }
 

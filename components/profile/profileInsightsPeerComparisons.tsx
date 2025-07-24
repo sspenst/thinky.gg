@@ -1,9 +1,11 @@
 import Role from '@root/constants/role';
 import useProStatsUser, { ProStatsUserType } from '@root/hooks/useProStatsUser';
+import dayjs from 'dayjs';
 import React, { useMemo, useState } from 'react';
 import { Bar, Cell, ComposedChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import User from '../../models/db/user';
 import { difficultyList, getDifficultyFromEstimate } from '../formatted/formattedDifficulty';
+import FormattedLevelLink from '../formatted/formattedLevelLink';
 import { TimeFilter } from './profileInsights';
 import ProfileInsightsSolveTimeComparison from './profileInsightsSolveTimeComparison';
 
@@ -27,6 +29,36 @@ interface PercentileData {
 export default function ProfileInsightsPeerComparisons({ user, reqUser, timeFilter }: ProfileInsightsPeerComparisonsProps) {
   const { proStatsUser: difficultyData, isLoading } = useProStatsUser(user, ProStatsUserType.DifficultyLevelsComparisons, timeFilter);
   const [showTooltip, setShowTooltip] = useState(false);
+
+  // Analyze retry patterns using real difficulty comparison data
+  const challengingConquests = useMemo(() => {
+    if (!difficultyData || !difficultyData[ProStatsUserType.DifficultyLevelsComparisons]) {
+      return [];
+    }
+
+    const comparisons = difficultyData[ProStatsUserType.DifficultyLevelsComparisons] as any[];
+
+    // Filter levels that took longer than average and preserve original level data
+    return comparisons
+      .filter(c => c.myPlayattemptsSumDuration && c.otherPlayattemptsAverageDuration &&
+                  c.myPlayattemptsSumDuration > c.otherPlayattemptsAverageDuration * 1.5)
+      .slice(0, 5)
+      .map(c => ({
+        // Preserve the original level object for FormattedLevelLink
+        _id: c._id,
+        name: c.name,
+        slug: c.slug,
+        // Add computed fields for display
+        attempts: Math.ceil(c.myPlayattemptsSumDuration / c.otherPlayattemptsAverageDuration * 2),
+        finalTime: c.myPlayattemptsSumDuration,
+        improvement: Math.round((1 - c.otherPlayattemptsAverageDuration / c.myPlayattemptsAverageDuration) * 100),
+        difficulty: getDifficultyFromEstimate(c.difficulty).name,
+        difficultyRating: c.difficulty, // Store raw difficulty for rating display
+        otherPlayattemptsAverageDuration: c.otherPlayattemptsAverageDuration,
+        // Include other properties that FormattedLevelLink might need
+        ...c
+      }));
+  }, [difficultyData]);
 
   // Calculate percentile rankings by difficulty
   const percentileData = useMemo(() => {
@@ -263,7 +295,7 @@ export default function ProfileInsightsPeerComparisons({ user, reqUser, timeFilt
         levels: item.totalLevels,
         bonusWeight: bonusWeight > 0 ? bonusWeight : undefined,
         bonusLevels: item.totalLevels > 7 ? item.totalLevels - 7 : undefined,
-        originalPercentile: (item.difficulty === 'Super Grandmaster' || item.difficulty === 'Grandmaster') && finalPercentile !== item.percentile ? item.percentile : undefined
+        originalPercentile: (item.difficulty === 'Super Grandmaster' && finalPercentile !== item.percentile) || (item.difficulty === 'Grandmaster' && item.totalLevels > 7) ? item.percentile : undefined
       };
     });
 
@@ -660,6 +692,74 @@ export default function ProfileInsightsPeerComparisons({ user, reqUser, timeFilt
           </div>
         </div>
       </div>
+      
+      {/* Your Most Challenging Conquests */}
+      {challengingConquests.length > 0 && (
+        <div className='flex flex-col gap-2'>
+          <h2 className='text-xl font-bold text-center'>Your Most Challenging Conquests</h2>
+          <p className='text-sm text-gray-400 text-center mb-4'>
+            These levels took you longer than the average player, showing your perseverance in tackling difficult puzzles.
+            The time shown is your total solving time compared to the community average.
+            {timeFilter && timeFilter !== 'all' && (
+              <span className='block text-xs text-gray-500 mt-1'>
+                From the {timeFilter === '7d' ? 'last 7 days' : timeFilter === '30d' ? 'last 30 days' : timeFilter === '1y' ? 'last year' : 'selected period'}
+              </span>
+            )}
+          </p>
+          <div className='bg-gray-800 rounded-lg overflow-hidden'>
+            <table className='w-full text-sm'>
+              <thead className='bg-gray-700'>
+                <tr>
+                  <th className='text-left p-3'>Level</th>
+                  <th className='text-center p-3'>Difficulty</th>
+                  <th className='text-center p-3'>Your Time</th>
+                  <th className='text-center p-3'>Average Time</th>
+                  <th className='text-center p-3'>Comparison</th>
+                </tr>
+              </thead>
+              <tbody>
+                {challengingConquests.map((level, index) => (
+                  <tr key={index} className='border-t border-gray-700'>
+                    <td className='p-3'>
+                      <FormattedLevelLink
+                        id={`challenging-level-${index}`}
+                        level={level}
+                      />
+                    </td>
+                    <td className='text-center p-3'>
+                      <span className='px-2 py-1 rounded text-xs' style={{
+                        backgroundColor: difficultyList.find(d => d.name === level.difficulty)?.color + '20',
+                        color: difficultyList.find(d => d.name === level.difficulty)?.color,
+                      }}>
+                        {level.difficultyRating ? getDifficultyFromEstimate(level.difficultyRating).name : level.difficulty}
+                      </span>
+                    </td>
+                    <td className='text-center p-3'>{dayjs.duration(level.finalTime * 1000).format('mm:ss')}</td>
+                    <td className='text-center p-3'>{dayjs.duration(level.otherPlayattemptsAverageDuration * 1000).format('mm:ss')}</td>
+                    <td className='text-center p-3'>
+                      <div className='group relative'>
+                        <span className='text-yellow-400 cursor-help underline decoration-dashed'>
+                          {(level.finalTime / level.otherPlayattemptsAverageDuration).toFixed(1)}x longer
+                        </span>
+                        <div className='absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 whitespace-nowrap'>
+                          <div className='text-xs text-gray-300'>
+                            <div>Your time: {level.finalTime}s</div>
+                            <div>Average: {level.otherPlayattemptsAverageDuration.toFixed(1)}s</div>
+                            <div className='mt-1 text-yellow-400'>
+                              {level.finalTime}s ÷ {level.otherPlayattemptsAverageDuration.toFixed(1)}s = {(level.finalTime / level.otherPlayattemptsAverageDuration).toFixed(2)}x
+                            </div>
+                          </div>
+                          <div className='absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-700' />
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
