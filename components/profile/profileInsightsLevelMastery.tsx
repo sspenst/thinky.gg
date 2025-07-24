@@ -297,7 +297,7 @@ export default function ProfileInsightsLevelMastery({ user, reqUser, timeFilter 
                       <div key='tooltip' className='text-sm'>
                         <div className='font-bold text-blue-400 mb-2'>{data.date}</div>
                         <div className='space-y-1'>
-                          <div>{timelineMode === 'average' ? 'Average' : 'Maximum'} Difficulty: 
+                          <div>{timelineMode === 'average' ? 'Average' : 'Maximum'} Difficulty:
                             <span className='font-bold text-green-400 ml-1'>{getDifficultyFromEstimate(value).name}</span>
                           </div>
                           <div>Levels solved this month: <span className='font-bold text-yellow-400'>{data.levelCount}</span></div>
@@ -326,7 +326,7 @@ export default function ProfileInsightsLevelMastery({ user, reqUser, timeFilter 
               </LineChart>
             </ResponsiveContainer>
           </div>
-          
+
           {/* Selected Month Details */}
           {selectedMonthData && (
             <div className='mt-6 bg-gray-800 rounded-lg p-4'>

@@ -492,8 +492,7 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser: _reqUse
               Analyzing activity patterns from the last 30 days
           </span>
         </p>
-          
-          {/* Recommendations */}
+        {/* Recommendations */}
         <div className='grid grid-cols-1 md:grid-cols-2 gap-4 mb-6'>
           <div className='bg-gray-800 rounded-lg p-4 text-center border-2 border-green-500'>
             <h3 className='text-green-400 font-bold text-lg mb-2'>🕐 Best Time of Day</h3>
@@ -518,8 +517,7 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser: _reqUse
         <div className='bg-gray-800 rounded-lg p-4'>
           <h4 className='font-bold text-lg mb-3 text-center'>Follower Activity Heatmap ({userTimezone})</h4>
           <p className='text-xs text-gray-400 text-center mb-4'>Darker colors indicate more active followers at that time</p>
-            
-            <div className='w-full overflow-x-auto'>
+          <div className='w-full overflow-x-auto'>
             <div className='min-w-[800px]'>
               {/* Hour labels */}
               <div className='flex'>
@@ -547,8 +545,7 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser: _reqUse
                     <div className='w-16 text-xs text-gray-400 text-right pr-3 py-1'>
                       {dayLabel}
                     </div>
-                      
-                      {/* Hour cells for this day */}
+                    {/* Hour cells for this day */}
                     {Array.from({ length: 24 }, (_, hour) => {
                       // Find the specific day-hour combination data
                       const heatmapEntry = followerData[ProStatsUserType.FollowerActivityPatterns]?.heatmapData.find(
@@ -633,7 +630,6 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser: _reqUse
             <p className='text-sm text-gray-400'>Insights about levels {user.name} has created</p>
           </div>
         </div>
-        
         <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
           {/* What's Working Well */}
           <div className='bg-gradient-to-br from-green-900/30 to-emerald-900/20 rounded-lg p-4 border border-green-500/20'>
@@ -781,7 +777,7 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser: _reqUse
                       🔗 Connect Discord from your account settings •
                       <a href='https://discord.gg/j6RxRdqq4A' target='_blank' rel='noopener noreferrer' className='text-blue-400 hover:text-blue-300 ml-1'>
                         Join our Discord
-                      </a> if you haven't already
+                      </a> if you haven&apos;t already
                     </p>
                   </div>
                 </div>

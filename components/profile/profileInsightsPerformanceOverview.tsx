@@ -49,7 +49,7 @@ function getPerformanceColor(performance: number, baseline: number = 50): string
   if (baseline === 100) {
     // For level type performance (100 = baseline)
     if (performance >= 130) return '#10B981'; // green-500 - Much better than your average
-    if (performance >= 110) return '#3B82F6'; // blue-500 - Better than your average  
+    if (performance >= 110) return '#3B82F6'; // blue-500 - Better than your average
     if (performance >= 90) return '#F59E0B'; // amber-500 - Similar to your average
     if (performance >= 70) return '#EF4444'; // red-500 - Worse than your average
     return '#6B7280'; // gray-500 - Much worse than your average
@@ -263,7 +263,7 @@ export default function ProfileInsightsPerformanceOverview({ user, reqUser, time
     }
 
     const comparisons = difficultyData[ProStatsUserType.DifficultyLevelsComparisons] as DifficultyLevelComparison[];
-    
+
     // Debug: Check if level data is available
     console.log('🔍 Sample level data:', comparisons.slice(0, 3).map(c => ({
       name: c.name,
@@ -271,11 +271,11 @@ export default function ProfileInsightsPerformanceOverview({ user, reqUser, time
       dataLength: c.data?.length || 0,
       dataSample: c.data?.substring(0, 20) + '...'
     })));
-    
+
     // Calculate user's overall average solve time (for comparison baseline)
     let totalTime = 0;
     let totalLevels = 0;
-    
+
     comparisons.forEach(c => {
       if (c.myPlayattemptsSumDuration && c.myPlayattemptsSumDuration > 0) {
         totalTime += c.myPlayattemptsSumDuration;
@@ -284,22 +284,22 @@ export default function ProfileInsightsPerformanceOverview({ user, reqUser, time
     });
 
     const userAverageTime = totalLevels > 0 ? totalTime / totalLevels : 0;
-    
+
     // Categorize levels by type
     const levelTypes = new Map<string, { times: number[], totalTime: number, count: number }>();
     let processedLevels = 0;
     let levelsWithData = 0;
-    
+
     comparisons.forEach(c => {
       if (!c.myPlayattemptsSumDuration || c.myPlayattemptsSumDuration <= 0) return;
       processedLevels++;
-      
+
       // Analyze the level data to determine type
       const levelData = c.data || '';
       if (levelData) levelsWithData++;
-      
+
       const hasHoles = levelData.includes(TileType.Hole);
-      
+
       // Check for restricted movables (directional tiles)
       const restrictedTiles = [
         TileType.Left, TileType.Up, TileType.Right, TileType.Down,
@@ -308,7 +308,7 @@ export default function ProfileInsightsPerformanceOverview({ user, reqUser, time
         TileType.LeftRight, TileType.UpDown
       ];
       const hasRestrictedMovables = restrictedTiles.some(tile => levelData.includes(tile));
-      
+
       let levelType: string;
       if (hasHoles && hasRestrictedMovables) {
         levelType = 'Complex Levels (Holes + Restricted Movables)';
@@ -319,11 +319,11 @@ export default function ProfileInsightsPerformanceOverview({ user, reqUser, time
       } else {
         levelType = 'Basic Levels (Regular Movables Only)';
       }
-      
+
       if (!levelTypes.has(levelType)) {
         levelTypes.set(levelType, { times: [], totalTime: 0, count: 0 });
       }
-      
+
       const bucket = levelTypes.get(levelType)!;
       bucket.times.push(c.myPlayattemptsSumDuration);
       bucket.totalTime += c.myPlayattemptsSumDuration;
@@ -343,10 +343,10 @@ export default function ProfileInsightsPerformanceOverview({ user, reqUser, time
 
     // Add "All Levels" category
     if (totalLevels > 0) {
-      levelTypes.set('All Levels', { 
+      levelTypes.set('All Levels', {
         times: comparisons.filter(c => c.myPlayattemptsSumDuration && c.myPlayattemptsSumDuration > 0).map(c => c.myPlayattemptsSumDuration!),
         totalTime: totalTime,
-        count: totalLevels 
+        count: totalLevels
       });
     }
 
@@ -357,7 +357,7 @@ export default function ProfileInsightsPerformanceOverview({ user, reqUser, time
         const avgTime = data.totalTime / data.count;
         // Performance relative to user's overall average (100 = same as average, >100 = better than average, <100 = worse)
         const performance = userAverageTime > 0 ? Math.round((userAverageTime / avgTime) * 100) : 100;
-        
+
         return {
           difficulty: levelType,
           performance: Math.min(200, Math.max(25, performance)), // Cap between 25-200 for chart readability
@@ -456,7 +456,7 @@ export default function ProfileInsightsPerformanceOverview({ user, reqUser, time
       </div>
       {/* Score History Chart */}
       <ProfileInsightsScoreChart user={user} timeFilter={timeFilter} />
-      
+
       {/* Difficulty Conquest Map */}
       <div className='flex flex-col gap-2'>
         <h2 className='text-xl font-bold text-center'>Difficulty Conquest Map</h2>
@@ -548,7 +548,7 @@ export default function ProfileInsightsPerformanceOverview({ user, reqUser, time
                       <div key='tooltip' className='text-sm'>
                         <div className='font-bold text-blue-400 mb-2'>{data.date}</div>
                         <div className='space-y-1'>
-                          <div>{timelineMode === 'average' ? 'Average' : 'Maximum'} Difficulty: 
+                          <div>{timelineMode === 'average' ? 'Average' : 'Maximum'} Difficulty:
                             <span className='font-bold text-green-400 ml-1'>{getDifficultyFromEstimate(value).name}</span>
                           </div>
                           <div>Levels solved this month: <span className='font-bold text-yellow-400'>{data.levelCount}</span></div>
@@ -577,7 +577,7 @@ export default function ProfileInsightsPerformanceOverview({ user, reqUser, time
               </LineChart>
             </ResponsiveContainer>
           </div>
-          
+
           {/* Selected Month Details */}
           {selectedMonthData && (
             <div className='mt-6 bg-gray-800 rounded-lg p-4'>

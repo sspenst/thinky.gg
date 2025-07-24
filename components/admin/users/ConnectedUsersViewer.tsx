@@ -117,7 +117,7 @@ export default function ConnectedUsersViewer({
                 <span className='text-xs text-gray-400'>Click to view</span>
               </div>
             </div>
-            
+
             {/* Activity Stats */}
             <div className='flex items-center gap-4 mb-2 text-xs text-gray-600 dark:text-gray-400'>
               <div className='flex items-center gap-1'>
@@ -133,7 +133,7 @@ export default function ConnectedUsersViewer({
                 </span>
               </div>
             </div>
-            
+
             <div className='grid grid-cols-2 gap-4 text-xs text-gray-500 dark:text-gray-400'>
               <div>
                 <span className='font-medium'>Registered:</span>
