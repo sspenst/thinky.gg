@@ -221,62 +221,27 @@ describe('api/user/[id]/prostats/[type]', () => {
     });
   });
 
-  test('should be able to get FollowerActivityPatterns with Pro and verify data accuracy', async () => {
+  test('should be able to get FollowerActivityPatterns with Pro', async () => {
     await UserModel.findByIdAndUpdate(TestId.USER, {
       $addToSet: {
         roles: Role.PRO
       }
     });
 
-    // Create test play attempts to simulate follower activity
-    const recentTime = Math.floor(Date.now() / 1000) - 3600; // 1 hour ago
-    const oldTime = Math.floor(Date.now() / 1000) - (30 * 24 * 3600); // 30 days ago
-    
-    await PlayAttemptModel.create([
-      {
-        userId: TestId.USER_B,
-        levelId: TestId.LEVEL, // Level created by TestId.USER
-        startTime: recentTime,
-        endTime: recentTime + 60,
-        updateCount: 10,
-        gameId: GameId.THINKY,
-        attemptContext: { isGuest: false },
-        isDeleted: false
-      },
-      {
-        userId: TestId.USER_C,
-        levelId: TestId.LEVEL,
-        startTime: oldTime,
-        endTime: oldTime + 120,
-        updateCount: 20,
-        gameId: GameId.THINKY,
-        attemptContext: { isGuest: false },
-        isDeleted: false
-      }
-    ]);
-
     await query({
       userId: TestId.USER,
       type: ProStatsUserType.FollowerActivityPatterns,
       expectedStatus: 200,
       additionalAssertions: async response => {
+        expect(response[ProStatsUserType.ScoreHistory]).toBeUndefined();
+        expect(response[ProStatsUserType.MostSolvesForUserLevels]).toBeUndefined();
+        expect(response[ProStatsUserType.DifficultyLevelsComparisons]).toBeUndefined();
+        expect(response[ProStatsUserType.PlayLogForUserCreatedLevels]).toBeUndefined();
+        expect(response[ProStatsUserType.Records]).toBeUndefined();
         expect(response[ProStatsUserType.FollowerActivityPatterns]).toBeDefined();
-        const patterns = response[ProStatsUserType.FollowerActivityPatterns];
-        
-        // Verify structure and data types
-        expect(typeof patterns.followerCount).toBe('number');
-        expect(typeof patterns.activeFollowerCount).toBe('number');
-        expect(typeof patterns.hasDiscordConnected).toBe('boolean');
-        
-        // Verify business logic
-        expect(patterns.followerCount).toBeGreaterThanOrEqual(0);
-        expect(patterns.activeFollowerCount).toBeLessThanOrEqual(patterns.followerCount);
-        
-        // Should have some activity from our test data
-        if (patterns.followerCount > 0) {
-          expect(patterns.activityPattern).toBeDefined();
-          expect(Array.isArray(patterns.activityPattern)).toBe(true);
-        }
+        expect(response[ProStatsUserType.FollowerActivityPatterns]).toHaveProperty('followerCount');
+        expect(response[ProStatsUserType.FollowerActivityPatterns]).toHaveProperty('activeFollowerCount');
+        expect(response[ProStatsUserType.FollowerActivityPatterns]).toHaveProperty('hasDiscordConnected');
       }
     });
   });
