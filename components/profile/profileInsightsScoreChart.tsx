@@ -51,8 +51,9 @@ export default function ProfileInsightsScoreChart({ user, timeFilter }: { user: 
   const [enableCumulative, setEnableCumulative] = useState(false);
   const [enableDaily, setEnableDaily] = useState(true);
   const { proStatsUser: scoreChartData } = useProStatsUser(user, ProStatsUserType.ScoreHistory, timeFilter);
-  const { proStatsUser: compareUserData } = useProStatsUser(compareUser, ProStatsUserType.ScoreHistory, timeFilter);
+  const { proStatsUser: compareUserData, isLoading: compareUserLoading } = useProStatsUser(compareUser, ProStatsUserType.ScoreHistory, timeFilter);
   const compareData = compareUserData?.[ProStatsUserType.ScoreHistory];
+
 
   const scores = scoreChartData?.[ProStatsUserType.ScoreHistory] as DateAndSum[] || [];
 
@@ -97,6 +98,17 @@ export default function ProfileInsightsScoreChart({ user, timeFilter }: { user: 
           }}
           placeholder='Find a user to compare...'
         />
+        {compareUser && compareUserLoading && (
+          <div className='flex items-center gap-2 text-sm text-gray-400'>
+            <div className='animate-spin rounded-full h-4 w-4 border-b-2 border-blue-400' />
+            Loading {compareUser.name}...
+          </div>
+        )}
+        {compareUser && !compareUserLoading && compareData && compareData.length > 0 && (
+          <div className='flex items-center gap-2 text-sm text-green-400'>
+            ✅ Comparing with {compareUser.name} ({compareData.length} data points)
+          </div>
+        )}
       </div>
       <div className='flex gap-4 justify-center'>
         <div className='flex gap-2'>
@@ -112,11 +124,11 @@ export default function ProfileInsightsScoreChart({ user, timeFilter }: { user: 
         <ComposedChart title='Score History' data={mergedData}>
           {enableDaily && <Bar name={user.name + ' Daily Solved'} dataKey='sum' fill='lightgreen' yAxisId='left' />}
           {enableCumulative && <Line name={user.name + ' Total'} dot={false} connectNulls dataKey='cumulativeSum' stroke='rgba(75, 192, 192)' yAxisId='right' />}
-          {compareData && compareData.length > 0 && (
-            <>
-              {enableDaily && <Bar name={compareUser?.name + ' Daily'} dataKey='sumCompare' fill='gray' yAxisId='left' />}
-              {enableCumulative && <Line connectNulls name={compareUser?.name + ' Total'} dot={false} dataKey='cumulativeSumCompare' stroke='rgba(192, 75, 75)' yAxisId='right' />}
-            </>
+{compareData && compareData.length > 0 && enableDaily && (
+            <Bar name={compareUser?.name + ' Daily'} dataKey='sumCompare' fill='#FF6B6B' yAxisId='left' />
+          )}
+          {compareData && compareData.length > 0 && enableCumulative && (
+            <Line connectNulls name={compareUser?.name + ' Total'} dot={false} dataKey='cumulativeSumCompare' stroke='rgba(192, 75, 75)' yAxisId='right' />
           )}
           <Legend verticalAlign='top' height={36} />
           <CartesianGrid strokeDasharray='3 3' vertical={false} />
