@@ -70,7 +70,14 @@ export default function ProfileInsightsScoreChart({ user, timeFilter }: { user: 
   );
 
   if (!scoreChartData || !scoreChartData[ProStatsUserType.ScoreHistory]) {
-    return <span>Loading...</span>;
+    return (
+      <div className='flex flex-col gap-2'>
+        <div className='h-6 bg-gray-700 rounded w-32 animate-pulse' />
+        <div className='h-4 bg-gray-700 rounded w-96 animate-pulse' />
+        <div className='h-4 bg-gray-700 rounded w-80 animate-pulse' />
+        <div className='bg-gray-800 rounded-lg animate-pulse h-80 mt-4' />
+      </div>
+    );
   }
 
   // use recharts to create a score chart over time

@@ -7,8 +7,7 @@ import duration from 'dayjs/plugin/duration';
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
 import { useContext, useMemo, useState } from 'react';
-import { Line, LineChart, PolarAngleAxis, PolarGrid, PolarRadiusAxis, Radar, RadarChart, ResponsiveContainer, Text, Tooltip, XAxis, YAxis } from 'recharts';
-import TileType from '../../constants/tileType';
+import { Line, LineChart, ResponsiveContainer, Text, Tooltip, XAxis, YAxis } from 'recharts';
 import User from '../../models/db/user';
 import { difficultyList, getDifficultyColor, getDifficultyFromEstimate } from '../formatted/formattedDifficulty';
 import FormattedLevelLink from '../formatted/formattedLevelLink';
@@ -67,9 +66,11 @@ function getPerformanceColor(performance: number, baseline: number = 50): string
 
 export default function ProfileInsightsPerformanceOverview({ user, reqUser, timeFilter }: ProfileInsightsPerformanceOverviewProps) {
   const { game: _game } = useContext(AppContext);
-  const { proStatsUser: difficultyData, isLoading: isLoadingDifficulty } = useProStatsUser(user, ProStatsUserType.DifficultyLevelsComparisons, timeFilter);
-  const { proStatsUser: _scoreHistory, isLoading: isLoadingScoreHistory } = useProStatsUser(user, ProStatsUserType.ScoreHistory, timeFilter);
-  const { proStatsUser: recordsData, isLoading: isLoadingRecords } = useProStatsUser(user, ProStatsUserType.Records, timeFilter);
+  const canViewFullOverview = (reqUser?._id === user._id) || (reqUser?.roles?.includes(Role.ADMIN));
+
+  const { proStatsUser: difficultyData, isLoading: isLoadingDifficulty } = useProStatsUser(user, ProStatsUserType.DifficultyLevelsComparisons, timeFilter, !canViewFullOverview);
+  const { proStatsUser: _scoreHistory, isLoading: isLoadingScoreHistory } = useProStatsUser(user, ProStatsUserType.ScoreHistory, timeFilter, false);
+  const { proStatsUser: recordsData, isLoading: isLoadingRecords } = useProStatsUser(user, ProStatsUserType.Records, timeFilter, false);
 
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
   const [timelineMode, setTimelineMode] = useState<'max' | 'average'>('average');
@@ -86,13 +87,12 @@ export default function ProfileInsightsPerformanceOverview({ user, reqUser, time
     });
 
     // Current streak
-    if (user.config?.calcCurrentStreak && user.config?.calcCurrentStreak > 0) {
-      metrics.push({
-        label: 'Current Streak',
-        value: `${user.config.calcCurrentStreak} days`,
-        color: 'text-orange-400',
-      });
-    }
+
+    metrics.push({
+      label: 'Current Streak',
+      value: `${user.config?.calcCurrentStreak || 0} days`,
+      color: 'text-orange-400',
+    });
 
     // Max streak
     // Note: max streak is not currently tracked in UserConfig, so commenting out for now
@@ -296,8 +296,9 @@ export default function ProfileInsightsPerformanceOverview({ user, reqUser, time
 
       // Categorize by difficulty tier since level data is not available
       levelsWithData++;
-      
+
       let levelType: string;
+
       if (c.difficulty < 500) {
         levelType = 'Easy Levels (< 500 difficulty)';
       } else if (c.difficulty < 1000) {
@@ -377,9 +378,8 @@ export default function ProfileInsightsPerformanceOverview({ user, reqUser, time
     return { skillRadarData: radarData, averagePerformance: avgPerf };
   }, [difficultyData]);
 
-  const isOwnProfile = reqUser?._id === user._id;
-  const isAdmin = reqUser?.roles?.includes(Role.ADMIN);
-  const isLoading = isLoadingDifficulty || isLoadingScoreHistory || isLoadingRecords;
+  // Only show loading if we can view data and hooks are actually loading
+  const isLoading = canViewFullOverview && (isLoadingDifficulty || isLoadingScoreHistory || isLoadingRecords);
 
   // Loading components
   const _LoadingSpinner = () => (
@@ -397,9 +397,6 @@ export default function ProfileInsightsPerformanceOverview({ user, reqUser, time
       </div>
     </div>
   );
-
-  // Access control - only show Score Chart and Records for non-own profiles
-  const canViewFullOverview = (reqUser?._id === user._id) || (reqUser?.roles?.includes(Role.ADMIN));
 
   // For non-own profiles, only show Score Chart and Records
   if (!canViewFullOverview) {

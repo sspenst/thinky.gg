@@ -77,8 +77,9 @@ function formatTimePerLevel(seconds: number): string {
 }
 
 export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter }: ProfileInsightsTimeAnalyticsProps) {
-  const { proStatsUser: scoreHistory, isLoading: isLoadingScoreHistory } = useProStatsUser(user, ProStatsUserType.ScoreHistory, timeFilter);
-  const { proStatsUser: difficultyData, isLoading: isLoadingDifficulty } = useProStatsUser(user, ProStatsUserType.DifficultyLevelsComparisons, timeFilter);
+  const canViewTimeAnalytics = (reqUser?._id === user._id) || (reqUser?.roles?.includes(Role.ADMIN));
+  const { proStatsUser: scoreHistory, isLoading: isLoadingScoreHistory } = useProStatsUser(user, ProStatsUserType.ScoreHistory, timeFilter, !canViewTimeAnalytics);
+  const { proStatsUser: difficultyData, isLoading: isLoadingDifficulty } = useProStatsUser(user, ProStatsUserType.DifficultyLevelsComparisons, timeFilter, !canViewTimeAnalytics);
 
   const [selectedTimePeriod, setSelectedTimePeriod] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -395,7 +396,8 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
     };
   }, [difficultyData, selectedTimezone]);
 
-  const isLoading = isLoadingScoreHistory || isLoadingDifficulty;
+  // Only show loading if we can view data and hooks are actually loading
+  const isLoading = canViewTimeAnalytics && (isLoadingScoreHistory || isLoadingDifficulty);
 
   // Loading components
   const LoadingSkeleton = ({ height = 'h-64' }: { height?: string }) => (
@@ -409,9 +411,6 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
   );
 
   // Access control - only show for own profile or admin
-  const isAdmin = reqUser?.roles?.includes(Role.ADMIN);
-  const isOwnProfile = reqUser?._id === user._id;
-  const canViewTimeAnalytics = isOwnProfile || isAdmin;
 
   if (!canViewTimeAnalytics) {
     return (

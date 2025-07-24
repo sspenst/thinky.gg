@@ -27,7 +27,8 @@ interface PercentileData {
 }
 
 export default function ProfileInsightsPeerComparisons({ user, reqUser, timeFilter }: ProfileInsightsPeerComparisonsProps) {
-  const { proStatsUser: difficultyData, isLoading } = useProStatsUser(user, ProStatsUserType.DifficultyLevelsComparisons, timeFilter);
+  const canViewPeerComparisons = (reqUser?._id === user._id) || (reqUser?.roles?.includes(Role.ADMIN));
+  const { proStatsUser: difficultyData, isLoading } = useProStatsUser(user, ProStatsUserType.DifficultyLevelsComparisons, timeFilter, !canViewPeerComparisons);
   const [showTooltip, setShowTooltip] = useState(false);
 
   // Analyze retry patterns using real difficulty comparison data
@@ -365,8 +366,7 @@ export default function ProfileInsightsPeerComparisons({ user, reqUser, timeFilt
     </div>
   );
 
-  // Access control - only show for own profile or admin (use existing variables)
-  const canViewPeerComparisons = (reqUser?._id === user._id) || (reqUser?.roles?.includes(Role.ADMIN));
+  // Access control - only show for own profile or admin
 
   if (!canViewPeerComparisons) {
     return (
@@ -376,7 +376,10 @@ export default function ProfileInsightsPeerComparisons({ user, reqUser, timeFilt
     );
   }
 
-  if (isLoading) {
+  // Only show loading if we can view data and hooks are actually loading
+  const shouldShowLoading = canViewPeerComparisons && isLoading;
+
+  if (shouldShowLoading) {
     return (
       <div className='flex flex-col gap-6 w-full'>
         {/* Competition Score Loading */}

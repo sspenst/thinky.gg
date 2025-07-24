@@ -12,7 +12,22 @@ export default function ProfileInsightsRecords({ user }: {user: User}) {
   const { proStatsUser } = useProStatsUser(user, ProStatsUserType.Records);
 
   if (!proStatsUser || !proStatsUser[ProStatsUserType.Records]) {
-    return <span>Loading...</span>;
+    return (
+      <div className='flex flex-col gap-4'>
+        <div className='h-6 bg-gray-700 rounded w-48 animate-pulse' />
+        <div className='bg-gray-800 rounded-lg p-4'>
+          <div className='space-y-3'>
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className='flex justify-between items-center'>
+                <div className='h-4 bg-gray-700 rounded w-32 animate-pulse' />
+                <div className='h-4 bg-gray-700 rounded w-24 animate-pulse' />
+                <div className='h-4 bg-gray-700 rounded w-20 animate-pulse' />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
   }
 
   const data = proStatsUser[ProStatsUserType.Records].sort((a, b) => {

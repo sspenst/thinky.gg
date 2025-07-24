@@ -35,8 +35,9 @@ interface LevelEngagementData {
 }
 
 export default function ProfileInsightsCreatorDashboard({ user, reqUser, timeFilter }: ProfileInsightsCreatorDashboardProps) {
-  const { proStatsUser: playLogData, isLoading: isLoadingPlayLog } = useProStatsUser(user, ProStatsUserType.PlayLogForUserCreatedLevels, timeFilter);
-  const { proStatsUser: followerData, isLoading: isLoadingFollowers } = useProStatsUser(user, ProStatsUserType.FollowerActivityPatterns, timeFilter);
+  const canViewCreatorDashboard = (reqUser?._id === user._id) || (reqUser?.roles?.includes(Role.ADMIN));
+  const { proStatsUser: playLogData, isLoading: isLoadingPlayLog } = useProStatsUser(user, ProStatsUserType.PlayLogForUserCreatedLevels, timeFilter, !canViewCreatorDashboard);
+  const { proStatsUser: followerData, isLoading: isLoadingFollowers } = useProStatsUser(user, ProStatsUserType.FollowerActivityPatterns, timeFilter, !canViewCreatorDashboard);
 
   // Get user's timezone
   const userTimezone = useMemo(() => {
@@ -302,9 +303,6 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser, timeFil
   }, [playLogData, user.name]);
 
   // Access control - only show for own profile or admin
-  const isAdmin = reqUser?.roles?.includes(Role.ADMIN);
-  const isOwnProfile = reqUser?._id === user._id;
-  const canViewCreatorDashboard = isOwnProfile || isAdmin;
 
   if (!canViewCreatorDashboard) {
     return (
@@ -314,7 +312,8 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser, timeFil
     );
   }
 
-  const isLoading = isLoadingPlayLog || isLoadingFollowers;
+  // Only show loading if we can view data and hooks are actually loading
+  const isLoading = canViewCreatorDashboard && (isLoadingPlayLog || isLoadingFollowers);
 
   // Loading components
   const LoadingSkeleton = ({ height = 'h-64' }: { height?: string }) => (
