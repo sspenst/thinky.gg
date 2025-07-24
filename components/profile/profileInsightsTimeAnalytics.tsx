@@ -16,7 +16,6 @@ interface ProfileInsightsTimeAnalyticsProps {
   timeFilter: TimeFilter;
 }
 
-
 interface TimeInvestmentData {
   difficulty: string;
   totalTime: number;
@@ -80,7 +79,6 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
   const [currentPage, setCurrentPage] = useState(1);
   const [sortColumn, setSortColumn] = useState<'yourTime' | 'averageTime' | 'comparison'>('comparison');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
-
 
   // Calculate activity heatmap data
   const activityHeatmap = useMemo(() => {
@@ -221,7 +219,6 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
     return orderedData.sort((a, b) => a.sortOrder - b.sortOrder);
   }, [difficultyData]);
 
-
   // Calculate peak performance days
   const peakDays = useMemo(() => {
     if (!activityHeatmap || activityHeatmap.length === 0) return [];
@@ -232,7 +229,6 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
       .filter(d => d.avgSolves > 0)
       .map(d => d.day);
   }, [activityHeatmap]);
-
 
   // Time-of-day performance analysis with hourly data for clock visualization
   const timeOfDayPerformance = useMemo(() => {
@@ -313,7 +309,7 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
     periods.forEach((period) => {
       let totalRatio = 0;
       let totalCount = 0;
-      let periodLevels: typeof validComparisons = [];
+      const periodLevels: typeof validComparisons = [];
 
       // Aggregate data for this time period
       for (let hour = period.start; hour <= period.end; hour++) {
@@ -338,10 +334,12 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
         // Calculate what percentage of levels in this period beat community average
         const levelsBeatCommunity = periodLevels.filter(level => {
           const ratio = level.otherPlayattemptsAverageDuration / level.myPlayattemptsSumDuration;
+
           return ratio >= 1.0; // Faster than community
         }).length;
 
         const percentageBeatingCommunity = (levelsBeatCommunity / totalCount) * 100;
+
         relativePerformance = percentageBeatingCommunity;
         // Use percentage directly for radar chart (50% would be middle performance)
         performance = Math.max(0, Math.min(100, percentageBeatingCommunity));
@@ -444,7 +442,6 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
                 const normalizedPerf = Math.max(-50, Math.min(50, relPerf));
                 const gaugeValue = 50 + normalizedPerf; // Convert to 0-100 scale
 
-
                 // Needle angle calculation: 0% performance = 90° (pointing up/north)
                 // Left side (180°) = worst performance (-50%), Right side (0°) = best performance (+50%)
                 const needleAngle = 180 - (gaugeValue / 100) * 180;
@@ -458,6 +455,7 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
                       onClick={() => {
                         if (period.hasData) {
                           const newPeriod = selectedTimePeriod === period.period ? null : period.period;
+
                           setSelectedTimePeriod(newPeriod);
                           // Reset pagination and sorting when changing periods
                           setCurrentPage(1);
@@ -473,7 +471,6 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
                       <div className='text-xs text-gray-400'>
                         {period.sublabel}
                       </div>
-
                       {/* Gauge Chart */}
                       <div className='relative h-32 w-full flex-1 -mt-1'>
                         <svg
@@ -490,7 +487,6 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
                               <stop offset='100%' stopColor='#10B981' />
                             </linearGradient>
                           </defs>
-
                           {/* Background semicircle arc */}
                           <path
                             d='M 15 70 A 35 35 0 0 1 85 70'
@@ -499,7 +495,6 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
                             strokeWidth='8'
                             strokeLinecap='round'
                           />
-
                           {/* Inner arc for depth */}
                           <path
                             d='M 20 70 A 30 30 0 0 1 80 70'
@@ -508,7 +503,6 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
                             strokeWidth='2'
                           />
                         </svg>
-
                         {/* Needle overlay - positioned absolutely */}
                         {period.hasData && (
                           <svg
@@ -533,7 +527,6 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
                           </svg>
                         )}
                       </div>
-
                       {/* Performance Value Display */}
                       <div className='text-center mt-auto -mt-2'>
                         {period.hasData ? (
@@ -552,7 +545,6 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
                         )}
                       </div>
                     </div>
-
                     {/* Hover Tooltip */}
                     <div className='absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs rounded-lg p-3 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-10 w-48 pointer-events-none'>
                       <div className='font-bold mb-1'>{period.period} ({period.sublabel})</div>
@@ -579,7 +571,6 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
                 );
               })}
             </div>
-
             {/* Performance Scale Legend */}
             <div className='bg-gray-800 rounded-lg p-4 text-center'>
               <h4 className='font-bold mb-3'>Performance Scale</h4>
@@ -607,10 +598,10 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
               </div>
             </div>
           </div>
-
           {/* Selected Time Period Details */}
           {selectedTimePeriod && (() => {
             const selectedPeriodData = timeOfDayPerformance.clockData.find(p => p.period === selectedTimePeriod);
+
             if (!selectedPeriodData || !selectedPeriodData.hasData) return null;
 
             // Process and sort levels based on current sort settings
@@ -625,19 +616,19 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
               let aVal: number, bVal: number;
 
               switch (sortColumn) {
-                case 'yourTime':
-                  aVal = a.myPlayattemptsSumDuration;
-                  bVal = b.myPlayattemptsSumDuration;
-                  break;
-                case 'averageTime':
-                  aVal = a.otherPlayattemptsAverageDuration;
-                  bVal = b.otherPlayattemptsAverageDuration;
-                  break;
-                case 'comparison':
-                default:
-                  aVal = a.performanceRatio;
-                  bVal = b.performanceRatio;
-                  break;
+              case 'yourTime':
+                aVal = a.myPlayattemptsSumDuration;
+                bVal = b.myPlayattemptsSumDuration;
+                break;
+              case 'averageTime':
+                aVal = a.otherPlayattemptsAverageDuration;
+                bVal = b.otherPlayattemptsAverageDuration;
+                break;
+              case 'comparison':
+              default:
+                aVal = a.performanceRatio;
+                bVal = b.performanceRatio;
+                break;
               }
 
               return sortDirection === 'desc' ? bVal - aVal : aVal - bVal;
@@ -656,11 +647,13 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
                 setSortColumn(column);
                 setSortDirection('desc');
               }
+
               setCurrentPage(1); // Reset to first page when sorting
             };
 
             const getSortIcon = (column: typeof sortColumn) => {
               if (sortColumn !== column) return '↕️';
+
               return sortDirection === 'desc' ? '↓' : '↑';
             };
 
@@ -756,7 +749,6 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
                     </tbody>
                   </table>
                 </div>
-
                 {/* Pagination Controls */}
                 {totalPages > 1 && (
                   <div className='flex items-center justify-between mt-4'>
@@ -771,10 +763,10 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
                       >
                         Previous
                       </button>
-
                       {/* Page numbers */}
                       {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                         let pageNum: number;
+
                         if (totalPages <= 5) {
                           pageNum = i + 1;
                         } else if (currentPage <= 3) {
@@ -799,7 +791,6 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
                           </button>
                         );
                       })}
-
                       <button
                         onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                         disabled={currentPage === totalPages}
@@ -813,7 +804,6 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
               </div>
             );
           })()}
-
           <div className='bg-gray-800 rounded-lg p-4'>
             <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
               <div>
@@ -874,7 +864,7 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
                       <div className='bg-gray-800 p-4 rounded-xl shadow-lg border border-gray-600'>
                         <div className='text-center mb-3'>
                           <h4 className='font-bold text-blue-400 text-lg'>{label}</h4>
-                          <div className='w-8 h-0.5 bg-blue-400 mx-auto mt-1'></div>
+                          <div className='w-8 h-0.5 bg-blue-400 mx-auto mt-1' />
                         </div>
                         <div className='space-y-2 text-sm'>
                           <div className='flex items-center justify-between gap-4'>
@@ -893,7 +883,7 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
                             <div className='pt-2 mt-2 border-t border-gray-600'>
                               <div className='text-xs text-gray-400 text-center'>
                                 {data.daysActive === 1 ? 'Single active day' :
-                                 `Averaged across ${data.daysActive} active days`}
+                                  `Averaged across ${data.daysActive} active days`}
                               </div>
                             </div>
                           )}
@@ -901,6 +891,7 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
                       </div>
                     );
                   }
+
                   return null;
                 }}
               />
@@ -923,7 +914,6 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
             )}
           </ul>
         </div>
-
         <div className='bg-gray-800 rounded-lg p-4'>
           <h3 className='font-bold mb-2'>Time Investment ROI</h3>
           <div className='text-sm text-gray-300 space-y-2'>

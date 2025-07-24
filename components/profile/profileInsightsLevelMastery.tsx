@@ -174,7 +174,6 @@ export default function ProfileInsightsLevelMastery({ user, reqUser, timeFilter 
     return difficultyTimeline.find(entry => entry.monthKey === selectedMonth);
   }, [selectedMonth, difficultyTimeline]);
 
-
   const isOwnProfile = reqUser?._id === user._id;
   const isAdmin = reqUser?.roles?.includes(Role.ADMIN);
 
@@ -290,7 +289,7 @@ export default function ProfileInsightsLevelMastery({ user, reqUser, timeFilter 
                     color: 'rgb(229, 231, 235)',
                     boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
                   }}
-                  formatter={(value: number, name: string, props: any) => {
+                  formatter={(value: number, name: string, props: { payload: { date: string; levelCount: number; maxDifficulty: number } }) => {
                     const data = props.payload;
 
                     return [
@@ -326,7 +325,6 @@ export default function ProfileInsightsLevelMastery({ user, reqUser, timeFilter 
               </LineChart>
             </ResponsiveContainer>
           </div>
-
           {/* Selected Month Details */}
           {selectedMonthData && (
             <div className='mt-6 bg-gray-800 rounded-lg p-4'>

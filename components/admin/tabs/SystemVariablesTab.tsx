@@ -54,7 +54,6 @@ export default function SystemVariablesTab({
             {showNewForm ? 'Cancel' : 'Add Variable'}
           </button>
         </div>
-
         {/* Search */}
         <div className='mb-6'>
           <input
@@ -65,7 +64,6 @@ export default function SystemVariablesTab({
             onChange={(e) => onSearchChange(e.target.value)}
           />
         </div>
-
         {/* New Variable Form */}
         {showNewForm && (
           <div className='mb-6 p-4 border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700'>
@@ -110,7 +108,6 @@ export default function SystemVariablesTab({
             </div>
           </div>
         )}
-
         {/* Variables List */}
         {loadingVariables ? (
           <div className='flex items-center justify-center py-8'>

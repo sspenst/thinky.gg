@@ -230,7 +230,6 @@ export default function ProfileInsights({ reqUser, user }: ProfileInsightsProps)
             </button>
           ))}
         </div>
-
         {/* Time Filter */}
         <div className='flex items-center justify-center gap-4'>
           <span className='text-sm text-gray-400'>Time Period:</span>
@@ -252,7 +251,6 @@ export default function ProfileInsights({ reqUser, user }: ProfileInsightsProps)
             ))}
           </div>
         </div>
-
         {/* Tab Description */}
         <p className='text-center text-sm text-gray-400'>
           {activeTabConfig.description}

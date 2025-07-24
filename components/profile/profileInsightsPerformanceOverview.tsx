@@ -52,6 +52,7 @@ function getPerformanceColor(performance: number, baseline: number = 50): string
     if (performance >= 110) return '#3B82F6'; // blue-500 - Better than your average
     if (performance >= 90) return '#F59E0B'; // amber-500 - Similar to your average
     if (performance >= 70) return '#EF4444'; // red-500 - Worse than your average
+
     return '#6B7280'; // gray-500 - Much worse than your average
   } else {
     // Original logic for community comparison
@@ -59,6 +60,7 @@ function getPerformanceColor(performance: number, baseline: number = 50): string
     if (performance >= 65) return '#3B82F6'; // blue-500 - Good
     if (performance >= 50) return '#F59E0B'; // amber-500 - Average
     if (performance >= 35) return '#EF4444'; // red-500 - Below average
+
     return '#6B7280'; // gray-500 - Poor
   }
 }
@@ -124,7 +126,6 @@ export default function ProfileInsightsPerformanceOverview({ user, reqUser, time
       const validComparisons = Array.from(difficultyGroups.values())
         .filter(group => group.length >= 7)
         .flat();
-
     }
 
     return metrics;
@@ -296,6 +297,7 @@ export default function ProfileInsightsPerformanceOverview({ user, reqUser, time
 
       // Analyze the level data to determine type
       const levelData = c.data || '';
+
       if (levelData) levelsWithData++;
 
       const hasHoles = levelData.includes(TileType.Hole);
@@ -310,6 +312,7 @@ export default function ProfileInsightsPerformanceOverview({ user, reqUser, time
       const hasRestrictedMovables = restrictedTiles.some(tile => levelData.includes(tile));
 
       let levelType: string;
+
       if (hasHoles && hasRestrictedMovables) {
         levelType = 'Complex Levels (Holes + Restricted Movables)';
       } else if (hasHoles) {
@@ -325,6 +328,7 @@ export default function ProfileInsightsPerformanceOverview({ user, reqUser, time
       }
 
       const bucket = levelTypes.get(levelType)!;
+
       bucket.times.push(c.myPlayattemptsSumDuration);
       bucket.totalTime += c.myPlayattemptsSumDuration;
       bucket.count++;
@@ -456,7 +460,6 @@ export default function ProfileInsightsPerformanceOverview({ user, reqUser, time
       </div>
       {/* Score History Chart */}
       <ProfileInsightsScoreChart user={user} timeFilter={timeFilter} />
-
       {/* Difficulty Conquest Map */}
       <div className='flex flex-col gap-2'>
         <h2 className='text-xl font-bold text-center'>Difficulty Conquest Map</h2>
@@ -484,7 +487,6 @@ export default function ProfileInsightsPerformanceOverview({ user, reqUser, time
           ))}
         </div>
       </div>
-
       {/* Difficulty Progression Timeline */}
       {difficultyTimeline.length > 1 && (
         <div className='flex flex-col gap-2'>
@@ -577,7 +579,6 @@ export default function ProfileInsightsPerformanceOverview({ user, reqUser, time
               </LineChart>
             </ResponsiveContainer>
           </div>
-
           {/* Selected Month Details */}
           {selectedMonthData && (
             <div className='mt-6 bg-gray-800 rounded-lg p-4'>
@@ -621,10 +622,8 @@ export default function ProfileInsightsPerformanceOverview({ user, reqUser, time
           )}
         </div>
       )}
-
       {/* Personal Records */}
       <ProfileInsightsRecords user={user} />
-
       {/* Skill Radar Chart - Removed */}
       {false && skillRadarData.length > 0 && (
         <div className='flex flex-col gap-2'>

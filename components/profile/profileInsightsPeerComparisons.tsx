@@ -692,7 +692,6 @@ export default function ProfileInsightsPeerComparisons({ user, reqUser, timeFilt
           </div>
         </div>
       </div>
-
       {/* Your Most Challenging Conquests */}
       {challengingConquests.length > 0 && (
         <div className='flex flex-col gap-2'>
