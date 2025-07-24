@@ -676,7 +676,7 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser: _reqUse
                   <span className='text-green-400 text-lg'>⭐</span>
                   <div>
                     <p className='text-white font-medium'>Popular Content</p>
-                    <p className='text-sm text-gray-300'>"{levelPerformance[0].name}" has {levelPerformance[0].plays} completions</p>
+                    <p className='text-sm text-gray-300'>&quot;{levelPerformance[0].name}&quot; has {levelPerformance[0].plays} completions</p>
                   </div>
                 </div>
               )}
@@ -732,7 +732,7 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser: _reqUse
                   <div>
                     <p className='text-white font-medium'>Boost Visibility</p>
                     <p className='text-sm text-gray-300'>Consider sharing your levels on social media or community forums</p>
-                    <p className='text-xs text-gray-500 mt-1'>⚠️ {user.name}'s levels have only {engagementMetrics[0].value} total solves</p>
+                    <p className='text-xs text-gray-500 mt-1'>⚠️ {user.name}&apos;s levels have only {engagementMetrics[0].value} total solves</p>
                   </div>
                 </div>
               )}
@@ -742,7 +742,7 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser: _reqUse
                   <div>
                     <p className='text-white font-medium'>Expand Your Audience</p>
                     <p className='text-sm text-gray-300'>Try creating levels with different difficulty ranges</p>
-                    <p className='text-xs text-gray-500 mt-1'>📊 Only {engagementMetrics[1].value} unique players have tried {user.name}'s levels</p>
+                    <p className='text-xs text-gray-500 mt-1'>📊 Only {engagementMetrics[1].value} unique players have tried {user.name}&apos;s levels</p>
                   </div>
                 </div>
               )}
