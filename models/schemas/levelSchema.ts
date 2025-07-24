@@ -158,6 +158,14 @@ LevelSchema.index({ gameId: 1, calc_difficulty_estimate: 1, isRanked: 1 });
 LevelSchema.index({ gameId: 1, calc_reviews_score_laplace: 1, ts: -1 });
 LevelSchema.index({ gameId: 1, userId: 1, isDraft: 1 });
 
+// ProStats performance optimization index
+LevelSchema.index({ 
+  _id: 1,
+  calc_difficulty_estimate: 1,
+  calc_playattempts_unique_users: 1,
+  calc_playattempts_just_beaten_count: 1
+});
+
 async function calcReviews(lvl: Level) {
   // get average score for reviews with levelId: id
   const reviews = await ReviewModel.find({
