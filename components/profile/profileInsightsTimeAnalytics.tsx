@@ -1,14 +1,18 @@
-import Role from '@root/constants/role';
 import { DateAndSum } from '@root/contexts/levelContext';
 import useProStatsUser, { ProStatsUserType } from '@root/hooks/useProStatsUser';
 import dayjs from 'dayjs';
+import timezone from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
 import { Moon, Star, Sun, Sunrise, Sunset } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
-import { Area, AreaChart, Bar, BarChart, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import User from '../../models/db/user';
-import { difficultyList, getDifficultyFromEstimate, getDifficultyColor } from '../formatted/formattedDifficulty';
+import { difficultyList, getDifficultyColor, getDifficultyFromEstimate } from '../formatted/formattedDifficulty';
 import FormattedLevelLink from '../formatted/formattedLevelLink';
 import { TimeFilter } from './profileInsights';
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 interface ProfileInsightsTimeAnalyticsProps {
   user: User;
@@ -79,6 +83,7 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
   const [currentPage, setCurrentPage] = useState(1);
   const [sortColumn, setSortColumn] = useState<'yourTime' | 'averageTime' | 'comparison'>('comparison');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+  const [selectedTimezone, setSelectedTimezone] = useState<string>(dayjs.tz.guess());
 
   // Calculate activity heatmap data
   const activityHeatmap = useMemo(() => {
@@ -253,7 +258,7 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
     if (validComparisons.length === 0) return null;
 
     // Get user's timezone
-    const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const userTimezone = selectedTimezone;
 
     // Calculate user's overall average performance ratio
     const overallAvgRatio = validComparisons.reduce((sum, c) =>
@@ -267,10 +272,10 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
       hourlyData[i] = { sumRatio: 0, count: 0, levels: [] };
     }
 
-    // Group by hour
+    // Group by hour using selected timezone
     validComparisons.forEach(c => {
-      const date = new Date(c.ts * 1000);
-      const hour = date.getHours();
+      const dateInTimezone = dayjs.unix(c.ts).tz(selectedTimezone);
+      const hour = dateInTimezone.hour();
       const performanceRatio = c.otherPlayattemptsAverageDuration / c.myPlayattemptsSumDuration;
 
       hourlyData[hour].count++;
@@ -387,7 +392,7 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
       worstPeriod,
       hasData: validComparisons.length > 0,
     };
-  }, [difficultyData]);
+  }, [difficultyData, selectedTimezone]);
 
   const isLoading = isLoadingScoreHistory || isLoadingDifficulty;
 
@@ -429,9 +434,56 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
               💡 Click on any time period with 7+ levels to see detailed breakdown
             </span>
           </p>
-          <p className='text-xs text-gray-500 text-center mb-4'>
-            Timezone: {timeOfDayPerformance.timezone}
-          </p>
+          <div className='flex items-center justify-center gap-2 mb-4'>
+            <label className='text-xs text-gray-500'>Timezone:</label>
+            <select
+              value={selectedTimezone}
+              onChange={(e) => setSelectedTimezone(e.target.value)}
+              className='text-xs bg-gray-800 border border-gray-600 rounded px-2 py-1 text-white focus:outline-none focus:border-blue-500'
+            >
+              <optgroup label='Common Timezones'>
+                <option value={dayjs.tz.guess()}>Browser Default ({dayjs.tz.guess()})</option>
+                <option value='America/New_York'>Eastern Time (New York)</option>
+                <option value='America/Chicago'>Central Time (Chicago)</option>
+                <option value='America/Denver'>Mountain Time (Denver)</option>
+                <option value='America/Los_Angeles'>Pacific Time (Los Angeles)</option>
+                <option value='Europe/London'>London (GMT/BST)</option>
+                <option value='Europe/Paris'>Central European Time (Paris)</option>
+                <option value='Europe/Moscow'>Moscow Time</option>
+                <option value='Asia/Tokyo'>Japan Time (Tokyo)</option>
+                <option value='Asia/Shanghai'>China Time (Shanghai)</option>
+                <option value='Asia/Kolkata'>India Time (Kolkata)</option>
+                <option value='Australia/Sydney'>Sydney Time</option>
+              </optgroup>
+              <optgroup label='UTC Offsets'>
+                <option value='UTC'>UTC+0</option>
+                <option value='Etc/GMT+12'>UTC-12</option>
+                <option value='Etc/GMT+11'>UTC-11</option>
+                <option value='Etc/GMT+10'>UTC-10</option>
+                <option value='Etc/GMT+9'>UTC-9</option>
+                <option value='Etc/GMT+8'>UTC-8</option>
+                <option value='Etc/GMT+7'>UTC-7</option>
+                <option value='Etc/GMT+6'>UTC-6</option>
+                <option value='Etc/GMT+5'>UTC-5</option>
+                <option value='Etc/GMT+4'>UTC-4</option>
+                <option value='Etc/GMT+3'>UTC-3</option>
+                <option value='Etc/GMT+2'>UTC-2</option>
+                <option value='Etc/GMT+1'>UTC-1</option>
+                <option value='Etc/GMT-1'>UTC+1</option>
+                <option value='Etc/GMT-2'>UTC+2</option>
+                <option value='Etc/GMT-3'>UTC+3</option>
+                <option value='Etc/GMT-4'>UTC+4</option>
+                <option value='Etc/GMT-5'>UTC+5</option>
+                <option value='Etc/GMT-6'>UTC+6</option>
+                <option value='Etc/GMT-7'>UTC+7</option>
+                <option value='Etc/GMT-8'>UTC+8</option>
+                <option value='Etc/GMT-9'>UTC+9</option>
+                <option value='Etc/GMT-10'>UTC+10</option>
+                <option value='Etc/GMT-11'>UTC+11</option>
+                <option value='Etc/GMT-12'>UTC+12</option>
+              </optgroup>
+            </select>
+          </div>
           {/* Performance Gauge Visualization */}
           <div className='w-full'>
             <div className='grid grid-cols-2 md:grid-cols-5 gap-4 mb-4'>
@@ -539,9 +591,11 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
                             </div>
                           </>
                         ) : (
-                          <div className='text-sm text-gray-500'>
+                          <>
+                            <div className='text-sm text-gray-500 h-11'>
                             No data
-                          </div>
+                            </div>
+                          </>
                         )}
                       </div>
                     </div>
@@ -608,7 +662,7 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
             const processedLevels = selectedPeriodData.levels.map(level => ({
               ...level,
               performanceRatio: level.otherPlayattemptsAverageDuration / level.myPlayattemptsSumDuration,
-              dateSolved: dayjs(level.ts * 1000).format('MMM DD, YYYY h:mmA'),
+              dateSolved: dayjs.unix(level.ts).tz(selectedTimezone).format('MMM DD, YYYY h:mmA z'),
             }));
 
             // Sort levels based on current sort column and direction

@@ -105,7 +105,7 @@ export default function ProfileInsightsScoreChart({ user, timeFilter }: { user: 
         <ComposedChart title='Score History' data={mergedData}>
           {enableDaily && <Bar name={user.name + ' Daily Solved'} dataKey='sum' fill='lightgreen' yAxisId='left' />}
           {enableCumulative && <Line name={user.name + ' Total'} dot={false} connectNulls dataKey='cumulativeSum' stroke='rgba(75, 192, 192)' yAxisId='right' />}
-          {compareData && (
+          {compareData && compareData.length > 0 && (
             <>
               {enableDaily && <Bar name={compareUser?.name + ' Daily'} dataKey='sumCompare' fill='gray' yAxisId='left' />}
               {enableCumulative && <Line connectNulls name={compareUser?.name + ' Total'} dot={false} dataKey='cumulativeSumCompare' stroke='rgba(192, 75, 75)' yAxisId='right' />}
@@ -150,11 +150,11 @@ export default function ProfileInsightsScoreChart({ user, timeFilter }: { user: 
 
                   items.push(<div key='tooltip-scorechart-t'>{dayjs(new Date(payloadObj.date)).format('M/D/YY')}</div>);
 
-                  {user && daySum && totalSolved && (
+                  {user && (daySum !== undefined) && (totalSolved !== undefined) && (
                     items.push(<div key='tooltip-scorechart-a'>{user.name} solved {daySum} levels (Total solved: {totalSolved})</div>)
                   );}
 
-                  {compareUser && daySumCompare && totalSolvedCompare && (
+                  {compareUser && (daySumCompare !== undefined) && (totalSolvedCompare !== undefined) && (
                     items.push(<div key= 'tooltip-scorechart-b'>{compareUser.name} solved {daySumCompare} levels (Total solved: {totalSolvedCompare})</div>)
                   );}
 

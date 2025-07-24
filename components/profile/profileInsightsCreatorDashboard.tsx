@@ -548,7 +548,7 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser: _reqUse
                     {/* Hour cells for this day */}
                     {Array.from({ length: 24 }, (_, hour) => {
                       // Find the specific day-hour combination data
-                      const heatmapEntry = followerData[ProStatsUserType.FollowerActivityPatterns]?.heatmapData.find(
+                      const heatmapEntry = followerData[ProStatsUserType.FollowerActivityPatterns]?.heatmapData?.find(
                         entry => entry.dayOfWeek === dayOfWeek && entry.hour === hour
                       );
 
@@ -559,7 +559,7 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser: _reqUse
 
                       // Calculate opacity based on activity (0 to 1)
                       const maxActivity = Math.max(
-                        ...followerData[ProStatsUserType.FollowerActivityPatterns]?.heatmapData?.map(entry => entry.activeFollowers) || []
+                        ...followerData[ProStatsUserType.FollowerActivityPatterns]?.heatmapData?.map(entry => entry.activeFollowers) || [0]
                       );
                       const opacity = hasEnoughData && maxActivity > 0 ? activeFollowers / maxActivity : 0;
 
@@ -676,7 +676,55 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser: _reqUse
                   </div>
                 </div>
               )}
-              {/* Add follower engagement if available */}
+              {/* Discord Connection */}
+              {followerData && followerData[ProStatsUserType.FollowerActivityPatterns] && followerData[ProStatsUserType.FollowerActivityPatterns].hasDiscordConnected && (
+                <div className='flex items-start gap-3 p-3 bg-green-500/10 rounded-lg border-l-4 border-green-500'>
+                  <span className='text-green-400 text-lg'>💬</span>
+                  <div>
+                    <p className='text-white font-medium'>Discord Connected</p>
+                    <p className='text-sm text-gray-300'>You can engage with your community directly through Discord</p>
+                  </div>
+                </div>
+              )}
+              {/* Difficulty Distribution */}
+              {(() => {
+                const performanceData = playLogData?.[ProStatsUserType.PlayLogForUserCreatedLevels];
+                const creatorLevels = performanceData?.creatorLevels || [];
+                const difficultyCategories = new Set<string>();
+                
+                creatorLevels.forEach(level => {
+                  if (level.calc_difficulty_estimate !== undefined) {
+                    const difficulty = level.calc_difficulty_estimate;
+                    if (difficulty < 500) difficultyCategories.add('Easy');
+                    else if (difficulty < 1000) difficultyCategories.add('Medium');
+                    else if (difficulty < 1500) difficultyCategories.add('Hard');
+                    else if (difficulty < 2000) difficultyCategories.add('Expert');
+                    else difficultyCategories.add('Master');
+                  }
+                });
+                
+                const hasGoodVariety = difficultyCategories.size >= 3;
+                const hasAllDifficulties = difficultyCategories.size === 5;
+                
+                if (hasGoodVariety) {
+                  return (
+                    <div className='flex items-start gap-3 p-3 bg-green-500/10 rounded-lg border-l-4 border-green-500'>
+                      <span className='text-green-400 text-lg'>🎯</span>
+                      <div>
+                        <p className='text-white font-medium'>
+                          {hasAllDifficulties ? 'Complete Difficulty Range' : 'Good Difficulty Variety'}
+                        </p>
+                        <p className='text-sm text-gray-300'>
+                          {hasAllDifficulties 
+                            ? 'Your levels span all difficulty tiers, appealing to players of all skill levels'
+                            : `Your levels cover ${difficultyCategories.size} different difficulty tiers`}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                }
+                return null;
+              })()}
               {followerData && followerData[ProStatsUserType.FollowerActivityPatterns] && followerData[ProStatsUserType.FollowerActivityPatterns].activeFollowerCount > 0 && (
                 <div className='flex items-start gap-3 p-3 bg-green-500/10 rounded-lg border-l-4 border-green-500'>
                   <span className='text-green-400 text-lg'>💫</span>
@@ -767,6 +815,44 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser: _reqUse
                   </div>
                 </div>
               )}
+              {/* Difficulty variety suggestion */}
+              {(() => {
+                const performanceData = playLogData?.[ProStatsUserType.PlayLogForUserCreatedLevels];
+                const creatorLevels = performanceData?.creatorLevels || [];
+                const difficultyCategories = new Set<string>();
+                
+                creatorLevels.forEach(level => {
+                  if (level.calc_difficulty_estimate !== undefined) {
+                    const difficulty = level.calc_difficulty_estimate;
+                    if (difficulty < 500) difficultyCategories.add('Easy');
+                    else if (difficulty < 1000) difficultyCategories.add('Medium');
+                    else if (difficulty < 1500) difficultyCategories.add('Hard');
+                    else if (difficulty < 2000) difficultyCategories.add('Expert');
+                    else difficultyCategories.add('Master');
+                  }
+                });
+                
+                const hasGoodVariety = difficultyCategories.size >= 3;
+                const missingDifficulties = ['Easy', 'Medium', 'Hard', 'Expert', 'Master'].filter(d => !difficultyCategories.has(d));
+                
+                if (!hasGoodVariety && creatorLevels.length > 0) {
+                  return (
+                    <div className='flex items-start gap-3 p-3 bg-amber-500/10 rounded-lg border-l-4 border-amber-500'>
+                      <span className='text-amber-400 text-lg'>🎯</span>
+                      <div>
+                        <p className='text-white font-medium'>Expand Difficulty Range</p>
+                        <p className='text-sm text-gray-300'>
+                          Consider creating levels at different difficulty tiers to appeal to a wider audience
+                        </p>
+                        <p className='text-xs text-gray-500 mt-1'>
+                          💡 Try creating {missingDifficulties.slice(0, 2).join(' and ')} levels to diversify your portfolio
+                        </p>
+                      </div>
+                    </div>
+                  );
+                }
+                return null;
+              })()}
               {(!followerData || !followerData[ProStatsUserType.FollowerActivityPatterns] || !followerData[ProStatsUserType.FollowerActivityPatterns].hasDiscordConnected) && (
                 <div className='flex items-start gap-3 p-3 bg-amber-500/10 rounded-lg border-l-4 border-amber-500'>
                   <span className='text-amber-400 text-lg'>💬</span>
