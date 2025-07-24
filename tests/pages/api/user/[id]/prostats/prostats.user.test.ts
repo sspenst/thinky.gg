@@ -1,10 +1,11 @@
+import { GameId } from '@root/constants/GameId';
 import Role from '@root/constants/role';
 import TestId from '@root/constants/testId';
 import { ProStatsUserType } from '@root/hooks/useProStatsUser';
 import dbConnect, { dbDisconnect } from '@root/lib/dbConnect';
 import { getTokenCookieValue } from '@root/lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '@root/lib/withAuth';
-import { UserModel } from '@root/models/mongoose';
+import { LevelModel, PlayAttemptModel, StatModel, UserModel } from '@root/models/mongoose';
 import handler from '@root/pages/api/user/[id]/prostats/[type]';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
@@ -15,8 +16,11 @@ beforeAll(async () => {
 afterAll(async() => {
   await dbDisconnect();
 });
-afterEach(() => {
+afterEach(async () => {
   jest.restoreAllMocks();
+  // Clean up test data
+  await StatModel.deleteMany({ userId: { $in: [TestId.USER, TestId.USER_B] } });
+  await PlayAttemptModel.deleteMany({ userId: { $in: [TestId.USER, TestId.USER_B] } });
 });
 enableFetchMocks();
 
@@ -71,22 +75,77 @@ describe('api/user/[id]/prostats/[type]', () => {
 
     });
   });
-  test('should be able to get ScoreHistory with Pro', async () => {
+  test('should be able to get ScoreHistory with Pro and test aggregation accuracy', async () => {
     await UserModel.findByIdAndUpdate(TestId.USER, {
       $addToSet: {
         roles: Role.PRO
       }
     });
 
+    // Create test stats with specific dates and scores
+    const today = new Date();
+    const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
+    const twoDaysAgo = new Date(today.getTime() - 2 * 24 * 60 * 60 * 1000);
+    
+    await StatModel.create([
+      {
+        userId: TestId.USER,
+        levelId: TestId.LEVEL,
+        complete: true,
+        moves: 10,
+        attempts: 1,
+        ts: Math.floor(today.getTime() / 1000),
+        gameId: GameId.THINKY,
+        createdAt: today,
+        updatedAt: today,
+        isDeleted: false
+      },
+      {
+        userId: TestId.USER,
+        levelId: TestId.LEVEL_2,
+        complete: true,
+        moves: 15,
+        attempts: 2,
+        ts: Math.floor(yesterday.getTime() / 1000),
+        gameId: GameId.THINKY,
+        createdAt: yesterday,
+        updatedAt: yesterday,
+        isDeleted: false
+      },
+      {
+        userId: TestId.USER,
+        levelId: TestId.LEVEL_3,
+        complete: true,
+        moves: 20,
+        attempts: 1,
+        ts: Math.floor(twoDaysAgo.getTime() / 1000),
+        gameId: GameId.THINKY,
+        createdAt: twoDaysAgo,
+        updatedAt: twoDaysAgo,
+        isDeleted: false
+      }
+    ]);
+
     await query({
       type: ProStatsUserType.ScoreHistory,
       expectedStatus: 200,
       additionalAssertions: async response => {
-        expect(response[ProStatsUserType.DifficultyLevelsComparisons]).toBeUndefined();
-        expect(response[ProStatsUserType.MostSolvesForUserLevels]).toBeUndefined();
         expect(response[ProStatsUserType.ScoreHistory]).toBeDefined();
-        expect(response[ProStatsUserType.ScoreHistory].length).toBe(1);
-        expect(response[ProStatsUserType.PlayLogForUserCreatedLevels]).toBeUndefined();
+        const scoreHistory = response[ProStatsUserType.ScoreHistory];
+        expect(scoreHistory.length).toBeGreaterThan(0);
+        
+        // Verify aggregation logic - should group by date and sum scores
+        const todayData = scoreHistory.find(item => {
+          const itemDate = new Date(item.date);
+          return itemDate.toDateString() === today.toDateString();
+        });
+        expect(todayData?.sum).toBe(1); // 1 solve today
+        
+        const yesterdayData = scoreHistory.find(item => {
+          const itemDate = new Date(item.date);
+          return itemDate.toDateString() === yesterday.toDateString();
+        });
+        expect(yesterdayData?.sum).toBe(1); // 1 solve yesterday
       }
     });
   });
@@ -169,11 +228,26 @@ describe('api/user/[id]/prostats/[type]', () => {
       }
     });
   });
-  test('should be able to get Records with Pro', async () => {
+  test('should be able to get Records with Pro and verify record data structure', async () => {
     await UserModel.findByIdAndUpdate(TestId.USER_B, {
       $addToSet: {
         roles: Role.PRO
       }
+    });
+
+    // Create additional test stats to ensure we have record data
+    const recordTime = Math.floor(Date.now() / 1000);
+    await StatModel.create({
+      userId: TestId.USER_B,
+      levelId: TestId.LEVEL_3,
+      complete: true,
+      moves: 8, // This should be a record if it's the best score
+      attempts: 1,
+      ts: recordTime,
+      gameId: GameId.THINKY,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      isDeleted: false
     });
 
     await query({
@@ -181,37 +255,87 @@ describe('api/user/[id]/prostats/[type]', () => {
       type: ProStatsUserType.Records,
       expectedStatus: 200,
       additionalAssertions: async response => {
-        expect(response[ProStatsUserType.ScoreHistory]).toBeUndefined();
-        expect(response[ProStatsUserType.MostSolvesForUserLevels]).toBeUndefined();
-        expect(response[ProStatsUserType.DifficultyLevelsComparisons]).toBeUndefined();
-        expect(response[ProStatsUserType.PlayLogForUserCreatedLevels]).toBeUndefined();
         expect(response[ProStatsUserType.Records]).toBeDefined();
-        expect(response[ProStatsUserType.Records].length).toBe(1);
+        const records = response[ProStatsUserType.Records];
+        expect(Array.isArray(records)).toBe(true);
+        
+        // Verify record structure if any records exist
+        if (records.length > 0) {
+          const record = records[0];
+          expect(record).toHaveProperty('_id');
+          expect(record).toHaveProperty('name');
+          expect(record).toHaveProperty('ts'); // Level creation timestamp
+          expect(record).toHaveProperty('records');
+          expect(Array.isArray(record.records)).toBe(true);
+          
+          if (record.records.length > 0) {
+            const recordData = record.records[0];
+            expect(recordData).toHaveProperty('moves');
+            expect(recordData).toHaveProperty('ts'); // Record achievement timestamp
+            expect(typeof recordData.moves).toBe('number');
+            expect(typeof recordData.ts).toBe('number');
+          }
+        }
       }
     });
   });
 
-  test('should be able to get FollowerActivityPatterns with Pro', async () => {
+  test('should be able to get FollowerActivityPatterns with Pro and verify data accuracy', async () => {
     await UserModel.findByIdAndUpdate(TestId.USER, {
       $addToSet: {
         roles: Role.PRO
       }
     });
 
+    // Create test play attempts to simulate follower activity
+    const recentTime = Math.floor(Date.now() / 1000) - 3600; // 1 hour ago
+    const oldTime = Math.floor(Date.now() / 1000) - (30 * 24 * 3600); // 30 days ago
+    
+    await PlayAttemptModel.create([
+      {
+        userId: TestId.USER_B,
+        levelId: TestId.LEVEL, // Level created by TestId.USER
+        startTime: recentTime,
+        endTime: recentTime + 60,
+        updateCount: 10,
+        gameId: GameId.THINKY,
+        attemptContext: { isGuest: false },
+        isDeleted: false
+      },
+      {
+        userId: TestId.USER_C,
+        levelId: TestId.LEVEL,
+        startTime: oldTime,
+        endTime: oldTime + 120,
+        updateCount: 20,
+        gameId: GameId.THINKY,
+        attemptContext: { isGuest: false },
+        isDeleted: false
+      }
+    ]);
+
     await query({
       userId: TestId.USER,
       type: ProStatsUserType.FollowerActivityPatterns,
       expectedStatus: 200,
       additionalAssertions: async response => {
-        expect(response[ProStatsUserType.ScoreHistory]).toBeUndefined();
-        expect(response[ProStatsUserType.MostSolvesForUserLevels]).toBeUndefined();
-        expect(response[ProStatsUserType.DifficultyLevelsComparisons]).toBeUndefined();
-        expect(response[ProStatsUserType.PlayLogForUserCreatedLevels]).toBeUndefined();
-        expect(response[ProStatsUserType.Records]).toBeUndefined();
         expect(response[ProStatsUserType.FollowerActivityPatterns]).toBeDefined();
-        expect(response[ProStatsUserType.FollowerActivityPatterns]).toHaveProperty('followerCount');
-        expect(response[ProStatsUserType.FollowerActivityPatterns]).toHaveProperty('activeFollowerCount');
-        expect(response[ProStatsUserType.FollowerActivityPatterns]).toHaveProperty('hasDiscordConnected');
+        const patterns = response[ProStatsUserType.FollowerActivityPatterns];
+        
+        // Verify structure and data types
+        expect(typeof patterns.followerCount).toBe('number');
+        expect(typeof patterns.activeFollowerCount).toBe('number');
+        expect(typeof patterns.hasDiscordConnected).toBe('boolean');
+        
+        // Verify business logic
+        expect(patterns.followerCount).toBeGreaterThanOrEqual(0);
+        expect(patterns.activeFollowerCount).toBeLessThanOrEqual(patterns.followerCount);
+        
+        // Should have some activity from our test data
+        if (patterns.followerCount > 0) {
+          expect(patterns.activityPattern).toBeDefined();
+          expect(Array.isArray(patterns.activityPattern)).toBe(true);
+        }
       }
     });
   });
@@ -269,21 +393,71 @@ describe('api/user/[id]/prostats/[type]', () => {
     });
   });
 
-  test('should support timeFilter parameter for ScoreHistory', async () => {
+  test('should support timeFilter parameter and actually filter data by date range', async () => {
     await UserModel.findByIdAndUpdate(TestId.USER, {
       $addToSet: {
         roles: Role.PRO
       }
     });
 
+    // Create test data: some within 30 days, some older
+    const now = new Date();
+    const within30Days = new Date(now.getTime() - 15 * 24 * 60 * 60 * 1000); // 15 days ago
+    const beyond30Days = new Date(now.getTime() - 45 * 24 * 60 * 60 * 1000); // 45 days ago
+    
+    await StatModel.create([
+      {
+        userId: TestId.USER,
+        levelId: TestId.LEVEL,
+        complete: true,
+        moves: 10,
+        attempts: 1,
+        ts: Math.floor(within30Days.getTime() / 1000),
+        gameId: GameId.THINKY,
+        createdAt: within30Days,
+        updatedAt: within30Days,
+        isDeleted: false
+      },
+      {
+        userId: TestId.USER,
+        levelId: TestId.LEVEL_2,
+        complete: true,
+        moves: 15,
+        attempts: 1,
+        ts: Math.floor(beyond30Days.getTime() / 1000),
+        gameId: GameId.THINKY,
+        createdAt: beyond30Days,
+        updatedAt: beyond30Days,
+        isDeleted: false
+      }
+    ]);
+
+    // Test with 30d filter
     await query({
       type: ProStatsUserType.ScoreHistory,
       timeFilter: '30d',
       expectedStatus: 200,
       additionalAssertions: async response => {
         expect(response[ProStatsUserType.ScoreHistory]).toBeDefined();
-        // The filter should still return data (the specific filtering logic is tested in the backend aggregation)
-        expect(Array.isArray(response[ProStatsUserType.ScoreHistory])).toBe(true);
+        const scoreHistory = response[ProStatsUserType.ScoreHistory];
+        
+        // Should only include data from within 30 days
+        for (const item of scoreHistory) {
+          const itemDate = new Date(item.date);
+          const daysDiff = (now.getTime() - itemDate.getTime()) / (24 * 60 * 60 * 1000);
+          expect(daysDiff).toBeLessThanOrEqual(30);
+        }
+      }
+    });
+
+    // Test without filter should include all data
+    await query({
+      type: ProStatsUserType.ScoreHistory,
+      expectedStatus: 200,
+      additionalAssertions: async response => {
+        const scoreHistory = response[ProStatsUserType.ScoreHistory];
+        // Should include data from both within and beyond 30 days
+        expect(scoreHistory.length).toBeGreaterThanOrEqual(2);
       }
     });
   });

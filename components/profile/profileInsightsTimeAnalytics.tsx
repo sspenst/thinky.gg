@@ -503,13 +503,10 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
               {timeOfDayPerformance.clockData.map((period, index) => {
                 const relPerf = period.relativePerformance;
 
-                // Create gauge data - performance range from -50 to +50, centered at 0
-                const normalizedPerf = Math.max(-50, Math.min(50, relPerf));
-                const gaugeValue = 50 + normalizedPerf; // Convert to 0-100 scale
-
-                // Needle angle calculation: 0% performance = 90° (pointing up/north)
-                // Left side (180°) = worst performance (-50%), Right side (0°) = best performance (+50%)
-                const needleAngle = 180 - (gaugeValue / 100) * 180;
+                // Needle angle calculation: 50% performance should point straight up (90°)
+                // 0% performance = 180° (left), 50% performance = 90° (up), 100% performance = 0° (right)
+                const clampedPerf = Math.max(0, Math.min(100, relPerf)); // Clamp to 0-100%
+                const needleAngle = 180 - (clampedPerf / 100) * 180;
 
                 const IconComponent = period.icon;
 
