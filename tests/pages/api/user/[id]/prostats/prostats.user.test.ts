@@ -165,7 +165,8 @@ describe('api/user/[id]/prostats/[type]', () => {
         expect(response[ProStatsUserType.MostSolvesForUserLevels]).toBeUndefined();
         expect(response[ProStatsUserType.DifficultyLevelsComparisons]).toBeUndefined();
         expect(response[ProStatsUserType.PlayLogForUserCreatedLevels]).toBeDefined();
-        expect(response[ProStatsUserType.PlayLogForUserCreatedLevels].length).toBe(2);
+        expect(response[ProStatsUserType.PlayLogForUserCreatedLevels]).toHaveProperty('creatorLevels');
+        expect(response[ProStatsUserType.PlayLogForUserCreatedLevels]).toHaveProperty('playLog');
       }
     });
   });
