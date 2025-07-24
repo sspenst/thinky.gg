@@ -527,15 +527,15 @@ async function getPlayLogForUsersCreatedLevels(gameId: GameId, reqUser: User, us
 
     // Level performance from the creator levels we already have
     const levelPerformance = creatorLevels
-      .filter(level => (level.calc_stats_completed_count || 0) > 0)
-      .map(level => ({
+      .filter((level: any) => (level.calc_stats_completed_count || 0) > 0)
+      .map((level: any) => ({
         name: level.name,
         slug: level.slug,
         solveCount: level.calc_stats_completed_count || 0,
         uniquePlayers: level.calc_playattempts_unique_users?.length || 0,
         calc_stats_completed_count: level.calc_stats_completed_count || 0,
       }))
-      .sort((a, b) => b.solveCount - a.solveCount)
+      .sort((a: any, b: any) => b.solveCount - a.solveCount)
       .slice(0, 10);
 
     // Clean user data
@@ -585,9 +585,9 @@ async function getPlayLogForUsersCreatedLevels(gameId: GameId, reqUser: User, us
       topSolver: null,
       popularityTrends: [],
       levelPerformance: creatorLevels
-        .filter(level => (level.calc_stats_completed_count || 0) > 0)
+        .filter((level: any) => (level.calc_stats_completed_count || 0) > 0)
         .slice(0, 10)
-        .map(level => ({
+        .map((level: any) => ({
           name: level.name,
           slug: level.slug,
           solveCount: level.calc_stats_completed_count || 0,

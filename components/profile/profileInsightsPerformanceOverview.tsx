@@ -265,12 +265,11 @@ export default function ProfileInsightsPerformanceOverview({ user, reqUser, time
 
     const comparisons = difficultyData[ProStatsUserType.DifficultyLevelsComparisons] as DifficultyLevelComparison[];
 
-    // Debug: Check if level data is available
+    // Debug: Check level data structure
     console.log('🔍 Sample level data:', comparisons.slice(0, 3).map(c => ({
       name: c.name,
-      hasData: !!c.data,
-      dataLength: c.data?.length || 0,
-      dataSample: c.data?.substring(0, 20) + '...'
+      difficulty: c.difficulty,
+      ts: c.ts
     })));
 
     // Calculate user's overall average solve time (for comparison baseline)
@@ -295,32 +294,20 @@ export default function ProfileInsightsPerformanceOverview({ user, reqUser, time
       if (!c.myPlayattemptsSumDuration || c.myPlayattemptsSumDuration <= 0) return;
       processedLevels++;
 
-      // Analyze the level data to determine type
-      const levelData = c.data || '';
-
-      if (levelData) levelsWithData++;
-
-      const hasHoles = levelData.includes(TileType.Hole);
-
-      // Check for restricted movables (directional tiles)
-      const restrictedTiles = [
-        TileType.Left, TileType.Up, TileType.Right, TileType.Down,
-        TileType.UpLeft, TileType.UpRight, TileType.DownRight, TileType.DownLeft,
-        TileType.NotLeft, TileType.NotUp, TileType.NotRight, TileType.NotDown,
-        TileType.LeftRight, TileType.UpDown
-      ];
-      const hasRestrictedMovables = restrictedTiles.some(tile => levelData.includes(tile));
-
+      // Categorize by difficulty tier since level data is not available
+      levelsWithData++;
+      
       let levelType: string;
-
-      if (hasHoles && hasRestrictedMovables) {
-        levelType = 'Complex Levels (Holes + Restricted Movables)';
-      } else if (hasHoles) {
-        levelType = 'Levels with Holes Only';
-      } else if (hasRestrictedMovables) {
-        levelType = 'Levels with Restricted Movables Only';
+      if (c.difficulty < 500) {
+        levelType = 'Easy Levels (< 500 difficulty)';
+      } else if (c.difficulty < 1000) {
+        levelType = 'Medium Levels (500-1000 difficulty)';
+      } else if (c.difficulty < 1500) {
+        levelType = 'Hard Levels (1000-1500 difficulty)';
+      } else if (c.difficulty < 2000) {
+        levelType = 'Expert Levels (1500-2000 difficulty)';
       } else {
-        levelType = 'Basic Levels (Regular Movables Only)';
+        levelType = 'Master Levels (2000+ difficulty)';
       }
 
       if (!levelTypes.has(levelType)) {
@@ -625,7 +612,8 @@ export default function ProfileInsightsPerformanceOverview({ user, reqUser, time
       {/* Personal Records */}
       <ProfileInsightsRecords user={user} />
       {/* Skill Radar Chart - Removed */}
-      {false && skillRadarData.length > 0 && (
+      {/* Skill Radar Chart - Temporarily disabled */}
+      {/* false && skillRadarData.length > 0 && (
         <div className='flex flex-col gap-2'>
           <h2 className='text-xl font-bold text-center'>Performance by Level Type</h2>
           <p className='text-sm text-gray-400 text-center mb-4'>
@@ -741,7 +729,7 @@ export default function ProfileInsightsPerformanceOverview({ user, reqUser, time
             </ResponsiveContainer>
           </div>
         </div>
-      )}
+      )} */}
 
     </div>
   );

@@ -6,7 +6,7 @@ import { Moon, Star, Sun, Sunrise, Sunset } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 import { Area, AreaChart, Bar, BarChart, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import User from '../../models/db/user';
-import { difficultyList, getDifficultyFromEstimate } from '../formatted/formattedDifficulty';
+import { difficultyList, getDifficultyFromEstimate, getDifficultyColor } from '../formatted/formattedDifficulty';
 import FormattedLevelLink from '../formatted/formattedLevelLink';
 import { TimeFilter } from './profileInsights';
 
@@ -710,13 +710,13 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
                           <td className='p-3'>
                             <FormattedLevelLink
                               id={`time-period-level-${index}`}
-                              level={level}
+                              level={{ _id: level._id, name: level.name, slug: level.slug } as any}
                             />
                           </td>
                           <td className='text-center p-3'>
                             <span className='px-2 py-1 rounded text-xs' style={{
-                              backgroundColor: difficultyList.find(d => d.name === getDifficultyFromEstimate(level.difficulty).name)?.color + '20',
-                              color: difficultyList.find(d => d.name === getDifficultyFromEstimate(level.difficulty).name)?.color,
+                              backgroundColor: getDifficultyColor(level.difficulty) + '20',
+                              color: getDifficultyColor(level.difficulty),
                             }}>
                               {getDifficultyFromEstimate(level.difficulty).name}
                             </span>

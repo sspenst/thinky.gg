@@ -4,7 +4,7 @@ import dayjs from 'dayjs';
 import React, { useMemo, useState } from 'react';
 import { Bar, Cell, ComposedChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import User from '../../models/db/user';
-import { difficultyList, getDifficultyFromEstimate } from '../formatted/formattedDifficulty';
+import { difficultyList, getDifficultyFromEstimate, getDifficultyColor } from '../formatted/formattedDifficulty';
 import FormattedLevelLink from '../formatted/formattedLevelLink';
 import { TimeFilter } from './profileInsights';
 import ProfileInsightsSolveTimeComparison from './profileInsightsSolveTimeComparison';
@@ -727,8 +727,8 @@ export default function ProfileInsightsPeerComparisons({ user, reqUser, timeFilt
                     </td>
                     <td className='text-center p-3'>
                       <span className='px-2 py-1 rounded text-xs' style={{
-                        backgroundColor: difficultyList.find(d => d.name === level.difficulty)?.color + '20',
-                        color: difficultyList.find(d => d.name === level.difficulty)?.color,
+                        backgroundColor: getDifficultyColor(difficultyList.find(d => d.name === level.difficulty)?.value || 0) + '20',
+                        color: getDifficultyColor(difficultyList.find(d => d.name === level.difficulty)?.value || 0),
                       }}>
                         {level.difficultyRating ? getDifficultyFromEstimate(level.difficultyRating).name : level.difficulty}
                       </span>
