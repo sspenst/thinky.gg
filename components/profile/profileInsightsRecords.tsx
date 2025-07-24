@@ -4,6 +4,7 @@ import useProStatsUser, { ProStatsUserType } from '../../hooks/useProStatsUser';
 import User from '../../models/db/user';
 import FormattedDate from '../formatted/formattedDate';
 import FormattedLevelLink from '../formatted/formattedLevelLink';
+import StyledTooltip from '../page/styledTooltip';
 import { DataTableOffline } from '../tables/dataTable';
 
 dayjs.extend(duration);
@@ -52,7 +53,28 @@ export default function ProfileInsightsRecords({ user }: {user: User}) {
           {
             id: 'timeSinceCreation',
             name: 'Time Since Creation',
-            selector: (row) => row.records[0].ts > row.ts ? dayjs.duration(((row.records[0].ts - row.ts) * 1000)).humanize() : 'N/A',
+            selector: (row) => {
+              if (row.records[0].ts <= row.ts) return 'N/A';
+              
+              const duration = dayjs.duration(((row.records[0].ts - row.ts) * 1000));
+              const humanizedTime = duration.humanize();
+              const isOlderThanYear = duration.asYears() >= 1;
+              
+              return (
+                <div className='flex items-center gap-2'>
+                  <span>{humanizedTime}</span>
+                  {isOlderThanYear && (
+                    <span 
+                      className='cursor-help'
+                      data-tooltip-id='buried-treasure-tooltip'
+                      data-tooltip-content='Buried Treasure'
+                    >
+                      🏜
+                    </span>
+                  )}
+                </div>
+              );
+            },
           },
         ]}
         data={data}
@@ -63,6 +85,7 @@ export default function ProfileInsightsRecords({ user }: {user: User}) {
           </div>
         }
       />
+      <StyledTooltip id='buried-treasure-tooltip' />
     </div>
   </>);
 }
