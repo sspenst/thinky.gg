@@ -29,6 +29,7 @@ interface LevelEngagementData {
 export default function ProfileInsightsCreatorDashboard({ user, reqUser: _reqUser, timeFilter }: ProfileInsightsCreatorDashboardProps) {
   const { proStatsUser: playLogData, isLoading: isLoadingPlayLog } = useProStatsUser(user, ProStatsUserType.PlayLogForUserCreatedLevels, timeFilter);
   const { proStatsUser: solvesData, isLoading: isLoadingSolves } = useProStatsUser(user, ProStatsUserType.MostSolvesForUserLevels, timeFilter);
+  const { proStatsUser: followerData, isLoading: isLoadingFollowers } = useProStatsUser(user, ProStatsUserType.FollowerActivityPatterns, timeFilter);
 
   // Calculate level popularity trends based on real data
   const { popularityTrends, trendPeriodLabel } = useMemo(() => {
@@ -191,7 +192,7 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser: _reqUse
     }));
   }, [playLogData]);
 
-  const isLoading = isLoadingPlayLog || isLoadingSolves;
+  const isLoading = isLoadingPlayLog || isLoadingSolves || isLoadingFollowers;
 
   // Loading components
   const LoadingSkeleton = ({ height = 'h-64' }: { height?: string }) => (
@@ -374,6 +375,129 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser: _reqUse
           <ProfileInsightsMostSolves user={user} timeFilter={timeFilter} />
         </div>
       </div>
+
+      {/* Follower Activity Analysis */}
+      {followerData && followerData[ProStatsUserType.FollowerActivityPatterns] && followerData[ProStatsUserType.FollowerActivityPatterns].followerCount >= 5 && (
+        <div className='flex flex-col gap-2'>
+          <h2 className='text-xl font-bold text-center'>Best Time to Publish</h2>
+          <p className='text-sm text-gray-400 text-center mb-4'>
+            Optimal timing based on when your {followerData[ProStatsUserType.FollowerActivityPatterns].activeFollowerCount} active followers are most engaged
+            <span className='block text-xs text-gray-500 mt-1'>
+              Analyzing activity patterns from the last 30 days
+            </span>
+          </p>
+          
+          {/* Recommendations */}
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-4 mb-6'>
+            <div className='bg-gray-800 rounded-lg p-4 text-center border-2 border-green-500'>
+              <h3 className='text-green-400 font-bold text-lg mb-2'>🕐 Best Time of Day</h3>
+              <p className='text-2xl font-bold text-white mb-1'>
+                {followerData[ProStatsUserType.FollowerActivityPatterns].recommendations.bestTimeLabel}
+              </p>
+              <p className='text-sm text-gray-400'>
+                Activity Score: {followerData[ProStatsUserType.FollowerActivityPatterns].recommendations.activityScore}%
+              </p>
+            </div>
+            <div className='bg-gray-800 rounded-lg p-4 text-center border-2 border-blue-500'>
+              <h3 className='text-blue-400 font-bold text-lg mb-2'>📅 Best Day of Week</h3>
+              <p className='text-2xl font-bold text-white mb-1'>
+                {followerData[ProStatsUserType.FollowerActivityPatterns].recommendations.bestDayLabel}
+              </p>
+              <p className='text-sm text-gray-400'>
+                Most active followers online
+              </p>
+            </div>
+          </div>
+
+          {/* Activity Charts */}
+          <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
+            {/* Hourly Activity */}
+            <div className='bg-gray-800 rounded-lg p-4'>
+              <h4 className='font-bold text-lg mb-3 text-center'>Activity by Hour</h4>
+              <div className='w-full h-48'>
+                <ResponsiveContainer width='100%' height='100%'>
+                  <BarChart data={followerData[ProStatsUserType.FollowerActivityPatterns].hourlyActivity}>
+                    <XAxis 
+                      dataKey='hour' 
+                      tick={{ fill: '#9CA3AF' }}
+                      tickFormatter={(hour) => {
+                        const hourLabels = [
+                          '12A', '1A', '2A', '3A', '4A', '5A', '6A', '7A', '8A', '9A', '10A', '11A',
+                          '12P', '1P', '2P', '3P', '4P', '5P', '6P', '7P', '8P', '9P', '10P', '11P'
+                        ];
+                        return hourLabels[hour];
+                      }}
+                    />
+                    <YAxis tick={{ fill: '#9CA3AF' }} />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: 'rgb(31, 41, 55)',
+                        border: 'none',
+                        borderRadius: '0.5rem',
+                        color: 'rgb(229, 231, 235)',
+                      }}
+                      formatter={(value: number, name: string) => {
+                        if (name === 'activeFollowers') {
+                          return [`${value} followers`, 'Active Followers'];
+                        }
+                        return [`${value} activities`, 'Total Activities'];
+                      }}
+                      labelFormatter={(hour: number) => {
+                        const hourLabels = [
+                          '12 AM', '1 AM', '2 AM', '3 AM', '4 AM', '5 AM', '6 AM', '7 AM', '8 AM', '9 AM', '10 AM', '11 AM',
+                          '12 PM', '1 PM', '2 PM', '3 PM', '4 PM', '5 PM', '6 PM', '7 PM', '8 PM', '9 PM', '10 PM', '11 PM'
+                        ];
+                        return hourLabels[hour];
+                      }}
+                    />
+                    <Bar dataKey='activeFollowers' fill='#3B82F6' name='activeFollowers' />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* Daily Activity */}
+            <div className='bg-gray-800 rounded-lg p-4'>
+              <h4 className='font-bold text-lg mb-3 text-center'>Activity by Day</h4>
+              <div className='w-full h-48'>
+                <ResponsiveContainer width='100%' height='100%'>
+                  <BarChart data={followerData[ProStatsUserType.FollowerActivityPatterns].dailyActivity}>
+                    <XAxis 
+                      dataKey='dayOfWeek' 
+                      tick={{ fill: '#9CA3AF' }}
+                      tickFormatter={(day) => {
+                        const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                        return dayLabels[day - 1]; // MongoDB dayOfWeek is 1-based
+                      }}
+                    />
+                    <YAxis tick={{ fill: '#9CA3AF' }} />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: 'rgb(31, 41, 55)',
+                        border: 'none',
+                        borderRadius: '0.5rem',
+                        color: 'rgb(229, 231, 235)',
+                      }}
+                      formatter={(value: number, name: string) => {
+                        if (name === 'activeFollowers') {
+                          return [`${value} followers`, 'Active Followers'];
+                        }
+                        return [`${value} activities`, 'Total Activities'];
+                      }}
+                      labelFormatter={(day: number) => {
+                        const dayLabels = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                        return dayLabels[day - 1]; // Convert to 0-based index
+                      }}
+                    />
+                    <Bar dataKey='activeFollowers' fill='#10B981' name='activeFollowers' />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Creator Tips */}
       <div className='bg-gray-800 rounded-lg p-6'>
         <h3 className='text-lg font-bold mb-4'>Creator Insights</h3>

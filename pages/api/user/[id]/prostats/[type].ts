@@ -1,5 +1,6 @@
 import { GameId } from '@root/constants/GameId';
 import { GameType } from '@root/constants/Games';
+import GraphType from '@root/constants/graphType';
 import { getEnrichLevelsPipelineSteps, getEnrichUserConfigPipelineStage } from '@root/helpers/enrich';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import { getRecordsByUserId } from '@root/helpers/getRecordsByUserId';
@@ -15,7 +16,7 @@ import isPro from '../../../../../helpers/isPro';
 import { ProStatsUserType } from '../../../../../hooks/useProStatsUser';
 import cleanUser from '../../../../../lib/cleanUser';
 import withAuth, { NextApiRequestWithAuth } from '../../../../../lib/withAuth';
-import { LevelModel, PlayAttemptModel, StatModel, UserModel } from '../../../../../models/mongoose';
+import { GraphModel, LevelModel, PlayAttemptModel, StatModel, UserModel } from '../../../../../models/mongoose';
 import { AttemptContext } from '../../../../../models/schemas/playAttemptSchema';
 
 function getTimeFilterCutoff(timeFilter?: string): number | null {
@@ -423,6 +424,156 @@ async function getScoreHistory(gameId: GameId, userId: string, timeFilter?: stri
   return history;
 }
 
+async function getFollowerActivityPatterns(gameId: GameId, userId: string) {
+  // Only analyze last 30 days for follower activity
+  const thirtyDaysAgo = Math.floor(Date.now() / 1000) - (30 * 24 * 60 * 60);
+
+  // Get all followers of this user
+  const followers = await GraphModel.aggregate([
+    {
+      $match: {
+        target: new mongoose.Types.ObjectId(userId),
+        type: GraphType.FOLLOW
+      }
+    },
+    {
+      $lookup: {
+        from: 'users',
+        localField: 'source',
+        foreignField: '_id',
+        as: 'follower'
+      }
+    },
+    {
+      $unwind: '$follower'
+    },
+    {
+      $project: {
+        followerId: '$follower._id',
+        followerName: '$follower.name'
+      }
+    }
+  ]);
+
+  if (followers.length < 5) {
+    return {
+      followerCount: followers.length,
+      activeFollowerCount: 0,
+      hourlyActivity: [],
+      dailyActivity: [],
+      recommendations: {
+        bestHour: -1,
+        bestDay: -1,
+        bestTimeLabel: 'Not enough followers for analysis',
+        bestDayLabel: 'Need at least 5 followers',
+        activityScore: 0
+      }
+    };
+  }
+
+  const followerIds = followers.map(f => f.followerId);
+
+  // Get play attempts from followers in the last 30 days
+  const followerActivity = await PlayAttemptModel.aggregate([
+    {
+      $match: {
+        userId: { $in: followerIds },
+        endTime: { $gte: thirtyDaysAgo },
+        gameId: gameId,
+        isDeleted: { $ne: true }
+      }
+    },
+    {
+      $project: {
+        userId: 1,
+        endTime: 1,
+        hour: { $hour: { $toDate: { $multiply: ['$endTime', 1000] } } },
+        dayOfWeek: { $dayOfWeek: { $toDate: { $multiply: ['$endTime', 1000] } } }
+      }
+    }
+  ]);
+
+  // Count active followers (those who had any activity in last 30 days)
+  const activeFollowerIds = new Set(followerActivity.map(a => a.userId.toString()));
+  const activeFollowerCount = activeFollowerIds.size;
+
+  if (activeFollowerCount < 5) {
+    return {
+      followerCount: followers.length,
+      activeFollowerCount: activeFollowerCount,
+      hourlyActivity: [],
+      dailyActivity: [],
+      recommendations: {
+        bestHour: -1,
+        bestDay: -1,
+        bestTimeLabel: 'Not enough active followers',
+        bestDayLabel: 'Need at least 5 active followers',
+        activityScore: 0
+      }
+    };
+  }
+
+  // Aggregate by hour (0-23)
+  const hourlyActivity = Array.from({ length: 24 }, (_, hour) => {
+    const hourActivities = followerActivity.filter(a => a.hour === hour);
+    const activeFollowersThisHour = new Set(hourActivities.map(a => a.userId.toString())).size;
+    
+    return {
+      hour,
+      activityCount: hourActivities.length,
+      activeFollowers: activeFollowersThisHour
+    };
+  });
+
+  // Aggregate by day of week (1=Sunday, 2=Monday, ..., 7=Saturday)
+  const dailyActivity = Array.from({ length: 7 }, (_, index) => {
+    const dayOfWeek = index + 1; // MongoDB dayOfWeek is 1-based
+    const dayActivities = followerActivity.filter(a => a.dayOfWeek === dayOfWeek);
+    const activeFollowersThisDay = new Set(dayActivities.map(a => a.userId.toString())).size;
+    
+    return {
+      dayOfWeek,
+      activityCount: dayActivities.length,
+      activeFollowers: activeFollowersThisDay
+    };
+  });
+
+  // Find best times - prioritize hours/days with most active followers and activity
+  const bestHourData = hourlyActivity.reduce((best, current) => {
+    const currentScore = current.activeFollowers * 2 + current.activityCount;
+    const bestScore = best.activeFollowers * 2 + best.activityCount;
+    return currentScore > bestScore ? current : best;
+  });
+
+  const bestDayData = dailyActivity.reduce((best, current) => {
+    const currentScore = current.activeFollowers * 2 + current.activityCount;
+    const bestScore = best.activeFollowers * 2 + best.activityCount;
+    return currentScore > bestScore ? current : best;
+  });
+
+  // Create readable labels
+  const hourLabels = [
+    '12 AM', '1 AM', '2 AM', '3 AM', '4 AM', '5 AM', '6 AM', '7 AM', '8 AM', '9 AM', '10 AM', '11 AM',
+    '12 PM', '1 PM', '2 PM', '3 PM', '4 PM', '5 PM', '6 PM', '7 PM', '8 PM', '9 PM', '10 PM', '11 PM'
+  ];
+
+  const dayLabels = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+  return {
+    followerCount: followers.length,
+    activeFollowerCount: activeFollowerCount,
+    hourlyActivity,
+    dailyActivity,
+    recommendations: {
+      bestHour: bestHourData.hour,
+      bestDay: bestDayData.dayOfWeek - 1, // Convert to 0-based index (0=Sunday, 1=Monday, etc.)
+      bestTimeLabel: hourLabels[bestHourData.hour],
+      bestDayLabel: dayLabels[bestDayData.dayOfWeek - 1], // Convert to 0-based index
+      activityScore: Math.round((bestHourData.activeFollowers * 2 + bestHourData.activityCount) / activeFollowerCount * 100)
+    }
+  };
+}
+
 export default withAuth({
   GET: {
     query: {
@@ -440,7 +591,7 @@ export default withAuth({
   }
 
   const { id: userId, type, timeFilter } = req.query as { id: string, type: string, timeFilter?: string };
-  let scoreHistory, difficultyLevelsComparisons, mostSolvesForUserLevels, playLogForUserCreatedLevels, records;
+  let scoreHistory, difficultyLevelsComparisons, mostSolvesForUserLevels, playLogForUserCreatedLevels, records, followerActivityPatterns;
 
   if (type === ProStatsUserType.DifficultyLevelsComparisons) {
     // Allow access if user is viewing their own data OR if they're an admin
@@ -459,6 +610,8 @@ export default withAuth({
     playLogForUserCreatedLevels = await getPlayLogForUsersCreatedLevels(req.gameId, req.user, userId, timeFilter);
   } else if (type === ProStatsUserType.Records) {
     records = await getRecordsByUserId(req.gameId, new Types.ObjectId(userId), req.user);
+  } else if (type === ProStatsUserType.FollowerActivityPatterns) {
+    followerActivityPatterns = await getFollowerActivityPatterns(req.gameId, userId);
   }
 
   const response = {
@@ -467,6 +620,7 @@ export default withAuth({
     [ProStatsUserType.MostSolvesForUserLevels]: mostSolvesForUserLevels,
     [ProStatsUserType.PlayLogForUserCreatedLevels]: playLogForUserCreatedLevels,
     [ProStatsUserType.Records]: records,
+    [ProStatsUserType.FollowerActivityPatterns]: followerActivityPatterns,
   };
 
   return res.status(200).json(response);

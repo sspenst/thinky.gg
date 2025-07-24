@@ -11,6 +11,7 @@ export enum ProStatsUserType {
   ScoreHistory = 'score-history',
   PlayLogForUserCreatedLevels = 'play-log-for-user-created-levels',
   Records = 'records',
+  FollowerActivityPatterns = 'follower-activity-patterns',
 }
 
 export interface ProStatsUser {
@@ -29,6 +30,19 @@ export interface ProStatsUser {
     }>;
   };
   [ProStatsUserType.Records]?: LevelWithRecordHistory[];
+  [ProStatsUserType.FollowerActivityPatterns]?: {
+    followerCount: number;
+    activeFollowerCount: number;
+    hourlyActivity: Array<{ hour: number; activityCount: number; activeFollowers: number }>;
+    dailyActivity: Array<{ dayOfWeek: number; activityCount: number; activeFollowers: number }>;
+    recommendations: {
+      bestHour: number;
+      bestDay: number;
+      bestTimeLabel: string;
+      bestDayLabel: string;
+      activityScore: number;
+    };
+  };
 }
 
 export default function useProStatsUser(user: User | null, type: ProStatsUserType, timeFilter: TimeFilter = TimeFilter.ALL) {
