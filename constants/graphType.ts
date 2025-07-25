@@ -1,6 +1,7 @@
 enum GraphType {
   FOLLOW = 'FOLLOW',
-  BLOCK = 'BLOCK'
+  BLOCK = 'BLOCK',
+  SHARE = 'SHARE'
 }
 
 export default GraphType;

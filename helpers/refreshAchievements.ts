@@ -13,7 +13,8 @@ import Level from '@root/models/db/level';
 import MultiplayerMatch from '@root/models/db/multiplayerMatch';
 import MultiplayerProfile from '@root/models/db/multiplayerProfile';
 import User from '@root/models/db/user';
-import { AchievementModel, CommentModel, LevelModel, MultiplayerMatchModel, MultiplayerProfileModel, ReviewModel, SocialShareModel, UserConfigModel, UserModel } from '@root/models/mongoose';
+import { AchievementModel, CommentModel, GraphModel, LevelModel, MultiplayerMatchModel, MultiplayerProfileModel, ReviewModel, UserConfigModel, UserModel } from '@root/models/mongoose';
+import GraphType from '@root/constants/graphType';
 import { Types } from 'mongoose';
 import queueDiscordWebhook from './discordWebhook';
 import { getRecordsByUserId } from './getRecordsByUserId';
@@ -33,7 +34,7 @@ const AchievementCategoryFetch = {
         target: { $ne: userId },
         text: { $regex: /welcome/i },
       }).populate('target').lean<Comment[]>(),
-      SocialShareModel.countDocuments({ userId: userId, gameId: gameId })
+      GraphModel.countDocuments({ source: userId, type: GraphType.SHARE })
     ]);
 
     const hasWelcomed = welcomeComments.some((comment) => {

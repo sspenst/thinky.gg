@@ -2,7 +2,9 @@ import AchievementCategory from '@root/constants/achievements/achievementCategor
 import { ValidObjectId, ValidType } from '@root/helpers/apiWrapper';
 import { refreshAchievements } from '@root/helpers/refreshAchievements';
 import withAuth, { NextApiRequestWithAuth } from '@root/lib/withAuth';
-import { LevelModel, SocialShareModel } from '@root/models/mongoose';
+import GraphType from '@root/constants/graphType';
+import { GraphTypeShareMetadata } from '@root/models/db/graphMetadata';
+import { GraphModel, LevelModel } from '@root/models/mongoose';
 import { NextApiResponse } from 'next';
 
 export default withAuth(
@@ -34,18 +36,24 @@ export default withAuth(
         return res.status(404).json({ error: 'Level not found.' });
       }
 
-      // Create social share record
-      await SocialShareModel.create({
-        userId: req.user._id,
-        levelId: levelId,
-        platform: platform,
-        gameId: req.gameId,
+      // Create social share record using Graph model
+      const metadata: GraphTypeShareMetadata = {
+        platform: platform as GraphTypeShareMetadata['platform'],
+      };
+
+      await GraphModel.create({
+        source: req.user._id,
+        sourceModel: 'User',
+        target: levelId,
+        targetModel: 'Level',
+        type: GraphType.SHARE,
+        metadata,
       });
 
-      // Get total share count for this user and game
-      const shareCount = await SocialShareModel.countDocuments({
-        userId: req.user._id,
-        gameId: req.gameId,
+      // Get total share count for this user
+      const shareCount = await GraphModel.countDocuments({
+        source: req.user._id,
+        type: GraphType.SHARE,
       });
 
       // Refresh achievements to check for social sharing achievement

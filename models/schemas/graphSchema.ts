@@ -21,12 +21,16 @@ const GraphSchema = new mongoose.Schema<Graph>({
   targetModel: {
     type: String,
     required: true,
-    enum: ['User', 'Collection'],
+    enum: ['User', 'Collection', 'Level'],
   },
   type: {
     type: String,
     required: true,
     enum: GraphType,
+  },
+  metadata: {
+    type: Object,
+    default: {},
   },
 },
 {
