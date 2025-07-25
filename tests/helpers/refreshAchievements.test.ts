@@ -5,7 +5,7 @@ import GraphType from '@root/constants/graphType';
 import TestId from '@root/constants/testId';
 import { refreshAchievements } from '@root/helpers/refreshAchievements';
 import { getTokenCookieValue } from '@root/lib/getTokenCookie';
-import { AchievementModel, GraphModel, LevelModel, UserConfigModel } from '@root/models/mongoose';
+import { AchievementModel, GraphModel, LevelModel, UserConfigModel, UserModel } from '@root/models/mongoose';
 import { processQueueMessages } from '@root/pages/api/internal-jobs/worker';
 import socialShareHandler from '@root/pages/api/social-share/index';
 import { Types } from 'mongoose';
@@ -81,6 +81,71 @@ describe('helpers/refreshAchievements.ts', () => {
     expect(achievements.some(a => a.type === AchievementType.CHAPTER_1_COMPLETED)).toBe(true);
     expect(achievements.some(a => a.type === AchievementType.CHAPTER_2_COMPLETED)).toBe(true);
     expect(achievements.some(a => a.type === AchievementType.CHAPTER_3_COMPLETED)).toBe(true);
+  });
+
+  test('test avatar upload achievement', async () => {
+    // Clean up any existing achievements
+    await AchievementModel.deleteMany({ userId: TestId.USER });
+
+    // Test without avatar
+    await UserModel.updateOne(
+      { _id: TestId.USER },
+      { $unset: { avatarUpdatedAt: 1 } }
+    );
+
+    await refreshAchievements(GameId.THINKY, new Types.ObjectId(TestId.USER), [AchievementCategory.SOCIAL]);
+    let achievements = await AchievementModel.find({ userId: TestId.USER }).lean();
+
+    expect(achievements.some(a => a.type === AchievementType.UPLOAD_AVATAR)).toBe(false);
+
+    // Test with avatar
+    await UserModel.updateOne(
+      { _id: TestId.USER },
+      { $set: { avatarUpdatedAt: Date.now() } }
+    );
+
+    await refreshAchievements(GameId.THINKY, new Types.ObjectId(TestId.USER), [AchievementCategory.SOCIAL]);
+    achievements = await AchievementModel.find({ userId: TestId.USER }).lean();
+
+    expect(achievements.some(a => a.type === AchievementType.UPLOAD_AVATAR)).toBe(true);
+  });
+
+  test('test bio update achievement', async () => {
+    // Clean up any existing achievements
+    await AchievementModel.deleteMany({ userId: TestId.USER });
+
+    // Test without bio
+    await UserModel.updateOne(
+      { _id: TestId.USER },
+      { $unset: { bio: 1 } }
+    );
+
+    await refreshAchievements(GameId.THINKY, new Types.ObjectId(TestId.USER), [AchievementCategory.SOCIAL]);
+    let achievements = await AchievementModel.find({ userId: TestId.USER }).lean();
+
+    expect(achievements.some(a => a.type === AchievementType.UPDATE_BIO)).toBe(false);
+
+    // Test with empty bio
+    await UserModel.updateOne(
+      { _id: TestId.USER },
+      { $set: { bio: '' } }
+    );
+
+    await refreshAchievements(GameId.THINKY, new Types.ObjectId(TestId.USER), [AchievementCategory.SOCIAL]);
+    achievements = await AchievementModel.find({ userId: TestId.USER }).lean();
+
+    expect(achievements.some(a => a.type === AchievementType.UPDATE_BIO)).toBe(false);
+
+    // Test with non-empty bio
+    await UserModel.updateOne(
+      { _id: TestId.USER },
+      { $set: { bio: 'This is my bio!' } }
+    );
+
+    await refreshAchievements(GameId.THINKY, new Types.ObjectId(TestId.USER), [AchievementCategory.SOCIAL]);
+    achievements = await AchievementModel.find({ userId: TestId.USER }).lean();
+
+    expect(achievements.some(a => a.type === AchievementType.UPDATE_BIO)).toBe(true);
   });
 
   describe('SOCIAL achievements', () => {

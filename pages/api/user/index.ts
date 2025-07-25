@@ -9,6 +9,8 @@ import User from '@root/models/db/user';
 import bcrypt from 'bcryptjs';
 import mongoose from 'mongoose';
 import type { NextApiResponse } from 'next';
+import AchievementCategory from '../../../constants/achievements/achievementCategory';
+import { GameId } from '../../../constants/GameId';
 import PrivateTagType from '../../../constants/privateTagType';
 import { ValidType } from '../../../helpers/apiWrapper';
 import { generateCollectionSlug, generateLevelSlug } from '../../../helpers/generateSlug';
@@ -19,6 +21,7 @@ import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import { CollectionModel, LevelModel, MultiplayerProfileModel, UserModel } from '../../../models/mongoose';
+import { queueRefreshAchievements } from '../internal-jobs/worker/queueFunctions';
 import { getSubscriptions, SubscriptionData } from '../subscription';
 import { getUserConfig } from '../user-config';
 
@@ -176,6 +179,11 @@ export default withAuth({
         if (error) {
           return res.status(error.status).json({ error: error.message });
         }
+      }
+
+      // Queue achievement refresh if bio was updated
+      if (bio !== undefined) {
+        await queueRefreshAchievements(GameId.THINKY, req.user._id, [AchievementCategory.SOCIAL]);
       }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {

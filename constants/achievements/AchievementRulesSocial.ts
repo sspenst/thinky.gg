@@ -2,7 +2,7 @@ import { IAchievementInfo } from './achievementInfo';
 import AchievementType from './achievementType';
 
 interface IAchievementInfoSocial extends IAchievementInfo {
-  unlocked: ({ commentCount, hasWelcomed, hasSharedToSocial }: { commentCount: number, hasWelcomed: boolean, hasSharedToSocial: boolean }) => boolean;
+  unlocked: ({ commentCount, hasWelcomed, hasSharedToSocial, user }: { commentCount: number, hasWelcomed: boolean, hasSharedToSocial: boolean, user: User }) => boolean;
 }
 
 const AchievementRulesSocial: { [achievementType: string]: IAchievementInfoSocial } = {};
@@ -55,6 +55,26 @@ AchievementRulesSocial[AchievementType.WELCOME] = {
   secret: true,
   unlocked: ({ hasWelcomed }) => {
     return hasWelcomed;
+  },
+};
+AchievementRulesSocial[AchievementType.UPLOAD_AVATAR] = {
+  getDescription: () => 'Uploaded an avatar to personalize your profile',
+  name: 'Avatar Awakened',
+  emoji: '🖼️',
+  discordNotification: false,
+  secret: true,
+  unlocked: ({ user }) => {
+    return !!(user?.avatarUpdatedAt);
+  },
+};
+AchievementRulesSocial[AchievementType.UPDATE_BIO] = {
+  getDescription: () => 'Added a bio to your profile',
+  name: 'Autobiographer',
+  emoji: '✍️',
+  discordNotification: false,
+  secret: true,
+  unlocked: ({ user }) => {
+    return !!(user?.bio && user.bio.length > 0);
   },
 };
 AchievementRulesSocial[AchievementType.SOCIAL_SHARE] = {
