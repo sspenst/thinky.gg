@@ -45,7 +45,7 @@
     "passport": "^0.7.0",
     "passport-discord": "^0.1.4",
     "passport-google-oauth20": "^2.0.0",
-    "posthog-js": "^1.249.0",
+    "posthog-js": "^1.257.0",
     "posthog-node": "^4.18.0",
     "pureimage": "^0.4.18",
     "react": "^19.0.0",

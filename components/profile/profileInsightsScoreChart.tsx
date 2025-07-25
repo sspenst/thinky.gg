@@ -1,10 +1,11 @@
 import useProStatsUser, { ProStatsUserType } from '@root/hooks/useProStatsUser';
 import dayjs from 'dayjs';
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Bar, CartesianGrid, ComposedChart, Legend, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { DateAndSum } from '../../contexts/levelContext';
 import User from '../../models/db/user';
 import MultiSelectUser from '../page/multiSelectUser';
+import { TimeFilter } from './profileInsights';
 
 const getCumulativeScores = (scores: DateAndSum[]): DateAndSum[] => {
   let cumulativeSum = 0;
@@ -45,13 +46,14 @@ const mergeData = (data1: DateAndSum[], data2: DateAndSum[]) => {
   });
 };
 
-export default function ProfileInsightsScoreChart({ user }: { user: User }) {
+export default function ProfileInsightsScoreChart({ user, timeFilter }: { user: User; timeFilter?: TimeFilter }) {
   const [compareUser, setCompareUser] = useState<User | null>(null);
   const [enableCumulative, setEnableCumulative] = useState(false);
   const [enableDaily, setEnableDaily] = useState(true);
-  const { proStatsUser: scoreChartData } = useProStatsUser(user, ProStatsUserType.ScoreHistory);
-  const { proStatsUser: compareUserData } = useProStatsUser(compareUser, ProStatsUserType.ScoreHistory);
+  const { proStatsUser: scoreChartData } = useProStatsUser(user, ProStatsUserType.ScoreHistory, timeFilter);
+  const { proStatsUser: compareUserData, isLoading: compareUserLoading } = useProStatsUser(compareUser, ProStatsUserType.ScoreHistory, timeFilter);
   const compareData = compareUserData?.[ProStatsUserType.ScoreHistory];
+
 
   const scores = scoreChartData?.[ProStatsUserType.ScoreHistory] as DateAndSum[] || [];
 
@@ -69,7 +71,14 @@ export default function ProfileInsightsScoreChart({ user }: { user: User }) {
   );
 
   if (!scoreChartData || !scoreChartData[ProStatsUserType.ScoreHistory]) {
-    return <span>Loading...</span>;
+    return (
+      <div className='flex flex-col gap-2'>
+        <div className='h-6 bg-gray-700 rounded w-32 animate-pulse' />
+        <div className='h-4 bg-gray-700 rounded w-96 animate-pulse' />
+        <div className='h-4 bg-gray-700 rounded w-80 animate-pulse' />
+        <div className='bg-gray-800 rounded-lg animate-pulse h-80 mt-4' />
+      </div>
+    );
   }
 
   // use recharts to create a score chart over time
@@ -83,11 +92,23 @@ export default function ProfileInsightsScoreChart({ user }: { user: User }) {
     <div className='w-full flex flex-col gap-2'>
       <div className='flex flex-row gap-2 justify-center align-center items-center p-1'>
         <MultiSelectUser
+          className='min-w-40'
           onSelect={(user) => {
             setCompareUser(user);
           }}
           placeholder='Find a user to compare...'
         />
+        {compareUser && compareUserLoading && (
+          <div className='flex items-center gap-2 text-sm text-gray-400'>
+            <div className='animate-spin rounded-full h-4 w-4 border-b-2 border-blue-400' />
+            Loading {compareUser.name}...
+          </div>
+        )}
+        {compareUser && !compareUserLoading && compareData && compareData.length > 0 && (
+          <div className='flex items-center gap-2 text-sm text-green-400'>
+            ✅ Comparing with {compareUser.name} ({compareData.length} data points)
+          </div>
+        )}
       </div>
       <div className='flex gap-4 justify-center'>
         <div className='flex gap-2'>
@@ -103,11 +124,11 @@ export default function ProfileInsightsScoreChart({ user }: { user: User }) {
         <ComposedChart title='Score History' data={mergedData}>
           {enableDaily && <Bar name={user.name + ' Daily Solved'} dataKey='sum' fill='lightgreen' yAxisId='left' />}
           {enableCumulative && <Line name={user.name + ' Total'} dot={false} connectNulls dataKey='cumulativeSum' stroke='rgba(75, 192, 192)' yAxisId='right' />}
-          {compareData && (
-            <>
-              {enableDaily && <Bar name={compareUser?.name + ' Daily'} dataKey='sumCompare' fill='gray' yAxisId='left' />}
-              {enableCumulative && <Line connectNulls name={compareUser?.name + ' Total'} dot={false} dataKey='cumulativeSumCompare' stroke='rgba(192, 75, 75)' yAxisId='right' />}
-            </>
+{compareData && compareData.length > 0 && enableDaily && (
+            <Bar name={compareUser?.name + ' Daily'} dataKey='sumCompare' fill='#FF6B6B' yAxisId='left' />
+          )}
+          {compareData && compareData.length > 0 && enableCumulative && (
+            <Line connectNulls name={compareUser?.name + ' Total'} dot={false} dataKey='cumulativeSumCompare' stroke='rgba(192, 75, 75)' yAxisId='right' />
           )}
           <Legend verticalAlign='top' height={36} />
           <CartesianGrid strokeDasharray='3 3' vertical={false} />
@@ -148,11 +169,11 @@ export default function ProfileInsightsScoreChart({ user }: { user: User }) {
 
                   items.push(<div key='tooltip-scorechart-t'>{dayjs(new Date(payloadObj.date)).format('M/D/YY')}</div>);
 
-                  {user && daySum && totalSolved && (
+                  {user && (daySum !== undefined) && (totalSolved !== undefined) && (
                     items.push(<div key='tooltip-scorechart-a'>{user.name} solved {daySum} levels (Total solved: {totalSolved})</div>)
                   );}
 
-                  {compareUser && daySumCompare && totalSolvedCompare && (
+                  {compareUser && (daySumCompare !== undefined) && (totalSolvedCompare !== undefined) && (
                     items.push(<div key= 'tooltip-scorechart-b'>{compareUser.name} solved {daySumCompare} levels (Total solved: {totalSolvedCompare})</div>)
                   );}
 
