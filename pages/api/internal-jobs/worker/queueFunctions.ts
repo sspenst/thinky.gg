@@ -43,9 +43,10 @@ export async function queuePushNotification(notificationId: Types.ObjectId, opti
   ]);
 }
 
-export async function bulkQueuePushNotification(notificationIds: Types.ObjectId[], session: ClientSession) {
+export async function bulkQueuePushNotification(notificationIds: Types.ObjectId[], session: ClientSession, runAt?: Date) {
   const queueMessages = [];
   const now = new Date();
+  const runAtTime = runAt || now;
 
   for (const notificationId of notificationIds) {
     const message = JSON.stringify({ notificationId: notificationId.toString() });
@@ -56,7 +57,7 @@ export async function bulkQueuePushNotification(notificationIds: Types.ObjectId[
       message: message,
       state: QueueMessageState.PENDING,
       type: QueueMessageType.PUSH_NOTIFICATION,
-      runAt: now,
+      runAt: runAtTime,
       createdAt: now,
       updatedAt: now,
       processingAttempts: 0,
@@ -69,7 +70,7 @@ export async function bulkQueuePushNotification(notificationIds: Types.ObjectId[
       message: message,
       state: QueueMessageState.PENDING,
       type: QueueMessageType.EMAIL_NOTIFICATION,
-      runAt: now,
+      runAt: runAtTime,
       createdAt: now,
       updatedAt: now,
       processingAttempts: 0,

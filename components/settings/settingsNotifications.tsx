@@ -53,6 +53,7 @@ export default function SettingsNotifications() {
 
   const notifLabels = {
     [NotificationType.ADMIN_MESSAGE]: 'Admin message',
+    [NotificationType.LEVEL_OF_DAY]: 'Level of the day',
     [NotificationType.NEW_ACHIEVEMENT]: 'New achievement',
     [NotificationType.NEW_FOLLOWER]: 'New follower',
     [NotificationType.NEW_LEVEL]: 'New level from someone you follow',
@@ -202,42 +203,6 @@ export default function SettingsNotifications() {
                 </tr>
               );
             })}
-            {!guest &&
-              <tr key='level-of-the-day' className='border-b' style={{ borderColor: 'var(--bg-color-4)' }}>
-                <td className='p-2'>
-                  <label className='text-sm' htmlFor='level-of-the-day'>
-                    Level of the day
-                  </label>
-                </td>
-                <td className='px-4 py-2 text-center'>
-                  <input
-                    checked={emailDigest === EmailDigestSettingType.DAILY}
-                    disabled={isUserConfigLoading}
-                    id='level-of-the-day'
-                    name='level-of-the-day'
-                    onChange={option => {
-                      if (!option) {
-                        return;
-                      }
-
-                      const newEmailDigest = emailDigest === EmailDigestSettingType.DAILY ? EmailDigestSettingType.NONE : EmailDigestSettingType.DAILY;
-
-                      updateUserConfig(
-                        JSON.stringify({
-                          emailDigest: newEmailDigest,
-                        }), 'notification settings',
-                      );
-
-                      setEmailDigest(newEmailDigest);
-                    }}
-                    type='checkbox'
-                  />
-                </td>
-                <td className='px-4 py-2 text-center'>
-                  {null}
-                </td>
-              </tr>
-            }
           </tbody>
         </table>
       </div>
