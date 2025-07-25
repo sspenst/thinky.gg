@@ -97,7 +97,7 @@ describe('pages/api/internal-jobs/worker', () => {
 
       try {
         await session.withTransaction(async () => {
-          await bulkQueuePushNotification(notificationIds, session);
+          await bulkQueuePushNotification(notificationIds, session, undefined, true);
         });
       } finally {
         session.endSession();
