@@ -1,10 +1,15 @@
 import AchievementCategory from '@root/constants/achievements/achievementCategory';
 import AchievementType from '@root/constants/achievements/achievementType';
-import { DEFAULT_GAME_ID } from '@root/constants/GameId';
+import { DEFAULT_GAME_ID, GameId } from '@root/constants/GameId';
+import GraphType from '@root/constants/graphType';
 import TestId from '@root/constants/testId';
 import { refreshAchievements } from '@root/helpers/refreshAchievements';
-import { AchievementModel, LevelModel, UserConfigModel } from '@root/models/mongoose';
+import { getTokenCookieValue } from '@root/lib/getTokenCookie';
+import { AchievementModel, GraphModel, LevelModel, UserConfigModel } from '@root/models/mongoose';
+import { processQueueMessages } from '@root/pages/api/internal-jobs/worker';
+import socialShareHandler from '@root/pages/api/social-share/index';
 import { Types } from 'mongoose';
+import { testApiHandler } from 'next-test-api-route-handler';
 import dbConnect, { dbDisconnect } from '../../lib/dbConnect';
 
 beforeAll(async () => {
@@ -76,5 +81,136 @@ describe('helpers/refreshAchievements.ts', () => {
     expect(achievements.some(a => a.type === AchievementType.CHAPTER_1_COMPLETED)).toBe(true);
     expect(achievements.some(a => a.type === AchievementType.CHAPTER_2_COMPLETED)).toBe(true);
     expect(achievements.some(a => a.type === AchievementType.CHAPTER_3_COMPLETED)).toBe(true);
+  });
+
+  describe('SOCIAL achievements', () => {
+    beforeEach(async () => {
+      await AchievementModel.deleteMany({ userId: TestId.USER });
+      await GraphModel.deleteMany({});
+    });
+
+    test('should award SOCIAL_SHARE achievement when user shares a level', async () => {
+      // Make API call to create a share
+      await testApiHandler({
+        pagesHandler: socialShareHandler as any,
+        test: async ({ fetch }) => {
+          const res = await fetch({
+            method: 'POST',
+            headers: {
+              'content-type': 'application/json',
+              'cookie': `token=${getTokenCookieValue(TestId.USER)}`,
+            },
+            body: JSON.stringify({
+              platform: 'X',
+              levelId: TestId.LEVEL_3,
+            }),
+          });
+
+          expect(res.status).toBe(200);
+          const response = await res.json();
+
+          expect(response.success).toBe(true);
+          expect(response.platform).toBe('X');
+        },
+      });
+
+      // Process the queued achievement refresh
+      await processQueueMessages();
+
+      // Verify the share was created in the database
+      const shareCount = await GraphModel.countDocuments({
+        source: TestId.USER,
+        type: GraphType.SHARE
+      });
+
+      expect(shareCount).toBe(1);
+
+      // Verify achievement was awarded
+      const socialAchievements = await AchievementModel.find({
+        userId: TestId.USER,
+        gameId: GameId.THINKY,
+        type: AchievementType.SOCIAL_SHARE,
+      });
+
+      expect(socialAchievements).toHaveLength(1);
+    });
+
+    test('should not award SOCIAL_SHARE achievement when user has not shared', async () => {
+      await refreshAchievements(GameId.THINKY, new Types.ObjectId(TestId.USER), [AchievementCategory.SOCIAL]);
+
+      const socialAchievements = await AchievementModel.find({
+        userId: TestId.USER,
+        gameId: GameId.THINKY,
+        type: AchievementType.SOCIAL_SHARE,
+      });
+
+      expect(socialAchievements).toHaveLength(0);
+    });
+
+    test('should count shares from multiple platforms', async () => {
+      // Make API calls to create shares on different platforms for different levels
+      await testApiHandler({
+        pagesHandler: socialShareHandler as any,
+        test: async ({ fetch }) => {
+          // First share
+          const res1 = await fetch({
+            method: 'POST',
+            headers: {
+              'content-type': 'application/json',
+              'cookie': `token=${getTokenCookieValue(TestId.USER)}`,
+            },
+            body: JSON.stringify({
+              platform: 'X',
+              levelId: TestId.LEVEL_3,
+            }),
+          });
+
+          expect(res1.status).toBe(200);
+          const response1 = await res1.json();
+
+          expect(response1.success).toBe(true);
+          expect(response1.platform).toBe('X');
+
+          // Second share
+          const res2 = await fetch({
+            method: 'POST',
+            headers: {
+              'content-type': 'application/json',
+              'cookie': `token=${getTokenCookieValue(TestId.USER)}`,
+            },
+            body: JSON.stringify({
+              platform: 'Facebook',
+              levelId: TestId.LEVEL_4,
+            }),
+          });
+
+          expect(res2.status).toBe(200);
+          const response2 = await res2.json();
+
+          expect(response2.success).toBe(true);
+          expect(response2.platform).toBe('Facebook');
+        },
+      });
+
+      // Process the queued achievement refreshes
+      await processQueueMessages();
+
+      // Verify both shares were created
+      const shareCount = await GraphModel.countDocuments({
+        source: TestId.USER,
+        type: GraphType.SHARE
+      });
+
+      expect(shareCount).toBe(2);
+
+      // Verify achievement was awarded (should still only get one achievement even with multiple shares)
+      const socialAchievements = await AchievementModel.find({
+        userId: TestId.USER,
+        gameId: GameId.THINKY,
+        type: AchievementType.SOCIAL_SHARE,
+      });
+
+      expect(socialAchievements).toHaveLength(1);
+    });
   });
 });

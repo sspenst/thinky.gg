@@ -289,7 +289,7 @@ export default function ProfileInsightsLevelMastery({ user, reqUser, timeFilter 
                     color: 'rgb(229, 231, 235)',
                     boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
                   }}
-                  formatter={(value: number, name: string, props: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any, react/prop-types
+                  formatter={(value: number, name: string, props: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
                     const data = props.payload; // eslint-disable-line react/prop-types
 
                     return [

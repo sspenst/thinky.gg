@@ -106,7 +106,6 @@ export default function ShareModal({ closeModal, isOpen, level, onSocialShare }:
             Challenge your friends with this brain-bending puzzle!
           </div>
         </div>
-
         <div className='grid grid-cols-2 gap-4'>
           {/* X (Twitter) */}
           <button
@@ -124,7 +123,6 @@ export default function ShareModal({ closeModal, isOpen, level, onSocialShare }:
               <div className='text-xs text-color-gray'>Post to timeline</div>
             </div>
           </button>
-
           {/* Facebook */}
           <button
             className='flex items-center gap-3 p-4 rounded-xl hover:bg-blue-50 hover:border-blue-200 border-2 border-transparent transition-all disabled:opacity-50 group'
@@ -141,7 +139,6 @@ export default function ShareModal({ closeModal, isOpen, level, onSocialShare }:
               <div className='text-xs text-color-gray'>Share with friends</div>
             </div>
           </button>
-
           {/* LinkedIn */}
           <button
             className='flex items-center gap-3 p-4 rounded-xl hover:bg-blue-50 hover:border-blue-200 border-2 border-transparent transition-all disabled:opacity-50 group'
@@ -158,7 +155,6 @@ export default function ShareModal({ closeModal, isOpen, level, onSocialShare }:
               <div className='text-xs text-color-gray'>Share professionally</div>
             </div>
           </button>
-
           {/* Reddit */}
           <button
             className='flex items-center gap-3 p-4 rounded-xl hover:bg-orange-50 hover:border-orange-200 border-2 border-transparent transition-all disabled:opacity-50 group'
@@ -175,7 +171,6 @@ export default function ShareModal({ closeModal, isOpen, level, onSocialShare }:
               <div className='text-xs text-color-gray'>Post to community</div>
             </div>
           </button>
-
           {/* Telegram */}
           <button
             className='flex items-center gap-3 p-4 rounded-xl hover:bg-blue-50 hover:border-blue-200 border-2 border-transparent transition-all disabled:opacity-50 group'
@@ -193,7 +188,6 @@ export default function ShareModal({ closeModal, isOpen, level, onSocialShare }:
             </div>
           </button>
         </div>
-
         <div className='border-t border-color-3 pt-6'>
           <button
             className='flex items-center justify-center gap-3 w-full p-4 rounded-xl border-2 border-dashed border-gray-300 hover:border-gray-400 hover:bg-gray-50 transition-all disabled:opacity-50'
@@ -216,4 +210,3 @@ export default function ShareModal({ closeModal, isOpen, level, onSocialShare }:
     </Modal>
   );
 }
-

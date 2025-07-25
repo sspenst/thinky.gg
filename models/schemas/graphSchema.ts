@@ -40,6 +40,11 @@ const GraphSchema = new mongoose.Schema<Graph>({
 GraphSchema.index({ follower: 1 });
 GraphSchema.index({ following: 1 });
 GraphSchema.index({ target: 1 });
-GraphSchema.index({ source: 1, target: 1, type: 1 }, { unique: true });
+GraphSchema.index({ source: 1, target: 1, type: 1 }, {
+  unique: true,
+  partialFilterExpression: {
+    type: { $in: ['FOLLOW', 'BLOCK'] }
+  }
+});
 
 export default GraphSchema;

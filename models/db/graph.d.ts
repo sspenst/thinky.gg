@@ -19,5 +19,6 @@ interface Graph {
   targetModel: string;
   type: GraphType;
   metadata?: GraphMetadata[GraphType];
+}
 
 export default Graph;

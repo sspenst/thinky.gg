@@ -1,11 +1,12 @@
 import AchievementCategory from '@root/constants/achievements/achievementCategory';
-import { ValidObjectId, ValidType } from '@root/helpers/apiWrapper';
-import { refreshAchievements } from '@root/helpers/refreshAchievements';
-import withAuth, { NextApiRequestWithAuth } from '@root/lib/withAuth';
+import { GameId } from '@root/constants/GameId';
 import GraphType from '@root/constants/graphType';
+import { ValidObjectId, ValidType } from '@root/helpers/apiWrapper';
+import withAuth, { NextApiRequestWithAuth } from '@root/lib/withAuth';
 import { GraphTypeShareMetadata } from '@root/models/db/graphMetadata';
 import { GraphModel, LevelModel } from '@root/models/mongoose';
 import { NextApiResponse } from 'next';
+import { queueRefreshAchievements } from '../internal-jobs/worker/queueFunctions';
 
 export default withAuth(
   {
@@ -21,6 +22,7 @@ export default withAuth(
 
       // Validate platform
       const validPlatforms = ['X', 'Facebook', 'LinkedIn', 'Reddit', 'Telegram'];
+
       if (!validPlatforms.includes(platform)) {
         return res.status(400).json({ error: 'Invalid platform.' });
       }
@@ -50,19 +52,12 @@ export default withAuth(
         metadata,
       });
 
-      // Get total share count for this user
-      const shareCount = await GraphModel.countDocuments({
-        source: req.user._id,
-        type: GraphType.SHARE,
-      });
+      // Refresh achievements to check for social sharing achievement (always use THINKY)
+      await queueRefreshAchievements(GameId.THINKY, req.user._id, [AchievementCategory.SOCIAL]);
 
-      // Refresh achievements to check for social sharing achievement
-      await refreshAchievements(req.gameId, req.user._id, [AchievementCategory.SOCIAL]);
-
-      return res.status(200).json({ 
-        success: true, 
+      return res.status(200).json({
+        success: true,
         platform,
-        shareCount,
       });
     }
   });
