@@ -5,6 +5,7 @@ import EditLevelModal from '@root/components/modal/editLevelModal';
 import PublishLevelModal from '@root/components/modal/publishLevelModal';
 import ReportModal from '@root/components/modal/reportModal';
 import SaveToCollectionModal from '@root/components/modal/saveToCollectionModal';
+import ShareModal from '@root/components/modal/shareModal';
 import UnpublishLevelModal from '@root/components/modal/unpublishLevelModal';
 import { ReportType } from '@root/constants/ReportType';
 import { AppContext } from '@root/contexts/appContext';
@@ -28,6 +29,7 @@ export default function LevelDropdown({ level }: LevelDropdownProps) {
   const [isPlayLaterLoading, setIsPlayLaterLoading] = useState(false);
   const [isPublishLevelOpen, setIsPublishLevelOpen] = useState(false);
   const [isSaveToCollectionOpen, setIsSaveToCollectionOpen] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isUnpublishLevelOpen, setIsUnpublishLevelOpen] = useState(false);
   const { mutatePlayLater, playLater, user } = useContext(AppContext);
   const { setPreventKeyDownEvent, setModal } = useContext(PageContext);
@@ -40,6 +42,27 @@ export default function LevelDropdown({ level }: LevelDropdownProps) {
   const modal = <ReportModal targetId={level._id.toString()} reportType={ReportType.LEVEL} />;
   const reportLevel = async () => {
     setModal(modal);
+  };
+
+  const handleSocialShare = async (platform: string) => {
+    if (!user) {
+      return;
+    }
+
+    try {
+      await fetch('/api/social-share', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          platform,
+          levelId: level._id.toString(),
+        }),
+      });
+    } catch (error) {
+      console.error('Error recording social share:', error);
+    }
   };
   const fetchPlayLater = async (remove: boolean) => {
     if (!user) {
@@ -175,15 +198,14 @@ export default function LevelDropdown({ level }: LevelDropdownProps) {
                 <div
                   className='flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3 whitespace-nowrap hover-bg-3'
                   onClick={() => {
-                    navigator.clipboard.writeText(`${window.location.origin}/level/${level.slug}`);
-                    toast.dismiss();
-                    toast.success('Link copied to clipboard');
+                    setIsShareModalOpen(true);
+                    setPreventKeyDownEvent(true);
                   }}
                 >
                   <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-5 h-5'>
-                    <path strokeLinecap='round' strokeLinejoin='round' d='M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244' />
+                    <path strokeLinecap='round' strokeLinejoin='round' d='M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.935-2.186 2.25 2.25 0 00-3.935 2.186z' />
                   </svg>
-                  <span>Share link</span>
+                  <span>Share</span>
                 </div>
               </MenuItem>
             }
@@ -312,6 +334,15 @@ export default function LevelDropdown({ level }: LevelDropdownProps) {
         level={level}
       />
     }
+    <ShareModal
+      closeModal={() => {
+        setIsShareModalOpen(false);
+        setPreventKeyDownEvent(false);
+      }}
+      isOpen={isShareModalOpen}
+      level={level}
+      onSocialShare={handleSocialShare}
+    />
     {canEdit && <>
       <EditLevelModal
         closeModal={() => {
