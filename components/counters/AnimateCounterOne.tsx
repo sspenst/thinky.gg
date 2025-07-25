@@ -105,7 +105,7 @@ export const AnimateCounterOne: React.FC<AnimateCounterOneProps> = ({ gameId, va
           `}
           >
             {currentRank.title}
-            <span className={`text-2xl transition-all duration-300 
+            <span className={`text-2xl transition-all duration-300
             ${isAnimating ? 'scale-125' : ''}
             ${showRankUp ? 'animate-pulse' : ''}
           `}>

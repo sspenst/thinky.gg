@@ -20,7 +20,7 @@ export const Games: Record<GameId, Game> = {
     id: GameId.THINKY,
     achievementCategories: [AchievementCategory.SOCIAL],
     allowMovableOnExit: false,
-    baseUrl: process.env.NODE_ENV !== 'development' ? `https://${APP_DOMAIN}` : 'http://thinky.localhost:3000',
+    baseUrl: process.env.NODE_ENV !== 'development' ? `https://${APP_DOMAIN}` : 'http://localhost:3000',
     defaultTheme: Theme.Dark,
     disableCampaign: true,
     disableCommunityCampaigns: true,

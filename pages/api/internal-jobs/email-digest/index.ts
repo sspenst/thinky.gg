@@ -291,7 +291,7 @@ export async function sendEmailDigests(batchId: Types.ObjectId, limit: number) {
         // for example, you can play real time multiplayer with other players, you can also play levels created by other users
         subject: 'There is a lot more to Thinky.gg than just the campaign',
         title: 'Yesterday was just the beginning! Today, see what else Thinky.gg has to offer',
-        message: 'Have you tried reviewing a level? Or checking out other level collections? There are also dozens of 🏆 achievements 🏆 to earn in Thinky.gg. Can you earn them all? Check out your achievements page to see how you stack up against other players!',
+        message: 'Have you tried reviewing a level? Or checking out other level collections? There are also tons of 🏆 achievements 🏆 to earn in Thinky.gg. Can you earn them all? Check out your achievements page to see how you stack up against other players!',
         linkText: 'Your Achievements',
         linkHref: `${game.baseUrl}/achievements`,
       },

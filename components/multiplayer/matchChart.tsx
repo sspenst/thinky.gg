@@ -318,9 +318,9 @@ export default function MatchChart({ match }: MatchChartProps) {
                       const isSkipped = props.payload[`${playerName}_skipped`];
                       const isIncomplete = props.payload[`${playerName}_incomplete`];
 
-                      const pathData = `M ${props.x},${props.y + props.height} 
-                                        L ${props.x},${props.y} 
-                                        L ${props.x + props.width},${props.y} 
+                      const pathData = `M ${props.x},${props.y + props.height}
+                                        L ${props.x},${props.y}
+                                        L ${props.x + props.width},${props.y}
                                         L ${props.x + props.width},${props.y + props.height} Z`;
 
                       if (isSkipped || isIncomplete) {

@@ -194,6 +194,17 @@ export function NotificationMessage({ notification, onMarkAsRead }: Notification
     </>);
   }
 
+  case NotificationType.LEVEL_OF_DAY: {
+    return (<>
+      {notification.message}  <FormattedLevelLink
+        gameId={game.id}
+        id={`notification-${notification._id.toString()}`}
+        level={notification.source as EnrichedLevel}
+        onClick={onMarkAsRead}
+      />
+    </>);
+  }
+
   default:
     return null;
   }
@@ -228,7 +239,6 @@ export default function FormattedNotification({ close, notification, notificatio
         color: notification.read ? 'var(--color-gray)' : undefined,
       }}
     >
-
       <div className='flex flex-col gap-1 truncate'>
         <div className='flex flex-row items-center gap-2'>
           <GameLogo gameId={notification.gameId} id={notification._id.toString()} size={24} tooltip />

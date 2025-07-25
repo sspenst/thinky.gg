@@ -3,6 +3,7 @@ import getMobileNotification from '@root/helpers/getMobileNotification';
 import Device from '@root/models/db/device';
 import Notification from '@root/models/db/notification';
 import { DeviceModel } from '@root/models/mongoose';
+import { DeviceState } from '@root/models/schemas/deviceSchema';
 import admin from 'firebase-admin';
 
 /**
@@ -19,7 +20,7 @@ export async function sendPushNotification(gameId: GameId, notification: Notific
   }
 
   const notificationId = notification._id.toString();
-  const devices = await DeviceModel.find({ userId: notification.userId._id });
+  const devices = await DeviceModel.find({ userId: notification.userId._id, state: { $ne: DeviceState.INACTIVE } });
   let log = '';
 
   if (devices.length === 0) {
@@ -70,6 +71,27 @@ export async function sendPushNotification(gameId: GameId, notification: Notific
         },
       },
     });
+
+    // check if response is an error
+
+    /**
+     * [
+  "{\"responses\":[{\"success\":false,\"error\":{\"code\":\"messaging/registration-token-not-registered\",\"message\":\"Requested entity was not found.\"}},{\"success\":true,\"messageId\":\"projects/pathology-699c4/messages/1753373676192371\"}],\"successCount\":1,\"failureCount\":1}"
+]
+     */
+    // We should loop through the responses and check if the error code is "messaging/registration-token-not-registered", if so, we should update the device state to INACTIVE for the device that has the error
+    let index = 0;
+
+    for (const response of res.responses) {
+      if (response.error?.code === 'messaging/registration-token-not-registered') {
+        // device will match the index of the response
+        const device = devices[index];
+
+        await DeviceModel.updateOne({ _id: device._id }, { $set: { state: DeviceState.INACTIVE } });
+        index++;
+      }
+    }
+
     const responseJSON = JSON.stringify(res);
 
     log = `${responseJSON}`;
