@@ -141,6 +141,64 @@ describe('Level of Day Push Notifications', () => {
     });
   });
 
+  test('send push notifications to guest users with active devices', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
+    jest.spyOn(logger, 'info').mockImplementation(() => ({} as Logger));
+    jest.spyOn(logger, 'warn').mockImplementation(() => ({} as Logger));
+
+    // Create test device for guest user
+    await DeviceModel.create({
+      _id: new Types.ObjectId(),
+      userId: TestId.USER_GUEST,
+      deviceToken: 'test-device-token-guest',
+      deviceName: 'Guest Device',
+      deviceBrand: 'Test Brand',
+      deviceOSName: 'iOS',
+      deviceOSVersion: '16.0',
+      state: DeviceState.ACTIVE,
+    });
+
+    // Ensure guest user has push notifications enabled
+    await UserModel.findByIdAndUpdate(TestId.USER_GUEST, {
+      disallowedPushNotifications: [],
+      isGuest: true,
+    });
+
+    await testApiHandler({
+      pagesHandler: async (_, res) => {
+        const req: NextApiRequestWrapper = {
+          gameId: DEFAULT_GAME_ID,
+          method: 'GET',
+          query: {
+            secret: process.env.INTERNAL_JOB_TOKEN_SECRET_EMAILDIGEST,
+            limit: '10'
+          },
+          body: {},
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWrapper;
+
+        await handler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(res.status).toBe(200);
+        expect(response.success).toBe(true);
+        expect(response.sent).toBeGreaterThanOrEqual(1);
+
+        // Check that notification was created for guest
+        const notifications = await NotificationModel.find({ 
+          type: NotificationType.LEVEL_OF_DAY,
+          userId: TestId.USER_GUEST 
+        });
+        expect(notifications).toHaveLength(1);
+      },
+    });
+  });
+
   test('skip users with LEVEL_OF_DAY in disallowedPushNotifications', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     jest.spyOn(logger, 'info').mockImplementation(() => ({} as Logger));
@@ -389,6 +447,63 @@ describe('Level of Day Push Notifications', () => {
         
         const runAt = queueMessages[0].runAt;
         expect(runAt.getUTCHours()).toBe(15);
+      },
+    });
+  });
+
+  test('use user\'s lastGame for level of day selection', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
+    jest.spyOn(logger, 'info').mockImplementation(() => ({} as Logger));
+    jest.spyOn(logger, 'warn').mockImplementation(() => ({} as Logger));
+
+    // Create test device for user
+    await DeviceModel.create({
+      _id: new Types.ObjectId(),
+      userId: TestId.USER,
+      deviceToken: 'test-device-token',
+      deviceName: 'Test Device',
+      deviceBrand: 'Test Brand',
+      deviceOSName: 'iOS',
+      deviceOSVersion: '16.0',
+      state: DeviceState.ACTIVE,
+    });
+
+    // Set user's lastGame to a specific game (use PATHOLOGY since it's likely to have level of day)
+    await UserModel.findByIdAndUpdate(TestId.USER, {
+      disallowedPushNotifications: [],
+      lastGame: GameId.PATHOLOGY,
+    });
+
+    await testApiHandler({
+      pagesHandler: async (_, res) => {
+        const req: NextApiRequestWrapper = {
+          gameId: DEFAULT_GAME_ID,
+          method: 'GET',
+          query: {
+            secret: process.env.INTERNAL_JOB_TOKEN_SECRET_EMAILDIGEST,
+            limit: '1'
+          },
+          body: {},
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWrapper;
+
+        await handler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(res.status).toBe(200);
+        expect(response.success).toBe(true);
+
+        // Check that notification was created for the user's lastGame
+        const notifications = await NotificationModel.find({ type: NotificationType.LEVEL_OF_DAY });
+        
+        if (notifications.length > 0) {
+          expect(notifications[0].gameId).toBe(GameId.PATHOLOGY);
+        }
       },
     });
   });

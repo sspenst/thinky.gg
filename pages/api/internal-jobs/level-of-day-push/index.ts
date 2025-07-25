@@ -1,3 +1,4 @@
+import { GameId } from '@root/constants/GameId';
 import { Games } from '@root/constants/Games';
 import NotificationType from '@root/constants/notificationType';
 import Device from '@root/models/db/device';
@@ -37,7 +38,6 @@ async function findEligibleUsers(): Promise<UserWithDeviceAndActivity[]> {
   const users = await UserModel.aggregate<UserWithDeviceAndActivity>([
     {
       $match: {
-        isGuest: { $ne: true },
         // Check if LEVEL_OF_DAY is NOT in disallowedPushNotifications
         disallowedPushNotifications: { $ne: NotificationType.LEVEL_OF_DAY },
       }
@@ -105,15 +105,15 @@ async function findEligibleUsers(): Promise<UserWithDeviceAndActivity[]> {
               $expr: {
                 $and: [
                   { $eq: ['$userId', '$$userId'] },
-                  { $gte: ['$endTime', oneMonthAgo.getTime() / 1000] },
-                  { $eq: [{ $dayOfWeek: { $toDate: { $multiply: ['$endTime', 1000] } } }, dayOfWeek + 1] } // MongoDB dayOfWeek is 1-7, JS is 0-6
+                  { $gte: ['$startTime', oneMonthAgo.getTime() / 1000] },
+                  { $eq: [{ $dayOfWeek: { $toDate: { $multiply: ['$startTime', 1000] } } }, dayOfWeek + 1] } // MongoDB dayOfWeek is 1-7, JS is 0-6
                 ]
               }
             }
           },
           {
             $project: {
-              hourOfDay: { $hour: { $toDate: { $multiply: ['$endTime', 1000] } } }
+              hourOfDay: { $hour: { $toDate: { $multiply: ['$startTime', 1000] } } }
             }
           },
           {
@@ -206,15 +206,16 @@ export async function sendLevelOfDayPushNotifications(limit: number) {
 
         for (const user of usersToProcess) {
           try {
-            // Pick a random game's level of the day
-            const randomLevel = validLevelsOfDay[Math.floor(Math.random() * validLevelsOfDay.length)];
+            // Use the user's last played game, or default to the first available game
+            const userGameId = user.lastGame || validLevelsOfDay[0].gameId;
+            const userLevelOfDay = validLevelsOfDay.find(level => level.gameId === userGameId) || validLevelsOfDay[0];
 
             // Create notification
             const notification = await NotificationModel.create([{
-              gameId: randomLevel.gameId,
-              message: `Check out today's ${randomLevel.gameId} level of the day!`,
+              gameId: userLevelOfDay.gameId,
+              message: `Check out today's ${userLevelOfDay.gameId} level of the day!`,
               read: false,
-              source: randomLevel._id,
+              source: userLevelOfDay._id,
               sourceModel: 'Level',
               type: NotificationType.LEVEL_OF_DAY,
               userId: user._id,
