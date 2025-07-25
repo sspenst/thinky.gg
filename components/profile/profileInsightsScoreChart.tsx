@@ -54,7 +54,6 @@ export default function ProfileInsightsScoreChart({ user, timeFilter }: { user: 
   const { proStatsUser: compareUserData, isLoading: compareUserLoading } = useProStatsUser(compareUser, ProStatsUserType.ScoreHistory, timeFilter);
   const compareData = compareUserData?.[ProStatsUserType.ScoreHistory];
 
-
   const scores = scoreChartData?.[ProStatsUserType.ScoreHistory] as DateAndSum[] || [];
 
   const cumulativeScores = useMemo(() =>
@@ -124,7 +123,7 @@ export default function ProfileInsightsScoreChart({ user, timeFilter }: { user: 
         <ComposedChart title='Score History' data={mergedData}>
           {enableDaily && <Bar name={user.name + ' Daily Solved'} dataKey='sum' fill='lightgreen' yAxisId='left' />}
           {enableCumulative && <Line name={user.name + ' Total'} dot={false} connectNulls dataKey='cumulativeSum' stroke='rgba(75, 192, 192)' yAxisId='right' />}
-{compareData && compareData.length > 0 && enableDaily && (
+          {compareData && compareData.length > 0 && enableDaily && (
             <Bar name={compareUser?.name + ' Daily'} dataKey='sumCompare' fill='#FF6B6B' yAxisId='left' />
           )}
           {compareData && compareData.length > 0 && enableCumulative && (

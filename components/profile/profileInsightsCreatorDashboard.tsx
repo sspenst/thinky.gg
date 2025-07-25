@@ -704,10 +704,11 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser, timeFil
                 const performanceData = playLogData?.[ProStatsUserType.PlayLogForUserCreatedLevels];
                 const creatorLevels = performanceData?.creatorLevels || [];
                 const difficultyCategories = new Set<string>();
-                
+
                 creatorLevels.forEach(level => {
                   if (level.calc_difficulty_estimate !== undefined) {
                     const difficulty = level.calc_difficulty_estimate;
+
                     if (difficulty < 500) difficultyCategories.add('Easy');
                     else if (difficulty < 1000) difficultyCategories.add('Medium');
                     else if (difficulty < 1500) difficultyCategories.add('Hard');
@@ -715,10 +716,10 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser, timeFil
                     else difficultyCategories.add('Master');
                   }
                 });
-                
+
                 const hasGoodVariety = difficultyCategories.size >= 3;
                 const hasAllDifficulties = difficultyCategories.size === 5;
-                
+
                 if (hasGoodVariety) {
                   return (
                     <div className='flex items-start gap-3 p-3 bg-green-500/10 rounded-lg border-l-4 border-green-500'>
@@ -728,7 +729,7 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser, timeFil
                           {hasAllDifficulties ? 'Complete Difficulty Range' : 'Good Difficulty Variety'}
                         </p>
                         <p className='text-sm text-gray-300'>
-                          {hasAllDifficulties 
+                          {hasAllDifficulties
                             ? 'Your levels span all difficulty tiers, appealing to players of all skill levels'
                             : `Your levels cover ${difficultyCategories.size} different difficulty tiers`}
                         </p>
@@ -736,6 +737,7 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser, timeFil
                     </div>
                   );
                 }
+
                 return null;
               })()}
               {followerData && followerData[ProStatsUserType.FollowerActivityPatterns] && followerData[ProStatsUserType.FollowerActivityPatterns].activeFollowerCount > 0 && (
@@ -833,10 +835,11 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser, timeFil
                 const performanceData = playLogData?.[ProStatsUserType.PlayLogForUserCreatedLevels];
                 const creatorLevels = performanceData?.creatorLevels || [];
                 const difficultyCategories = new Set<string>();
-                
+
                 creatorLevels.forEach(level => {
                   if (level.calc_difficulty_estimate !== undefined) {
                     const difficulty = level.calc_difficulty_estimate;
+
                     if (difficulty < 500) difficultyCategories.add('Easy');
                     else if (difficulty < 1000) difficultyCategories.add('Medium');
                     else if (difficulty < 1500) difficultyCategories.add('Hard');
@@ -844,10 +847,10 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser, timeFil
                     else difficultyCategories.add('Master');
                   }
                 });
-                
+
                 const hasGoodVariety = difficultyCategories.size >= 3;
                 const missingDifficulties = ['Easy', 'Medium', 'Hard', 'Expert', 'Master'].filter(d => !difficultyCategories.has(d));
-                
+
                 if (!hasGoodVariety && creatorLevels.length > 0) {
                   return (
                     <div className='flex items-start gap-3 p-3 bg-amber-500/10 rounded-lg border-l-4 border-amber-500'>
@@ -864,6 +867,7 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser, timeFil
                     </div>
                   );
                 }
+
                 return null;
               })()}
               {(!followerData || !followerData[ProStatsUserType.FollowerActivityPatterns] || !followerData[ProStatsUserType.FollowerActivityPatterns].hasDiscordConnected) && (
