@@ -143,6 +143,7 @@ async function findEligibleUsers(): Promise<UserWithDeviceAndActivity[]> {
 
 function determineOptimalSendTime(user: UserWithDeviceAndActivity): Date {
   const now = new Date();
+  const maxHoursAhead = 12; // Maximum 12 hours in the future to keep notifications relevant
 
   // If they have activity data, use the most active hour
   if (user.lastMonthActivity && user.lastMonthActivity.length > 0) {
@@ -154,6 +155,15 @@ function determineOptimalSendTime(user: UserWithDeviceAndActivity): Date {
     // If the time has already passed today, send within the next 3 hours instead
     // This ensures we send today's level of the day, not tomorrow's
     if (sendTime <= now) {
+      const randomMinutes = Math.floor(Math.random() * 180); // 0-180 minutes
+
+      return new Date(now.getTime() + randomMinutes * 60 * 1000);
+    }
+
+    // If the optimal time is too far in the future (>12 hours), send within 3 hours instead
+    // This prevents scheduling 22+ hours ahead when it's early morning and user is active at night
+    const hoursUntilOptimal = (sendTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+    if (hoursUntilOptimal > maxHoursAhead) {
       const randomMinutes = Math.floor(Math.random() * 180); // 0-180 minutes
 
       return new Date(now.getTime() + randomMinutes * 60 * 1000);
