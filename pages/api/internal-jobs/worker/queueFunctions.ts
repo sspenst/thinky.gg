@@ -43,7 +43,7 @@ export async function queuePushNotification(notificationId: Types.ObjectId, opti
   ]);
 }
 
-export async function bulkQueuePushNotification(notificationIds: Types.ObjectId[], session: ClientSession, runAt?: Date) {
+export async function bulkQueuePushNotification(notificationIds: Types.ObjectId[], session: ClientSession, runAt?: Date, onlyPush: boolean = false) {
   const queueMessages = [];
   const now = new Date();
   const runAtTime = runAt || now;
@@ -64,18 +64,20 @@ export async function bulkQueuePushNotification(notificationIds: Types.ObjectId[
       isProcessing: false,
     });
 
-    queueMessages.push({
-      _id: new Types.ObjectId(),
-      dedupeKey: `email-${notificationId}`,
-      message: message,
-      state: QueueMessageState.PENDING,
-      type: QueueMessageType.EMAIL_NOTIFICATION,
-      runAt: runAtTime,
-      createdAt: now,
-      updatedAt: now,
-      processingAttempts: 0,
-      isProcessing: false,
-    });
+    if (!onlyPush) {
+      queueMessages.push({
+        _id: new Types.ObjectId(),
+        dedupeKey: `email-${notificationId}`,
+        message: message,
+        state: QueueMessageState.PENDING,
+        type: QueueMessageType.EMAIL_NOTIFICATION,
+        runAt: runAtTime,
+        createdAt: now,
+        updatedAt: now,
+        processingAttempts: 0,
+        isProcessing: false,
+      });
+    }
   }
 
   await QueueMessageModel.insertMany(queueMessages, { session: session });

@@ -237,7 +237,7 @@ function createLevelOfDayMessage(level: any, gameDisplayName: string): string {
   const dayMessages = daySpecificMessages[dayOfWeek];
   const randomMessage = dayMessages[Math.floor(Math.random() * dayMessages.length)];
 
-  return `${difficultyText} level: "${level.name}" - ${randomMessage} ${gameDisplayName} puzzle!`;
+  return `${randomMessage} ${gameDisplayName} level of the day! Difficulty: ${difficultyText}`;
 }
 
 export async function sendLevelOfDayPushNotifications(limit: number) {
@@ -309,7 +309,7 @@ export async function sendLevelOfDayPushNotifications(limit: number) {
               const sendTime = determineOptimalSendTime(user);
 
               // Queue the push notification with the scheduled time
-              await bulkQueuePushNotification([notification[0]._id], session, sendTime);
+              await bulkQueuePushNotification([notification[0]._id], session, sendTime, false); // false = no email, only push. email is done in the digest
 
               sentCount++;
             } else {
