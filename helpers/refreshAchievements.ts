@@ -21,7 +21,7 @@ import { getRecordsByUserId } from './getRecordsByUserId';
 const AchievementCategoryFetch = {
   // no game ID as this is a global
   [AchievementCategory.SOCIAL]: async (_gameId: GameId, userId: Types.ObjectId) => {
-    const [commentCount, welcomeComments] = await Promise.all([
+    const [commentCount, welcomeComments, user] = await Promise.all([
       CommentModel.countDocuments({
         author: userId,
         deletedAt: null,
@@ -32,21 +32,22 @@ const AchievementCategoryFetch = {
         deletedAt: null,
         target: { $ne: userId },
         text: { $regex: /welcome/i },
-      }).populate('target').lean<Comment[]>()
+      }).populate('target').lean<Comment[]>(),
+      UserModel.findById(userId).select('+bio +avatarUpdatedAt').lean<User>()
     ]);
 
     const hasWelcomed = welcomeComments.some((comment) => {
-      const user = comment.target as unknown as User;
+      const targetUser = comment.target as unknown as User;
 
-      if (!user?.ts) {
+      if (!targetUser?.ts) {
         return false;
       }
 
       // if the comment was made in the first 24 hrs since account creation
-      return comment.createdAt.getTime() - 1000 * user.ts < 24 * 60 * 60 * 1000;
+      return comment.createdAt.getTime() - 1000 * targetUser.ts < 24 * 60 * 60 * 1000;
     });
 
-    return { commentCount: commentCount, hasWelcomed: hasWelcomed };
+    return { commentCount: commentCount, hasWelcomed: hasWelcomed, user: user };
   },
   [AchievementCategory.PROGRESS]: async (gameId: GameId, userId: Types.ObjectId) => {
     const userConfig = await UserConfigModel.findOne({ userId: userId, gameId: gameId }).lean<User>();
