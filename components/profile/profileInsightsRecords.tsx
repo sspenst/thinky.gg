@@ -55,16 +55,16 @@ export default function ProfileInsightsRecords({ user }: {user: User}) {
             name: 'Time Since Creation',
             selector: (row) => {
               if (row.records[0].ts <= row.ts) return 'N/A';
-              
+
               const duration = dayjs.duration(((row.records[0].ts - row.ts) * 1000));
               const humanizedTime = duration.humanize();
               const isOlderThanYear = duration.asYears() >= 1;
-              
+
               return (
                 <div className='flex items-center gap-2'>
                   <span>{humanizedTime}</span>
                   {isOlderThanYear && (
-                    <span 
+                    <span
                       className='cursor-help'
                       data-tooltip-id='buried-treasure-tooltip'
                       data-tooltip-content='Buried Treasure'

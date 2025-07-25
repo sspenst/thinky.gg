@@ -54,17 +54,17 @@ StatSchema.index({ userId: 1, complete: 1 });
 StatSchema.index({ userId: 1, levelId: 1, gameId: 1 }, { unique: true });
 
 // ProStats performance optimization indexes
-StatSchema.index({ 
-  userId: 1, 
-  complete: 1, 
-  isDeleted: 1, 
-  ts: -1, 
-  gameId: 1 
+StatSchema.index({
+  userId: 1,
+  complete: 1,
+  isDeleted: 1,
+  ts: -1,
+  gameId: 1
 });
-StatSchema.index({ 
-  userId: 1, 
-  gameId: 1, 
-  ts: -1 
+StatSchema.index({
+  userId: 1,
+  gameId: 1,
+  ts: -1
 });
 
 export default StatSchema;
