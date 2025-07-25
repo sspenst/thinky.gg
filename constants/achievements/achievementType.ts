@@ -50,6 +50,7 @@ enum AchievementType {
   CHAPTER_3_COMPLETED = 'CHAPTER_3_COMPLETED',
   UPLOAD_AVATAR = 'UPLOAD_AVATAR',
   UPDATE_BIO = 'UPDATE_BIO',
+  SOCIAL_SHARE = 'SOCIAL_SHARE',
 }
 
 export default AchievementType;

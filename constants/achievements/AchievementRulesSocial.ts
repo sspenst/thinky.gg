@@ -1,9 +1,8 @@
-import User from '@root/models/db/user';
 import { IAchievementInfo } from './achievementInfo';
 import AchievementType from './achievementType';
 
 interface IAchievementInfoSocial extends IAchievementInfo {
-  unlocked: ({ commentCount, hasWelcomed, user }: { commentCount: number, hasWelcomed: boolean, user: User }) => boolean;
+  unlocked: ({ commentCount, hasWelcomed, hasSharedToSocial, user }: { commentCount: number, hasWelcomed: boolean, hasSharedToSocial: boolean, user: User }) => boolean;
 }
 
 const AchievementRulesSocial: { [achievementType: string]: IAchievementInfoSocial } = {};
@@ -76,6 +75,16 @@ AchievementRulesSocial[AchievementType.UPDATE_BIO] = {
   secret: true,
   unlocked: ({ user }) => {
     return !!(user?.bio && user.bio.length > 0);
+  },
+};
+AchievementRulesSocial[AchievementType.SOCIAL_SHARE] = {
+  getDescription: () => 'Shared a level to a social network',
+  name: 'Social Sharer',
+  emoji: '📱',
+  discordNotification: true,
+  secret: true,
+  unlocked: ({ hasSharedToSocial }) => {
+    return hasSharedToSocial;
   },
 };
 
