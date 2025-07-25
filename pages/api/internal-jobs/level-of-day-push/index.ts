@@ -1,4 +1,4 @@
-import { GameId } from '@root/constants/GameId';
+import { getDifficultyFromEstimate } from '@root/components/formatted/formattedDifficulty';
 import { Games } from '@root/constants/Games';
 import NotificationType from '@root/constants/notificationType';
 import Device from '@root/models/db/device';
@@ -166,6 +166,18 @@ function determineOptimalSendTime(user: UserWithDeviceAndActivity): Date {
   return sendTime;
 }
 
+function createLevelOfDayMessage(level: any, gameDisplayName: string): string {
+  const difficultyEstimate = level.calc_difficulty_completion_estimate ?? level.calc_difficulty_estimate ?? -1;
+  const difficulty = getDifficultyFromEstimate(difficultyEstimate);
+
+  // Create an engaging message with level name and difficulty
+  const difficultyText = difficulty.name !== 'Pending'
+    ? `${difficulty.emoji} ${difficulty.name}`
+    : '⏳ New';
+
+  return `${difficultyText} level: "${level.name}" - Today's ${gameDisplayName} challenge!`;
+}
+
 export async function sendLevelOfDayPushNotifications(limit: number) {
   await dbConnect();
 
@@ -210,10 +222,17 @@ export async function sendLevelOfDayPushNotifications(limit: number) {
             const userGameId = user.lastGame || validLevelsOfDay[0].gameId;
             const userLevelOfDay = validLevelsOfDay.find(level => level.gameId === userGameId) || validLevelsOfDay[0];
 
+            // Get game display name for message
+            const game = Games[userLevelOfDay.gameId];
+            const gameDisplayName = game?.displayName || userLevelOfDay.gameId;
+
+            // Create an engaging message with level details
+            const notificationMessage = createLevelOfDayMessage(userLevelOfDay, gameDisplayName);
+
             // Create notification
             const notification = await NotificationModel.create([{
               gameId: userLevelOfDay.gameId,
-              message: `Check out today's ${userLevelOfDay.gameId} level of the day!`,
+              message: notificationMessage,
               read: false,
               source: userLevelOfDay._id,
               sourceModel: 'Level',
@@ -289,4 +308,3 @@ export default apiWrapper({
     });
   }
 });
-

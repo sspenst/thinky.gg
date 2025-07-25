@@ -3,8 +3,8 @@ import NotificationType from '@root/constants/notificationType';
 import { NextApiRequestWrapper } from '@root/helpers/apiWrapper';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import MockDate from 'mockdate';
-import { testApiHandler } from 'next-test-api-route-handler';
 import { Types } from 'mongoose';
+import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
 import TestId from '../../../../constants/testId';
 import { logger } from '../../../../helpers/logger';
@@ -131,11 +131,13 @@ describe('Level of Day Push Notifications', () => {
 
         // Check that notification was created
         const notifications = await NotificationModel.find({ type: NotificationType.LEVEL_OF_DAY });
+
         expect(notifications).toHaveLength(1);
         expect(notifications[0].userId.toString()).toBe(TestId.USER.toString());
 
         // Check that push notification was queued
         const queueMessages = await QueueMessageModel.find({ type: QueueMessageType.PUSH_NOTIFICATION });
+
         expect(queueMessages).toHaveLength(1);
       },
     });
@@ -190,10 +192,11 @@ describe('Level of Day Push Notifications', () => {
         expect(response.sent).toBeGreaterThanOrEqual(1);
 
         // Check that notification was created for guest
-        const notifications = await NotificationModel.find({ 
+        const notifications = await NotificationModel.find({
           type: NotificationType.LEVEL_OF_DAY,
-          userId: TestId.USER_GUEST 
+          userId: TestId.USER_GUEST
         });
+
         expect(notifications).toHaveLength(1);
       },
     });
@@ -248,6 +251,7 @@ describe('Level of Day Push Notifications', () => {
 
         // Check that no notifications were created
         const notifications = await NotificationModel.find({ type: NotificationType.LEVEL_OF_DAY });
+
         expect(notifications).toHaveLength(0);
       },
     });
@@ -302,6 +306,7 @@ describe('Level of Day Push Notifications', () => {
 
         // Check that no notifications were created
         const notifications = await NotificationModel.find({ type: NotificationType.LEVEL_OF_DAY });
+
         expect(notifications).toHaveLength(0);
       },
     });
@@ -326,8 +331,9 @@ describe('Level of Day Push Notifications', () => {
 
     // Create a notification from today
     const today = new Date();
+
     today.setUTCHours(12, 0, 0, 0);
-    
+
     await NotificationModel.create({
       _id: new Types.ObjectId(),
       userId: TestId.USER,
@@ -370,6 +376,7 @@ describe('Level of Day Push Notifications', () => {
 
         // Check that only one notification exists (the one we created)
         const notifications = await NotificationModel.find({ type: NotificationType.LEVEL_OF_DAY });
+
         expect(notifications).toHaveLength(1);
       },
     });
@@ -383,7 +390,7 @@ describe('Level of Day Push Notifications', () => {
     const now = new Date();
     const dayOfWeek = now.getUTCDay();
     const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-    
+
     // Create test device for user
     await DeviceModel.create({
       _id: new Types.ObjectId(),
@@ -398,8 +405,9 @@ describe('Level of Day Push Notifications', () => {
 
     // Create play attempts for user at 3pm UTC on the same day of week
     const playTime = new Date(oneWeekAgo);
+
     playTime.setUTCHours(15, 0, 0, 0);
-    
+
     await PlayAttemptModel.create({
       _id: new Types.ObjectId(),
       userId: TestId.USER,
@@ -443,9 +451,11 @@ describe('Level of Day Push Notifications', () => {
 
         // Check that push notification was scheduled for 3pm
         const queueMessages = await QueueMessageModel.find({ type: QueueMessageType.PUSH_NOTIFICATION });
+
         expect(queueMessages).toHaveLength(1);
-        
+
         const runAt = queueMessages[0].runAt;
+
         expect(runAt.getUTCHours()).toBe(15);
       },
     });
@@ -500,7 +510,7 @@ describe('Level of Day Push Notifications', () => {
 
         // Check that notification was created for the user's lastGame
         const notifications = await NotificationModel.find({ type: NotificationType.LEVEL_OF_DAY });
-        
+
         if (notifications.length > 0) {
           expect(notifications[0].gameId).toBe(GameId.PATHOLOGY);
         }
@@ -557,10 +567,11 @@ describe('Level of Day Push Notifications', () => {
         // Check that push notification was scheduled within next 3 hours
         const queueMessages = await QueueMessageModel.find({ type: QueueMessageType.PUSH_NOTIFICATION });
         const runAt = queueMessages[0]?.runAt;
-        
+
         if (runAt) {
           const now = new Date();
           const timeDiff = runAt.getTime() - now.getTime();
+
           expect(timeDiff).toBeGreaterThanOrEqual(0);
           expect(timeDiff).toBeLessThanOrEqual(3 * 60 * 60 * 1000); // 3 hours in milliseconds
         }
