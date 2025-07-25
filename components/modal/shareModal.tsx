@@ -1,5 +1,5 @@
 import Level from '@root/models/db/level';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import Modal from '.';
 
@@ -14,44 +14,44 @@ export default function ShareModal({ closeModal, isOpen, level, onSocialShare }:
   const [levelUrl, setLevelUrl] = useState('');
 
   const shareMessages = [
-    `This puzzle has me completely stumped. Anyone else want to try &quot;${level.name}&quot;?`,
-    `Found a mind-bender that's actually challenging. &quot;${level.name}&quot; on Thinky.gg`,
-    `Okay this one took me way too long to solve. Your turn: &quot;${level.name}&quot;`,
-    `New personal record: spent 45 minutes on this puzzle called &quot;${level.name}&quot;`,
-    `Plot twist: this puzzle is harder than it looks. &quot;${level.name}&quot; on Thinky.gg`,
-    `Finally cracked &quot;${level.name}&quot; after way too many attempts. Worth it though`,
-    `This puzzle broke my brain in the best way possible. &quot;${level.name}&quot;`,
-    `Zero regrets about the time I just spent on &quot;${level.name}&quot;. Pure genius`,
-    `Whoever designed &quot;${level.name}&quot; clearly enjoys watching people suffer (respectfully)`,
-    `Just solved &quot;${level.name}&quot; and immediately questioned everything I know about logic`,
-    `Fair warning: &quot;${level.name}&quot; will consume your next hour. You've been warned`,
-    `The satisfaction of finally solving &quot;${level.name}&quot; hits different`,
-    `Thought I was smart until I met &quot;${level.name}&quot;. Humbling experience`,
-    `&quot;${level.name}&quot; just taught me patience I didn't know I had`,
-    `This puzzle game is dangerously addictive. Currently stuck on &quot;${level.name}&quot;`,
-    `Productivity officially ruined by &quot;${level.name}&quot;. No complaints though`,
-    `Some puzzles are hard. &quot;${level.name}&quot; is... something else entirely`,
-    `Just discovered my new obsession. &quot;${level.name}&quot; on Thinky.gg`,
-    `The level name &quot;${level.name}&quot; doesn't prepare you for what's coming`,
-    `Successfully avoided all responsibilities by solving &quot;${level.name}&quot; instead`
+    `This puzzle has me completely stumped. Anyone else want to try "${level.name}"?`,
+    `Found a mind-bender that's actually challenging. "${level.name}" on Thinky.gg`,
+    `Okay this one took me way too long to solve. Your turn: "${level.name}"`,
+    `New personal record: spent 45 minutes on this puzzle called "${level.name}"`,
+    `Plot twist: this puzzle is harder than it looks. "${level.name}" on Thinky.gg`,
+    `Finally cracked "${level.name}" after way too many attempts. Worth it though`,
+    `This puzzle broke my brain in the best way possible. "${level.name}"`,
+    `Zero regrets about the time I just spent on "${level.name}". Pure genius`,
+    `Whoever designed "${level.name}" clearly enjoys watching people suffer (respectfully)`,
+    `Just solved "${level.name}" and immediately questioned everything I know about logic`,
+    `Fair warning: "${level.name}" will consume your next hour. You've been warned`,
+    `The satisfaction of finally solving "${level.name}" hits different`,
+    `Thought I was smart until I met "${level.name}". Humbling experience`,
+    `"${level.name}" just taught me patience I didn't know I had`,
+    `This puzzle game is dangerously addictive. Currently stuck on "${level.name}"`,
+    `Productivity officially ruined by "${level.name}". No complaints though`,
+    `Some puzzles are hard. "${level.name}" is... something else entirely`,
+    `Just discovered my new obsession. "${level.name}" on Thinky.gg`,
+    `The level name "${level.name}" doesn't prepare you for what's coming`,
+    `Successfully avoided all responsibilities by solving "${level.name}" instead`
   ];
 
   const redditTitles = [
-    `This puzzle completely destroyed me. Can anyone solve &quot;${level.name}&quot;?`,
-    `Spent way too long on this brain teaser: &quot;${level.name}&quot;`,
-    `Anyone else find &quot;${level.name}&quot; unreasonably difficult?`,
-    `Finally beat &quot;${level.name}&quot; after countless attempts. Worth sharing`,
-    `This puzzle game is seriously underrated. Check out &quot;${level.name}&quot;`,
-    `&quot;${level.name}&quot; broke my brain and I loved every second of it`
+    `This puzzle completely destroyed me. Can anyone solve "${level.name}"?`,
+    `Spent way too long on this brain teaser: "${level.name}"`,
+    `Anyone else find "${level.name}" unreasonably difficult?`,
+    `Finally beat "${level.name}" after countless attempts. Worth sharing`,
+    `This puzzle game is seriously underrated. Check out "${level.name}"`,
+    `"${level.name}" broke my brain and I loved every second of it`
   ];
 
   const linkedInMessages = [
-    `Just tackled &quot;${level.name}&quot; - fascinating problem-solving challenge that really makes you think`,
-    `Discovered an excellent brain training exercise: &quot;${level.name}&quot; on Thinky.gg`,
-    `Taking a break from work with some strategic thinking. &quot;${level.name}&quot; delivered`,
-    `Impressive puzzle design in &quot;${level.name}&quot;. Great example of elegant complexity`,
-    `Found a surprisingly engaging logic challenge: &quot;${level.name}&quot;`,
-    `&quot;${level.name}&quot; - excellent mental exercise for anyone who enjoys problem-solving`
+    `Just tackled "${level.name}" - fascinating problem-solving challenge that really makes you think`,
+    `Discovered an excellent brain training exercise: "${level.name}" on Thinky.gg`,
+    `Taking a break from work with some strategic thinking. "${level.name}" delivered`,
+    `Impressive puzzle design in "${level.name}". Great example of elegant complexity`,
+    `Found a surprisingly engaging logic challenge: "${level.name}"`,
+    `"${level.name}" - excellent mental exercise for anyone who enjoys problem-solving`
   ];
 
   const getRandomMessage = (messages: string[]) => {
