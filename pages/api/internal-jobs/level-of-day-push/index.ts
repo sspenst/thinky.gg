@@ -151,9 +151,12 @@ function determineOptimalSendTime(user: UserWithDeviceAndActivity): Date {
 
     sendTime.setUTCHours(mostActiveHour, 0, 0, 0);
 
-    // If the time has already passed today, schedule for tomorrow
+    // If the time has already passed today, send within the next 3 hours instead
+    // This ensures we send today's level of the day, not tomorrow's
     if (sendTime <= now) {
-      sendTime.setDate(sendTime.getDate() + 1);
+      const randomMinutes = Math.floor(Math.random() * 180); // 0-180 minutes
+
+      return new Date(now.getTime() + randomMinutes * 60 * 1000);
     }
 
     return sendTime;
@@ -175,7 +178,66 @@ function createLevelOfDayMessage(level: any, gameDisplayName: string): string {
     ? `${difficulty.emoji} ${difficulty.name}`
     : '⏳ New';
 
-  return `${difficultyText} level: "${level.name}" - Today's ${gameDisplayName} challenge!`;
+  // Day-specific messaging with 5 random options for each day
+  const today = new Date();
+  const dayOfWeek = today.getUTCDay(); // 0 = Sunday, 1 = Monday, etc.
+
+  const daySpecificMessages = [
+    [ // Sunday
+      'Sunday\'s special',
+      'Relax with Sunday\'s',
+      'Weekend wrap-up',
+      'Sunday funday',
+      'Perfect Sunday'
+    ],
+    [ // Monday
+      'Start your Monday right with',
+      'Monday motivation',
+      'Fresh week, fresh',
+      'Monday\'s featured',
+      'Kick off Monday with'
+    ],
+    [ // Tuesday
+      'Tuesday\'s featured',
+      'Tackle Tuesday with',
+      'Tuesday\'s pick',
+      'Power through Tuesday with',
+      'Tuesday treasure'
+    ],
+    [ // Wednesday
+      'Midweek challenge',
+      'Wednesday\'s wonder',
+      'Hump day special',
+      'Wednesday warrior',
+      'Midweek motivation'
+    ],
+    [ // Thursday
+      'Thursday\'s pick',
+      'Almost Friday',
+      'Thursday\'s featured',
+      'Thursday thrills',
+      'Push through Thursday with'
+    ],
+    [ // Friday
+      'TGIF! Friday\'s',
+      'Friday finale',
+      'End the week with',
+      'Friday\'s featured',
+      'Weekend prep'
+    ],
+    [ // Saturday
+      'Weekend warrior',
+      'Saturday special',
+      'Weekend vibes',
+      'Saturday\'s pick',
+      'Chill Saturday'
+    ]
+  ];
+
+  const dayMessages = daySpecificMessages[dayOfWeek];
+  const randomMessage = dayMessages[Math.floor(Math.random() * dayMessages.length)];
+
+  return `${difficultyText} level: "${level.name}" - ${randomMessage} ${gameDisplayName} puzzle!`;
 }
 
 export async function sendLevelOfDayPushNotifications(limit: number) {

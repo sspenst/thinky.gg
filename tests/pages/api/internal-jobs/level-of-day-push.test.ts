@@ -449,14 +449,29 @@ describe('Level of Day Push Notifications', () => {
         expect(response.success).toBe(true);
         expect(response.sent).toBe(1);
 
-        // Check that push notification was scheduled for 3pm
+        // Check that push notification was scheduled
         const queueMessages = await QueueMessageModel.find({ type: QueueMessageType.PUSH_NOTIFICATION });
 
         expect(queueMessages).toHaveLength(1);
 
         const runAt = queueMessages[0].runAt;
+        const testNow = new Date();
 
-        expect(runAt.getUTCHours()).toBe(15);
+        // If the optimal time (3pm) hasn't passed yet, it should be scheduled for 3pm
+        // If it has passed, it should be scheduled within the next 3 hours
+        const optimalTime = new Date();
+
+        optimalTime.setUTCHours(15, 0, 0, 0);
+
+        if (optimalTime > testNow) {
+          expect(runAt.getUTCHours()).toBe(15);
+        } else {
+          // Should be scheduled within next 3 hours
+          const timeDiff = runAt.getTime() - testNow.getTime();
+
+          expect(timeDiff).toBeGreaterThanOrEqual(0);
+          expect(timeDiff).toBeLessThanOrEqual(3 * 60 * 60 * 1000); // 3 hours in milliseconds
+        }
       },
     });
   });
@@ -575,6 +590,296 @@ describe('Level of Day Push Notifications', () => {
           expect(timeDiff).toBeGreaterThanOrEqual(0);
           expect(timeDiff).toBeLessThanOrEqual(3 * 60 * 60 * 1000); // 3 hours in milliseconds
         }
+      },
+    });
+  });
+
+  // Note: Testing "no levels of the day available" scenario requires mocking getLevelOfDay
+  // which is complex in this test environment. This edge case is handled in the code
+  // but would need integration testing or a different mocking approach to verify.
+
+  test('respect limit parameter', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
+    jest.spyOn(logger, 'info').mockImplementation(() => ({} as Logger));
+    jest.spyOn(logger, 'warn').mockImplementation(() => ({} as Logger));
+
+    // Create multiple test devices for different users
+    await DeviceModel.create([
+      {
+        _id: new Types.ObjectId(),
+        userId: TestId.USER,
+        deviceToken: 'test-device-token-1',
+        deviceName: 'Test Device 1',
+        deviceBrand: 'Test Brand',
+        deviceOSName: 'iOS',
+        deviceOSVersion: '16.0',
+        state: DeviceState.ACTIVE,
+      },
+      {
+        _id: new Types.ObjectId(),
+        userId: TestId.USER_B,
+        deviceToken: 'test-device-token-2',
+        deviceName: 'Test Device 2',
+        deviceBrand: 'Test Brand',
+        deviceOSName: 'Android',
+        deviceOSVersion: '13.0',
+        state: DeviceState.ACTIVE,
+      }
+    ]);
+
+    // Ensure both users have push notifications enabled
+    await UserModel.findByIdAndUpdate(TestId.USER, {
+      disallowedPushNotifications: [],
+    });
+    await UserModel.findByIdAndUpdate(TestId.USER_B, {
+      disallowedPushNotifications: [],
+    });
+
+    await testApiHandler({
+      pagesHandler: async (_, res) => {
+        const req: NextApiRequestWrapper = {
+          gameId: DEFAULT_GAME_ID,
+          method: 'GET',
+          query: {
+            secret: process.env.INTERNAL_JOB_TOKEN_SECRET_EMAILDIGEST,
+            limit: '1' // Limit to 1 notification
+          },
+          body: {},
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWrapper;
+
+        await handler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(res.status).toBe(200);
+        expect(response.success).toBe(true);
+        expect(response.sent).toBe(1); // Should only send 1 despite 2 eligible users
+        expect(response.failed).toBe(0);
+
+        // Check that only one notification was created
+        const notifications = await NotificationModel.find({ type: NotificationType.LEVEL_OF_DAY });
+
+        expect(notifications).toHaveLength(1);
+      },
+    });
+  });
+
+  test('validate enhanced message format includes difficulty and day-specific text', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
+    jest.spyOn(logger, 'info').mockImplementation(() => ({} as Logger));
+    jest.spyOn(logger, 'warn').mockImplementation(() => ({} as Logger));
+
+    // Create test device for user
+    await DeviceModel.create({
+      _id: new Types.ObjectId(),
+      userId: TestId.USER,
+      deviceToken: 'test-device-token',
+      deviceName: 'Test Device',
+      deviceBrand: 'Test Brand',
+      deviceOSName: 'iOS',
+      deviceOSVersion: '16.0',
+      state: DeviceState.ACTIVE,
+    });
+
+    // Ensure user has push notifications enabled
+    await UserModel.findByIdAndUpdate(TestId.USER, {
+      disallowedPushNotifications: [],
+    });
+
+    await testApiHandler({
+      pagesHandler: async (_, res) => {
+        const req: NextApiRequestWrapper = {
+          gameId: DEFAULT_GAME_ID,
+          method: 'GET',
+          query: {
+            secret: process.env.INTERNAL_JOB_TOKEN_SECRET_EMAILDIGEST,
+            limit: '1'
+          },
+          body: {},
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWrapper;
+
+        await handler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(res.status).toBe(200);
+        expect(response.success).toBe(true);
+        expect(response.sent).toBe(1);
+
+        // Check that notification message has enhanced format
+        const notifications = await NotificationModel.find({ type: NotificationType.LEVEL_OF_DAY });
+
+        expect(notifications).toHaveLength(1);
+
+        const message = notifications[0].message;
+
+        // Should contain difficulty emoji/text, level name in quotes, and day-specific text
+        expect(message).toMatch(/^(🐥|✏️|📚|🎓|🧠|🏆|👑|⏳)/); // Difficulty emoji
+        expect(message).toContain('level:'); // Should contain "level:"
+        expect(message).toContain('"'); // Should contain level name in quotes
+        expect(message).toContain('puzzle!'); // Should end with "puzzle!"
+
+        // Should contain day-specific messaging
+        const daySpecificPhrases = [
+          'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday',
+          'special', 'motivation', 'featured', 'challenge', 'pick', 'TGIF', 'warrior'
+        ];
+        const containsDaySpecific = daySpecificPhrases.some(phrase => message.includes(phrase));
+
+        expect(containsDaySpecific).toBe(true);
+      },
+    });
+  });
+
+  test('handle individual user processing errors gracefully', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
+    jest.spyOn(logger, 'info').mockImplementation(() => ({} as Logger));
+    jest.spyOn(logger, 'warn').mockImplementation(() => ({} as Logger));
+
+    // Create test devices for multiple users
+    await DeviceModel.create([
+      {
+        _id: new Types.ObjectId(),
+        userId: TestId.USER,
+        deviceToken: 'test-device-token-1',
+        deviceName: 'Test Device 1',
+        deviceBrand: 'Test Brand',
+        deviceOSName: 'iOS',
+        deviceOSVersion: '16.0',
+        state: DeviceState.ACTIVE,
+      },
+      {
+        _id: new Types.ObjectId(),
+        userId: TestId.USER_B,
+        deviceToken: 'test-device-token-2',
+        deviceName: 'Test Device 2',
+        deviceBrand: 'Test Brand',
+        deviceOSName: 'Android',
+        deviceOSVersion: '13.0',
+        state: DeviceState.ACTIVE,
+      }
+    ]);
+
+    // Set up one user with valid notifications, one with invalid lastGame to cause error
+    await UserModel.findByIdAndUpdate(TestId.USER, {
+      disallowedPushNotifications: [],
+    });
+    await UserModel.findByIdAndUpdate(TestId.USER_B, {
+      disallowedPushNotifications: [],
+      lastGame: 'INVALID_GAME_ID' as any, // This might cause processing issues
+    });
+
+    await testApiHandler({
+      pagesHandler: async (_, res) => {
+        const req: NextApiRequestWrapper = {
+          gameId: DEFAULT_GAME_ID,
+          method: 'GET',
+          query: {
+            secret: process.env.INTERNAL_JOB_TOKEN_SECRET_EMAILDIGEST,
+          },
+          body: {},
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWrapper;
+
+        await handler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(res.status).toBe(200);
+        expect(response.success).toBe(true);
+
+        // Should process successfully despite individual errors
+        // At least one user should be processed successfully
+        expect(response.sent + response.failed).toBeGreaterThan(0);
+      },
+    });
+  });
+
+  test('handle user with multiple active devices (should only send one notification)', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
+    jest.spyOn(logger, 'info').mockImplementation(() => ({} as Logger));
+    jest.spyOn(logger, 'warn').mockImplementation(() => ({} as Logger));
+
+    // Create multiple devices for the same user
+    await DeviceModel.create([
+      {
+        _id: new Types.ObjectId(),
+        userId: TestId.USER,
+        deviceToken: 'test-device-token-1',
+        deviceName: 'iPhone',
+        deviceBrand: 'Apple',
+        deviceOSName: 'iOS',
+        deviceOSVersion: '16.0',
+        state: DeviceState.ACTIVE,
+      },
+      {
+        _id: new Types.ObjectId(),
+        userId: TestId.USER,
+        deviceToken: 'test-device-token-2',
+        deviceName: 'iPad',
+        deviceBrand: 'Apple',
+        deviceOSName: 'iOS',
+        deviceOSVersion: '16.0',
+        state: DeviceState.ACTIVE,
+      }
+    ]);
+
+    // Ensure user has push notifications enabled
+    await UserModel.findByIdAndUpdate(TestId.USER, {
+      disallowedPushNotifications: [],
+    });
+
+    await testApiHandler({
+      pagesHandler: async (_, res) => {
+        const req: NextApiRequestWrapper = {
+          gameId: DEFAULT_GAME_ID,
+          method: 'GET',
+          query: {
+            secret: process.env.INTERNAL_JOB_TOKEN_SECRET_EMAILDIGEST,
+          },
+          body: {},
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWrapper;
+
+        await handler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(res.status).toBe(200);
+        expect(response.success).toBe(true);
+        expect(response.sent).toBe(1); // Should only send 1 notification per user
+        expect(response.failed).toBe(0);
+
+        // Check that only one notification was created for this user
+        const notifications = await NotificationModel.find({
+          type: NotificationType.LEVEL_OF_DAY,
+          userId: TestId.USER
+        });
+
+        expect(notifications).toHaveLength(1);
+
+        // But should queue notification for all active devices
+        const queueMessages = await QueueMessageModel.find({ type: QueueMessageType.PUSH_NOTIFICATION });
+
+        expect(queueMessages).toHaveLength(1); // One queue message should reference the notification
       },
     });
   });
