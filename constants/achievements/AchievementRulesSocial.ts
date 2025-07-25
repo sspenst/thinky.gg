@@ -1,3 +1,4 @@
+import User from '../../models/db/user';
 import { IAchievementInfo } from './achievementInfo';
 import AchievementType from './achievementType';
 
