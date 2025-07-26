@@ -163,7 +163,7 @@ export default function ChapterSelectCard({ chapter, chapterUnlocked, href, titl
       <ChapterSelectCardBase
         game={game}
         complete={!!chapterUnlocked && chapterUnlocked > 1}
-        href={href ?? '/chapter1'}
+        href={href ?? '/chapter/1'}
         id='chapter1'
         levelData={'50000000\n00000100\n02000000\n00000020'}
         subtitle={'Grassroots'}
@@ -177,7 +177,7 @@ export default function ChapterSelectCard({ chapter, chapterUnlocked, href, titl
         disabled={chapterUnlocked ? chapterUnlocked < 2 : false}
         disabledStr={'Complete Chapter 1 to unlock Chapter 2!'}
         game={game}
-        href={href ?? '/chapter2'}
+        href={href ?? '/chapter/2'}
         id='chapter2'
         levelData={'005E0C00\n0G070005\n10005010\n005100I0'}
         subtitle={'Into the Depths'}
@@ -191,7 +191,7 @@ export default function ChapterSelectCard({ chapter, chapterUnlocked, href, titl
         disabled={chapterUnlocked ? chapterUnlocked < 3 : false}
         disabledStr={'Complete Chapter 2 to unlock Chapter 3!'}
         game={game}
-        href={href ?? '/chapter3'}
+        href={href ?? '/chapter/3'}
         id='chapter3'
         levelData={'B519F0G0\n10JH5H52\n75F02J08\n02050B10'}
         subtitle={'Brain Busters'}

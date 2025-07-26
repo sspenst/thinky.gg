@@ -1,6 +1,7 @@
 import UpsellFullAccount from '@root/components/home/upsellFullAccount';
 import LoadingSpinner from '@root/components/page/loadingSpinner';
 import PlayerRank from '@root/components/profile/playerRank';
+import PlayerRankProgress from '@root/components/progress/playerRankProgress';
 import { AppContext } from '@root/contexts/appContext';
 import { getGameFromId, getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import useSWRHelper from '@root/hooks/useSWRHelper';
@@ -44,6 +45,9 @@ export default function PlayPage({ reqUser }: PlayPageProps) {
   const { data: profileDataFetched } = useSWRHelper<{levelsSolvedByDifficulty: {[key: string]: number}}>('/api/user/' + reqUser?._id + '?type=levelsSolvedByDifficulty', {}, {});
   const levelsSolvedByDifficulty = profileDataFetched?.levelsSolvedByDifficulty;
 
+  const solvedCount = reqUser.config?.calcLevelsSolvedCount ?? 0;
+  const isNewUser = solvedCount < 5;
+
   return (
     <Page title={'Play'}>
       <UpsellFullAccount user={reqUser} />
@@ -51,16 +55,25 @@ export default function PlayPage({ reqUser }: PlayPageProps) {
         <div className='font-bold text-3xl text-center' id='title'>
           {game.displayName} Official Campaign
         </div>
-        <div className='flex items-center bg-2 rounded-lg p-2 gap-2'>
-          <span>Rank:</span>
-          {
-            levelsSolvedByDifficulty ?
-              <>
-                <PlayerRank levelsSolvedByDifficulty={levelsSolvedByDifficulty} user={reqUser} />
-              </>
-              : <LoadingSpinner size={24} />
-          }
-        </div>
+        
+        {/* Enhanced rank display for new users, simple rank for others */}
+        {isNewUser ? (
+          <div className="w-full max-w-md">
+            <PlayerRankProgress />
+          </div>
+        ) : (
+          <div className='flex items-center bg-2 rounded-lg p-2 gap-2'>
+            <span>Rank:</span>
+            {
+              levelsSolvedByDifficulty ?
+                <>
+                  <PlayerRank levelsSolvedByDifficulty={levelsSolvedByDifficulty} user={reqUser} />
+                </>
+                : <LoadingSpinner size={24} />
+            }
+          </div>
+        )}
+        
         <div className='flex flex-col items-center gap-6'>
           <ChapterSelectCard chapter={1} chapterUnlocked={chapterUnlocked} />
           <ChapterSelectCard chapter={2} chapterUnlocked={chapterUnlocked} />
