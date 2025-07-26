@@ -228,7 +228,7 @@ export default function SignupForm({ recaptchaPublicKey }: SignupFormProps) {
 
           // For OAuth users, skip email confirmation if their email is verified by the provider
           if (oauthData) {
-            router.push('/');
+            router.push('/play');
           } else {
             router.push('/confirm-email');
           }
