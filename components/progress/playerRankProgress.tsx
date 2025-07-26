@@ -1,7 +1,7 @@
 import { difficultyList } from '@root/components/formatted/formattedDifficulty';
 import LoadingSpinner from '@root/components/page/loadingSpinner';
 import useSWRHelper from '@root/hooks/useSWRHelper';
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 interface RankStats {
   count: number;
@@ -26,6 +26,44 @@ interface PlayerRankProgressProps {
 
 export default function PlayerRankProgress({ className = '' }: PlayerRankProgressProps) {
   const { data: rankData, error } = useSWRHelper<PlayerRankProgressData>('/api/player-rank-stats');
+  const [animationPhase, setAnimationPhase] = useState<'starting' | 'traveling' | 'arrived'>('starting');
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (rankData) {
+      const timer1 = setTimeout(() => setAnimationPhase('traveling'), 300);
+      const timer2 = setTimeout(() => setAnimationPhase('arrived'), 2000);
+      return () => {
+        clearTimeout(timer1);
+        clearTimeout(timer2);
+      };
+    }
+  }, [rankData]);
+
+  useEffect(() => {
+    if (scrollContainerRef.current && animationPhase !== 'starting') {
+      const targetScroll = getScrollPosition();
+      const duration = animationPhase === 'traveling' ? 1500 : 300;
+      const startTime = Date.now();
+      const startScroll = scrollContainerRef.current.scrollTop;
+      
+      const animateScroll = () => {
+        const elapsed = Date.now() - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const easeProgress = 1 - Math.pow(1 - progress, 3); // easeOutCubic
+        
+        if (scrollContainerRef.current) {
+          scrollContainerRef.current.scrollTop = startScroll + (targetScroll - startScroll) * easeProgress;
+        }
+        
+        if (progress < 1) {
+          requestAnimationFrame(animateScroll);
+        }
+      };
+      
+      requestAnimationFrame(animateScroll);
+    }
+  }, [animationPhase, rankData]);
 
   if (error) {
     return (
@@ -43,98 +81,201 @@ export default function PlayerRankProgress({ className = '' }: PlayerRankProgres
     );
   }
 
-  const currentRank = rankData.rankInfo.find(rank => rank.index === rankData.currentUserRank);
+  const currentRankData = difficultyList[rankData.currentUserRank];
   const currentStats = rankData.stats[rankData.currentUserRank];
-  const nextRank = rankData.rankInfo.find(rank => rank.index === rankData.currentUserRank + 1);
-  const nextStats = rankData.stats[rankData.currentUserRank + 1];
+  const isCompletelyNew = rankData.currentUserRank === 1 && (!currentStats || currentStats.percentile === 100);
+
+  // All ranks except pending (index 0), reversed so hardest is first
+  const allRanks = difficultyList.slice(1).reverse();
+
+  // Calculate positions based on percentiles (harder ranks at top)
+  const rankPositions = allRanks.map((rank, reverseIndex) => {
+    const rankIndex = difficultyList.indexOf(rank);
+    const stats = rankData.stats[rankIndex];
+    
+    // Use percentile to determine spacing - rarer ranks are further apart
+    const percentile = stats?.percentile || (100 - (rankIndex - 1) * 10); // Fallback if no stats
+    
+    // Create logarithmic spacing based on rarity (100 - percentile)
+    // Higher rarity (lower percentile) = more spacing
+    const rarity = 100 - percentile;
+    const baseSpacing = 120; // Increased from 60
+    const rarityMultiplier = Math.max(1.5, Math.log(rarity + 1) / Math.log(5)); // More aggressive scaling
+    const position = reverseIndex * baseSpacing * rarityMultiplier;
+    
+    return {
+      rank,
+      rankIndex,
+      position,
+      stats,
+      percentile,
+      isCurrent: rankIndex === rankData.currentUserRank,
+      isAchieved: rankIndex <= rankData.currentUserRank
+    };
+  });
+
+  // Find current rank position for animation
+  const currentRankPosition = rankPositions.find(r => r.isCurrent)?.position || 0;
+
+  // Animation: scroll to center current rank in viewport
+  const getScrollPosition = () => {
+    if (animationPhase === 'starting') return 0;
+    // Center the current rank in the 384px (h-96) viewport
+    const targetScroll = Math.max(0, currentRankPosition - 152); // Account for padding and centering
+    return targetScroll;
+  };
 
   return (
-    <div className={`bg-2 rounded-lg p-6 border border-color-3 ${className}`}>
-      <div className="text-center mb-6">
-        <h3 className="text-xl font-bold mb-2">Your Progress</h3>
-        <div className="text-sm text-gray-600">
-          Among {rankData.totalActiveUsers.toLocaleString()} active players
-        </div>
-      </div>
-
-      {/* Current Rank Display */}
-      <div className="flex items-center justify-center mb-6 p-4 bg-1 rounded-lg border border-color-3">
-        <div className="text-center">
-          <div className="text-4xl mb-2">{currentRank?.emoji}</div>
-          <div className="text-xl font-bold text-blue-500">{currentRank?.name}</div>
-          <div className="text-sm text-gray-600 mt-1">{currentRank?.description}</div>
-          {currentStats && (
-            <div className="text-lg font-semibold mt-2 text-green-600">
-              You've reached what {currentStats.percentile}% of players achieve
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Progress Visualization */}
-      <div className="space-y-3">
-        <div className="flex justify-between items-center text-sm">
-          <span>Rank Progression</span>
-          {nextRank && (
-            <span className="text-gray-600">
-              Next: {nextRank.emoji} {nextRank.name}
+    <div className={`bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl p-6 border border-slate-700 shadow-2xl ${className}`}>
+      {/* Header */}
+      <div className="text-center mb-4">
+        <h3 className="text-xl font-bold text-white mb-2">
+          {isCompletelyNew ? 'Your Journey Begins' : 'Rank Progression'}
+        </h3>
+        {!isCompletelyNew && currentStats && currentStats.percentile < 100 && (
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500/20 rounded-full border border-emerald-500/30">
+            <span className="text-emerald-400 font-semibold text-sm">
+              Top {100 - currentStats.percentile}% Player
             </span>
-          )}
-        </div>
-        
-        {/* Rank bars showing progression */}
-        <div className="space-y-2">
-          {rankData.rankInfo.slice(0, Math.min(5, rankData.rankInfo.length)).map((rank) => {
-            const stats = rankData.stats[rank.index];
-            const isCurrent = rank.index === rankData.currentUserRank;
-            const isAchieved = rank.index <= rankData.currentUserRank;
-            
-            return (
-              <div key={rank.index} className="flex items-center space-x-3">
-                <div className={`w-8 text-center ${isCurrent ? 'text-2xl' : 'text-lg'}`}>
-                  {rank.emoji}
-                </div>
-                <div className="flex-1">
-                  <div className="flex justify-between items-center mb-1">
-                    <span className={`text-sm font-medium ${isCurrent ? 'text-blue-600 font-bold' : isAchieved ? 'text-green-600' : 'text-gray-600'}`}>
-                      {rank.name}
-                    </span>
-                    <span className="text-xs text-gray-500">
-                      {stats ? `${stats.percentile}% reach here` : 'N/A'}
-                    </span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div 
-                      className={`h-2 rounded-full transition-all duration-300 ${
-                        isCurrent ? 'bg-blue-500' : 
-                        isAchieved ? 'bg-green-500' : 'bg-gray-300'
-                      }`}
-                      style={{ 
-                        width: stats ? `${Math.max(5, stats.percentile)}%` : '5%'
-                      }}
-                    />
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+          </div>
+        )}
       </div>
 
-      {/* Encouragement message */}
-      <div className="mt-6 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-        <div className="text-sm text-blue-800 text-center">
-          {rankData.currentUserRank >= 8 ? (
-            'Amazing! You\'re among the elite players! 🎉'
-          ) : rankData.currentUserRank >= 5 ? (
-            'Great job! You\'re becoming an expert! 🚀'
-          ) : rankData.currentUserRank >= 3 ? (
-            'Nice progress! Keep solving to advance! 💪'
-          ) : (
-            'Welcome! Solve more levels to climb the ranks! ⭐'
-          )}
+      {isCompletelyNew ? (
+        /* Welcome for new players */
+        <div className="text-center">
+          <div className="mb-6">
+            <div className="text-6xl mb-4">{currentRankData?.emoji}</div>
+            <h2 className="text-2xl font-bold text-white mb-2">Welcome to Thinky!</h2>
+            <p className="text-slate-400">Your ranking journey starts here</p>
+          </div>
+          
+          <div className="bg-slate-800 rounded-lg p-4 mb-4">
+            <div className="text-lg font-bold text-white mb-1">{currentRankData?.name}</div>
+            <div className="text-sm text-slate-400">{currentRankData?.description}</div>
+          </div>
+          
+          <p className="text-slate-300 text-sm">
+            Complete your first puzzle to begin climbing the ranks!
+          </p>
         </div>
-      </div>
+      ) : (
+        /* Vertical rank progression */
+        <div className="relative">
+          {/* Scrollable viewport container */}
+          <div 
+            ref={scrollContainerRef}
+            className="relative h-96 overflow-y-auto bg-slate-950/30 rounded-lg border border-slate-700/50 scroll-smooth"
+            style={{ scrollbarWidth: 'thin' }}
+          >
+            
+            {/* Content container */}
+            <div
+              className="relative px-4 py-8"
+              style={{
+                height: `${Math.max(...rankPositions.map(r => r.position)) + 160}px`
+              }}
+            >
+              {/* Connecting line */}
+              <div className="absolute left-8 top-8 w-0.5 bg-slate-600" style={{ height: `${Math.max(...rankPositions.map(r => r.position)) + 40}px` }} />
+              
+              {/* Rank nodes */}
+              {rankPositions.map((rankPos, index) => (
+                <div
+                  key={rankPos.rank.emoji}
+                  className="absolute left-0 flex items-center gap-4"
+                  style={{ 
+                    top: `${rankPos.position + 40}px`,
+                    transform: 'translateY(-50%)'
+                  }}
+                >
+                  {/* Connection dot */}
+                  <div 
+                    className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${
+                      rankPos.isCurrent 
+                        ? 'bg-blue-500 border-blue-400 shadow-lg shadow-blue-500/50' 
+                        : rankPos.isAchieved
+                        ? 'bg-emerald-500 border-emerald-400'
+                        : 'bg-slate-700 border-slate-600'
+                    }`}
+                  >
+                    {rankPos.isAchieved && (
+                      <div className="w-2 h-2 bg-white rounded-full" />
+                    )}
+                  </div>
+
+                  {/* Rank card */}
+                  <div 
+                    className={`flex items-center gap-3 p-3 rounded-lg border min-w-64 transition-all duration-300 ${
+                      rankPos.isCurrent 
+                        ? 'bg-blue-900/40 border-blue-500/60 shadow-lg' 
+                        : rankPos.isAchieved
+                        ? 'bg-emerald-900/20 border-emerald-500/40'
+                        : 'bg-slate-800/40 border-slate-600/40 opacity-70'
+                    }`}
+                  >
+                    <div className={`text-2xl ${rankPos.isCurrent ? 'scale-110' : ''}`}>
+                      {rankPos.rank.emoji}
+                    </div>
+                    <div className="flex-1">
+                      <div className={`font-semibold text-sm ${
+                        rankPos.isCurrent 
+                          ? 'text-blue-200' 
+                          : rankPos.isAchieved 
+                          ? 'text-emerald-200'
+                          : 'text-slate-400'
+                      }`}>
+                        {rankPos.rank.name}
+                      </div>
+                      <div className="text-xs text-slate-500">
+                        {rankPos.rank.description}
+                      </div>
+                      {rankPos.percentile < 100 && (
+                        <div className="text-xs text-slate-400 mt-1">
+                          Top {(100 - rankPos.percentile).toFixed(1)}% reach here
+                        </div>
+                      )}
+                    </div>
+                    <div className="text-right">
+                      {rankPos.isCurrent ? (
+                        <div className="px-2 py-1 bg-blue-500 text-white text-xs rounded-full font-semibold">
+                          You
+                        </div>
+                      ) : rankPos.isAchieved ? (
+                        <div className="text-emerald-400 text-xs">✓</div>
+                      ) : (
+                        <div className="w-4 h-4 border border-slate-600 rounded-full opacity-50" />
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Current position indicator */}
+            <div className="absolute right-2 top-4 text-xs text-slate-400 bg-slate-800/80 px-2 py-1 rounded">
+              {animationPhase === 'starting' && 'Starting from top...'}
+              {animationPhase === 'traveling' && 'Finding your position...'}
+              {animationPhase === 'arrived' && 'You are here! →'}
+            </div>
+          </div>
+
+          {/* Progress summary */}
+          <div className="mt-4 text-center">
+            <p className="text-slate-300 text-sm">
+              {rankData.currentUserRank >= 8 ? (
+                <>🔥 Elite level achieved! You're among the puzzle masters!</>
+              ) : rankData.currentUserRank >= 5 ? (
+                <>🚀 Excellent progress! You're climbing toward mastery!</>
+              ) : rankData.currentUserRank >= 3 ? (
+                <>💪 Great work! Keep solving to reach new heights!</>
+              ) : (
+                <>⭐ You're building skills! Each puzzle brings progress!</>
+              )}
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

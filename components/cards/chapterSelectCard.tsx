@@ -208,7 +208,6 @@ export default function ChapterSelectCard({ chapter, chapterUnlocked, href, titl
         levelData={'65G9F3G5\nG1J5GH3I\n53FF251G\nJ1I5H505'}
         subtitle={'Show Your Mastery'}
         title={titleOverride || 'Ranked Levels'}
-        compact
       />
     );
   default:
