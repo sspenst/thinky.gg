@@ -89,6 +89,7 @@ export default function PlayerRankProgress({ className = '' }: PlayerRankProgres
   const allRanks = difficultyList.slice(1).reverse();
 
   // Calculate positions based on percentiles (harder ranks at top)
+  let cumulativePosition = 0;
   const rankPositions = allRanks.map((rank, reverseIndex) => {
     const rankIndex = difficultyList.indexOf(rank);
     const stats = rankData.stats[rankIndex];
@@ -99,9 +100,12 @@ export default function PlayerRankProgress({ className = '' }: PlayerRankProgres
     // Create logarithmic spacing based on rarity (100 - percentile)
     // Higher rarity (lower percentile) = more spacing
     const rarity = 100 - percentile;
-    const baseSpacing = 120; // Increased from 60
+    const baseSpacing = 120;
     const rarityMultiplier = Math.max(1.5, Math.log(rarity + 1) / Math.log(5)); // More aggressive scaling
-    const position = reverseIndex * baseSpacing * rarityMultiplier;
+    const spacing = baseSpacing * rarityMultiplier;
+    
+    const position = cumulativePosition;
+    cumulativePosition += spacing; // Add spacing for next rank
     
     return {
       rank,
@@ -230,7 +234,11 @@ export default function PlayerRankProgress({ className = '' }: PlayerRankProgres
                       <div className="text-xs text-slate-500">
                         {rankPos.rank.description}
                       </div>
-                      {rankPos.percentile < 100 && (
+                      {rankPos.rank.name === 'Kindergarten' ? (
+                        <div className="text-xs text-slate-400 mt-1">
+                          All players started here
+                        </div>
+                      ) : rankPos.percentile < 100 && (
                         <div className="text-xs text-slate-400 mt-1">
                           Top {(100 - rankPos.percentile).toFixed(1)}% reach here
                         </div>
@@ -252,12 +260,15 @@ export default function PlayerRankProgress({ className = '' }: PlayerRankProgres
               ))}
             </div>
 
-            {/* Current position indicator */}
-            <div className="absolute right-2 top-4 text-xs text-slate-400 bg-slate-800/80 px-2 py-1 rounded">
-              {animationPhase === 'starting' && 'Starting from top...'}
-              {animationPhase === 'traveling' && 'Finding your position...'}
-              {animationPhase === 'arrived' && 'You are here! →'}
-            </div>
+            {/* Current position indicator - positioned relative to current rank */}
+            {animationPhase === 'arrived' && (
+              <div 
+                className="absolute right-2 text-xs text-slate-400 bg-slate-800/80 px-2 py-1 rounded z-10"
+                style={{ top: `${currentRankPosition + 40}px`, transform: 'translateY(-50%)' }}
+              >
+                You are here! →
+              </div>
+            )}
           </div>
 
           {/* Progress summary */}
