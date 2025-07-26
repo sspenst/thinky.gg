@@ -192,24 +192,57 @@ export default function ChapterPage({ enrichedCollections, reqUser, solvedLevels
     <Page folders={[new LinkInfo('Play', '/play')]} title={config.title}>
       <UpsellFullAccount user={reqUser} />
       
+      {/* Chapter Hero Section */}
+      <div className='relative bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-900'>
+        <div className='max-w-6xl mx-auto px-4 py-8'>
+          <div className='text-center mb-6'>
+            <h1 className='font-bold text-3xl lg:text-4xl mb-2 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent'>
+              {config.title}
+            </h1>
+            <p className='text-xl text-gray-600 dark:text-gray-300 mb-4'>
+              {config.subtitle}
+            </p>
+            
+            {/* Progress Stats */}
+            <div className='flex justify-center gap-6 text-sm'>
+              <div className='bg-white dark:bg-gray-800 rounded-lg px-4 py-2 shadow'>
+                <div className='font-bold text-blue-600'>{solvedLevels}</div>
+                <div className='text-gray-600 dark:text-gray-300'>Solved</div>
+              </div>
+              <div className='bg-white dark:bg-gray-800 rounded-lg px-4 py-2 shadow'>
+                <div className='font-bold text-purple-600'>{totalLevels}</div>
+                <div className='text-gray-600 dark:text-gray-300'>Total</div>
+              </div>
+              <div className='bg-white dark:bg-gray-800 rounded-lg px-4 py-2 shadow'>
+                <div className='font-bold text-green-600'>{Math.round((solvedLevels / totalLevels) * 100)}%</div>
+                <div className='text-gray-600 dark:text-gray-300'>Complete</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
       {/* Show progress visualization for new users on their first chapter */}
       {chapterNumber === 1 && (reqUser.config?.calcLevelsSolvedCount ?? 0) < 5 && (
-        <div className="mb-6">
+        <div className="max-w-4xl mx-auto px-4 py-6">
+          <h2 className="text-2xl font-bold mb-4 text-center">Your Progress Journey</h2>
           <PlayerRankProgress />
         </div>
       )}
       
-      <FormattedCampaign
-        enrichedCollections={enrichedCollections}
-        levelHrefQuery={`chapter=${chapterNumber}`}
-        nextHref={getNextChapterHref()}
-        nextTitle={getNextChapterTitle()}
-        solvedElement={getSolvedElement()}
-        solvedLevels={solvedLevels}
-        subtitle={config.subtitle}
-        title={config.title}
-        totalLevels={totalLevels}
-      />
+      <div className='max-w-6xl mx-auto px-4'>
+        <FormattedCampaign
+          enrichedCollections={enrichedCollections}
+          levelHrefQuery={`chapter=${chapterNumber}`}
+          nextHref={getNextChapterHref()}
+          nextTitle={getNextChapterTitle()}
+          solvedElement={getSolvedElement()}
+          solvedLevels={solvedLevels}
+          subtitle={config.subtitle}
+          title={config.title}
+          totalLevels={totalLevels}
+        />
+      </div>
     </Page>
   );
 }

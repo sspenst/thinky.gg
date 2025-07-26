@@ -65,7 +65,7 @@ export default function PlayerRankProgress({ className = '' }: PlayerRankProgres
           <div className="text-sm text-gray-600 mt-1">{currentRank?.description}</div>
           {currentStats && (
             <div className="text-lg font-semibold mt-2 text-green-600">
-              Top {100 - currentStats.percentile}% of players
+              You've reached what {currentStats.percentile}% of players achieve
             </div>
           )}
         </div>
@@ -100,7 +100,7 @@ export default function PlayerRankProgress({ className = '' }: PlayerRankProgres
                       {rank.name}
                     </span>
                     <span className="text-xs text-gray-500">
-                      {stats ? `${100 - stats.percentile}% reach here` : 'N/A'}
+                      {stats ? `${stats.percentile}% reach here` : 'N/A'}
                     </span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
@@ -110,7 +110,7 @@ export default function PlayerRankProgress({ className = '' }: PlayerRankProgres
                         isAchieved ? 'bg-green-500' : 'bg-gray-300'
                       }`}
                       style={{ 
-                        width: stats ? `${Math.max(5, 100 - stats.percentile)}%` : '5%'
+                        width: stats ? `${Math.max(5, stats.percentile)}%` : '5%'
                       }}
                     />
                   </div>
