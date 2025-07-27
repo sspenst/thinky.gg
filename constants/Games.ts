@@ -39,7 +39,7 @@ export const Games: Record<GameId, Game> = {
     seoTitle: 'Thinky Puzzle Games',
     subdomain: 'thinky',
     subtitle: 'Thinky Games',
-    type: GameType.NONE,
+    type: GameType.SHORTEST_PATH,
     stripePaymentLinkMonthly: process.env.STRIPE_THINKY_PAYMENT_LINK_MONTHLY,
     stripePaymentLinkYearly: process.env.STRIPE_THINKY_PAYMENT_LINK_YEARLY,
     stripePriceIdGiftMonthly: process.env.STRIPE_THINKY_PRICE_ID_GIFT_MONTHLY,

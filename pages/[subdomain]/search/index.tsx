@@ -17,10 +17,10 @@ import classNames from 'classnames';
 import { Search as SearchIcon } from 'lucide-react';
 import { Types } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
+import { NextSeo } from 'next-seo';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { NextSeo } from 'next-seo';
 import nProgress from 'nprogress';
 import { ParsedUrlQuery } from 'querystring';
 import React, { Fragment, useCallback, useContext, useEffect, useState } from 'react';
@@ -503,19 +503,18 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
         minWidth: '178px',
       },
     },
-    ...(isPro(reqUser) ?
-      [{
-        id: 'calcOtherDifficultyEstimate',
-        name: <div className='flex gap-1 flex-row align-center items-center'><span className='text-xs md:text-md'>{otherDifficultyType + ' Difficulty'}</span><Image alt='pro' className='mr-0.5' src='/pro.svg' width='16' height='16' /></div>,
-        selector: (row: EnrichedLevel) => (
-          <FormattedDifficulty id='search-row-other' level={row} difficultyField={otherDifficultyField} />
-        ),
-        style: {
-          fontSize: '13px',
-          minWidth: '178px',
-        },
-        sortable: isPro(reqUser),
-      }] : []),
+    {
+      id: 'calcOtherDifficultyEstimate',
+      name: <div className='flex gap-1 flex-row align-center items-center'><span className='text-xs md:text-md'>{otherDifficultyType + ' Difficulty'}</span></div>,
+      selector: (row: EnrichedLevel) => (
+        <FormattedDifficulty id='search-row-other' level={row} difficultyField={otherDifficultyField} />
+      ),
+      style: {
+        fontSize: '13px',
+        minWidth: '178px',
+      },
+      sortable: true,
+    },
     {
       id: 'ts',
       name: 'Created',
