@@ -11,6 +11,7 @@ import Page from '../../../../components/page/page';
 import getCampaignProps, { CampaignProps } from '../../../../helpers/getCampaignProps';
 import { getUserFromToken } from '../../../../lib/withAuth';
 import { UserConfigModel } from '../../../../models/mongoose';
+import { EnrichedLevel } from '../../../../models/db/level';
 
 interface ChapterPageProps extends CampaignProps {
   chapterNumber: number;
@@ -139,12 +140,51 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   const campaignProps = await getCampaignProps(gameId, reqUser, config.campaign);
 
+  // If this is a "continue playing" request (has continue query param), redirect to first unsolved level
+  if (context.query.continue === 'true' && campaignProps.props) {
+    const firstUnsolvedLevel = findFirstUnsolvedLevel(campaignProps.props.enrichedCollections);
+    
+    if (firstUnsolvedLevel) {
+      // Find the collection that contains this level to get the collection ID
+      let collectionId = '';
+      for (const collection of campaignProps.props.enrichedCollections) {
+        if (collection.levels?.some((level: EnrichedLevel) => level._id.toString() === firstUnsolvedLevel._id.toString())) {
+          collectionId = collection._id.toString();
+          break;
+        }
+      }
+      
+      return {
+        redirect: {
+          destination: `/level/${firstUnsolvedLevel.slug}?cid=${collectionId}&chapter=${chapterNumber}`,
+          permanent: false,
+        },
+      };
+    }
+  }
+
   return {
     props: {
       ...campaignProps.props,
       chapterNumber,
     },
   };
+}
+
+// Helper function to find the first unsolved level in collections
+function findFirstUnsolvedLevel(enrichedCollections: any[]): EnrichedLevel | null {
+  for (const collection of enrichedCollections) {
+    if (!collection.levels) continue;
+    
+    for (const level of collection.levels as EnrichedLevel[]) {
+      // A level is unsolved if userMoves doesn't equal leastMoves or userMoves is undefined
+      if (!level.userMoves || level.userMoves !== level.leastMoves) {
+        return level;
+      }
+    }
+  }
+  
+  return null;
 }
 
 export default function ChapterPage({ enrichedCollections, reqUser, solvedLevels, totalLevels, chapterNumber }: ChapterPageProps) {

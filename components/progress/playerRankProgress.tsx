@@ -27,10 +27,14 @@ interface PlayerRankProgressProps {
   customCta?: React.ReactNode;
 }
 
+
 export default function PlayerRankProgress({ className = '', customCta }: PlayerRankProgressProps) {
   const { data: rankData, error } = useSWRHelper<PlayerRankProgressData>('/api/player-rank-stats');
   const { game, user } = useContext(AppContext);
   const router = useRouter();
+  
+  // Get current chapter data to find first unsolved level
+  const chapterUnlocked = user?.config?.chapterUnlocked || 1;
   const [animationPhase, setAnimationPhase] = useState<'starting' | 'traveling' | 'arrived'>('starting');
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -152,7 +156,8 @@ export default function PlayerRankProgress({ className = '', customCta }: Player
       isAchieved: skillAch?.isUnlocked || false,
       isCurrent: skillAch?.isUnlocked && difficultyIndex === highestAchievedIndex,
       isNext: !skillAch?.isUnlocked && difficultyIndex === nextUnachievedIndex,
-      isNextPlus: !skillAch?.isUnlocked && difficultyIndex === nextUnachievedIndex + 1
+      isNextPlus: !skillAch?.isUnlocked && difficultyIndex === nextUnachievedIndex + 1,
+      isNewb: false
     };
   });
 
@@ -345,21 +350,14 @@ export default function PlayerRankProgress({ className = '', customCta }: Player
                       // Default CTA logic
                       const getDefaultCtaInfo = () => {
                         // Get user's chapter progress from context
-                        const chapterUnlocked = user?.chapterUnlocked || 1;
+                        const chapterUnlocked = user?.config?.chapterUnlocked || 1;
                         const currentPath = router.asPath;
 
-                        // For new players (Newb), start with chapter 1 unless already on chapter 1
+                        // For new players (Newb), start with chapter 1
                         if (rankPos.isNewb) {
-                          if (currentPath.startsWith('/chapter/1')) {
-                            return {
-                              href: '/chapter/1/level/1', // Go to next level if on chapter 1
-                              text: 'Continue Playing'
-                            };
-                          }
-
                           return {
-                            href: '/chapter/1',
-                            text: 'Start Chapter 1'
+                            href: currentPath.startsWith('/chapter/1') ? '/chapter/1?continue=true' : '/chapter/1',
+                            text: currentPath.startsWith('/chapter/1') ? 'Continue Playing' : 'Start Chapter 1'
                           };
                         }
 
@@ -371,18 +369,13 @@ export default function PlayerRankProgress({ className = '', customCta }: Player
                           };
                         }
 
-                        // For players in progress, check if already on current chapter
-                        if (currentPath.startsWith(`/chapter/${chapterUnlocked}`)) {
-                          return {
-                            href: `/chapter/${chapterUnlocked}`, // Let page handle next level
-                            text: 'Continue Playing'
-                          };
-                        }
-
-                        // For players not on their current chapter
+                        // For players in progress, direct to their current chapter
+                        // The chapter page will handle finding and navigating to the first unsolved level
+                        const isContinuePlaying = currentPath.startsWith(`/chapter/${chapterUnlocked}`);
+                        
                         return {
-                          href: `/chapter/${chapterUnlocked}`,
-                          text: `Continue Chapter ${chapterUnlocked}`
+                          href: isContinuePlaying ? `/chapter/${chapterUnlocked}?continue=true` : `/chapter/${chapterUnlocked}`,
+                          text: isContinuePlaying ? 'Continue Playing' : `Continue Chapter ${chapterUnlocked}`
                         };
                       };
 
