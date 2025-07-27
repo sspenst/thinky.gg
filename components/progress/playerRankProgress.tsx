@@ -27,12 +27,11 @@ interface PlayerRankProgressProps {
   customCta?: React.ReactNode;
 }
 
-
 export default function PlayerRankProgress({ className = '', customCta }: PlayerRankProgressProps) {
   const { data: rankData, error } = useSWRHelper<PlayerRankProgressData>('/api/player-rank-stats');
   const { game, user } = useContext(AppContext);
   const router = useRouter();
-  
+
   // Get current chapter data to find first unsolved level
   const chapterUnlocked = user?.config?.chapterUnlocked || 1;
   const [animationPhase, setAnimationPhase] = useState<'starting' | 'traveling' | 'arrived'>('starting');
@@ -372,7 +371,7 @@ export default function PlayerRankProgress({ className = '', customCta }: Player
                         // For players in progress, direct to their current chapter
                         // The chapter page will handle finding and navigating to the first unsolved level
                         const isContinuePlaying = currentPath.startsWith(`/chapter/${chapterUnlocked}`);
-                        
+
                         return {
                           href: isContinuePlaying ? `/chapter/${chapterUnlocked}?continue=true` : `/chapter/${chapterUnlocked}`,
                           text: isContinuePlaying ? 'Continue Playing' : `Continue Chapter ${chapterUnlocked}`

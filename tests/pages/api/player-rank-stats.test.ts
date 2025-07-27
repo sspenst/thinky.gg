@@ -1,6 +1,6 @@
+import { DIFFICULTY_INDEX } from '@root/components/formatted/formattedDifficulty';
 import { skillRequirements } from '@root/constants/achievements/AchievementRulesSkill';
 import AchievementType from '@root/constants/achievements/achievementType';
-import { DIFFICULTY_INDEX } from '@root/components/formatted/formattedDifficulty';
 import { DEFAULT_GAME_ID, GameId } from '@root/constants/GameId';
 import { genTestLevel, genTestUser } from '@root/lib/initializeLocalDb';
 import User from '@root/models/db/user';
@@ -22,57 +22,57 @@ let USER_B: User;
 
 beforeAll(async () => {
   await dbConnect({ ignoreInitializeLocalDb: true });
-  
+
   // Setup test users and levels
-    await Promise.all([
-      LevelModel.insertMany([
-        genTestLevel({
-          _id: new Types.ObjectId(TestId.LEVEL),
-          userId: new Types.ObjectId(TestId.USER) as never,
-          calc_difficulty_estimate: 0, // Kindergarten difficulty
-        }),
-        genTestLevel({
-          _id: new Types.ObjectId(TestId.LEVEL_2),
-          userId: new Types.ObjectId(TestId.USER) as never,
-          calc_difficulty_estimate: 45, // Elementary difficulty
-        }),
-        genTestLevel({
-          _id: new Types.ObjectId(TestId.LEVEL_3),
-          userId: new Types.ObjectId(TestId.USER) as never,
-          calc_difficulty_estimate: 6000, // Professor difficulty
-        }),
-      ]),
-      UserModel.insertMany([
-        await genTestUser({
-          _id: new Types.ObjectId(TestId.USER),
-        }),
-        await genTestUser({
-          _id: new Types.ObjectId(TestId.USER_B),
-        }),
-      ], { validateBeforeSave: true } as never),
-    ]);
+  await Promise.all([
+    LevelModel.insertMany([
+      genTestLevel({
+        _id: new Types.ObjectId(TestId.LEVEL),
+        userId: new Types.ObjectId(TestId.USER) as never,
+        calc_difficulty_estimate: 0, // Kindergarten difficulty
+      }),
+      genTestLevel({
+        _id: new Types.ObjectId(TestId.LEVEL_2),
+        userId: new Types.ObjectId(TestId.USER) as never,
+        calc_difficulty_estimate: 45, // Elementary difficulty
+      }),
+      genTestLevel({
+        _id: new Types.ObjectId(TestId.LEVEL_3),
+        userId: new Types.ObjectId(TestId.USER) as never,
+        calc_difficulty_estimate: 6000, // Professor difficulty
+      }),
+    ]),
+    UserModel.insertMany([
+      await genTestUser({
+        _id: new Types.ObjectId(TestId.USER),
+      }),
+      await genTestUser({
+        _id: new Types.ObjectId(TestId.USER_B),
+      }),
+    ], { validateBeforeSave: true } as never),
+  ]);
 
-    await Promise.all([
-      createAnotherGameConfig(TestId.USER, DEFAULT_GAME_ID),
-      createAnotherGameConfig(TestId.USER_B, DEFAULT_GAME_ID),
-    ]);
-    
-    // Update user configs to have calcLevelsCompletedCount > 0 so they count as active users
-    await Promise.all([
-      UserConfigModel.updateOne(
-        { userId: new Types.ObjectId(TestId.USER), gameId: DEFAULT_GAME_ID },
-        { $set: { calcLevelsCompletedCount: 1 } }
-      ),
-      UserConfigModel.updateOne(
-        { userId: new Types.ObjectId(TestId.USER_B), gameId: DEFAULT_GAME_ID },
-        { $set: { calcLevelsCompletedCount: 1 } }
-      ),
-    ]);
+  await Promise.all([
+    createAnotherGameConfig(TestId.USER, DEFAULT_GAME_ID),
+    createAnotherGameConfig(TestId.USER_B, DEFAULT_GAME_ID),
+  ]);
 
-    [USER, USER_B] = await Promise.all([
-      UserModel.findById(TestId.USER),
-      UserModel.findById(TestId.USER_B)
-    ]);
+  // Update user configs to have calcLevelsCompletedCount > 0 so they count as active users
+  await Promise.all([
+    UserConfigModel.updateOne(
+      { userId: new Types.ObjectId(TestId.USER), gameId: DEFAULT_GAME_ID },
+      { $set: { calcLevelsCompletedCount: 1 } }
+    ),
+    UserConfigModel.updateOne(
+      { userId: new Types.ObjectId(TestId.USER_B), gameId: DEFAULT_GAME_ID },
+      { $set: { calcLevelsCompletedCount: 1 } }
+    ),
+  ]);
+
+  [USER, USER_B] = await Promise.all([
+    UserModel.findById(TestId.USER),
+    UserModel.findById(TestId.USER_B)
+  ]);
 });
 
 afterEach(() => {
@@ -86,7 +86,6 @@ afterAll(async () => {
 enableFetchMocks();
 
 describe('Testing player-rank-stats api', () => {
-
   test('GET without authentication should return 401', async () => {
     await testApiHandler({
       pagesHandler: async (_, res) => {
@@ -249,6 +248,7 @@ describe('Testing player-rank-stats api', () => {
         const kindergartenAchievement = response.skillAchievements.find(
           (ach: any) => ach.difficultyIndex === DIFFICULTY_INDEX.KINDERGARTEN
         );
+
         expect(kindergartenAchievement).toBeDefined();
         expect(kindergartenAchievement.userProgress).toBe(2); // 2 levels solved (rolling sum includes elementary)
 
@@ -256,6 +256,7 @@ describe('Testing player-rank-stats api', () => {
         const elementaryAchievement = response.skillAchievements.find(
           (ach: any) => ach.difficultyIndex === DIFFICULTY_INDEX.ELEMENTARY
         );
+
         expect(elementaryAchievement).toBeDefined();
         expect(elementaryAchievement.userProgress).toBe(1); // 1 elementary level solved
       },
@@ -297,6 +298,7 @@ describe('Testing player-rank-stats api', () => {
         const kindergartenAchievement = response.skillAchievements.find(
           (ach: any) => ach.difficultyIndex === DIFFICULTY_INDEX.KINDERGARTEN
         );
+
         expect(kindergartenAchievement).toBeDefined();
         expect(kindergartenAchievement.isUnlocked).toBe(true);
 
@@ -304,6 +306,7 @@ describe('Testing player-rank-stats api', () => {
         const elementaryAchievement = response.skillAchievements.find(
           (ach: any) => ach.difficultyIndex === DIFFICULTY_INDEX.ELEMENTARY
         );
+
         expect(elementaryAchievement).toBeDefined();
         expect(elementaryAchievement.isUnlocked).toBe(false);
       },
@@ -346,6 +349,7 @@ describe('Testing player-rank-stats api', () => {
         const kindergartenAchievement = response.skillAchievements.find(
           (ach: any) => ach.difficultyIndex === DIFFICULTY_INDEX.KINDERGARTEN
         );
+
         expect(kindergartenAchievement).toBeDefined();
         expect(kindergartenAchievement.count).toBeGreaterThan(0); // At least 2 users have this achievement
         expect(kindergartenAchievement.percentile).toBeGreaterThanOrEqual(0);
@@ -431,10 +435,10 @@ describe('Testing player-rank-stats api', () => {
         const response = await res.json();
 
         expect(res.status).toBe(200);
-        
+
         // Verify achievements are in the same order as skillRequirements
         expect(response.skillAchievements.length).toBe(skillRequirements.length);
-        
+
         response.skillAchievements.forEach((achievement: any, index: number) => {
           expect(achievement.achievementType).toBe(skillRequirements[index].achievementType);
           expect(achievement.difficultyIndex).toBe(skillRequirements[index].difficultyIndex);
