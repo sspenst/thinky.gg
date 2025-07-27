@@ -1,12 +1,17 @@
 import { difficultyList } from '@root/components/formatted/formattedDifficulty';
 import LoadingSpinner from '@root/components/page/loadingSpinner';
+import StyledTooltip from '@root/components/page/styledTooltip';
+import { AppContext } from '@root/contexts/appContext';
 import useSWRHelper from '@root/hooks/useSWRHelper';
-import React, { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/router';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 
 interface SkillAchievement {
   achievementType: string;
   difficultyIndex: number;
   requirement: number;
+  userProgress: number;
   isUnlocked: boolean;
   count: number;
   percentile: number;
@@ -19,10 +24,13 @@ interface PlayerRankProgressData {
 
 interface PlayerRankProgressProps {
   className?: string;
+  customCta?: React.ReactNode;
 }
 
-export default function PlayerRankProgress({ className = '' }: PlayerRankProgressProps) {
+export default function PlayerRankProgress({ className = '', customCta }: PlayerRankProgressProps) {
   const { data: rankData, error } = useSWRHelper<PlayerRankProgressData>('/api/player-rank-stats');
+  const { game, user } = useContext(AppContext);
+  const router = useRouter();
   const [animationPhase, setAnimationPhase] = useState<'starting' | 'traveling' | 'arrived'>('starting');
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -137,6 +145,7 @@ export default function PlayerRankProgress({ className = '' }: PlayerRankProgres
       difficultyIndex,
       position: index * equalSpacing, // Position skill ranks first
       requirement: skillAch?.requirement || 0,
+      userProgress: skillAch?.userProgress || 0,
       percentile: skillAch?.percentile || 0,
       progressionRate,
       progressionFromRank,
@@ -154,6 +163,7 @@ export default function PlayerRankProgress({ className = '' }: PlayerRankProgres
       difficultyIndex: 0,
       position: rankPositions.length * equalSpacing, // Position after all skill ranks
       requirement: 0,
+      userProgress: 0,
       percentile: 0,
       isAchieved: false,
       isCurrent: true, // New players are currently "Newb"
@@ -206,12 +216,12 @@ export default function PlayerRankProgress({ className = '' }: PlayerRankProgres
           <div
             className='relative px-4 py-8'
             style={{
-              height: `${allRankPositions.length * 160 + 80}px` // Dynamic height based on ranks shown
+              height: `${(allRankPositions.length - 1) * 160 + 120}px` // Dynamic height with less padding below last card
             }}
           >
 
             {/* Connecting line */}
-            <div className='absolute left-8 top-[40px] w-0.5 bg-slate-600' style={{ height: `${allRankPositions.length * 160}px` }} />
+            <div className='absolute left-8 top-[40px] w-0.5 bg-slate-600' style={{ height: `${(allRankPositions.length - 1) * 160 + 80}px` }} />
               
               {/* Rank nodes and progression rates */}
             {allRankPositions.map((rankPos, index) => (
@@ -259,7 +269,7 @@ export default function PlayerRankProgress({ className = '' }: PlayerRankProgres
                 })()}
                 {/* Rank card */}
                 <div
-                  className='absolute left-0 flex items-center gap-4'
+                  className='absolute left-0 right-4 flex items-center gap-4'
                   style={{
                     top: `${rankPos.position + 40}px`, // Offset for padding
                     transform: 'translateY(-50%)'
@@ -283,7 +293,7 @@ export default function PlayerRankProgress({ className = '' }: PlayerRankProgres
                   </div>
                   {/* Rank card */}
                   <div
-                    className={`flex items-center gap-3 p-3 rounded-lg border min-w-64 transition-all duration-300 ${
+                    className={`flex items-center gap-3 p-3 rounded-lg border w-full transition-all duration-300 ${
                       rankPos.isCurrent
                         ? 'bg-blue-900/40 border-blue-500/60 shadow-lg'
                         : rankPos.isAchieved
@@ -317,44 +327,119 @@ export default function PlayerRankProgress({ className = '' }: PlayerRankProgres
                         </div>
                       )}
                     </div>
-                    <div className='text-right'>
-                      {rankPos.isAchieved ? (
-                        rankPos.isCurrent ? (
-                          <div className='px-2 py-1 bg-blue-500 text-white text-xs rounded-full font-semibold'>
+                    
+                    {/* Action button for current rank */}
+                    {rankPos.isCurrent && (() => {
+                      // Use custom CTA if provided, otherwise use default logic
+                      if (customCta) {
+                        return (
+                          <div className='flex flex-col items-end gap-2'>
+                            <div className='px-2 py-1 bg-blue-500 text-white text-xs rounded-full font-semibold'>
                               Current
+                            </div>
+                            {customCta}
+                          </div>
+                        );
+                      }
+
+                      // Default CTA logic
+                      const getDefaultCtaInfo = () => {
+                        // Get user's chapter progress from context
+                        const chapterUnlocked = user?.chapterUnlocked || 1;
+                        const currentPath = router.asPath;
+
+                        // For new players (Newb), start with chapter 1 unless already on chapter 1
+                        if (rankPos.isNewb) {
+                          if (currentPath.startsWith('/chapter/1')) {
+                            return {
+                              href: '/chapter/1/level/1', // Go to next level if on chapter 1
+                              text: 'Continue Playing'
+                            };
+                          }
+
+                          return {
+                            href: '/chapter/1',
+                            text: 'Start Chapter 1'
+                          };
+                        }
+
+                        // For advanced players, check if they've completed all chapters
+                        if (chapterUnlocked > 3) {
+                          return {
+                            href: '/ranked',
+                            text: 'Play Ranked'
+                          };
+                        }
+
+                        // For players in progress, check if already on current chapter
+                        if (currentPath.startsWith(`/chapter/${chapterUnlocked}`)) {
+                          return {
+                            href: `/chapter/${chapterUnlocked}`, // Let page handle next level
+                            text: 'Continue Playing'
+                          };
+                        }
+
+                        // For players not on their current chapter
+                        return {
+                          href: `/chapter/${chapterUnlocked}`,
+                          text: `Continue Chapter ${chapterUnlocked}`
+                        };
+                      };
+
+                      const ctaInfo = getDefaultCtaInfo();
+
+                      return (
+                        <div className='flex flex-col items-end gap-2'>
+                          <div className='px-2 py-1 bg-blue-500 text-white text-xs rounded-full font-semibold'>
+                            Current
+                          </div>
+                          <Link
+                            href={ctaInfo.href}
+                            className='group relative px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white text-sm font-bold rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 border border-blue-400/30'
+                          >
+                            <span className='relative z-10 flex items-center gap-1'>
+                              {ctaInfo.text}
+                              <svg className='w-4 h-4 transition-transform group-hover:translate-x-1' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                                <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M13 7l5 5m0 0l-5 5m5-5H6' />
+                              </svg>
+                            </span>
+                            <div className='absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-lg' />
+                          </Link>
+                        </div>
+                      );
+                    })()}
+                    
+                    {/* Status for non-current ranks */}
+                    {!rankPos.isCurrent && (
+                      <div className='text-right'>
+                        {rankPos.isAchieved ? (
+                          <div className='text-emerald-400 text-xs'>✓ Achieved</div>
+                        ) : rankPos.isNext ? (
+                          <div className='flex flex-col items-end gap-1'>
+                            <div className='px-2 py-1 bg-slate-700 text-slate-300 text-xs rounded font-semibold'>
+                                Next Goal
+                            </div>
+                            {rankPos.requirement && (
+                              <Link
+                                href={`/profile/${user?.name}`}
+                                className='text-xs text-emerald-400 cursor-pointer border-b border-dotted border-emerald-400 hover:text-emerald-300 transition-colors'
+                                data-tooltip-id={`progress-tooltip-${rankPos.difficultyIndex}`}
+                                data-tooltip-content={`Counts levels at ${rankPos.rank.name} difficulty or harder`}
+                              >
+                                  Progress: {rankPos.userProgress || 0}/{rankPos.requirement} {rankPos.rank.name} Solved
+                              </Link>
+                            )}
                           </div>
                         ) : (
-                          <div className='text-emerald-400 text-xs'>✓ Achieved</div>
-                        )
-                      ) : rankPos.isNext ? (
-                        <div className='flex flex-col items-end gap-1'>
-                          <div className='px-2 py-1 bg-slate-700 text-slate-300 text-xs rounded font-semibold'>
-                              Next Goal
-                          </div>
-                          {rankPos.requirement && (
-                            <div className='text-xs text-emerald-400'>
-                                Need {rankPos.requirement}+ {rankPos.rank.name}
-                            </div>
-                          )}
-                        </div>
-                      ) : (
-                        <div className='w-4 h-4 border border-slate-700 rounded-full opacity-30' />
-                      )}
-                    </div>
+                          <div className='w-4 h-4 border border-slate-700 rounded-full opacity-30' />
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               </React.Fragment>
             ))}
           </div>
-          {/* Current position indicator - positioned relative to current rank */}
-          {animationPhase === 'arrived' && (
-            <div
-              className='absolute right-2 text-xs text-slate-400 bg-slate-800/80 px-2 py-1 rounded z-10'
-              style={{ top: `${currentRankPosition + 40}px`, transform: 'translateY(-50%)' }}
-            >
-                You are here! →
-            </div>
-          )}
         </div>
         {/* Progress summary */}
         <div className='mt-4 text-center'>
@@ -371,6 +456,16 @@ export default function PlayerRankProgress({ className = '' }: PlayerRankProgres
           </p>
         </div>
       </div>
+      
+      {/* Tooltips for progress indicators */}
+      {allRankPositions.map((rankPos) => (
+        rankPos.requirement && (
+          <StyledTooltip
+            key={`tooltip-${rankPos.difficultyIndex}`}
+            id={`progress-tooltip-${rankPos.difficultyIndex}`}
+          />
+        )
+      ))}
     </div>
   );
 }

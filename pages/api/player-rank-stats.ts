@@ -2,6 +2,8 @@ import { skillRequirements } from '@root/constants/achievements/AchievementRules
 import AchievementType from '@root/constants/achievements/achievementType';
 import { countUsersWhoCompletedOneLevel } from '@root/helpers/countUsersWhoCompletedOneLevel';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
+import { getSolvesByDifficultyTable } from '@root/helpers/getSolvesByDifficultyTable';
+import { getDifficultyRollingSum } from '@root/helpers/playerRankHelper';
 import { getUserFromToken } from '@root/lib/withAuth';
 import Achievement from '@root/models/db/achievement';
 import { AchievementModel } from '@root/models/mongoose';
@@ -31,8 +33,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       userId: reqUser._id
     }).lean<Achievement[]>();
 
-    // Get achievement statistics - same as achievements page
-    const [achievementStats, totalActiveUsers] = await Promise.all([
+    // Get achievement statistics and user progress - same as achievements page
+    const [achievementStats, totalActiveUsers, levelsSolvedByDifficulty] = await Promise.all([
       AchievementModel.aggregate([
         {
           $group: {
@@ -43,8 +45,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           }
         }
       ]),
-      countUsersWhoCompletedOneLevel()
+      countUsersWhoCompletedOneLevel(),
+      getSolvesByDifficultyTable(gameId, reqUser._id)
     ]);
+
+    // Calculate rolling sum for user's progress
+    const rollingLevelSolvesSum = getDifficultyRollingSum(levelsSolvedByDifficulty);
 
     // Build skill achievements in order
     const skillAchievements = skillRequirements.map(req => {
@@ -56,10 +62,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         stat._id.type === req.achievementType && stat._id.gameId === gameId
       );
 
+      const userProgress = rollingLevelSolvesSum[req.difficultyIndex] || 0;
+
       return {
         achievementType: req.achievementType,
         difficultyIndex: req.difficultyIndex,
         requirement: req.levels,
+        userProgress,
         isUnlocked: userHasAchievement,
         count: statEntry?.count || 0,
         percentile: statEntry ? Math.round((statEntry.count / totalActiveUsers) * 100) : 0
