@@ -57,6 +57,7 @@ export function ChapterSelectCardBase({
             className={classNames(
               'border-2 rounded-md items-center flex justify-center text-center h-full w-full',
               !disabled ? styles['card-border'] : undefined,
+              disabled ? 'relative overflow-hidden cursor-not-allowed pointer-events-none' : '',
             )}
             href={disabled ? '' : href}
             id={id}
@@ -67,7 +68,19 @@ export function ChapterSelectCardBase({
               textShadow: '1px 1px black',
             }}
           >
-            <div className='font-bold break-words p-3 w-full flex flex-col gap-0.5'>
+            {disabled && (
+              <>
+                {/* Lock overlay */}
+                <div className='absolute inset-0 bg-gray-900/60 backdrop-blur-sm' />
+                {/* Lock icon */}
+                <div className='absolute top-2 right-2 text-gray-400'>
+                  <svg className='w-5 h-5' fill='currentColor' viewBox='0 0 20 20'>
+                    <path fillRule='evenodd' d='M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z' clipRule='evenodd' />
+                  </svg>
+                </div>
+              </>
+            )}
+            <div className={classNames('font-bold break-words p-3 w-full flex flex-col gap-0.5', disabled ? 'relative z-10' : '')}>
               <div className='text-xl'>
                 {title}
               </div>
@@ -81,8 +94,12 @@ export function ChapterSelectCardBase({
         </div>
       </div>
       {disabled && disabledStr &&
-        <div className='italic -my-3 text-center'>
-          {disabledStr}
+        <div className='flex justify-center -my-3'>
+          <div className='inline-flex items-center gap-2 px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded-full'>
+            <span className='text-sm font-medium text-gray-600 dark:text-gray-400'>
+              🔒 {disabledStr}
+            </span>
+          </div>
         </div>
       }
     </>);
@@ -106,6 +123,7 @@ export function ChapterSelectCardBase({
           className={classNames(
             'border-2 rounded-md items-center flex justify-center text-center h-full w-full',
             !disabled ? styles['card-border'] : undefined,
+            disabled ? 'relative overflow-hidden cursor-not-allowed pointer-events-none' : '',
           )}
           href={disabled ? '' : href}
           id={id}
@@ -116,7 +134,19 @@ export function ChapterSelectCardBase({
             textShadow: '1px 1px black',
           }}
         >
-          <div className='font-bold break-words p-4 w-full flex flex-col gap-1'>
+          {disabled && (
+            <>
+              {/* Lock overlay */}
+              <div className='absolute inset-0 bg-gray-900/60 backdrop-blur-sm' />
+              {/* Lock icon */}
+              <div className='absolute top-4 right-4 text-gray-400'>
+                <svg className='w-6 h-6' fill='currentColor' viewBox='0 0 20 20'>
+                  <path fillRule='evenodd' d='M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z' clipRule='evenodd' />
+                </svg>
+              </div>
+            </>
+          )}
+          <div className={classNames('font-bold break-words p-4 w-full flex flex-col gap-1', disabled ? 'relative z-10' : '')}>
             <div className='text-3xl'>
               {title}
             </div>
@@ -130,8 +160,12 @@ export function ChapterSelectCardBase({
       </div>
     </div>
     {disabled && disabledStr &&
-      <div className='italic -my-3 text-center'>
-        {disabledStr}
+      <div className='flex justify-center -my-3'>
+        <div className='inline-flex items-center gap-2 px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded-full'>
+          <span className='text-sm font-medium text-gray-600 dark:text-gray-400'>
+            🔒 {disabledStr}
+          </span>
+        </div>
       </div>
     }
   </>);
@@ -163,7 +197,7 @@ export default function ChapterSelectCard({ chapter, chapterUnlocked, href, titl
       <ChapterSelectCardBase
         game={game}
         complete={!!chapterUnlocked && chapterUnlocked > 1}
-        href={href ?? '/chapter1'}
+        href={href ?? '/chapter/1'}
         id='chapter1'
         levelData={'50000000\n00000100\n02000000\n00000020'}
         subtitle={'Grassroots'}
@@ -175,9 +209,9 @@ export default function ChapterSelectCard({ chapter, chapterUnlocked, href, titl
       <ChapterSelectCardBase
         complete={!!chapterUnlocked && chapterUnlocked > 2}
         disabled={chapterUnlocked ? chapterUnlocked < 2 : false}
-        disabledStr={'Complete Chapter 1 to unlock Chapter 2!'}
+        disabledStr={'Complete Chapter 1 to unlock'}
         game={game}
-        href={href ?? '/chapter2'}
+        href={href ?? '/chapter/2'}
         id='chapter2'
         levelData={'005E0C00\n0G070005\n10005010\n005100I0'}
         subtitle={'Into the Depths'}
@@ -189,9 +223,9 @@ export default function ChapterSelectCard({ chapter, chapterUnlocked, href, titl
       <ChapterSelectCardBase
         complete={!!chapterUnlocked && chapterUnlocked > 3}
         disabled={chapterUnlocked ? chapterUnlocked < 3 : false}
-        disabledStr={'Complete Chapter 2 to unlock Chapter 3!'}
+        disabledStr={'Complete Chapter 2 to unlock'}
         game={game}
-        href={href ?? '/chapter3'}
+        href={href ?? '/chapter/3'}
         id='chapter3'
         levelData={'B519F0G0\n10JH5H52\n75F02J08\n02050B10'}
         subtitle={'Brain Busters'}
@@ -208,7 +242,6 @@ export default function ChapterSelectCard({ chapter, chapterUnlocked, href, titl
         levelData={'65G9F3G5\nG1J5GH3I\n53FF251G\nJ1I5H505'}
         subtitle={'Show Your Mastery'}
         title={titleOverride || 'Ranked Levels'}
-        compact
       />
     );
   default:
