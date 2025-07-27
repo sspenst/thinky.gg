@@ -17,23 +17,13 @@ import { AchievementModel, LevelModel, StatModel, UserConfigModel, UserModel } f
 import handler from '../../../pages/api/player-rank-stats';
 import { createAnotherGameConfig } from './helper';
 
-beforeAll(async () => {
-  await dbConnect({ ignoreInitializeLocalDb: true });
-});
-afterEach(() => {
-  jest.restoreAllMocks();
-});
-afterAll(async () => {
-  await dbDisconnect();
-});
-enableFetchMocks();
-
 let USER: User;
 let USER_B: User;
 
-describe('Testing player-rank-stats api', () => {
-  // Setup test data
-  test('Setup test users and levels', async () => {
+beforeAll(async () => {
+  await dbConnect({ ignoreInitializeLocalDb: true });
+  
+  // Setup test users and levels
     await Promise.all([
       LevelModel.insertMany([
         genTestLevel({
@@ -66,12 +56,36 @@ describe('Testing player-rank-stats api', () => {
       createAnotherGameConfig(TestId.USER, DEFAULT_GAME_ID),
       createAnotherGameConfig(TestId.USER_B, DEFAULT_GAME_ID),
     ]);
+    
+    // Update user configs to have calcLevelsCompletedCount > 0 so they count as active users
+    await Promise.all([
+      UserConfigModel.updateOne(
+        { userId: new Types.ObjectId(TestId.USER), gameId: DEFAULT_GAME_ID },
+        { $set: { calcLevelsCompletedCount: 1 } }
+      ),
+      UserConfigModel.updateOne(
+        { userId: new Types.ObjectId(TestId.USER_B), gameId: DEFAULT_GAME_ID },
+        { $set: { calcLevelsCompletedCount: 1 } }
+      ),
+    ]);
 
     [USER, USER_B] = await Promise.all([
       UserModel.findById(TestId.USER),
       UserModel.findById(TestId.USER_B)
     ]);
-  });
+});
+
+afterEach(() => {
+  jest.restoreAllMocks();
+});
+
+afterAll(async () => {
+  await dbDisconnect();
+});
+
+enableFetchMocks();
+
+describe('Testing player-rank-stats api', () => {
 
   test('GET without authentication should return 401', async () => {
     await testApiHandler({

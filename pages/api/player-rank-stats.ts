@@ -71,7 +71,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         userProgress,
         isUnlocked: userHasAchievement,
         count: statEntry?.count || 0,
-        percentile: statEntry ? Math.round((statEntry.count / totalActiveUsers) * 100) : 0
+        percentile: statEntry && totalActiveUsers > 0 ? Math.round((statEntry.count / totalActiveUsers) * 100) : 0
       };
     });
 
