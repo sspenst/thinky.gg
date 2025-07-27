@@ -23,13 +23,13 @@ const chapterConfig = {
     campaign: 'chapter1',
   },
   2: {
-    title: 'Chapter 2', 
+    title: 'Chapter 2',
     subtitle: 'Into the Depths',
     campaign: 'chapter2',
   },
   3: {
     title: 'Chapter 3',
-    subtitle: 'Brain Busters', 
+    subtitle: 'Brain Busters',
     campaign: 'chapter3',
   },
 };
@@ -150,11 +150,12 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 export default function ChapterPage({ enrichedCollections, reqUser, solvedLevels, totalLevels, chapterNumber }: ChapterPageProps) {
   const config = chapterConfig[chapterNumber as keyof typeof chapterConfig];
   const chapterUnlocked = reqUser.config?.chapterUnlocked ?? 1;
-  
+
   const getNextChapterHref = () => {
     if (chapterNumber < 3) {
       return `/chapter/${chapterNumber + 1}`;
     }
+
     return '/ranked';
   };
 
@@ -162,6 +163,7 @@ export default function ChapterPage({ enrichedCollections, reqUser, solvedLevels
     if (chapterNumber < 3 && chapterUnlocked <= chapterNumber) {
       return `Unlock Chapter ${chapterNumber + 1}`;
     }
+
     return undefined;
   };
 
@@ -224,8 +226,8 @@ export default function ChapterPage({ enrichedCollections, reqUser, solvedLevels
       
       {/* Show progress visualization for new users on their first chapter */}
       {chapterNumber === 1 && (reqUser.config?.calcLevelsSolvedCount ?? 0) < 5 && (
-        <div className="max-w-4xl mx-auto px-4 py-6">
-          <h2 className="text-2xl font-bold mb-4 text-center">Your Progress Journey</h2>
+        <div className='max-w-4xl mx-auto px-4 py-6'>
+          <h2 className='text-2xl font-bold mb-4 text-center'>Your Progress Journey</h2>
           <PlayerRankProgress />
         </div>
       )}

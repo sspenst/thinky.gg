@@ -163,6 +163,7 @@ function determineOptimalSendTime(user: UserWithDeviceAndActivity): Date {
     // If the optimal time is too far in the future (>12 hours), send within 3 hours instead
     // This prevents scheduling 22+ hours ahead when it's early morning and user is active at night
     const hoursUntilOptimal = (sendTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+
     if (hoursUntilOptimal > maxHoursAhead) {
       const randomMinutes = Math.floor(Math.random() * 180); // 0-180 minutes
 
