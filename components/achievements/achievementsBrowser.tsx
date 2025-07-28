@@ -2,7 +2,7 @@ import AchievementCategory from '@root/constants/achievements/achievementCategor
 import { AchievementCategoryMapping } from '@root/constants/achievements/achievementInfo';
 import AchievementType from '@root/constants/achievements/achievementType';
 import { GameId } from '@root/constants/GameId';
-import { Game } from '@root/constants/Games';
+import { Game, Games } from '@root/constants/Games';
 import { getAchievementCategoryDisplayName } from '@root/helpers/achievementCategoryDisplayNames';
 import { getRarityFromStats } from '@root/helpers/achievementRarity';
 import Achievement from '@root/models/db/achievement';
@@ -99,14 +99,23 @@ export default function AchievementsBrowser({
     const result: Record<string, Array<{ type: AchievementType; gameAchievements: Achievement[]; allGames: GameId[] }>> = {};
 
     categories.forEach(categoryKey => {
+      // Skip categories that aren't supported by the selected game (unless viewing all games)
+      if (selectedGame !== 'all') {
+        const selectedGameObj = Object.values(Games).find(g => g.id === selectedGame);
+        if (selectedGameObj && !selectedGameObj.achievementCategories.includes(categoryKey as AchievementCategory)) {
+          return; // Skip this category
+        }
+      }
       const categoryAchievements = AchievementCategoryMapping[categoryKey as keyof typeof AchievementCategoryMapping];
       const achievements = Object.keys(categoryAchievements).map(achievementType => {
         const userAchievementsForType = userAchievementMap.get(achievementType) || [];
 
-        // Get all games where this achievement exists (based on user achievements or all games for the category)
+        // Get all games where this achievement exists (only games that support this category)
         const allGamesForType = (categoryKey === 'SOCIAL' || categoryKey === 'FEATURE_EXPLORER')
           ? [GameId.THINKY] // Social and Feature Explorer achievements are THINKY-only
-          : Object.values(GameId).filter(gameId => gameId !== GameId.THINKY); // Other achievements exist in game-specific instances
+          : Object.values(Games)
+              .filter(game => game.achievementCategories.includes(categoryKey as AchievementCategory))
+              .map(game => game.id);
 
         return {
           type: achievementType as AchievementType,
@@ -198,10 +207,12 @@ export default function AchievementsBrowser({
         const achievementInfo = categoryAchievements[achievementType];
         const userAchievementsForType = userAchievementMap.get(achievementType) || [];
 
-        // Get all games where this achievement exists
+        // Get all games where this achievement exists (only games that support this category)
         const allGamesForType = (categoryKey === 'SOCIAL' || categoryKey === 'FEATURE_EXPLORER')
           ? [GameId.THINKY]
-          : Object.values(GameId).filter(gameId => gameId !== GameId.THINKY);
+          : Object.values(Games)
+              .filter(game => game.achievementCategories.includes(categoryKey as AchievementCategory))
+              .map(game => game.id);
 
         // Apply game filter
         if (selectedGame !== 'all' && !allGamesForType.includes(selectedGame)) {
@@ -239,10 +250,12 @@ export default function AchievementsBrowser({
         const achievementInfo = categoryAchievements[achievementType];
         const userAchievementsForType = userAchievementMap.get(achievementType) || [];
 
-        // Get all games where this achievement exists
+        // Get all games where this achievement exists (only games that support this category)
         const allGamesForType = (categoryKey === 'SOCIAL' || categoryKey === 'FEATURE_EXPLORER')
           ? [GameId.THINKY]
-          : Object.values(GameId).filter(gameId => gameId !== GameId.THINKY);
+          : Object.values(Games)
+              .filter(game => game.achievementCategories.includes(categoryKey as AchievementCategory))
+              .map(game => game.id);
 
         // Apply game filter
         if (selectedGame !== 'all' && !allGamesForType.includes(selectedGame)) {

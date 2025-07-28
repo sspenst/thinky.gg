@@ -1,3 +1,4 @@
+import AchievementCategory from '@root/constants/achievements/achievementCategory';
 import AchievementType from '@root/constants/achievements/achievementType';
 import { GameId } from '@root/constants/GameId';
 import { Games } from '@root/constants/Games';
@@ -52,11 +53,8 @@ export default function AchievementsDisplay({
           return true;
         }
 
-        if (selectedGame === GameId.THINKY) {
-          return category === 'SOCIAL' || category === 'FEATURE_EXPLORER';
-        }
-
-        return category !== 'SOCIAL' && category !== 'FEATURE_EXPLORER';
+        const gameInfo = Games[selectedGame];
+        return gameInfo.achievementCategories.includes(category as AchievementCategory);
       });
 
       if (!availableCategories.includes(selectedCategory)) {
@@ -65,14 +63,19 @@ export default function AchievementsDisplay({
     }
   }, [selectedGame, selectedCategory, totalAchievements]);
 
+  // Helper function to calculate total achievements for a specific game
+  const getTotalAchievementsForGame = (gameId: GameId) => {
+    const gameInfo = Games[gameId];
+    return gameInfo.achievementCategories.reduce((total, category) => {
+      return total + (totalAchievements[category] || 0);
+    }, 0);
+  };
+
   // Calculate total progress across all games
   const totalUnlockedCount = userAchievements.length;
-  const thinkyAchievementCount = (totalAchievements['SOCIAL'] || 0) + (totalAchievements['FEATURE_EXPLORER'] || 0);
-  const gameAchievementCount = Object.entries(totalAchievements)
-    .filter(([category]) => category !== 'SOCIAL' && category !== 'FEATURE_EXPLORER')
-    .reduce((sum, [, count]) => sum + count, 0);
-  const gameCount = Object.values(GameId).filter(gameId => gameId !== GameId.THINKY).length;
-  const totalAvailableCount = thinkyAchievementCount + (gameAchievementCount * gameCount);
+  const totalAvailableCount = Object.values(GameId).reduce((total, gameId) => {
+    return total + getTotalAchievementsForGame(gameId);
+  }, 0);
 
   // Calculate progress per game - put Thinky at the end
   const gameIds: GameId[] = Object.values(GameId).filter(id => id !== GameId.THINKY);
@@ -83,11 +86,7 @@ export default function AchievementsDisplay({
     const gameInfo = Games[gameId];
 
     // Calculate total achievements for this specific game
-    const totalForGame = gameId === GameId.THINKY
-      ? (totalAchievements['SOCIAL'] || 0) + (totalAchievements['FEATURE_EXPLORER'] || 0) // Social and Feature Explorer achievements for THINKY
-      : Object.entries(totalAchievements)
-        .filter(([category]) => category !== 'SOCIAL' && category !== 'FEATURE_EXPLORER') // All categories except THINKY-specific ones for games
-        .reduce((sum, [, count]) => sum + count, 0);
+    const totalForGame = getTotalAchievementsForGame(gameId);
 
     return {
       gameId,

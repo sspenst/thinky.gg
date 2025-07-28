@@ -21,7 +21,7 @@ export interface IAchievementInfo {
 export const AchievementCategoryMapping = {
   [AchievementCategory.SOCIAL]: AchievementRulesSocial,
   [AchievementCategory.FEATURE_EXPLORER]: AchievementRulesFeatureExplorer,
-  [AchievementCategory.PROGRESS]: { ...AchievementRulesProgress, ...AchievementRulesChapter },
+  [AchievementCategory.PROGRESS]: AchievementRulesProgress,
   [AchievementCategory.CREATOR]: AchievementRulesCreator,
   [AchievementCategory.SKILL]: AchievementRulesSkill,
   [AchievementCategory.REVIEWER]: AchievementRulesReviewer,

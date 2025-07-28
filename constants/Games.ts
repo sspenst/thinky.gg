@@ -56,6 +56,7 @@ export const Games: Record<GameId, Game> = {
       AchievementCategory.SKILL,
       AchievementCategory.REVIEWER,
       AchievementCategory.MULTIPLAYER,
+      AchievementCategory.CHAPTER_COMPLETION,
     ],
     allowMovableOnExit: false,
     baseUrl: process.env.NODE_ENV !== 'development' ? `https://pathology.${APP_DOMAIN}` : 'http://pathology.localhost:3000',
