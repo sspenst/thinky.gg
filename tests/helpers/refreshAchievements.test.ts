@@ -5,7 +5,7 @@ import GraphType from '@root/constants/graphType';
 import TestId from '@root/constants/testId';
 import { refreshAchievements } from '@root/helpers/refreshAchievements';
 import { getTokenCookieValue } from '@root/lib/getTokenCookie';
-import { AchievementModel, GraphModel, LevelModel, UserConfigModel, UserModel } from '@root/models/mongoose';
+import { AchievementModel, CollectionModel, GraphModel, LevelModel, UserConfigModel, UserModel } from '@root/models/mongoose';
 import { processQueueMessages } from '@root/pages/api/internal-jobs/worker';
 import socialShareHandler from '@root/pages/api/social-share/index';
 import { Types } from 'mongoose';
@@ -93,7 +93,7 @@ describe('helpers/refreshAchievements.ts', () => {
       { $unset: { avatarUpdatedAt: 1 } }
     );
 
-    await refreshAchievements(GameId.THINKY, new Types.ObjectId(TestId.USER), [AchievementCategory.SOCIAL]);
+    await refreshAchievements(GameId.THINKY, new Types.ObjectId(TestId.USER), [AchievementCategory.FEATURE_EXPLORER]);
     let achievements = await AchievementModel.find({ userId: TestId.USER }).lean();
 
     expect(achievements.some(a => a.type === AchievementType.UPLOAD_AVATAR)).toBe(false);
@@ -104,7 +104,7 @@ describe('helpers/refreshAchievements.ts', () => {
       { $set: { avatarUpdatedAt: Date.now() } }
     );
 
-    await refreshAchievements(GameId.THINKY, new Types.ObjectId(TestId.USER), [AchievementCategory.SOCIAL]);
+    await refreshAchievements(GameId.THINKY, new Types.ObjectId(TestId.USER), [AchievementCategory.FEATURE_EXPLORER]);
     achievements = await AchievementModel.find({ userId: TestId.USER }).lean();
 
     expect(achievements.some(a => a.type === AchievementType.UPLOAD_AVATAR)).toBe(true);
@@ -120,7 +120,7 @@ describe('helpers/refreshAchievements.ts', () => {
       { $unset: { bio: 1 } }
     );
 
-    await refreshAchievements(GameId.THINKY, new Types.ObjectId(TestId.USER), [AchievementCategory.SOCIAL]);
+    await refreshAchievements(GameId.THINKY, new Types.ObjectId(TestId.USER), [AchievementCategory.FEATURE_EXPLORER]);
     let achievements = await AchievementModel.find({ userId: TestId.USER }).lean();
 
     expect(achievements.some(a => a.type === AchievementType.UPDATE_BIO)).toBe(false);
@@ -131,7 +131,7 @@ describe('helpers/refreshAchievements.ts', () => {
       { $set: { bio: '' } }
     );
 
-    await refreshAchievements(GameId.THINKY, new Types.ObjectId(TestId.USER), [AchievementCategory.SOCIAL]);
+    await refreshAchievements(GameId.THINKY, new Types.ObjectId(TestId.USER), [AchievementCategory.FEATURE_EXPLORER]);
     achievements = await AchievementModel.find({ userId: TestId.USER }).lean();
 
     expect(achievements.some(a => a.type === AchievementType.UPDATE_BIO)).toBe(false);
@@ -142,7 +142,7 @@ describe('helpers/refreshAchievements.ts', () => {
       { $set: { bio: 'This is my bio!' } }
     );
 
-    await refreshAchievements(GameId.THINKY, new Types.ObjectId(TestId.USER), [AchievementCategory.SOCIAL]);
+    await refreshAchievements(GameId.THINKY, new Types.ObjectId(TestId.USER), [AchievementCategory.FEATURE_EXPLORER]);
     achievements = await AchievementModel.find({ userId: TestId.USER }).lean();
 
     expect(achievements.some(a => a.type === AchievementType.UPDATE_BIO)).toBe(true);
@@ -276,6 +276,75 @@ describe('helpers/refreshAchievements.ts', () => {
       });
 
       expect(socialAchievements).toHaveLength(1);
+    });
+  });
+
+  describe('FEATURE_EXPLORER achievements', () => {
+    beforeEach(async () => {
+      await AchievementModel.deleteMany({ userId: TestId.USER });
+      await CollectionModel.deleteMany({ userId: TestId.USER });
+    });
+
+    test('should award ADD_LEVEL_TO_COLLECTION achievement when user adds a level to collection', async () => {
+      // First ensure no achievement
+      await refreshAchievements(GameId.THINKY, new Types.ObjectId(TestId.USER), [AchievementCategory.FEATURE_EXPLORER]);
+      let achievements = await AchievementModel.find({ userId: TestId.USER, type: AchievementType.ADD_LEVEL_TO_COLLECTION }).lean();
+      expect(achievements).toHaveLength(0);
+
+      // Create a collection with a level
+      await CollectionModel.create({
+        _id: new Types.ObjectId(),
+        userId: TestId.USER,
+        name: 'My Collection',
+        slug: 'my-collection',
+        levels: [TestId.LEVEL],
+        gameId: GameId.PATHOLOGY,
+      });
+
+      // Refresh achievements
+      await refreshAchievements(GameId.THINKY, new Types.ObjectId(TestId.USER), [AchievementCategory.FEATURE_EXPLORER]);
+      achievements = await AchievementModel.find({ userId: TestId.USER, type: AchievementType.ADD_LEVEL_TO_COLLECTION }).lean();
+      
+      expect(achievements).toHaveLength(1);
+      expect(achievements[0].type).toBe(AchievementType.ADD_LEVEL_TO_COLLECTION);
+      expect(achievements[0].gameId).toBe(GameId.THINKY);
+    });
+
+    test('should not award ADD_LEVEL_TO_COLLECTION achievement when collection is empty', async () => {
+      // Create an empty collection
+      await CollectionModel.create({
+        _id: new Types.ObjectId(),
+        userId: TestId.USER,
+        name: 'Empty Collection',
+        slug: 'empty-collection',
+        levels: [],
+        gameId: GameId.PATHOLOGY,
+      });
+
+      // Refresh achievements
+      await refreshAchievements(GameId.THINKY, new Types.ObjectId(TestId.USER), [AchievementCategory.FEATURE_EXPLORER]);
+      const achievements = await AchievementModel.find({ userId: TestId.USER, type: AchievementType.ADD_LEVEL_TO_COLLECTION }).lean();
+      
+      expect(achievements).toHaveLength(0);
+    });
+
+    test('should not process FEATURE_EXPLORER achievements for non-THINKY games', async () => {
+      // Create a collection with a level
+      await CollectionModel.create({
+        _id: new Types.ObjectId(),
+        userId: TestId.USER,
+        name: 'My Collection',
+        slug: 'my-collection',
+        levels: [TestId.LEVEL],
+        gameId: GameId.PATHOLOGY,
+      });
+
+      // Try to refresh achievements for PATHOLOGY with FEATURE_EXPLORER category
+      // This should not create any achievements since FEATURE_EXPLORER is only for THINKY
+      await refreshAchievements(GameId.PATHOLOGY, new Types.ObjectId(TestId.USER), [AchievementCategory.FEATURE_EXPLORER]);
+      const achievements = await AchievementModel.find({ userId: TestId.USER, type: AchievementType.ADD_LEVEL_TO_COLLECTION }).lean();
+      
+      expect(achievements).toHaveLength(0);
     });
   });
 });

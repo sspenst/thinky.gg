@@ -51,6 +51,7 @@ enum AchievementType {
   UPLOAD_AVATAR = 'UPLOAD_AVATAR',
   UPDATE_BIO = 'UPDATE_BIO',
   SOCIAL_SHARE = 'SOCIAL_SHARE',
+  ADD_LEVEL_TO_COLLECTION = 'ADD_LEVEL_TO_COLLECTION',
 }
 
 export default AchievementType;

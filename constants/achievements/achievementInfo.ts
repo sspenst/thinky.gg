@@ -2,6 +2,7 @@ import { Game } from '../Games';
 import AchievementCategory from './achievementCategory';
 import AchievementRulesChapter from './AchievementRulesChapter';
 import AchievementRulesCreator from './AchievementRulesCreator';
+import AchievementRulesFeatureExplorer from './AchievementRulesFeatureExplorer';
 import AchievementRulesMultiplayer from './AchievementRulesMultiplayer';
 import AchievementRulesProgress from './AchievementRulesProgress';
 import AchievementRulesReviewer from './AchievementRulesReviewer';
@@ -19,6 +20,7 @@ export interface IAchievementInfo {
 
 export const AchievementCategoryMapping = {
   [AchievementCategory.SOCIAL]: AchievementRulesSocial,
+  [AchievementCategory.FEATURE_EXPLORER]: AchievementRulesFeatureExplorer,
   [AchievementCategory.PROGRESS]: { ...AchievementRulesProgress, ...AchievementRulesChapter },
   [AchievementCategory.CREATOR]: AchievementRulesCreator,
   [AchievementCategory.SKILL]: AchievementRulesSkill,

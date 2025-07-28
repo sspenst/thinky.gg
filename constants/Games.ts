@@ -18,7 +18,7 @@ export const APP_DOMAIN = process.env.NEXT_PUBLIC_APP_DOMAIN || 'thinky.gg';
 export const Games: Record<GameId, Game> = {
   [GameId.THINKY]: {
     id: GameId.THINKY,
-    achievementCategories: [AchievementCategory.SOCIAL],
+    achievementCategories: [AchievementCategory.SOCIAL, AchievementCategory.FEATURE_EXPLORER],
     allowMovableOnExit: false,
     baseUrl: process.env.NODE_ENV !== 'development' ? `https://${APP_DOMAIN}` : 'http://localhost:3000',
     defaultTheme: Theme.Dark,

@@ -99,7 +99,7 @@ export default withAuth({ PUT: {} }, async (req: NextApiRequestWithAuth, res: Ne
           ts: ts,
         } }),
       UserModel.updateOne({ _id: req.userId }, { $set: { avatarUpdatedAt: ts } }),
-      queueRefreshAchievements(GameId.THINKY, req.userId, [AchievementCategory.SOCIAL]),
+      queueRefreshAchievements(GameId.THINKY, req.userId, [AchievementCategory.FEATURE_EXPLORER]),
     ]);
 
     return res.status(200).send({ updated: true });

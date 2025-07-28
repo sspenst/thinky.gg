@@ -1,3 +1,5 @@
+import AchievementCategory from '@root/constants/achievements/achievementCategory';
+import { GameId } from '@root/constants/GameId';
 import { createNewLevelAddedToCollectionNotification } from '@root/helpers/notificationHelper';
 import Collection from '@root/models/db/collection';
 import type { NextApiResponse } from 'next';
@@ -5,6 +7,7 @@ import { ValidArray, ValidObjectId } from '../../../helpers/apiWrapper';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import { CollectionModel, LevelModel } from '../../../models/mongoose';
+import { queueRefreshAchievements } from '../internal-jobs/worker/queueFunctions';
 
 export default withAuth({
   PUT: {
@@ -88,6 +91,9 @@ export default withAuth({
   );
 
   await Promise.all(promises);
+
+  // Refresh achievements for the Feature Explorer category
+  await queueRefreshAchievements(GameId.THINKY, req.user._id, [AchievementCategory.FEATURE_EXPLORER]);
 
   return res.status(200).json(level);
 });

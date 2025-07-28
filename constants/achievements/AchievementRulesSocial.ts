@@ -58,26 +58,6 @@ AchievementRulesSocial[AchievementType.WELCOME] = {
     return hasWelcomed;
   },
 };
-AchievementRulesSocial[AchievementType.UPLOAD_AVATAR] = {
-  getDescription: () => 'Uploaded an avatar to personalize your profile',
-  name: 'Avatar Awakened',
-  emoji: '🖼️',
-  discordNotification: false,
-  secret: true,
-  unlocked: ({ user }) => {
-    return !!(user?.avatarUpdatedAt);
-  },
-};
-AchievementRulesSocial[AchievementType.UPDATE_BIO] = {
-  getDescription: () => 'Added a bio to your profile',
-  name: 'Autobiographer',
-  emoji: '✍️',
-  discordNotification: false,
-  secret: true,
-  unlocked: ({ user }) => {
-    return !!(user?.bio && user.bio.length > 0);
-  },
-};
 AchievementRulesSocial[AchievementType.SOCIAL_SHARE] = {
   getDescription: () => 'Shared a level to a social network',
   name: 'Social Sharer',

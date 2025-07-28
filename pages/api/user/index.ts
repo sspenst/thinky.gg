@@ -183,7 +183,7 @@ export default withAuth({
 
       // Queue achievement refresh if bio was updated
       if (bio !== undefined) {
-        await queueRefreshAchievements(GameId.THINKY, req.user._id, [AchievementCategory.SOCIAL]);
+        await queueRefreshAchievements(GameId.THINKY, req.user._id, [AchievementCategory.FEATURE_EXPLORER]);
       }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {

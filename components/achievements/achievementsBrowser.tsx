@@ -104,8 +104,8 @@ export default function AchievementsBrowser({
         const userAchievementsForType = userAchievementMap.get(achievementType) || [];
 
         // Get all games where this achievement exists (based on user achievements or all games for the category)
-        const allGamesForType = categoryKey === 'SOCIAL'
-          ? [GameId.THINKY] // Social achievements are THINKY-only
+        const allGamesForType = (categoryKey === 'SOCIAL' || categoryKey === 'FEATURE_EXPLORER')
+          ? [GameId.THINKY] // Social and Feature Explorer achievements are THINKY-only
           : Object.values(GameId).filter(gameId => gameId !== GameId.THINKY); // Other achievements exist in game-specific instances
 
         return {
@@ -199,7 +199,7 @@ export default function AchievementsBrowser({
         const userAchievementsForType = userAchievementMap.get(achievementType) || [];
 
         // Get all games where this achievement exists
-        const allGamesForType = categoryKey === 'SOCIAL'
+        const allGamesForType = (categoryKey === 'SOCIAL' || categoryKey === 'FEATURE_EXPLORER')
           ? [GameId.THINKY]
           : Object.values(GameId).filter(gameId => gameId !== GameId.THINKY);
 
@@ -227,6 +227,49 @@ export default function AchievementsBrowser({
     return count;
   }, [selectedCategory, selectedGame, userAchievementMap]);
 
+  // Count hidden achievements per category
+  const hiddenAchievementsByCategory = useMemo(() => {
+    const hiddenByCategory: Record<string, number> = {};
+
+    Object.keys(AchievementCategoryMapping).forEach(categoryKey => {
+      const categoryAchievements = AchievementCategoryMapping[categoryKey as keyof typeof AchievementCategoryMapping];
+      let count = 0;
+
+      Object.keys(categoryAchievements).forEach(achievementType => {
+        const achievementInfo = categoryAchievements[achievementType];
+        const userAchievementsForType = userAchievementMap.get(achievementType) || [];
+
+        // Get all games where this achievement exists
+        const allGamesForType = (categoryKey === 'SOCIAL' || categoryKey === 'FEATURE_EXPLORER')
+          ? [GameId.THINKY]
+          : Object.values(GameId).filter(gameId => gameId !== GameId.THINKY);
+
+        // Apply game filter
+        if (selectedGame !== 'all' && !allGamesForType.includes(selectedGame)) {
+          return;
+        }
+
+        // Check if it's a hidden achievement that's not unlocked
+        if (achievementInfo.secret) {
+          const isUnlockedInAnyGame = userAchievementsForType.length > 0;
+          const isUnlockedInSelectedGame = selectedGame === 'all'
+            ? isUnlockedInAnyGame
+            : userAchievementsForType.some(ach => ach.gameId === selectedGame);
+
+          const isUnlocked = selectedGame === 'all' ? isUnlockedInAnyGame : isUnlockedInSelectedGame;
+
+          if (!isUnlocked) {
+            count++;
+          }
+        }
+      });
+
+      hiddenByCategory[categoryKey] = count;
+    });
+
+    return hiddenByCategory;
+  }, [selectedGame, userAchievementMap]);
+
   const isEmpty = Object.keys(filteredCategories).length === 0;
 
   // Calculate category stats for navigation tiles
@@ -243,6 +286,7 @@ export default function AchievementsBrowser({
     // Add individual categories that have visible achievements
     const categoryKeyToNameAndIcon: Record<string, { name: string; icon: string }> = {
       [AchievementCategory.SOCIAL]: { name: getAchievementCategoryDisplayName(AchievementCategory.SOCIAL), icon: '👥' },
+      [AchievementCategory.FEATURE_EXPLORER]: { name: getAchievementCategoryDisplayName(AchievementCategory.FEATURE_EXPLORER), icon: '🧭' },
       [AchievementCategory.PROGRESS]: { name: getAchievementCategoryDisplayName(AchievementCategory.PROGRESS), icon: '📈' },
       [AchievementCategory.CREATOR]: { name: getAchievementCategoryDisplayName(AchievementCategory.CREATOR), icon: '🛠️' },
       [AchievementCategory.SKILL]: { name: getAchievementCategoryDisplayName(AchievementCategory.SKILL), icon: '🎯' },
@@ -462,6 +506,7 @@ export default function AchievementsBrowser({
                 achievements={achievements}
                 unlockedCount={unlockedCount}
                 totalCount={totalCount}
+                hiddenCount={hiddenAchievementsByCategory[categoryKey] || 0}
                 viewMode={viewMode}
                 game={game}
                 statsMap={statsMap}

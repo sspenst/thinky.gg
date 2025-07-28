@@ -14,7 +14,7 @@ import Level from '@root/models/db/level';
 import MultiplayerMatch from '@root/models/db/multiplayerMatch';
 import MultiplayerProfile from '@root/models/db/multiplayerProfile';
 import User from '@root/models/db/user';
-import { AchievementModel, CommentModel, GraphModel, LevelModel, MultiplayerMatchModel, MultiplayerProfileModel, ReviewModel, UserConfigModel, UserModel } from '@root/models/mongoose';
+import { AchievementModel, CollectionModel, CommentModel, GraphModel, LevelModel, MultiplayerMatchModel, MultiplayerProfileModel, ReviewModel, UserConfigModel, UserModel } from '@root/models/mongoose';
 import { Types } from 'mongoose';
 import queueDiscordWebhook from './discordWebhook';
 import { getRecordsByUserId } from './getRecordsByUserId';
@@ -50,6 +50,15 @@ const AchievementCategoryFetch = {
     });
 
     return { commentCount: commentCount, hasWelcomed: hasWelcomed, hasSharedToSocial: socialShareCount > 0, user: user };
+  },
+  // no game ID as this is a global for Thinky platform features
+  [AchievementCategory.FEATURE_EXPLORER]: async (_gameId: GameId, userId: Types.ObjectId) => {
+    const [hasAddedLevelToCollection, user] = await Promise.all([
+      CollectionModel.exists({ userId: userId, levels: { $exists: true, $ne: [] } }),
+      UserModel.findById(userId).select('+bio +avatarUpdatedAt').lean<User>()
+    ]);
+
+    return { hasAddedLevelToCollection: !!hasAddedLevelToCollection, user: user };
   },
   [AchievementCategory.PROGRESS]: async (gameId: GameId, userId: Types.ObjectId) => {
     const userConfig = await UserConfigModel.findOne({ userId: userId, gameId: gameId }).lean<User>();
@@ -151,7 +160,9 @@ export async function refreshAchievements(pGameId: GameId, userId: Types.ObjectI
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if (achievementInfo.unlocked(neededData as any)) {
-          achievementsCreatedPromises.push(createNewAchievement(gameId, achievementType as AchievementType, userId, achievementsCreatedPromises.length > 0)); // for each category, only send one push notification
+          // For global achievements (SOCIAL, FEATURE_EXPLORER), always use GameId.THINKY
+          const achievementGameId = (category === AchievementCategory.SOCIAL || category === AchievementCategory.FEATURE_EXPLORER) ? GameId.THINKY : gameId;
+          achievementsCreatedPromises.push(createNewAchievement(achievementGameId, achievementType as AchievementType, userId, achievementsCreatedPromises.length > 0)); // for each category, only send one push notification
 
           if (achievementInfo.discordNotification) {
           // Should be "<User.name> just unlocked <Achievement.name> achievement!" where <User.name> is a link to the user's profile and <Achievement.name> is a link to the achievement's page

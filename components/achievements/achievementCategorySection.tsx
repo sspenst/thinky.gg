@@ -14,6 +14,7 @@ interface AchievementCategorySectionProps {
   }>;
   unlockedCount: number;
   totalCount: number;
+  hiddenCount?: number;
   viewMode: 'grid' | 'list';
   game: Game;
   statsMap: Map<string, { count: number; firstEarned: Date; lastEarned: Date; gameId: GameId }>;
@@ -28,6 +29,7 @@ export default function AchievementCategorySection({
   achievements,
   unlockedCount,
   totalCount,
+  hiddenCount = 0,
   viewMode,
   game,
   statsMap,
@@ -56,6 +58,11 @@ export default function AchievementCategorySection({
           </div>
           <div className='text-sm opacity-75'>
             {unlockedCount} of {totalCount}
+            {hiddenCount > 0 && (
+              <span className='ml-2 text-xs opacity-60'>
+                (+{hiddenCount} hidden)
+              </span>
+            )}
           </div>
         </div>
         <div className='flex items-center gap-4'>
