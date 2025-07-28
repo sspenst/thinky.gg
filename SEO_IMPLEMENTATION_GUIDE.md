@@ -8,16 +8,16 @@ This guide provides a complete roadmap to improve Thinky.gg's search engine visi
 
 ## 🚨 CRITICAL IMPLEMENTATIONS (Immediate Priority)
 
-### 1. Gaming Schema Markup Implementation
+### 1. Gaming Structured Data Implementation
 **Status:** ✅ Implemented
-**File:** `components/schema/GameSchema.tsx`
+**File:** `components/seo/GameStructuredData.tsx`
 
 **Usage:**
 ```tsx
-import GameSchema from '@root/components/schema/GameSchema';
+import GameStructuredData from '@root/components/seo/GameStructuredData';
 
 // In your page components
-<GameSchema 
+<GameStructuredData 
   game={selectedGame} 
   level={currentLevel} 
   type="VideoGame" 
@@ -157,11 +157,11 @@ function GameComponent() {
 
 ### Phase 1: Core SEO (Week 1)
 - [x] Install web-vitals package
-- [x] Deploy GameSchema component
+- [x] Deploy GameStructuredData component
 - [x] Update robots.txt
 - [x] Integrate CoreWebVitalsOptimizer
 - [ ] Test Core Web Vitals scores
-- [ ] Verify schema markup in Google's Rich Results Test
+- [ ] Verify structured data markup in Google's Rich Results Test
 
 ### Phase 2: Content Optimization (Week 2)
 - [ ] Replace NextSeo with GamingSEO component on key pages
@@ -176,8 +176,8 @@ function GameComponent() {
 - [ ] Track conversion improvements
 
 ### Phase 4: Advanced Features (Week 4)
-- [ ] Add breadcrumb schema for level hierarchies
-- [ ] Implement FAQ schema for help pages
+- [ ] Add breadcrumb structured data for level hierarchies
+- [ ] Implement FAQ structured data for help pages
 - [ ] Create gaming-specific landing pages
 - [ ] Optimize internal linking structure
 
@@ -236,7 +236,7 @@ function GameComponent() {
 1. **Google Search Console**
    - Core Web Vitals report
    - Performance tracking
-   - Schema markup validation
+   - Structured data markup validation
 
 2. **Google Analytics**
    - Custom gaming events
@@ -263,7 +263,7 @@ function GameComponent() {
 - **Gaming Guides:** SEO-optimized strategy guides
 - **Level Showcases:** Featured level collections
 - **Community Content:** User-generated content optimization
-- **Video Content:** Gameplay videos with schema markup
+- **Video Content:** Gameplay videos with structured data markup
 
 ### Technical Enhancements
 - **Image Optimization:** WebP format with fallbacks
@@ -287,7 +287,7 @@ function GameComponent() {
    - Verify script loading order
    - Monitor third-party scripts
 
-2. **Schema Markup Errors**
+2. **Structured Data Markup Errors**
    - Use Google's Rich Results Test
    - Validate JSON-LD syntax
    - Check property requirements
@@ -303,7 +303,7 @@ function GameComponent() {
 npm run build && npm start
 # Check in Chrome DevTools > Lighthouse
 
-# Validate Schema
+# Validate Structured Data
 # Use: https://search.google.com/test/rich-results
 
 # Monitor Performance
@@ -321,7 +321,7 @@ npm run build && npm start
 - [ ] Technical SEO health
 
 ### Quarterly Updates
-- [ ] Schema markup updates
+- [ ] Structured data markup updates
 - [ ] Content strategy review
 - [ ] Competitor analysis
 - [ ] New feature SEO integration

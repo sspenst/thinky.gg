@@ -2,14 +2,14 @@ import Head from 'next/head';
 import { Game } from '@root/constants/Games';
 import Level from '@root/models/db/level';
 
-interface GameSchemaProps {
+interface GameStructuredDataProps {
   game: Game;
   level?: Level;
   type?: 'Game' | 'VideoGame';
 }
 
-export default function GameSchema({ game, level, type = 'VideoGame' }: GameSchemaProps) {
-  const gameSchema = {
+export default function GameStructuredData({ game, level, type = 'VideoGame' }: GameStructuredDataProps) {
+  const gameStructuredData = {
     '@context': 'https://schema.org',
     '@type': type,
     name: game.displayName,
@@ -49,7 +49,7 @@ export default function GameSchema({ game, level, type = 'VideoGame' }: GameSche
     } : undefined
   };
 
-  const levelSchema = level ? {
+  const levelStructuredData = level ? {
     '@context': 'https://schema.org',
     '@type': 'CreativeWork',
     '@id': `${game.baseUrl}/level/${level.slug}`,
@@ -76,14 +76,14 @@ export default function GameSchema({ game, level, type = 'VideoGame' }: GameSche
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(gameSchema)
+          __html: JSON.stringify(gameStructuredData)
         }}
       />
-      {levelSchema && (
+      {levelStructuredData && (
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify(levelSchema)
+            __html: JSON.stringify(levelStructuredData)
           }}
         />
       )}
