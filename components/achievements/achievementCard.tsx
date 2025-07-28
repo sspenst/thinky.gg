@@ -30,7 +30,7 @@ export default function AchievementCard({
   viewMode,
   statsMap,
   selectedGame,
-  userAchievementsByGame,
+  userAchievementsByGame: _userAchievementsByGame,
   totalActiveUsers,
 }: AchievementCardProps) {
   const achievementInfo = AchievementRulesCombined[achievementType];

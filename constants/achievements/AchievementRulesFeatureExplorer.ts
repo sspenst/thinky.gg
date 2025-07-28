@@ -1,4 +1,4 @@
-import CollectionModel from '@root/models/mongoose/CollectionModel';
+import CollectionModel from '@root/models/db/collection';
 import { Types } from 'mongoose';
 import User from '../../models/db/user';
 import { IAchievementInfo } from './achievementInfo';

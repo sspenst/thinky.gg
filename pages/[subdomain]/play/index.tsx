@@ -4,6 +4,7 @@ import PlayerRank from '@root/components/profile/playerRank';
 import PlayerRankProgress from '@root/components/progress/playerRankProgress';
 import { AppContext } from '@root/contexts/appContext';
 import { getGameFromId, getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
+import isPro from '@root/helpers/isPro';
 import useSWRHelper from '@root/hooks/useSWRHelper';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Image from 'next/image';
@@ -147,7 +148,7 @@ export default function PlayPage({ reqUser }: PlayPageProps) {
             </div>
           </div>
           {/* Thinky Pro Card */}
-          {!reqUser.isPro && (
+          {!isPro(reqUser) && (
             <div className='bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border'>
               <div className='text-center mb-4'>
                 <div className='w-12 h-12 bg-blue-100 dark:bg-blue-900/20 rounded-full flex items-center justify-center mx-auto mb-3'>
@@ -174,7 +175,7 @@ export default function PlayPage({ reqUser }: PlayPageProps) {
           )}
           
           {/* Achievement Card for Pro users */}
-          {reqUser.isPro && (
+          {isPro(reqUser) && (
             <div className='bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border'>
               <div className='text-center mb-4'>
                 <div className='w-12 h-12 bg-yellow-100 dark:bg-yellow-900/20 rounded-full flex items-center justify-center mx-auto mb-3'>

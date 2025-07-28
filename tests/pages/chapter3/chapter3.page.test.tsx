@@ -35,7 +35,7 @@ describe('pages/chapter3 page', () => {
     const ret = await getServerSideProps(context as GetServerSidePropsContext);
 
     expect(ret).toBeDefined();
-    expect(ret.props).toBeUndefined();
+    expect('redirect' in ret && ret.redirect).toBeDefined();
   });
   test('getServerSideProps logged in', async () => {
     // Created from initialize db file
