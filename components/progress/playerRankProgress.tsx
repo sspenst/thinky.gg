@@ -437,13 +437,13 @@ export default function PlayerRankProgress({ className = '', customCta }: Player
         <div className='mt-4 text-center'>
           <p className='text-slate-300 text-sm'>
             {highestAchievedIndex >= 8 ? (
-              <>🔥 Elite level achieved! You're among the puzzle masters!</>
+              <>🔥 Elite level achieved! You&apos;re among the puzzle masters!</>
             ) : highestAchievedIndex >= 5 ? (
-              <>🚀 Excellent progress! You're climbing toward mastery!</>
+              <>🚀 Excellent progress! You&apos;re climbing toward mastery!</>
             ) : highestAchievedIndex >= 3 ? (
               <>💪 Great work! Keep solving to reach new heights!</>
             ) : (
-              <>⭐ You're building skills! Each puzzle brings progress!</>
+              <>⭐ You&apos;re building skills! Each puzzle brings progress!</>
             )}
           </p>
         </div>
