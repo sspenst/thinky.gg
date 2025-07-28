@@ -1,6 +1,4 @@
 import UpsellFullAccount from '@root/components/home/upsellFullAccount';
-import LoadingSpinner from '@root/components/page/loadingSpinner';
-import PlayerRank from '@root/components/profile/playerRank';
 import PlayerRankProgress from '@root/components/progress/playerRankProgress';
 import { AppContext } from '@root/contexts/appContext';
 import { getGameFromId, getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
@@ -46,15 +44,14 @@ export default function PlayPage({ reqUser }: PlayPageProps) {
   const { game } = useContext(AppContext);
   const chapterUnlocked = reqUser.config?.chapterUnlocked ?? 1;
   const { data: profileDataFetched } = useSWRHelper<{levelsSolvedByDifficulty: {[key: string]: number}}>('/api/user/' + reqUser?._id + '?type=levelsSolvedByDifficulty', {}, {});
-  const levelsSolvedByDifficulty = profileDataFetched?.levelsSolvedByDifficulty;
+  const _levelsSolvedByDifficulty = profileDataFetched?.levelsSolvedByDifficulty;
 
   const solvedCount = reqUser.config?.calcLevelsSolvedCount ?? 0;
-  const isNewUser = solvedCount < 5;
+  const _isNewUser = solvedCount < 5;
 
   return (
     <Page title={'Play'}>
       <UpsellFullAccount user={reqUser} />
-      
       {/* Hero Section */}
       <div className='relative bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-900 overflow-hidden'>
         <div className='absolute inset-0 bg-grid-pattern opacity-5' />
@@ -173,7 +170,6 @@ export default function PlayPage({ reqUser }: PlayPageProps) {
               </div>
             </div>
           )}
-          
           {/* Achievement Card for Pro users */}
           {isPro(reqUser) && (
             <div className='bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border'>
