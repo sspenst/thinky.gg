@@ -49,7 +49,7 @@ describe('helpers/refreshAchievements.ts', () => {
       { upsert: true }
     );
 
-    await refreshAchievements(DEFAULT_GAME_ID, new Types.ObjectId(TestId.USER), [AchievementCategory.PROGRESS]);
+    await refreshAchievements(DEFAULT_GAME_ID, new Types.ObjectId(TestId.USER), [AchievementCategory.CHAPTER_COMPLETION]);
     let achievements = await AchievementModel.find({ userId: TestId.USER }).lean();
 
     expect(achievements.some(a => a.type === AchievementType.CHAPTER_1_COMPLETED)).toBe(true);
@@ -62,7 +62,7 @@ describe('helpers/refreshAchievements.ts', () => {
       { $set: { chapterUnlocked: 3 } }
     );
 
-    await refreshAchievements(DEFAULT_GAME_ID, new Types.ObjectId(TestId.USER), [AchievementCategory.PROGRESS]);
+    await refreshAchievements(DEFAULT_GAME_ID, new Types.ObjectId(TestId.USER), [AchievementCategory.CHAPTER_COMPLETION]);
     achievements = await AchievementModel.find({ userId: TestId.USER }).lean();
 
     expect(achievements.some(a => a.type === AchievementType.CHAPTER_1_COMPLETED)).toBe(true);
@@ -75,7 +75,7 @@ describe('helpers/refreshAchievements.ts', () => {
       { $set: { chapterUnlocked: 4 } }
     );
 
-    await refreshAchievements(DEFAULT_GAME_ID, new Types.ObjectId(TestId.USER), [AchievementCategory.PROGRESS]);
+    await refreshAchievements(DEFAULT_GAME_ID, new Types.ObjectId(TestId.USER), [AchievementCategory.CHAPTER_COMPLETION]);
     achievements = await AchievementModel.find({ userId: TestId.USER }).lean();
 
     expect(achievements.some(a => a.type === AchievementType.CHAPTER_1_COMPLETED)).toBe(true);
