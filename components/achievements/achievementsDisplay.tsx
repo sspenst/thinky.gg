@@ -54,6 +54,7 @@ export default function AchievementsDisplay({
         }
 
         const gameInfo = Games[selectedGame];
+
         return gameInfo.achievementCategories.includes(category as AchievementCategory);
       });
 
@@ -66,6 +67,7 @@ export default function AchievementsDisplay({
   // Helper function to calculate total achievements for a specific game
   const getTotalAchievementsForGame = (gameId: GameId) => {
     const gameInfo = Games[gameId];
+
     return gameInfo.achievementCategories.reduce((total, category) => {
       return total + (totalAchievements[category] || 0);
     }, 0);

@@ -162,6 +162,7 @@ export async function refreshAchievements(pGameId: GameId, userId: Types.ObjectI
         if (achievementInfo.unlocked(neededData as any)) {
           // For global achievements (SOCIAL, FEATURE_EXPLORER), always use GameId.THINKY
           const achievementGameId = (category === AchievementCategory.SOCIAL || category === AchievementCategory.FEATURE_EXPLORER) ? GameId.THINKY : gameId;
+
           achievementsCreatedPromises.push(createNewAchievement(achievementGameId, achievementType as AchievementType, userId, achievementsCreatedPromises.length > 0)); // for each category, only send one push notification
 
           if (achievementInfo.discordNotification) {

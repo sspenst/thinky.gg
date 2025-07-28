@@ -102,10 +102,12 @@ export default function AchievementsBrowser({
       // Skip categories that aren't supported by the selected game (unless viewing all games)
       if (selectedGame !== 'all') {
         const selectedGameObj = Object.values(Games).find(g => g.id === selectedGame);
+
         if (selectedGameObj && !selectedGameObj.achievementCategories.includes(categoryKey as AchievementCategory)) {
           return; // Skip this category
         }
       }
+
       const categoryAchievements = AchievementCategoryMapping[categoryKey as keyof typeof AchievementCategoryMapping];
       const achievements = Object.keys(categoryAchievements).map(achievementType => {
         const userAchievementsForType = userAchievementMap.get(achievementType) || [];
@@ -114,8 +116,8 @@ export default function AchievementsBrowser({
         const allGamesForType = (categoryKey === 'SOCIAL' || categoryKey === 'FEATURE_EXPLORER')
           ? [GameId.THINKY] // Social and Feature Explorer achievements are THINKY-only
           : Object.values(Games)
-              .filter(game => game.achievementCategories.includes(categoryKey as AchievementCategory))
-              .map(game => game.id);
+            .filter(game => game.achievementCategories.includes(categoryKey as AchievementCategory))
+            .map(game => game.id);
 
         return {
           type: achievementType as AchievementType,
@@ -211,8 +213,8 @@ export default function AchievementsBrowser({
         const allGamesForType = (categoryKey === 'SOCIAL' || categoryKey === 'FEATURE_EXPLORER')
           ? [GameId.THINKY]
           : Object.values(Games)
-              .filter(game => game.achievementCategories.includes(categoryKey as AchievementCategory))
-              .map(game => game.id);
+            .filter(game => game.achievementCategories.includes(categoryKey as AchievementCategory))
+            .map(game => game.id);
 
         // Apply game filter
         if (selectedGame !== 'all' && !allGamesForType.includes(selectedGame)) {
@@ -254,8 +256,8 @@ export default function AchievementsBrowser({
         const allGamesForType = (categoryKey === 'SOCIAL' || categoryKey === 'FEATURE_EXPLORER')
           ? [GameId.THINKY]
           : Object.values(Games)
-              .filter(game => game.achievementCategories.includes(categoryKey as AchievementCategory))
-              .map(game => game.id);
+            .filter(game => game.achievementCategories.includes(categoryKey as AchievementCategory))
+            .map(game => game.id);
 
         // Apply game filter
         if (selectedGame !== 'all' && !allGamesForType.includes(selectedGame)) {

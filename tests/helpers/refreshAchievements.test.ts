@@ -289,6 +289,7 @@ describe('helpers/refreshAchievements.ts', () => {
       // First ensure no achievement
       await refreshAchievements(GameId.THINKY, new Types.ObjectId(TestId.USER), [AchievementCategory.FEATURE_EXPLORER]);
       let achievements = await AchievementModel.find({ userId: TestId.USER, type: AchievementType.ADD_LEVEL_TO_COLLECTION }).lean();
+
       expect(achievements).toHaveLength(0);
 
       // Create a collection with a level
@@ -304,7 +305,7 @@ describe('helpers/refreshAchievements.ts', () => {
       // Refresh achievements
       await refreshAchievements(GameId.THINKY, new Types.ObjectId(TestId.USER), [AchievementCategory.FEATURE_EXPLORER]);
       achievements = await AchievementModel.find({ userId: TestId.USER, type: AchievementType.ADD_LEVEL_TO_COLLECTION }).lean();
-      
+
       expect(achievements).toHaveLength(1);
       expect(achievements[0].type).toBe(AchievementType.ADD_LEVEL_TO_COLLECTION);
       expect(achievements[0].gameId).toBe(GameId.THINKY);
@@ -324,7 +325,7 @@ describe('helpers/refreshAchievements.ts', () => {
       // Refresh achievements
       await refreshAchievements(GameId.THINKY, new Types.ObjectId(TestId.USER), [AchievementCategory.FEATURE_EXPLORER]);
       const achievements = await AchievementModel.find({ userId: TestId.USER, type: AchievementType.ADD_LEVEL_TO_COLLECTION }).lean();
-      
+
       expect(achievements).toHaveLength(0);
     });
 
@@ -343,7 +344,7 @@ describe('helpers/refreshAchievements.ts', () => {
       // This should not create any achievements since FEATURE_EXPLORER is only for THINKY
       await refreshAchievements(GameId.PATHOLOGY, new Types.ObjectId(TestId.USER), [AchievementCategory.FEATURE_EXPLORER]);
       const achievements = await AchievementModel.find({ userId: TestId.USER, type: AchievementType.ADD_LEVEL_TO_COLLECTION }).lean();
-      
+
       expect(achievements).toHaveLength(0);
     });
   });
