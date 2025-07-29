@@ -27,7 +27,6 @@ export default function UsernameField({
   required = false,
   labelClassName = 'text-sm font-medium'
 }: UsernameFieldProps) {
-
   return (
     <div>
       <div className='flex justify-between gap-2 flex-wrap mb-2'>

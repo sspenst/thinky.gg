@@ -29,6 +29,7 @@ export function useUsernameValidation() {
 
     if (!valid) {
       setIsExistsLoading(false);
+
       return;
     }
 
@@ -38,6 +39,7 @@ export function useUsernameValidation() {
 
   const handleUsernameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>, setValue: (value: string) => void) => {
     const newUserName = e.target.value;
+
     setValue(newUserName);
     validateUsername(newUserName);
   }, [validateUsername]);

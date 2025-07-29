@@ -17,13 +17,13 @@ import { TimerUtil } from '../../helpers/getTs';
 import Control from '../../models/control';
 import Level from '../../models/db/level';
 import Position from '../../models/position';
+import SteppedUsernameSelector from '../forms/steppedUsernameSelector';
 import BasicLayout from '../level/basicLayout';
 import Controls from '../level/controls';
 import GameRefactored from '../level/game-refactored';
 import { dropConfetti } from '../page/confetti';
 import Page from '../page/page';
 import DismissToast from '../toasts/dismissToast';
-import SteppedUsernameSelector from '../forms/steppedUsernameSelector';
 
 interface Tooltip {
   canClose?: boolean;
@@ -92,7 +92,6 @@ export default function TutorialPathology({ recaptchaPublicKey }: TutorialPathol
   const [showRecaptcha, setShowRecaptcha] = useState(false);
   const [recaptchaToken, setRecaptchaToken] = useState<string>('');
   const recaptchaRef = useRef<ReCAPTCHA>(null);
-  
 
   const LEVEL_1 = '000000\n040000\n000000\n000030\n000000';
   const WALL_INTRO = '00000\n00100\n40100\n00103\n00000';
@@ -104,7 +103,6 @@ export default function TutorialPathology({ recaptchaPublicKey }: TutorialPathol
   const RESTRICTED_MOVABLES_EXPLAIN = '4010010\n070C000\n0010013';
   const HOLES_INTRO = '000010\n080053\n000010\n004011';
 
-
   // Inline signup function
   const handleInlineSignup = useCallback(async () => {
     if (!username || !email || !password) return;
@@ -113,11 +111,13 @@ export default function TutorialPathology({ recaptchaPublicKey }: TutorialPathol
     if (recaptchaPublicKey) {
       if (!showRecaptcha) {
         setShowRecaptcha(true);
+
         return;
       }
 
       if (!recaptchaToken) {
         toast.error('Please complete the recaptcha');
+
         return;
       }
 
@@ -159,11 +159,12 @@ export default function TutorialPathology({ recaptchaPublicKey }: TutorialPathol
         toast.dismiss();
         toast.success('Account created! Welcome to Pathology!');
         mutateUser();
-        
+
         // Redirect to play page after successful signup
         window.location.href = '/play';
       } else {
         const errorData = await response.json();
+
         toast.dismiss();
         toast.error(errorData.error || 'Failed to create account');
       }
@@ -930,6 +931,7 @@ export default function TutorialPathology({ recaptchaPublicKey }: TutorialPathol
       </div>,
       isPrevButtonDisabled,
     );
+
     controls.push(mutedPrevControl);
   }
 
@@ -946,6 +948,7 @@ export default function TutorialPathology({ recaptchaPublicKey }: TutorialPathol
       'restart',
       () => {
         setTutorialStepIndex(0);
+
         return;
       },
       <button onClick={() => setTutorialStepIndex(0)} className='opacity-40 text-xs'>

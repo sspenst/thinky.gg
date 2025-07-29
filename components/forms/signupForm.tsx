@@ -3,7 +3,7 @@ import { blueButton } from '@root/helpers/className';
 import classNames from 'classnames';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import ReCAPTCHA from 'react-google-recaptcha';
 import toast from 'react-hot-toast';
 import { useSWRConfig } from 'swr';
@@ -40,7 +40,12 @@ export default function SignupForm({ recaptchaPublicKey }: SignupFormProps) {
     googleAvatarUrl?: string;
   } | null>(null);
 
-
+  const {
+    isValidUsername,
+    usernameExists,
+    isExistsLoading,
+    handleUsernameChange
+  } = useUsernameValidation();
 
   // Handle OAuth temporary data from URL parameters
   useEffect(() => {
@@ -210,7 +215,6 @@ export default function SignupForm({ recaptchaPublicKey }: SignupFormProps) {
       toast.error(errorMessage);
     });
   }
-
 
   function handleOAuthSignup(provider: 'discord' | 'google') {
     // Check if we're in a mobile WebView (React Native app)

@@ -356,7 +356,7 @@ export default function PlayerRankProgress({ className = '', customCta }: Player
                         if (rankPos.isNewb) {
                           return {
                             href: currentPath.startsWith('/chapter/1') ? '/chapter/1?continue=true' : '/chapter/1',
-                            text: currentPath.startsWith('/chapter/1') ? 'Continue Playing' : 'Start Chapter 1'
+                            text: currentPath.startsWith('/chapter/1') ? 'Up Next' : 'Start Chapter 1'
                           };
                         }
 
@@ -374,7 +374,7 @@ export default function PlayerRankProgress({ className = '', customCta }: Player
 
                         return {
                           href: isContinuePlaying ? `/chapter/${chapterUnlocked}?continue=true` : `/chapter/${chapterUnlocked}`,
-                          text: isContinuePlaying ? 'Continue Playing' : `Continue Chapter ${chapterUnlocked}`
+                          text: isContinuePlaying ? 'Up Next' : `Continue Chapter ${chapterUnlocked}`
                         };
                       };
 
