@@ -1,7 +1,9 @@
 import UpsellFullAccount from '@root/components/home/upsellFullAccount';
 import PlayerRankProgress from '@root/components/progress/playerRankProgress';
 import AchievementCategory from '@root/constants/achievements/achievementCategory';
+import { skillRequirements } from '@root/constants/achievements/AchievementRulesSkill';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
+import { getDifficultyRollingSum } from '@root/helpers/playerRankHelper';
 import { refreshAchievements } from '@root/helpers/refreshAchievements';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Link from 'next/link';
@@ -12,6 +14,8 @@ import getCampaignProps, { CampaignProps } from '../../../../helpers/getCampaign
 import { getUserFromToken } from '../../../../lib/withAuth';
 import { EnrichedLevel } from '../../../../models/db/level';
 import { UserConfigModel } from '../../../../models/mongoose';
+import { difficultyList } from '../../../../components/formatted/formattedDifficulty';
+import useSWRHelper from '@root/hooks/useSWRHelper';
 
 interface ChapterPageProps extends CampaignProps {
   chapterNumber: number;
@@ -188,9 +192,44 @@ function findFirstUnsolvedLevel(enrichedCollections: any[]): EnrichedLevel | nul
   return null;
 }
 
+interface SkillAchievement {
+  achievementType: string;
+  difficultyIndex: number;
+  requirement: number;
+  userProgress: number;
+  isUnlocked: boolean;
+  count: number;
+  percentile: number;
+}
+
+interface PlayerRankProgressData {
+  skillAchievements: SkillAchievement[];
+  totalActiveUsers: number;
+}
+
+function getCurrentRankFromData(rankData: PlayerRankProgressData | undefined) {
+  if (!rankData) {
+    return { name: 'Loading...', emoji: '⏳' };
+  }
+
+  // Find highest achieved rank (same logic as PlayerRankProgress)
+  const achievedRanks = rankData.skillAchievements.filter(ach => ach.isUnlocked);
+  const highestAchievedIndex = achievedRanks.length > 0 ?
+    Math.max(...achievedRanks.map(ach => ach.difficultyIndex)) : 0;
+
+  if (highestAchievedIndex === 0) {
+    return { name: 'Newb', emoji: '🆕' };
+  }
+
+  const rank = difficultyList[highestAchievedIndex];
+  return { name: rank.name, emoji: rank.emoji };
+}
+
 export default function ChapterPage({ enrichedCollections, reqUser, solvedLevels, totalLevels, chapterNumber }: ChapterPageProps) {
+  const { data: rankData } = useSWRHelper<PlayerRankProgressData>('/api/player-rank-stats');
   const config = chapterConfig[chapterNumber as keyof typeof chapterConfig];
   const chapterUnlocked = reqUser.config?.chapterUnlocked ?? 1;
+  const currentRank = getCurrentRankFromData(rankData);
 
   const getNextChapterHref = () => {
     if (chapterNumber < 3) {
@@ -235,43 +274,222 @@ export default function ChapterPage({ enrichedCollections, reqUser, solvedLevels
     <Page folders={[new LinkInfo('Play', '/play')]} title={config.title}>
       <UpsellFullAccount user={reqUser} />
       
-      {/* Chapter Hero Section */}
-      <div className='relative bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-900'>
-        <div className='max-w-6xl mx-auto px-4 py-8'>
-          <div className='text-center mb-6'>
-            <h1 className='font-bold text-3xl lg:text-4xl mb-2 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent'>
-              {config.title}
-            </h1>
-            <p className='text-xl text-gray-600 dark:text-gray-300 mb-4'>
-              {config.subtitle}
-            </p>
-            
-            {/* Progress Stats */}
-            <div className='flex justify-center gap-6 text-sm'>
-              <div className='bg-white dark:bg-gray-800 rounded-lg px-4 py-2 shadow'>
-                <div className='font-bold text-blue-600'>{solvedLevels}</div>
-                <div className='text-gray-600 dark:text-gray-300'>Solved</div>
+      {/* Game World Map Style Header */}
+      <div className='relative min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 overflow-hidden'>
+        {/* Animated Star Field Background with Progress Constellations */}
+        <div className='absolute inset-0'>
+          {/* Regular stars */}
+          {[...Array(40)].map((_, i) => (
+            <div
+              key={i}
+              className='absolute bg-white rounded-full animate-pulse'
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+                width: `${Math.random() * 3 + 1}px`,
+                height: `${Math.random() * 3 + 1}px`,
+                animationDelay: `${Math.random() * 3}s`,
+                animationDuration: `${Math.random() * 2 + 1}s`,
+              }}
+            />
+          ))}
+          
+          {/* Progress Constellation - represents completed levels */}
+          {[...Array(Math.min(solvedLevels, 12))].map((_, i) => (
+            <div
+              key={`progress-star-${i}`}
+              className='absolute bg-green-400 rounded-full animate-pulse'
+              style={{
+                left: `${15 + (i % 4) * 20}%`,
+                top: `${20 + Math.floor(i / 4) * 15}%`,
+                width: '4px',
+                height: '4px',
+                animationDelay: `${i * 0.2}s`,
+                animationDuration: '2s',
+                boxShadow: '0 0 8px rgba(34, 197, 94, 0.6)',
+              }}
+            />
+          ))}
+          
+          {/* Achievement Constellation - special bright stars for major milestones */}
+          {chapterNumber === 1 && (reqUser.config?.calcLevelsSolvedCount ?? 0) >= 5 && (
+            <div
+              className='absolute bg-yellow-400 rounded-full animate-pulse'
+              style={{
+                left: '85%',
+                top: '25%',
+                width: '6px',
+                height: '6px',
+                animationDuration: '1.5s',
+                boxShadow: '0 0 12px rgba(250, 204, 21, 0.8)',
+              }}
+            />
+          )}
+          
+          {/* Chapter completion constellation */}
+          {solvedLevels === totalLevels && (
+            <div
+              className='absolute bg-purple-400 rounded-full animate-bounce'
+              style={{
+                left: '80%',
+                top: '15%',
+                width: '8px',
+                height: '8px',
+                animationDuration: '2s',
+                boxShadow: '0 0 16px rgba(168, 85, 247, 0.9)',
+              }}
+            />
+          )}
+          
+          {/* Floating Current Rank Display */}
+          <div className='absolute top-4 sm:top-6 left-1/2 transform -translate-x-1/2'>
+            <div className='bg-black/20 backdrop-blur-sm border border-white/20 rounded-xl px-4 py-3 sm:px-6 sm:py-4 text-white text-center'>
+              <div className='text-xs opacity-70 mb-2'>CURRENT RANK</div>
+              <div className='flex items-center justify-center gap-2 mb-1'>
+                <span className='text-lg sm:text-2xl'>{currentRank.emoji}</span>
+                <span className='text-lg sm:text-xl font-black bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent'>
+                  {currentRank.name}
+                </span>
               </div>
-              <div className='bg-white dark:bg-gray-800 rounded-lg px-4 py-2 shadow'>
-                <div className='font-bold text-purple-600'>{totalLevels}</div>
-                <div className='text-gray-600 dark:text-gray-300'>Total</div>
-              </div>
-              <div className='bg-white dark:bg-gray-800 rounded-lg px-4 py-2 shadow'>
-                <div className='font-bold text-green-600'>{Math.round((solvedLevels / totalLevels) * 100)}%</div>
-                <div className='text-gray-600 dark:text-gray-300'>Complete</div>
+              {rankData && (
+                <div className='text-xs opacity-60'>
+                  {(() => {
+                    const achievedRanks = rankData.skillAchievements.filter(ach => ach.isUnlocked);
+                    const highestAchievedIndex = achievedRanks.length > 0 ?
+                      Math.max(...achievedRanks.map(ach => ach.difficultyIndex)) : 0;
+                    
+                    if (highestAchievedIndex === 0) {
+                      return 'Start solving to earn your first rank!';
+                    }
+                    
+                    const currentRankAch = rankData.skillAchievements.find(ach => ach.difficultyIndex === highestAchievedIndex);
+                    return currentRankAch ? `Top ${currentRankAch.percentile}% of players` : 'Ranked player';
+                  })()}
+                </div>
+              )}
+            </div>
+          </div>
+          
+          {/* Floating Chapter Progress */}
+          <div className='absolute bottom-24 left-4 sm:bottom-32 sm:left-6 lg:bottom-40 lg:left-12'>
+            <div className='bg-black/20 backdrop-blur-sm border border-white/20 rounded-xl px-3 py-2 sm:px-4 sm:py-3 text-white'>
+              <div className='text-xs opacity-70 mb-1'>CHAPTER {chapterNumber}</div>
+              <div className='text-sm sm:text-lg font-black bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent'>
+                {Math.round((solvedLevels / totalLevels) * 100)}% Complete
               </div>
             </div>
           </div>
+          
+          {/* Floating Next Chapter Info */}
+          {solvedLevels < totalLevels && (
+            <div className='absolute bottom-24 right-4 sm:bottom-32 sm:right-6 lg:bottom-40 lg:right-12'>
+              <div className='bg-black/20 backdrop-blur-sm border border-white/20 rounded-xl px-3 py-2 sm:px-4 sm:py-3 text-white text-right'>
+                <div className='text-xs opacity-70 mb-1'>TO NEXT CHAPTER</div>
+                <div className='text-sm sm:text-lg font-black bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent'>
+                  {totalLevels - solvedLevels} levels
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+        
+        {/* Floating Geometric Shapes */}
+        <div className='absolute inset-0 opacity-10'>
+          <div className='absolute top-20 left-10 w-32 h-32 border-4 border-cyan-400 transform rotate-45 animate-spin' style={{animationDuration: '20s'}}></div>
+          <div className='absolute top-40 right-20 w-24 h-24 bg-gradient-to-r from-purple-500 to-pink-500 transform rotate-12 animate-bounce' style={{animationDelay: '1s'}}></div>
+          <div className='absolute bottom-32 left-1/4 w-16 h-16 border-4 border-yellow-400 rounded-full animate-pulse' style={{animationDelay: '2s'}}></div>
+          <div className='absolute bottom-20 right-1/3 w-20 h-20 bg-gradient-to-r from-blue-500 to-green-500 transform -rotate-12 animate-bounce' style={{animationDelay: '1.5s'}}></div>
+        </div>
+        
+        <div className='relative z-10 flex flex-col items-center justify-center min-h-screen px-4 py-8'>
+          {/* Chapter Title */}
+          <div className='mb-8 sm:mb-10'>
+            <div className='text-yellow-400 font-black text-2xl sm:text-3xl text-center'>
+              {config.title}
+            </div>
+          </div>
+          
+          {/* Dramatic Title */}
+          <h1 className='text-4xl sm:text-6xl lg:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 mb-6 text-center leading-tight px-2'>
+            {config.subtitle}
+          </h1>
+          
+          {/* Epic Progress Ring */}
+          <div className='relative mb-8 sm:mb-12'>
+            <svg className='w-48 h-48 sm:w-64 sm:h-64 transform -rotate-90' viewBox='0 0 256 256'>
+              {/* Background ring */}
+              <circle
+                cx='128'
+                cy='128'
+                r='112'
+                fill='none'
+                stroke='rgba(255,255,255,0.1)'
+                strokeWidth='8'
+              />
+              {/* Progress ring */}
+              <circle
+                cx='128'
+                cy='128'
+                r='112'
+                fill='none'
+                stroke='url(#progressGradient)'
+                strokeWidth='8'
+                strokeLinecap='round'
+                strokeDasharray={`${2 * Math.PI * 112}`}
+                strokeDashoffset={`${2 * Math.PI * 112 * (1 - solvedLevels / totalLevels)}`}
+                className='transition-all duration-2000 ease-out'
+              />
+              <defs>
+                <linearGradient id='progressGradient' x1='0%' y1='0%' x2='100%' y2='100%'>
+                  <stop offset='0%' stopColor='#06b6d4' />
+                  <stop offset='50%' stopColor='#8b5cf6' />
+                  <stop offset='100%' stopColor='#ec4899' />
+                </linearGradient>
+              </defs>
+            </svg>
+            
+            {/* Center content */}
+            <div className='absolute inset-0 flex flex-col items-center justify-center'>
+              <div className='text-3xl sm:text-5xl font-black text-white mb-2'>{Math.round((solvedLevels / totalLevels) * 100)}%</div>
+              <div className='text-sm sm:text-lg text-gray-300 font-bold'>{solvedLevels}/{totalLevels}</div>
+              <div className='text-xs sm:text-sm text-gray-400'>COMPLETE</div>
+            </div>
+          </div>
+          
+          {/* Action Buttons */}
+          <div className='flex flex-col sm:flex-row gap-4 sm:gap-6 mb-8 sm:mb-12 items-center justify-center'>
+            {solvedLevels < totalLevels && (
+              <Link
+                href={`/chapter/${chapterNumber}?continue=true`}
+                className='group relative overflow-hidden bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-black py-4 sm:py-6 px-8 sm:px-12 rounded-2xl shadow-2xl transform hover:scale-105 transition-all duration-300'
+              >
+                <div className='absolute inset-0 bg-gradient-to-r from-white to-transparent opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-transform duration-700'></div>
+                <div className='relative flex items-center gap-3 sm:gap-4 justify-center'>
+                  <div className='text-2xl sm:text-3xl'>⚡</div>
+                  <div className='text-center'>
+                    <div className='text-xl sm:text-2xl'>CONTINUE</div>
+                    <div className='text-xs sm:text-sm opacity-80'>Resume Journey</div>
+                  </div>
+                </div>
+              </Link>
+            )}
+            
+            <Link
+              href='/play'
+              className='group relative overflow-hidden bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-black py-4 sm:py-6 px-8 sm:px-12 rounded-2xl shadow-2xl transform hover:scale-105 transition-all duration-300'
+            >
+              <div className='absolute inset-0 bg-gradient-to-r from-white to-transparent opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-transform duration-700'></div>
+              <div className='relative flex items-center gap-3 sm:gap-4 justify-center'>
+                <div className='text-2xl sm:text-3xl'>🏠</div>
+                <div className='text-center'>
+                  <div className='text-xl sm:text-2xl'>EXPLORE</div>
+                  <div className='text-xs sm:text-sm opacity-80'>All Chapters</div>
+                </div>
+              </div>
+            </Link>
+          </div>
         </div>
       </div>
-      
-      {/* Show progress visualization for new users on their first chapter */}
-      {chapterNumber === 1 && (reqUser.config?.calcLevelsSolvedCount ?? 0) < 5 && (
-        <div className='max-w-4xl mx-auto px-4 py-6'>
-          <h2 className='text-2xl font-bold mb-4 text-center'>Your Progress Journey</h2>
-          <PlayerRankProgress />
-        </div>
-      )}
       
       <div className='max-w-6xl mx-auto px-4'>
         <FormattedCampaign
