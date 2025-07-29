@@ -406,8 +406,7 @@ export default function ChapterPage({ enrichedCollections, reqUser, solvedLevels
         </div>
         
         {/* Bottom Gradient Overlay for smooth transition */}
-        <div className='absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-indigo-900 via-purple-900/50 to-transparent z-5'></div>
-        
+        <div className='absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-indigo-900 via-purple-900/50 to-transparent z-5' />
         <div className='relative z-10 flex flex-col items-center justify-center min-h-screen px-4 py-8'>
           {/* Chapter Title */}
           <div className='mb-8 sm:mb-10'>
