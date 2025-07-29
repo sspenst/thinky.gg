@@ -343,33 +343,35 @@ export default function ChapterPage({ enrichedCollections, reqUser, solvedLevels
           )}
           
           {/* Floating Current Rank Display */}
-          <div className='absolute top-4 sm:top-6 left-1/2 transform -translate-x-1/2'>
-            <div className='bg-black/20 backdrop-blur-sm border border-white/20 rounded-xl px-4 py-3 sm:px-6 sm:py-4 text-white text-center'>
-              <div className='text-xs opacity-70 mb-2'>CURRENT RANK</div>
-              <div className='flex items-center justify-center gap-2 mb-1'>
-                <span className='text-lg sm:text-2xl'>{currentRank.emoji}</span>
-                <span className='text-lg sm:text-xl font-black bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent'>
-                  {currentRank.name}
-                </span>
-              </div>
-              {rankData && (
-                <div className='text-xs opacity-60'>
-                  {(() => {
-                    const achievedRanks = rankData.skillAchievements.filter(ach => ach.isUnlocked);
-                    const highestAchievedIndex = achievedRanks.length > 0 ?
-                      Math.max(...achievedRanks.map(ach => ach.difficultyIndex)) : 0;
-
-                    if (highestAchievedIndex === 0) {
-                      return 'Start solving to earn your first rank!';
-                    }
-
-                    const currentRankAch = rankData.skillAchievements.find(ach => ach.difficultyIndex === highestAchievedIndex);
-
-                    return currentRankAch ? `Top ${currentRankAch.percentile}% of players` : 'Ranked player';
-                  })()}
+          <div className='absolute top-4 sm:top-6 left-1/2 transform -translate-x-1/2 z-20'>
+            <Link href='/achievements#category-LEVEL_COMPLETION' className='block hover:scale-105 transition-transform duration-300'>
+              <div className='bg-black/20 backdrop-blur-sm border border-white/20 rounded-xl px-4 py-3 sm:px-6 sm:py-4 text-white text-center cursor-pointer hover:bg-black/30 transition-colors duration-300'>
+                <div className='text-xs opacity-70 mb-2'>CURRENT RANK</div>
+                <div className='flex items-center justify-center gap-2 mb-1'>
+                  <span className='text-lg sm:text-2xl'>{currentRank.emoji}</span>
+                  <span className='text-lg sm:text-xl font-black bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent'>
+                    {currentRank.name}
+                  </span>
                 </div>
-              )}
-            </div>
+                {rankData && (
+                  <div className='text-xs opacity-60'>
+                    {(() => {
+                      const achievedRanks = rankData.skillAchievements.filter(ach => ach.isUnlocked);
+                      const highestAchievedIndex = achievedRanks.length > 0 ?
+                        Math.max(...achievedRanks.map(ach => ach.difficultyIndex)) : 0;
+
+                      if (highestAchievedIndex === 0) {
+                        return 'Start solving to earn your first rank!';
+                      }
+
+                      const currentRankAch = rankData.skillAchievements.find(ach => ach.difficultyIndex === highestAchievedIndex);
+
+                      return currentRankAch ? `Top ${currentRankAch.percentile}% of players` : 'Ranked player';
+                    })()}
+                  </div>
+                )}
+              </div>
+            </Link>
           </div>
           
           {/* Floating Chapter Progress */}

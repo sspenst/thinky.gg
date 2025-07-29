@@ -311,25 +311,27 @@ export default function PlayerRankProgress({ className = '', customCta }: Player
                       {rankPos.rank.emoji}
                     </div>
                     <div className='flex-1'>
-                      <div className={`font-semibold text-sm ${
-                        rankPos.isCurrent
-                          ? 'text-blue-200'
-                          : rankPos.isAchieved
-                            ? 'text-emerald-200'
-                            : rankPos.isNext
-                              ? 'text-slate-300'
-                              : 'text-slate-500'
-                      }`}>
-                        {rankPos.rank.name}
-                      </div>
-                      <div className='text-xs text-slate-500'>
-                        {rankPos.rank.description}
-                      </div>
-                      {rankPos.percentile > 0 && (
-                        <div className='text-xs text-slate-400 mt-1'>
-                            Only {rankPos.percentile.toFixed(1)}% of players have achieved this rank
+                      <Link href='/achievements#category-LEVEL_COMPLETION' className='block hover:opacity-80 transition-opacity'>
+                        <div className={`font-semibold text-sm ${
+                          rankPos.isCurrent
+                            ? 'text-blue-200'
+                            : rankPos.isAchieved
+                              ? 'text-emerald-200'
+                              : rankPos.isNext
+                                ? 'text-slate-300'
+                                : 'text-slate-500'
+                        }`}>
+                          {rankPos.rank.name}
                         </div>
-                      )}
+                        <div className='text-xs text-slate-500'>
+                          {rankPos.rank.description}
+                        </div>
+                        {rankPos.percentile > 0 && (
+                          <div className='text-xs text-slate-400 mt-1'>
+                              Only {rankPos.percentile.toFixed(1)}% of players have achieved this rank
+                          </div>
+                        )}
+                      </Link>
                     </div>
                     
                     {/* Action button for current rank */}
