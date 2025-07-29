@@ -59,7 +59,7 @@ export default function FormattedCampaign({
 
   const getLevelOptions = useCallback((enrichedCollection: EnrichedCollection) => {
     const levelOptions: JSX.Element[] = [];
-    const filteredLevels = (enrichedCollection.levels as EnrichedLevel[]).filter(level => 
+    const filteredLevels = (enrichedCollection.levels as EnrichedLevel[]).filter(level =>
       !(filter === 'HIDE_SOLVED' && level.userMoves === level.leastMoves)
     );
 
@@ -68,7 +68,7 @@ export default function FormattedCampaign({
         <div className='relative flex items-center justify-center' key={`campaign-level-${level._id.toString()}`}>
           {/* Connection Path to Next Level */}
           {index < filteredLevels.length - 1 && (
-            <div className='absolute top-12 left-12 w-full h-0.5 bg-gradient-to-r from-white/30 to-transparent z-0 transform rotate-12'></div>
+            <div className='absolute top-12 left-12 w-full h-0.5 bg-gradient-to-r from-white/30 to-transparent z-0 transform rotate-12' />
           )}
           
           {/* Level Portal */}
@@ -113,24 +113,22 @@ export default function FormattedCampaign({
           {/* Floating Island Base */}
           <div className='relative max-w-4xl mx-auto'>
             {/* Island Shadow */}
-            <div className='absolute -bottom-6 sm:-bottom-8 left-1/2 transform -translate-x-1/2 w-64 sm:w-80 h-16 sm:h-20 bg-black/20 rounded-full blur-xl'></div>
-            
+            <div className='absolute -bottom-6 sm:-bottom-8 left-1/2 transform -translate-x-1/2 w-64 sm:w-80 h-16 sm:h-20 bg-black/20 rounded-full blur-xl' />
             {/* Main Island */}
-            <div className={`relative bg-gradient-to-br ${lockedStr 
-              ? 'from-gray-600 via-gray-700 to-gray-800' 
+            <div className={`relative bg-gradient-to-br ${lockedStr
+              ? 'from-gray-600 via-gray-700 to-gray-800'
               : 'from-emerald-400 via-teal-500 to-cyan-600'
             } rounded-t-[2rem] sm:rounded-t-[3rem] rounded-b-xl sm:rounded-b-2xl shadow-2xl overflow-hidden`}>
-              
+
               {/* Mystical Aura */}
-              <div className='absolute inset-0 bg-gradient-to-t from-transparent via-white/10 to-white/20 animate-pulse'></div>
-              
+              <div className='absolute inset-0 bg-gradient-to-t from-transparent via-white/10 to-white/20 animate-pulse' />
               {/* Collection Header - Island Peak */}
               <div className='relative p-4 sm:p-8 text-center'>
                 {/* Floating Crystals */}
                 <div className='absolute inset-0 opacity-30'>
-                  <div className='absolute top-2 sm:top-4 left-4 sm:left-8 w-3 sm:w-4 h-3 sm:h-4 bg-yellow-300 rotate-45 animate-spin' style={{animationDuration: '3s'}}></div>
-                  <div className='absolute top-3 sm:top-6 right-6 sm:right-12 w-2 sm:w-3 h-2 sm:h-3 bg-pink-300 rotate-45 animate-spin' style={{animationDelay: '1s', animationDuration: '4s'}}></div>
-                  <div className='absolute bottom-2 sm:bottom-4 left-6 sm:left-12 w-4 sm:w-5 h-4 sm:h-5 bg-blue-300 rotate-45 animate-spin' style={{animationDelay: '2s', animationDuration: '2s'}}></div>
+                  <div className='absolute top-2 sm:top-4 left-4 sm:left-8 w-3 sm:w-4 h-3 sm:h-4 bg-yellow-300 rotate-45 animate-spin' style={{ animationDuration: '3s' }} />
+                  <div className='absolute top-3 sm:top-6 right-6 sm:right-12 w-2 sm:w-3 h-2 sm:h-3 bg-pink-300 rotate-45 animate-spin' style={{ animationDelay: '1s', animationDuration: '4s' }} />
+                  <div className='absolute bottom-2 sm:bottom-4 left-6 sm:left-12 w-4 sm:w-5 h-4 sm:h-5 bg-blue-300 rotate-45 animate-spin' style={{ animationDelay: '2s', animationDuration: '2s' }} />
                 </div>
                 
                 <div className='relative z-10'>
@@ -248,9 +246,9 @@ export default function FormattedCampaign({
     <div className='relative bg-gradient-to-b from-indigo-900 via-purple-900 to-slate-900 min-h-screen'>
       {/* Floating Islands Background */}
       <div className='absolute inset-0 opacity-30'>
-        <div className='absolute top-10 left-10 w-40 h-20 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full blur-xl animate-pulse'></div>
-        <div className='absolute top-32 right-20 w-32 h-16 bg-gradient-to-r from-pink-500 to-rose-500 rounded-full blur-xl animate-pulse' style={{animationDelay: '1s'}}></div>
-        <div className='absolute bottom-20 left-1/4 w-36 h-18 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full blur-xl animate-pulse' style={{animationDelay: '2s'}}></div>
+        <div className='absolute top-10 left-10 w-40 h-20 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full blur-xl animate-pulse' />
+        <div className='absolute top-32 right-20 w-32 h-16 bg-gradient-to-r from-pink-500 to-rose-500 rounded-full blur-xl animate-pulse' style={{ animationDelay: '1s' }} />
+        <div className='absolute bottom-20 left-1/4 w-36 h-18 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full blur-xl animate-pulse' style={{ animationDelay: '2s' }} />
       </div>
       
       {/* Chapter Overview */}
@@ -269,7 +267,7 @@ export default function FormattedCampaign({
               Congratulations! You&apos;ve mastered every challenge in {title}.
             </div>
             {isCampaignComplete && nextTitle && nextHref && (
-              <Link 
+              <Link
                 href={nextHref}
                 className='inline-block bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-black py-3 sm:py-4 px-6 sm:px-8 rounded-2xl shadow-2xl transform hover:scale-105 transition-all duration-300'
               >
@@ -289,7 +287,7 @@ export default function FormattedCampaign({
               onClick={() => setFilter(filter === 'HIDE_SOLVED' ? 'SHOW_ALL' : 'HIDE_SOLVED')}
               className='group relative overflow-hidden bg-gradient-to-r from-slate-700 to-slate-800 hover:from-slate-600 hover:to-slate-700 text-white font-bold py-3 px-4 sm:px-6 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-300'
             >
-              <div className='absolute inset-0 bg-gradient-to-r from-white to-transparent opacity-10 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-transform duration-500'></div>
+              <div className='absolute inset-0 bg-gradient-to-r from-white to-transparent opacity-10 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-transform duration-500' />
               <div className='relative flex items-center gap-2'>
                 <span className='text-lg sm:text-xl'>{filter === 'HIDE_SOLVED' ? '👁️' : '🔍'}</span>
                 <span className='text-sm sm:text-base'>{filter === 'HIDE_SOLVED' ? 'Show All Levels' : 'Hide Solved Levels'}</span>

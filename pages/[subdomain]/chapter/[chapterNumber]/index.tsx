@@ -5,17 +5,17 @@ import { skillRequirements } from '@root/constants/achievements/AchievementRules
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { getDifficultyRollingSum } from '@root/helpers/playerRankHelper';
 import { refreshAchievements } from '@root/helpers/refreshAchievements';
+import useSWRHelper from '@root/hooks/useSWRHelper';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Link from 'next/link';
 import FormattedCampaign from '../../../../components/formatted/formattedCampaign';
+import { difficultyList } from '../../../../components/formatted/formattedDifficulty';
 import LinkInfo from '../../../../components/formatted/linkInfo';
 import Page from '../../../../components/page/page';
 import getCampaignProps, { CampaignProps } from '../../../../helpers/getCampaignProps';
 import { getUserFromToken } from '../../../../lib/withAuth';
 import { EnrichedLevel } from '../../../../models/db/level';
 import { UserConfigModel } from '../../../../models/mongoose';
-import { difficultyList } from '../../../../components/formatted/formattedDifficulty';
-import useSWRHelper from '@root/hooks/useSWRHelper';
 
 interface ChapterPageProps extends CampaignProps {
   chapterNumber: number;
@@ -222,6 +222,7 @@ function getCurrentRankFromData(rankData: PlayerRankProgressData | undefined) {
   }
 
   const rank = difficultyList[highestAchievedIndex];
+
   return { name: rank.name, emoji: rank.emoji };
 }
 
@@ -357,12 +358,13 @@ export default function ChapterPage({ enrichedCollections, reqUser, solvedLevels
                     const achievedRanks = rankData.skillAchievements.filter(ach => ach.isUnlocked);
                     const highestAchievedIndex = achievedRanks.length > 0 ?
                       Math.max(...achievedRanks.map(ach => ach.difficultyIndex)) : 0;
-                    
+
                     if (highestAchievedIndex === 0) {
                       return 'Start solving to earn your first rank!';
                     }
-                    
+
                     const currentRankAch = rankData.skillAchievements.find(ach => ach.difficultyIndex === highestAchievedIndex);
+
                     return currentRankAch ? `Top ${currentRankAch.percentile}% of players` : 'Ranked player';
                   })()}
                 </div>
@@ -395,10 +397,10 @@ export default function ChapterPage({ enrichedCollections, reqUser, solvedLevels
         
         {/* Floating Geometric Shapes */}
         <div className='absolute inset-0 opacity-10'>
-          <div className='absolute top-20 left-10 w-32 h-32 border-4 border-cyan-400 transform rotate-45 animate-spin' style={{animationDuration: '20s'}}></div>
-          <div className='absolute top-40 right-20 w-24 h-24 bg-gradient-to-r from-purple-500 to-pink-500 transform rotate-12 animate-bounce' style={{animationDelay: '1s'}}></div>
-          <div className='absolute bottom-32 left-1/4 w-16 h-16 border-4 border-yellow-400 rounded-full animate-pulse' style={{animationDelay: '2s'}}></div>
-          <div className='absolute bottom-20 right-1/3 w-20 h-20 bg-gradient-to-r from-blue-500 to-green-500 transform -rotate-12 animate-bounce' style={{animationDelay: '1.5s'}}></div>
+          <div className='absolute top-20 left-10 w-32 h-32 border-4 border-cyan-400 transform rotate-45 animate-spin' style={{ animationDuration: '20s' }} />
+          <div className='absolute top-40 right-20 w-24 h-24 bg-gradient-to-r from-purple-500 to-pink-500 transform rotate-12 animate-bounce' style={{ animationDelay: '1s' }} />
+          <div className='absolute bottom-32 left-1/4 w-16 h-16 border-4 border-yellow-400 rounded-full animate-pulse' style={{ animationDelay: '2s' }} />
+          <div className='absolute bottom-20 right-1/3 w-20 h-20 bg-gradient-to-r from-blue-500 to-green-500 transform -rotate-12 animate-bounce' style={{ animationDelay: '1.5s' }} />
         </div>
         
         <div className='relative z-10 flex flex-col items-center justify-center min-h-screen px-4 py-8'>
@@ -463,7 +465,7 @@ export default function ChapterPage({ enrichedCollections, reqUser, solvedLevels
                 href={`/chapter/${chapterNumber}?continue=true`}
                 className='group relative overflow-hidden bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-black py-4 sm:py-6 px-8 sm:px-12 rounded-2xl shadow-2xl transform hover:scale-105 transition-all duration-300'
               >
-                <div className='absolute inset-0 bg-gradient-to-r from-white to-transparent opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-transform duration-700'></div>
+                <div className='absolute inset-0 bg-gradient-to-r from-white to-transparent opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-transform duration-700' />
                 <div className='relative flex items-center gap-3 sm:gap-4 justify-center'>
                   <div className='text-2xl sm:text-3xl'>⚡</div>
                   <div className='text-center'>
@@ -478,7 +480,7 @@ export default function ChapterPage({ enrichedCollections, reqUser, solvedLevels
               href='/play'
               className='group relative overflow-hidden bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-black py-4 sm:py-6 px-8 sm:px-12 rounded-2xl shadow-2xl transform hover:scale-105 transition-all duration-300'
             >
-              <div className='absolute inset-0 bg-gradient-to-r from-white to-transparent opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-transform duration-700'></div>
+              <div className='absolute inset-0 bg-gradient-to-r from-white to-transparent opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-transform duration-700' />
               <div className='relative flex items-center gap-3 sm:gap-4 justify-center'>
                 <div className='text-2xl sm:text-3xl'>🏠</div>
                 <div className='text-center'>
