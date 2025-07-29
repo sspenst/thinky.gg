@@ -47,7 +47,7 @@ export default function PlayPage({ reqUser }: PlayPageProps) {
   const _levelsSolvedByDifficulty = profileDataFetched?.levelsSolvedByDifficulty;
 
   const solvedCount = reqUser.config?.calcLevelsSolvedCount ?? 0;
-  const _isNewUser = solvedCount < 5;
+  const isNewUser = solvedCount === 0;
 
   return (
     <Page title={'Play'}>
@@ -79,7 +79,7 @@ export default function PlayPage({ reqUser }: PlayPageProps) {
             <div className='order-1 lg:order-2'>
               <h2 className='text-2xl font-bold mb-6 text-center lg:text-left'>Choose Your Chapter</h2>
               <div className='flex flex-col gap-6'>
-                <ChapterSelectCard chapter={1} chapterUnlocked={chapterUnlocked} />
+                <ChapterSelectCard chapter={1} chapterUnlocked={chapterUnlocked} highlight={isNewUser} />
                 <ChapterSelectCard chapter={2} chapterUnlocked={chapterUnlocked} />
                 <ChapterSelectCard chapter={3} chapterUnlocked={chapterUnlocked} />
                 {chapterUnlocked >= 3 && <ChapterSelectCard chapter={4} chapterUnlocked={chapterUnlocked} />}

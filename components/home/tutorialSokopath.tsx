@@ -40,7 +40,11 @@ interface TutorialStep {
   tooltip?: Tooltip;
 }
 
-export default function TutorialSokopath() {
+interface TutorialSokopathProps {
+  recaptchaPublicKey?: string | null;
+}
+
+export default function TutorialSokopath({ recaptchaPublicKey }: TutorialSokopathProps) {
   function getLevel(data: string, override: Partial<Level> = {}): Level {
     const sp = data.split('\n');
     const width = sp[0].length;

@@ -18,6 +18,7 @@ interface ChapterSelectCardBaseProps {
   subtitle?: string;
   title: React.ReactNode;
   compact?: boolean;
+  highlight?: boolean;
 }
 
 export function ChapterSelectCardBase({
@@ -31,6 +32,7 @@ export function ChapterSelectCardBase({
   subtitle,
   title,
   compact,
+  highlight,
 }: ChapterSelectCardBaseProps) {
   const [backgroundImage, setBackgroundImage] = useState<string>();
 
@@ -55,9 +57,9 @@ export function ChapterSelectCardBase({
           />
           <Link
             className={classNames(
-              'border-2 rounded-md items-center flex justify-center text-center h-full w-full',
+              'border-2 rounded-md items-center flex justify-center text-center h-full w-full relative',
               !disabled ? styles['card-border'] : undefined,
-              disabled ? 'relative overflow-hidden cursor-not-allowed pointer-events-none' : '',
+              disabled ? 'overflow-hidden cursor-not-allowed pointer-events-none' : '',
             )}
             href={disabled ? '' : href}
             id={id}
@@ -66,6 +68,7 @@ export function ChapterSelectCardBase({
               borderColor: disabled ? 'var(--color-gray)' : complete ? 'var(--color-complete)' : 'var(--color)',
               color: complete ? 'var(--color-complete)' : 'var(--color)',
               textShadow: '1px 1px black',
+              animation: highlight ? 'border-pulse 2s ease-in-out infinite' : undefined,
             }}
           >
             {disabled && (
@@ -121,9 +124,9 @@ export function ChapterSelectCardBase({
         />
         <Link
           className={classNames(
-            'border-2 rounded-md items-center flex justify-center text-center h-full w-full',
+            'border-2 rounded-md items-center flex justify-center text-center h-full w-full relative',
             !disabled ? styles['card-border'] : undefined,
-            disabled ? 'relative overflow-hidden cursor-not-allowed pointer-events-none' : '',
+            disabled ? 'overflow-hidden cursor-not-allowed pointer-events-none' : '',
           )}
           href={disabled ? '' : href}
           id={id}
@@ -132,6 +135,7 @@ export function ChapterSelectCardBase({
             borderColor: disabled ? 'var(--color-gray)' : complete ? 'var(--color-complete)' : 'var(--color)',
             color: complete ? 'var(--color-complete)' : 'var(--color)',
             textShadow: '1px 1px black',
+            animation: highlight ? 'border-pulse 2s ease-in-out infinite' : undefined,
           }}
         >
           {disabled && (
@@ -176,9 +180,10 @@ interface ChapterSelectCardProps {
   chapterUnlocked?: number;
   href?: string;
   titleOverride?: string;
+  highlight?: boolean;
 }
 
-export default function ChapterSelectCard({ chapter, chapterUnlocked, href, titleOverride }: ChapterSelectCardProps) {
+export default function ChapterSelectCard({ chapter, chapterUnlocked, href, titleOverride, highlight }: ChapterSelectCardProps) {
   const { game } = useContext(AppContext);
 
   switch (chapter) {
@@ -202,6 +207,7 @@ export default function ChapterSelectCard({ chapter, chapterUnlocked, href, titl
         levelData={'50000000\n00000100\n02000000\n00000020'}
         subtitle={'Grassroots'}
         title={titleOverride || 'Chapter 1'}
+        highlight={highlight}
       />
     );
   case 2:

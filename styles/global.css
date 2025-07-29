@@ -10,6 +10,17 @@
     list-style-position: inside;
     list-style-type: disc;
   }
+
+  @keyframes border-pulse {
+    0%, 100% {
+      border-color: var(--color);
+      border-width: 2px;
+    }
+    50% {
+      border-color: var(--color-incomplete);
+      border-width: 6px;
+    }
+  }
 }
 
 body {

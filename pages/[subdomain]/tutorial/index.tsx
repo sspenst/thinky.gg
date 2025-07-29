@@ -22,11 +22,17 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   }
 
   return {
-    props: {},
+    props: {
+      recaptchaPublicKey: process.env.RECAPTCHA_PUBLIC_KEY ?? null,
+    },
   };
 }
 
-export default function TutorialPage() {
+interface TutorialPageProps {
+  recaptchaPublicKey: string | null;
+}
+
+export default function TutorialPage({ recaptchaPublicKey }: TutorialPageProps) {
   const { game } = useContext(AppContext);
 
   return (<>
@@ -40,6 +46,6 @@ export default function TutorialPage() {
         url: '/tutorial',
       }}
     />
-    {game.id === GameId.SOKOPATH ? <TutorialSokopath /> : <TutorialPathology />}
+    {game.id === GameId.SOKOPATH ? <TutorialSokopath recaptchaPublicKey={recaptchaPublicKey} /> : <TutorialPathology recaptchaPublicKey={recaptchaPublicKey} />}
   </>);
 }
