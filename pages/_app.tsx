@@ -3,6 +3,7 @@ import 'react-tooltip/dist/react-tooltip.css';
 import '../styles/global.css';
 import CookieConsentBanner from '@root/components/app/CookieConsentBanner';
 import ToasterPortal from '@root/components/app/ToasterPortal';
+import CoreWebVitalsOptimizer from '@root/components/seo/CoreWebVitalsOptimizer';
 import { DEFAULT_GAME_ID } from '@root/constants/GameId';
 import { Game, Games } from '@root/constants/Games';
 import MusicContextProvider from '@root/contexts/musicContext';
@@ -74,22 +75,62 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
             <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' />
             <meta name='apple-itunes-app' content='app-id=1668925562, app-argument=thinky.gg' />
             <link href={selectedGame.favicon} rel='icon' />
+            {/* DNS prefetch for better performance */}
+            <link rel="dns-prefetch" href="//fonts.googleapis.com" />
+            <link rel="dns-prefetch" href="//www.google-analytics.com" />
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+            {/* Preload critical assets */}
+            <link rel="preload" href={selectedGame.logoPng} as="image" />
           </Head>
           <DefaultSeo
-            defaultTitle={selectedGame.seoTitle}
-            description={selectedGame.seoDescription}
-            canonical={`${selectedGame.baseUrl}'`}
+            defaultTitle={`${selectedGame.seoTitle} | Free Online Puzzle Games`}
+            description={`${selectedGame.seoDescription} Challenge your mind with brain training puzzle games. Play free logic puzzles, strategy games online.`}
+            canonical={selectedGame.baseUrl}
             openGraph={{
               type: 'website',
-              url: `${selectedGame.baseUrl}'`,
+              url: selectedGame.baseUrl,
               siteName: selectedGame.displayName,
+              title: `${selectedGame.seoTitle} | Free Online Puzzle Games`,
+              description: `${selectedGame.seoDescription} Challenge your mind with brain training puzzle games.`,
+              images: [
+                {
+                  url: `${selectedGame.baseUrl}${selectedGame.logoPng}`,
+                  width: 512,
+                  height: 512,
+                  alt: `${selectedGame.displayName} - Puzzle Game`,
+                  type: 'image/png',
+                }
+              ],
             }}
             twitter={{
               handle: '@thinkygg',
               site: selectedGame.baseUrl,
               cardType: 'summary_large_image'
             }}
+            additionalMetaTags={[
+              {
+                name: 'keywords',
+                content: `puzzle games, brain training, logic puzzles, ${selectedGame.displayName.toLowerCase()}, strategy games, online games, free games, mind games`
+              },
+              {
+                name: 'author',
+                content: 'Thinky Games'
+              },
+              {
+                name: 'robots',
+                content: 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'
+              },
+              {
+                property: 'og:type',
+                content: 'game'
+              },
+              {
+                property: 'game:category',
+                content: 'Puzzle'
+              }
+            ]}
           />
+          <CoreWebVitalsOptimizer />
           <AppContext.Provider value={{
             deviceInfo: deviceInfo,
             game: selectedGame,

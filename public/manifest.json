@@ -1,18 +1,110 @@
 {
-  "name": "Thinky Puzzle Games",
+  "name": "Thinky Puzzle Games - Brain Training & Logic Puzzles",
   "short_name": "Thinky.gg",
-  "description": "A platform dedicated to high-quality puzzle games",
+  "description": "Challenge your mind with engaging puzzle games. Play Pathology, Sokopath, and more brain training games online for free.",
+  "categories": ["games", "education", "entertainment"],
   "icons": [
     {
       "src": "logos/thinky/thinky.svg",
       "sizes": "512x512 192x192 96x96 64x64 32x32 24x24 16x16",
-      "type": "image/svg+xml"
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "logos/thinky/thinky_small.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "logos/thinky/thinky_pfp.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
     }
   ],
-  "start_url": ".",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "orientation": "any",
   "theme_color": "#13033d",
   "background_color": "#13033d",
-  "lang": "en"
+  "lang": "en",
+  "dir": "ltr",
+  "prefer_related_applications": false,
+  "screenshots": [
+    {
+      "src": "logos/thinky/thinky.svg",
+      "sizes": "1280x720",
+      "type": "image/svg+xml",
+      "form_factor": "wide",
+      "label": "Thinky Puzzle Games Homepage"
+    },
+    {
+      "src": "logos/thinky/thinky_small.png",
+      "sizes": "750x1334",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Mobile Gaming Experience"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Play Pathology",
+      "short_name": "Pathology",
+      "description": "Shortest path puzzle game",
+      "url": "/pathology",
+      "icons": [
+        {
+          "src": "logos/pathology/pathology.svg",
+          "sizes": "96x96",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "Play Sokopath",
+      "short_name": "Sokopath",
+      "description": "Box pushing puzzle game",
+      "url": "/sokopath",
+      "icons": [
+        {
+          "src": "logos/sokopath/sokopath.svg",
+          "sizes": "96x96",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "Daily Challenge",
+      "short_name": "Daily",
+      "description": "Level of the day",
+      "url": "/level-of-the-day",
+      "icons": [
+        {
+          "src": "logos/thinky/thinky.svg",
+          "sizes": "96x96",
+          "type": "image/svg+xml"
+        }
+      ]
+    }
+  ],
+  "protocol_handlers": [
+    {
+      "protocol": "web+thinky",
+      "url": "/level/%s"
+    }
+  ],
+  "related_applications": [
+    {
+      "platform": "play",
+      "url": "https://play.google.com/store/apps/details?id=com.thinky.games",
+      "id": "com.thinky.games"
+    },
+    {
+      "platform": "itunes",
+      "url": "https://apps.apple.com/app/thinky-puzzle-games/id1668925562",
+      "id": "1668925562"
+    }
+  ]
 }

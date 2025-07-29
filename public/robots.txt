@@ -1,3 +1,28 @@
 # https://www.robotstxt.org/robotstxt.html
 User-agent: *
-Disallow:
+Disallow: /api/
+Disallow: /admin/
+Disallow: /_next/
+Disallow: /drafts/
+Disallow: /edit/
+Disallow: /login/
+Disallow: /signup/
+Disallow: /forgot-password/
+Disallow: /reset-password/
+Disallow: /settings/
+Disallow: /pro/payment/
+Allow: /
+
+# Allow important assets
+Allow: /images/
+Allow: /logos/
+Allow: /sounds/
+Allow: /_next/static/
+
+# Sitemaps
+Sitemap: https://thinky.gg/sitemap/index.xml
+Sitemap: https://pathology.thinky.gg/sitemap/index.xml
+Sitemap: https://sokopath.thinky.gg/sitemap/index.xml
+
+# Crawl delay for politeness
+Crawl-delay: 1
