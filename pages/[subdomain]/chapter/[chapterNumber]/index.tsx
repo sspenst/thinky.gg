@@ -477,15 +477,15 @@ export default function ChapterPage({ enrichedCollections, reqUser, solvedLevels
             )}
             
             <Link
-              href='/play'
+              href={chapterUnlocked > 3 ? '/ranked' : '/play'}
               className='group relative overflow-hidden bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-black py-4 sm:py-6 px-8 sm:px-12 rounded-2xl shadow-2xl transform hover:scale-105 transition-all duration-300'
             >
               <div className='absolute inset-0 bg-gradient-to-r from-white to-transparent opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-transform duration-700' />
               <div className='relative flex items-center gap-3 sm:gap-4 justify-center'>
-                <div className='text-2xl sm:text-3xl'>🏠</div>
+                <div className='text-2xl sm:text-3xl'>{chapterUnlocked > 3 ? '🏆' : '🏠'}</div>
                 <div className='text-center'>
                   <div className='text-xl sm:text-2xl'>EXPLORE</div>
-                  <div className='text-xs sm:text-sm opacity-80'>All Chapters</div>
+                  <div className='text-xs sm:text-sm opacity-80'>{chapterUnlocked > 3 ? 'Ranked' : 'All Chapters'}</div>
                 </div>
               </div>
             </Link>
