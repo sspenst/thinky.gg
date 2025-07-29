@@ -405,6 +405,9 @@ export default function ChapterPage({ enrichedCollections, reqUser, solvedLevels
           <div className='absolute bottom-20 right-1/3 w-20 h-20 bg-gradient-to-r from-blue-500 to-green-500 transform -rotate-12 animate-bounce' style={{ animationDelay: '1.5s' }} />
         </div>
         
+        {/* Bottom Gradient Overlay for smooth transition */}
+        <div className='absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-indigo-900 via-purple-900/50 to-transparent z-5'></div>
+        
         <div className='relative z-10 flex flex-col items-center justify-center min-h-screen px-4 py-8'>
           {/* Chapter Title */}
           <div className='mb-8 sm:mb-10'>
@@ -495,19 +498,17 @@ export default function ChapterPage({ enrichedCollections, reqUser, solvedLevels
         </div>
       </div>
       
-      <div className='max-w-6xl mx-auto px-4'>
-        <FormattedCampaign
-          enrichedCollections={enrichedCollections}
-          levelHrefQuery={`chapter=${chapterNumber}`}
-          nextHref={getNextChapterHref()}
-          nextTitle={getNextChapterTitle()}
-          solvedElement={getSolvedElement()}
-          solvedLevels={solvedLevels}
-          subtitle={config.subtitle}
-          title={config.title}
-          totalLevels={totalLevels}
-        />
-      </div>
+      <FormattedCampaign
+        enrichedCollections={enrichedCollections}
+        levelHrefQuery={`chapter=${chapterNumber}`}
+        nextHref={getNextChapterHref()}
+        nextTitle={getNextChapterTitle()}
+        solvedElement={getSolvedElement()}
+        solvedLevels={solvedLevels}
+        subtitle={config.subtitle}
+        title={config.title}
+        totalLevels={totalLevels}
+      />
     </Page>
   );
 }
