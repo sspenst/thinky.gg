@@ -288,7 +288,7 @@ export default function ChapterPage({ enrichedCollections, reqUser, solvedLevels
             const size = pseudoRandom(i * 1.3, 3) + 1;
             const delay = pseudoRandom(i * 2.1, 3);
             const duration = pseudoRandom(i * 1.7, 2) + 1;
-            
+
             return (
               <div
                 key={i}

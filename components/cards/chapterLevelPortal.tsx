@@ -23,6 +23,7 @@ export default function ChapterLevelPortal({ href, id, level, onClick }: Chapter
   useEffect(() => {
     if (level && level.data) {
       const image = getPngDataClient(level.gameId || pageGame.id, level.data);
+
       setBackgroundImage(image);
     }
   }, [pageGame.id, level]);

@@ -1,7 +1,7 @@
-import { isDemoProLevel, isDemoProProfile, hasProAccessForLevel, hasProAccessForProfile } from '@root/helpers/isDemoProAccess';
+import Role from '@root/constants/role';
+import { hasProAccessForLevel, hasProAccessForProfile, isDemoProLevel, isDemoProProfile } from '@root/helpers/isDemoProAccess';
 import { EnrichedLevel } from '@root/models/db/level';
 import User from '@root/models/db/user';
-import Role from '@root/constants/role';
 import { Types } from 'mongoose';
 
 describe('isDemoProAccess helper functions', () => {

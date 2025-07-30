@@ -4,8 +4,8 @@ import { getEnrichUserConfigPipelineStage } from '@root/helpers/enrich';
 import { USER_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import mongoose from 'mongoose';
 import { NextApiResponse } from 'next';
-import isPro from '../../../../../helpers/isPro';
 import { hasProAccessForLevel } from '../../../../../helpers/isDemoProAccess';
+import isPro from '../../../../../helpers/isPro';
 import cleanUser from '../../../../../lib/cleanUser';
 import withAuth, { NextApiRequestWithAuth } from '../../../../../lib/withAuth';
 import { LevelModel, StatModel, UserModel } from '../../../../../models/mongoose';
@@ -82,7 +82,7 @@ export default withAuth({
 }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   const { id, skip, steps } = req.query;
   const level = await LevelModel.findById(id as string, { userId: 1, slug: 1 }).populate('userId', 'name');
-  
+
   if (!level) {
     return res.status(404).json({
       error: 'Level not found',

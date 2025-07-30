@@ -401,10 +401,10 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
           <div className='flex flex-col gap-2'>
             <p className='text-gray-400'>Try out Pro features with these demos:</p>
             <div className='flex gap-4 justify-center'>
-              <a href="https://pathology.thinky.gg/level/k2xl/touchtown" className='bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors'>
+              <a href='https://pathology.thinky.gg/level/k2xl/touchtown' className='bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors'>
                 🎮 Try Pro Level Features
               </a>
-              <a href="https://pathology.thinky.gg/profile/k2xl/" className='bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-colors'>
+              <a href='https://pathology.thinky.gg/profile/k2xl/' className='bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-colors'>
                 📊 View Pro Profile Insights
               </a>
             </div>

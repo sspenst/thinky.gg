@@ -1,6 +1,6 @@
 import Role from '@root/constants/role';
 import { AppContext } from '@root/contexts/appContext';
-import { hasProAccessForProfile, isDemoProProfile, DEMO_USERNAME } from '@root/helpers/isDemoProAccess';
+import { DEMO_USERNAME, hasProAccessForProfile, isDemoProProfile } from '@root/helpers/isDemoProAccess';
 import isPro from '@root/helpers/isPro';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -199,15 +199,15 @@ export default function ProfileInsights({ reqUser, user }: ProfileInsightsProps)
           </p>
           
           <div className='flex flex-col sm:flex-row gap-4 justify-center items-center'>
-            <Link 
-              href='/pro' 
+            <Link
+              href='/pro'
               className='bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors shadow-lg'
             >
               Get {game.displayName} Pro
             </Link>
             
-            <Link 
-              href={`/profile/${DEMO_USERNAME}/insights`} 
+            <Link
+              href={`/profile/${DEMO_USERNAME}/insights`}
               className='bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-800 transition-colors border border-blue-500'
             >
               View Demo Profile
