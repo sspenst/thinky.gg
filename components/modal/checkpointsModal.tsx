@@ -5,6 +5,7 @@ import { AppContext } from '@root/contexts/appContext';
 import { GameContext } from '@root/contexts/gameContext';
 import { directionsToGameState } from '@root/helpers/checkpointHelpers';
 import getPngDataClient from '@root/helpers/getPngDataClient';
+import { hasProAccessForLevel, isDemoProLevel } from '@root/helpers/isDemoProAccess';
 import isPro from '@root/helpers/isPro';
 import TileTypeHelper from '@root/helpers/tileTypeHelper';
 import { BEST_CHECKPOINT_INDEX } from '@root/hooks/useCheckpoints';
@@ -170,6 +171,9 @@ interface CheckpointsModalProps {
 
 export default function CheckpointsModal({ closeModal, isOpen }: CheckpointsModalProps) {
   const { game, user } = useContext(AppContext);
+  const { level } = useContext(GameContext);
+  const hasAccess = hasProAccessForLevel(user ?? null, level);
+  const isDemoLevel = isDemoProLevel(level);
 
   return (
     <Modal
@@ -177,8 +181,18 @@ export default function CheckpointsModal({ closeModal, isOpen }: CheckpointsModa
       isOpen={isOpen}
       title={'Checkpoints'}
     >
-      {isPro(user) ?
-        <ProCheckpointsModal closeModal={closeModal} />
+      {hasAccess ?
+        <>
+          {isDemoLevel && !isPro(user) && (
+            <div className='bg-blue-900 border border-blue-600 rounded-lg p-3 text-center mb-4'>
+              <p className='text-blue-200 text-sm'>
+                ✨ <strong>Demo Mode:</strong> You&apos;re experiencing Pro checkpoints on this demo level.
+                <Link href='/pro' className='text-blue-300 underline ml-1'>Get {game.displayName} Pro</Link> to unlock checkpoints for all levels.
+              </p>
+            </div>
+          )}
+          <ProCheckpointsModal closeModal={closeModal} />
+        </>
         :
         <div className='flex flex-col gap-4 items-center'>
           <div>

@@ -1,3 +1,5 @@
+import isPro from '@root/helpers/isPro';
+import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { useContext, useState } from 'react';
 import toast from 'react-hot-toast';
@@ -6,6 +8,7 @@ import Level from '../../models/db/level';
 import FormattedAuthorNote from '../formatted/formattedAuthorNote';
 import isNotFullAccountToast from '../toasts/isNotFullAccountToast';
 import Modal from '.';
+import SchedulePublishModal from './schedulePublishModal';
 
 interface PublishLevelModalProps {
   closeModal: () => void;
@@ -15,7 +18,8 @@ interface PublishLevelModalProps {
 
 export default function PublishLevelModal({ closeModal, isOpen, level }: PublishLevelModalProps) {
   const [isPublishing, setIsPublishing] = useState(false);
-  const { mutateUser } = useContext(AppContext);
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
+  const { mutateUser, user } = useContext(AppContext);
   const router = useRouter();
 
   function onConfirm() {
@@ -57,26 +61,65 @@ export default function PublishLevelModal({ closeModal, isOpen, level }: Publish
     });
   }
 
+  function onSchedule() {
+    if (!isPro(user)) {
+      // Redirect to Pro page for non-Pro users
+      closeModal();
+      router.push('/pro');
+
+      return;
+    }
+
+    // Open the schedule modal for Pro users
+    setIsScheduleModalOpen(true);
+  }
+
   return (
-    <Modal
-      closeModal={closeModal}
-      disabled={isPublishing}
-      isOpen={isOpen}
-      onConfirm={onConfirm}
-      title={'Publish Level'}
-    >
-      <div className='break-words'>
-        <span className='font-bold'>Name:</span> {level.name}
-        <br />
-        <span className='font-bold'>Moves:</span> {level.leastMoves}
-        {!level.authorNote ? null :
-          <div className='mt-4'>
-            <span className='font-bold'>Author Note:</span>
+    <>
+      <Modal
+        closeModal={closeModal}
+        isOpen={isOpen}
+        title={'Publish Level'}
+      >
+        <div className='break-words space-y-4'>
+          <div>
+            <span className='font-bold'>Name:</span> {level.name}
             <br />
-            <FormattedAuthorNote authorNote={level.authorNote} />
+            <span className='font-bold'>Moves:</span> {level.leastMoves}
+            {!level.authorNote ? null :
+              <div className='mt-4'>
+                <span className='font-bold'>Author Note:</span>
+                <br />
+                <FormattedAuthorNote authorNote={level.authorNote} />
+              </div>
+            }
           </div>
-        }
-      </div>
-    </Modal>
+          {/* Custom Button Row */}
+          <div className='flex justify-center gap-3 pt-4'>
+            <button
+              onClick={onConfirm}
+              disabled={isPublishing}
+              className='inline-flex justify-center px-6 py-2 text-sm font-medium border border-transparent rounded-md bg-blue-500 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white'
+            >
+              {isPublishing ? 'Publishing...' : 'Publish Now'}
+            </button>
+            
+            <button
+              onClick={onSchedule}
+              disabled={isPublishing}
+              className='inline-flex items-center justify-center gap-2 px-6 py-2 text-sm font-medium border border-transparent rounded-md bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white'
+            >
+              <Image alt='pro' src='/pro.svg' width={16} height={16} className='opacity-90' />
+              Schedule
+            </button>
+          </div>
+        </div>
+      </Modal>
+      <SchedulePublishModal
+        closeModal={() => setIsScheduleModalOpen(false)}
+        isOpen={isScheduleModalOpen}
+        level={level}
+      />
+    </>
   );
 }

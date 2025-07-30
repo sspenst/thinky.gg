@@ -503,19 +503,18 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
         minWidth: '178px',
       },
     },
-    ...(isPro(reqUser) ?
-      [{
-        id: 'calcOtherDifficultyEstimate',
-        name: <div className='flex gap-1 flex-row align-center items-center'><span className='text-xs md:text-md'>{otherDifficultyType + ' Difficulty'}</span><Image alt='pro' className='mr-0.5' src='/pro.svg' width='16' height='16' /></div>,
-        selector: (row: EnrichedLevel) => (
-          <FormattedDifficulty id='search-row-other' level={row} difficultyField={otherDifficultyField} />
-        ),
-        style: {
-          fontSize: '13px',
-          minWidth: '178px',
-        },
-        sortable: isPro(reqUser),
-      }] : []),
+    {
+      id: 'calcOtherDifficultyEstimate',
+      name: <div className='flex gap-1 flex-row align-center items-center'><span className='text-xs md:text-md'>{otherDifficultyType + ' Difficulty'}</span></div>,
+      selector: (row: EnrichedLevel) => (
+        <FormattedDifficulty id='search-row-other' level={row} difficultyField={otherDifficultyField} />
+      ),
+      style: {
+        fontSize: '13px',
+        minWidth: '178px',
+      },
+      sortable: true,
+    },
     {
       id: 'ts',
       name: 'Created',

@@ -1,11 +1,11 @@
 import { ProStatsCommunityStepData } from '@root/contexts/levelContext';
 import apiWrapper, { ValidObjectId } from '@root/helpers/apiWrapper';
 import { getEnrichUserConfigPipelineStage } from '@root/helpers/enrich';
+import { hasProAccessForLevel } from '@root/helpers/isDemoProAccess';
 import { USER_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import mongoose from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
 import ProStatsLevelType from '../../../../../constants/proStatsLevelType';
-import isPro from '../../../../../helpers/isPro';
 import cleanUser from '../../../../../lib/cleanUser';
 import { getUserFromToken } from '../../../../../lib/withAuth';
 import { PlayAttemptModel, StatModel, UserModel } from '../../../../../models/mongoose';
@@ -266,7 +266,7 @@ export default apiWrapper({
   const token = req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, req) : null;
   const { id: levelId } = req.query as { id: string };
-  const pro = reqUser && isPro(reqUser);
+  const pro = reqUser && hasProAccessForLevel(reqUser, new mongoose.Types.ObjectId(levelId));
   const [communityStepData, playAttemptsOverTime, communityPlayAttemptsData] = await Promise.all([
     getCommunityStepData(levelId, !pro),
     ...(!pro ? [] : [

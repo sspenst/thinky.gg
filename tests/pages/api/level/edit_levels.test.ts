@@ -684,11 +684,9 @@ describe('Editing levels should work correctly', () => {
         // check queue messages for the achievement message
 
         // check to see if we earned an achievement
-        const achievements = await AchievementModel.find({ userId: new Types.ObjectId(TestId.USER) });
+        const achievements = await AchievementModel.countDocuments({ userId: new Types.ObjectId(TestId.USER), type: AchievementType.CREATOR_CREATED_1_LEVEL });
 
-        expect(achievements.length).toBe(1);
-        expect(achievements[0].gameId).toBe(DEFAULT_GAME_ID);
-        expect(achievements[0].type).toBe(AchievementType.CREATOR_CREATED_1_LEVEL);
+        expect(achievements).toBe(1);
         // expect(achievements[1].type).toBe(AchievementType.CREATOR_CREATED_5_LEVELS); // Note that this is not earned yet, 7 levels created but they aren't quality
 
         expect(response.error).toBeUndefined();

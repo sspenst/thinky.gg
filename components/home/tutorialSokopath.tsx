@@ -40,7 +40,11 @@ interface TutorialStep {
   tooltip?: Tooltip;
 }
 
-export default function TutorialSokopath() {
+interface TutorialSokopathProps {
+  recaptchaPublicKey?: string | null;
+}
+
+export default function TutorialSokopath({ recaptchaPublicKey }: TutorialSokopathProps) {
   function getLevel(data: string, override: Partial<Level> = {}): Level {
     const sp = data.split('\n');
     const width = sp[0].length;
@@ -413,6 +417,22 @@ export default function TutorialSokopath() {
 
   const controls: Control[] = [];
 
+  // Add restart button on all steps
+  controls.push(new Control(
+    'control-restart',
+    () => {
+      setTutorialStepIndex(0);
+      sessionStorage.setItem('tutorialStep-Sokopath', '0');
+    },
+    <div className='flex items-center text-xs gap-1'>
+      <svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' viewBox='0 0 16 16'>
+        <path fillRule='evenodd' d='M11.854 3.646a.5.5 0 0 1 0 .708L8.207 8l3.647 3.646a.5.5 0 0 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 0 1 .708 0zM4.707 8l3.647-3.646a.5.5 0 0 1 .708.708L5.414 8l3.648 3.646a.5.5 0 0 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 0 1 .708 0z' />
+      </svg>
+      Restart Tutorial
+    </div>,
+    false,
+  ));
+
   if (tutorialStepIndex !== 0) {
     controls.push(prevControl(isPrevButtonDisabled));
   }
@@ -428,12 +448,11 @@ export default function TutorialSokopath() {
     controls.push(new Control(
       'restart',
       () => {
+        console.log('Restart button clicked - Sokopath');
         setTutorialStepIndex(0);
         sessionStorage.setItem('tutorialStep-Sokopath', '0');
-
-        return;
       },
-      <button onClick={() => setTutorialStepIndex(0)}>Restart Tutorial</button>,
+      <span>Restart Tutorial</span>,
       false,
     ));
 

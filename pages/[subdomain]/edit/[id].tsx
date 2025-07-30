@@ -36,6 +36,16 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     };
   }
 
+  // Check if level is scheduled for publishing
+  if (level.scheduledQueueMessageId) {
+    return {
+      redirect: {
+        destination: '/drafts?scheduled=true',
+        permanent: false,
+      },
+    };
+  }
+
   return {
     props: {
       level: JSON.parse(JSON.stringify(level)),

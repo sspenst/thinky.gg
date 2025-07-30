@@ -2,7 +2,7 @@ import AchievementCategory from '@root/constants/achievements/achievementCategor
 import { AchievementCategoryMapping } from '@root/constants/achievements/achievementInfo';
 import AchievementType from '@root/constants/achievements/achievementType';
 import { GameId } from '@root/constants/GameId';
-import { Game } from '@root/constants/Games';
+import { Game, Games } from '@root/constants/Games';
 import { getAchievementCategoryDisplayName } from '@root/helpers/achievementCategoryDisplayNames';
 import { getRarityFromStats } from '@root/helpers/achievementRarity';
 import Achievement from '@root/models/db/achievement';
@@ -99,14 +99,25 @@ export default function AchievementsBrowser({
     const result: Record<string, Array<{ type: AchievementType; gameAchievements: Achievement[]; allGames: GameId[] }>> = {};
 
     categories.forEach(categoryKey => {
+      // Skip categories that aren't supported by the selected game (unless viewing all games)
+      if (selectedGame !== 'all') {
+        const selectedGameObj = Object.values(Games).find(g => g.id === selectedGame);
+
+        if (selectedGameObj && !selectedGameObj.achievementCategories.includes(categoryKey as AchievementCategory)) {
+          return; // Skip this category
+        }
+      }
+
       const categoryAchievements = AchievementCategoryMapping[categoryKey as keyof typeof AchievementCategoryMapping];
       const achievements = Object.keys(categoryAchievements).map(achievementType => {
         const userAchievementsForType = userAchievementMap.get(achievementType) || [];
 
-        // Get all games where this achievement exists (based on user achievements or all games for the category)
-        const allGamesForType = categoryKey === 'SOCIAL'
-          ? [GameId.THINKY] // Social achievements are THINKY-only
-          : Object.values(GameId).filter(gameId => gameId !== GameId.THINKY); // Other achievements exist in game-specific instances
+        // Get all games where this achievement exists (only games that support this category)
+        const allGamesForType = (categoryKey === 'SOCIAL' || categoryKey === 'FEATURE_EXPLORER')
+          ? [GameId.THINKY] // Social and Feature Explorer achievements are THINKY-only
+          : Object.values(Games)
+            .filter(game => game.achievementCategories.includes(categoryKey as AchievementCategory))
+            .map(game => game.id);
 
         return {
           type: achievementType as AchievementType,
@@ -198,10 +209,12 @@ export default function AchievementsBrowser({
         const achievementInfo = categoryAchievements[achievementType];
         const userAchievementsForType = userAchievementMap.get(achievementType) || [];
 
-        // Get all games where this achievement exists
-        const allGamesForType = categoryKey === 'SOCIAL'
+        // Get all games where this achievement exists (only games that support this category)
+        const allGamesForType = (categoryKey === 'SOCIAL' || categoryKey === 'FEATURE_EXPLORER')
           ? [GameId.THINKY]
-          : Object.values(GameId).filter(gameId => gameId !== GameId.THINKY);
+          : Object.values(Games)
+            .filter(game => game.achievementCategories.includes(categoryKey as AchievementCategory))
+            .map(game => game.id);
 
         // Apply game filter
         if (selectedGame !== 'all' && !allGamesForType.includes(selectedGame)) {
@@ -227,6 +240,51 @@ export default function AchievementsBrowser({
     return count;
   }, [selectedCategory, selectedGame, userAchievementMap]);
 
+  // Count hidden achievements per category
+  const hiddenAchievementsByCategory = useMemo(() => {
+    const hiddenByCategory: Record<string, number> = {};
+
+    Object.keys(AchievementCategoryMapping).forEach(categoryKey => {
+      const categoryAchievements = AchievementCategoryMapping[categoryKey as keyof typeof AchievementCategoryMapping];
+      let count = 0;
+
+      Object.keys(categoryAchievements).forEach(achievementType => {
+        const achievementInfo = categoryAchievements[achievementType];
+        const userAchievementsForType = userAchievementMap.get(achievementType) || [];
+
+        // Get all games where this achievement exists (only games that support this category)
+        const allGamesForType = (categoryKey === 'SOCIAL' || categoryKey === 'FEATURE_EXPLORER')
+          ? [GameId.THINKY]
+          : Object.values(Games)
+            .filter(game => game.achievementCategories.includes(categoryKey as AchievementCategory))
+            .map(game => game.id);
+
+        // Apply game filter
+        if (selectedGame !== 'all' && !allGamesForType.includes(selectedGame)) {
+          return;
+        }
+
+        // Check if it's a hidden achievement that's not unlocked
+        if (achievementInfo.secret) {
+          const isUnlockedInAnyGame = userAchievementsForType.length > 0;
+          const isUnlockedInSelectedGame = selectedGame === 'all'
+            ? isUnlockedInAnyGame
+            : userAchievementsForType.some(ach => ach.gameId === selectedGame);
+
+          const isUnlocked = selectedGame === 'all' ? isUnlockedInAnyGame : isUnlockedInSelectedGame;
+
+          if (!isUnlocked) {
+            count++;
+          }
+        }
+      });
+
+      hiddenByCategory[categoryKey] = count;
+    });
+
+    return hiddenByCategory;
+  }, [selectedGame, userAchievementMap]);
+
   const isEmpty = Object.keys(filteredCategories).length === 0;
 
   // Calculate category stats for navigation tiles
@@ -243,6 +301,7 @@ export default function AchievementsBrowser({
     // Add individual categories that have visible achievements
     const categoryKeyToNameAndIcon: Record<string, { name: string; icon: string }> = {
       [AchievementCategory.SOCIAL]: { name: getAchievementCategoryDisplayName(AchievementCategory.SOCIAL), icon: '👥' },
+      [AchievementCategory.FEATURE_EXPLORER]: { name: getAchievementCategoryDisplayName(AchievementCategory.FEATURE_EXPLORER), icon: '🧭' },
       [AchievementCategory.PROGRESS]: { name: getAchievementCategoryDisplayName(AchievementCategory.PROGRESS), icon: '📈' },
       [AchievementCategory.CREATOR]: { name: getAchievementCategoryDisplayName(AchievementCategory.CREATOR), icon: '🛠️' },
       [AchievementCategory.SKILL]: { name: getAchievementCategoryDisplayName(AchievementCategory.SKILL), icon: '🎯' },
@@ -462,6 +521,7 @@ export default function AchievementsBrowser({
                 achievements={achievements}
                 unlockedCount={unlockedCount}
                 totalCount={totalCount}
+                hiddenCount={hiddenAchievementsByCategory[categoryKey] || 0}
                 viewMode={viewMode}
                 game={game}
                 statsMap={statsMap}

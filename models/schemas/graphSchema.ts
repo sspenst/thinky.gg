@@ -21,12 +21,16 @@ const GraphSchema = new mongoose.Schema<Graph>({
   targetModel: {
     type: String,
     required: true,
-    enum: ['User', 'Collection'],
+    enum: ['User', 'Collection', 'Level'],
   },
   type: {
     type: String,
     required: true,
     enum: GraphType,
+  },
+  metadata: {
+    type: Object,
+    default: {},
   },
 },
 {
@@ -36,6 +40,11 @@ const GraphSchema = new mongoose.Schema<Graph>({
 GraphSchema.index({ follower: 1 });
 GraphSchema.index({ following: 1 });
 GraphSchema.index({ target: 1 });
-GraphSchema.index({ source: 1, target: 1, type: 1 }, { unique: true });
+GraphSchema.index({ source: 1, target: 1, type: 1 }, {
+  unique: true,
+  partialFilterExpression: {
+    type: { $in: ['FOLLOW', 'BLOCK'] }
+  }
+});
 
 export default GraphSchema;

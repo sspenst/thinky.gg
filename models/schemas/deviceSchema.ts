@@ -1,6 +1,10 @@
 import mongoose from 'mongoose';
 import Device from '../db/device';
 
+export enum DeviceState {
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
+}
 const DeviceSchema = new mongoose.Schema<Device>(
   {
     deviceToken: {
@@ -27,6 +31,11 @@ const DeviceSchema = new mongoose.Schema<Device>(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: true,
+    },
+    state: {
+      type: String,
+      enum: Object.values(DeviceState),
+      default: DeviceState.ACTIVE,
     },
   },
   {

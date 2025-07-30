@@ -29,6 +29,7 @@ interface ModalProps {
   children: React.ReactNode;
   closeLabel?: string;
   closeModal: () => void;
+  confirmText?: string;
   disabled?: boolean;
   isOpen: boolean;
   onConfirm?: () => void;
@@ -41,6 +42,7 @@ export default function Modal({
   children,
   closeLabel,
   closeModal,
+  confirmText,
   disabled,
   isOpen,
   onConfirm,
@@ -111,7 +113,7 @@ export default function Modal({
                 <div className='flex justify-center gap-2 flex-wrap'>
                   {onConfirm ?
                     <>
-                      <ModalButton className='bg-blue-500 hover:bg-blue-700' disabled={disabled} onClick={() => {}} text={submitLabel || 'OK'} type='submit' />
+                      <ModalButton className='bg-blue-500 hover:bg-blue-700' disabled={disabled} onClick={() => {}} text={confirmText || submitLabel || 'OK'} type='submit' />
                       <ModalButton disabled={disabled} onClick={closeModal} text={closeLabel || 'Cancel'} />
                     </>
                     : onSubmit ?

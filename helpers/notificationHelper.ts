@@ -334,3 +334,24 @@ export async function clearNotifications(userId?: string | Types.ObjectId, sourc
 
   return deleted;
 }
+
+export async function createScheduledLevelPublishedNotification(gameId: GameId, userId: Types.ObjectId, levelId: Types.ObjectId, levelName: string, options?: SaveOptions) {
+  const notificationId = new Types.ObjectId();
+
+  const [notification] = await Promise.all([
+    NotificationModel.create([{
+      _id: notificationId,
+      gameId: gameId,
+      message: levelName,
+      source: levelId,
+      sourceModel: 'Level',
+      type: NotificationType.SCHEDULED_LEVEL_PUBLISHED,
+      userId: userId,
+    }], options || {}),
+    queuePushNotification(notificationId),
+  ]);
+
+  await requestBroadcastNotifications(gameId, userId);
+
+  return notification[0];
+}

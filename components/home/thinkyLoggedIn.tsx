@@ -165,7 +165,7 @@ export function ThinkyHomePageLoggedIn({ user }: { user: User }) {
               className='w-full'
               placeholder='Search users...'
               onSelect={(selectedItem: User) => {
-                router.push(`/users/${selectedItem._id}`);
+                router.push(`/profile/${selectedItem.name}`);
               }}
             />
           </div>

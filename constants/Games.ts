@@ -18,9 +18,9 @@ export const APP_DOMAIN = process.env.NEXT_PUBLIC_APP_DOMAIN || 'thinky.gg';
 export const Games: Record<GameId, Game> = {
   [GameId.THINKY]: {
     id: GameId.THINKY,
-    achievementCategories: [AchievementCategory.SOCIAL],
+    achievementCategories: [AchievementCategory.SOCIAL, AchievementCategory.FEATURE_EXPLORER],
     allowMovableOnExit: false,
-    baseUrl: process.env.NODE_ENV !== 'development' ? `https://${APP_DOMAIN}` : 'http://thinky.localhost:3000',
+    baseUrl: process.env.NODE_ENV !== 'development' ? `https://${APP_DOMAIN}` : 'http://localhost:3000',
     defaultTheme: Theme.Dark,
     disableCampaign: true,
     disableCommunityCampaigns: true,
@@ -39,7 +39,7 @@ export const Games: Record<GameId, Game> = {
     seoTitle: 'Thinky Puzzle Games',
     subdomain: 'thinky',
     subtitle: 'Thinky Games',
-    type: GameType.NONE,
+    type: GameType.SHORTEST_PATH,
     stripePaymentLinkMonthly: process.env.STRIPE_THINKY_PAYMENT_LINK_MONTHLY,
     stripePaymentLinkYearly: process.env.STRIPE_THINKY_PAYMENT_LINK_YEARLY,
     stripePriceIdGiftMonthly: process.env.STRIPE_THINKY_PRICE_ID_GIFT_MONTHLY,
@@ -56,6 +56,7 @@ export const Games: Record<GameId, Game> = {
       AchievementCategory.SKILL,
       AchievementCategory.REVIEWER,
       AchievementCategory.MULTIPLAYER,
+      AchievementCategory.CHAPTER_COMPLETION,
     ],
     allowMovableOnExit: false,
     baseUrl: process.env.NODE_ENV !== 'development' ? `https://pathology.${APP_DOMAIN}` : 'http://pathology.localhost:3000',

@@ -5,14 +5,17 @@ import dbConnect, { dbDisconnect } from '@root/lib/dbConnect';
 import Notification from '@root/models/db/notification';
 import User from '@root/models/db/user';
 import { DeviceModel } from '@root/models/mongoose';
+import { DeviceState } from '@root/models/schemas/deviceSchema';
 import { Types } from 'mongoose';
 import { sendPushNotification } from '../../../../../pages/api/internal-jobs/worker/sendPushNotification';
 
-// Mock Firebase Admin SDK
+// Better approach - create a mock function that can be controlled per test
+const mockSendEachForMulticast = jest.fn();
+
 jest.mock('firebase-admin', () => ({
   initializeApp: jest.fn(() => ({
     messaging: jest.fn(() => ({
-      sendEachForMulticast: jest.fn(),
+      sendEachForMulticast: mockSendEachForMulticast,
     })),
   })),
   credential: {
@@ -43,6 +46,19 @@ afterEach(async () => {
   jest.restoreAllMocks();
   // Clean up test data
   await DeviceModel.deleteMany({ userId: { $in: [TestId.USER, TestId.USER_B] } });
+});
+
+// In your test suite, after the describe block but before the tests:
+beforeEach(() => {
+  // Reset to default successful response
+  mockSendEachForMulticast.mockResolvedValue({
+    responses: [
+      {
+        success: true,
+        messageId: 'projects/pathology-699c4/messages/1753373676192371',
+      },
+    ],
+  });
 });
 
 describe('sendPushNotification', () => {
@@ -214,6 +230,97 @@ describe('sendPushNotification', () => {
 
       // Should successfully send notification (not return the "no devices" message)
       expect(result).not.toBe(`Notification ${mockNotification._id.toString()} not sent: no devices found`);
+    } finally {
+      Object.defineProperty(process.env, 'NODE_ENV', { value: originalNodeEnv, writable: true });
+      delete process.env.FIREBASE_PRIVATE_KEY;
+      delete process.env.FIREBASE_CLIENT_EMAIL;
+      delete process.env.FIREBASE_PROJECT_ID;
+    }
+  });
+  // Then your last test becomes much cleaner:
+  test('should update device state to INACTIVE if error code is "messaging/registration-token-not-registered"', async () => {
+    const originalNodeEnv = process.env.NODE_ENV;
+
+    Object.defineProperty(process.env, 'NODE_ENV', { value: 'development', writable: true });
+    process.env.FIREBASE_PRIVATE_KEY = 'test-key';
+    process.env.FIREBASE_CLIENT_EMAIL = 'test@example.com';
+    process.env.FIREBASE_PROJECT_ID = 'test-project';
+
+    try {
+    // Create test devices
+      const testDevices = [
+        {
+          _id: new Types.ObjectId(),
+          userId: TestId.USER,
+          deviceToken: 'device-token-1',
+          deviceName: 'iPhone 12',
+          deviceBrand: 'Apple',
+          deviceOSName: 'iOS',
+          deviceOSVersion: '15.0',
+        },
+        {
+          _id: new Types.ObjectId(),
+          userId: TestId.USER,
+          deviceToken: 'old-token-2',
+          deviceName: 'iPhone 12',
+          deviceBrand: 'Apple',
+          deviceOSName: 'iOS',
+          deviceOSVersion: '15.0',
+        },
+      ];
+
+      await DeviceModel.insertMany(testDevices);
+
+      // Override the mock for this specific test
+      mockSendEachForMulticast.mockResolvedValueOnce({
+        responses: [
+          {
+            success: false,
+            error: {
+              code: 'messaging/registration-token-not-registered',
+              message: 'Requested entity was not found.'
+            }
+          },
+          {
+            success: true,
+            messageId: 'projects/pathology-699c4/messages/1753373676192371'
+          },
+        ],
+        successCount: 1,
+        failureCount: 1,
+      });
+
+      const result = await sendPushNotification(DEFAULT_GAME_ID, mockNotification);
+      const resultJson = JSON.parse(result);
+
+      expect(resultJson.responses).toHaveLength(2);
+      expect(resultJson.responses[0].success).toBe(false);
+      expect(resultJson.responses[0].error.code).toBe('messaging/registration-token-not-registered');
+      expect(resultJson.responses[1].success).toBe(true);
+      expect(resultJson.responses[1].messageId).toBe('projects/pathology-699c4/messages/1753373676192371');
+
+      expect(result).not.toBe(`Notification ${mockNotification._id.toString()} not sent: no devices found`);
+
+      // Verify device states were updated correctly
+      const devices = await DeviceModel.find({ userId: TestId.USER }).sort({ deviceToken: 1 });
+
+      expect(devices[0].state).toBe(DeviceState.INACTIVE); // device-token-1 (first in response array)
+      expect(devices[1].state).toBe(DeviceState.ACTIVE); // old-token-2 (second in response array)
+
+      // send again with the same devices, to make sure we don't send a notification if the device is INACTIVE
+      const result2 = await sendPushNotification(DEFAULT_GAME_ID, mockNotification);
+      const result2Json = JSON.parse(result2);
+
+      expect(result2Json.responses).toHaveLength(1);
+      expect(result2Json.responses[0].success).toBe(true);
+
+      expect(result2).not.toBe(`Notification ${mockNotification._id.toString()} not sent: no devices found`);
+      expect(result2).not.toBe('push not sent. Firebase environment variables not set');
+
+      const devices2 = await DeviceModel.find({ userId: TestId.USER }).sort({ deviceToken: 1 });
+
+      expect(devices2[0].state).toBe(DeviceState.INACTIVE);
+      expect(devices2[1].state).toBe(DeviceState.ACTIVE);
     } finally {
       Object.defineProperty(process.env, 'NODE_ENV', { value: originalNodeEnv, writable: true });
       delete process.env.FIREBASE_PRIVATE_KEY;

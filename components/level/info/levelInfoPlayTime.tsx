@@ -4,7 +4,7 @@ import { RoleIcon } from '@root/components/page/roleIcons';
 import StyledTooltip from '@root/components/page/styledTooltip';
 import Role from '@root/constants/role';
 import { AppContext } from '@root/contexts/appContext';
-import isPro from '@root/helpers/isPro';
+import { hasProAccessForLevel } from '@root/helpers/isDemoProAccess';
 import classNames from 'classnames';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
@@ -38,7 +38,7 @@ export default function LevelInfoPlayTime() {
   const proStatsLevel = levelContext?.proStatsLevel;
   const { game, user } = useContext(AppContext);
 
-  if (!isPro(user)) {
+  if (levelContext && !hasProAccessForLevel(user, levelContext?.level)) {
     return (
       <div className='flex gap-3 items-center'>
         <RoleIcon id='level-info-play-time' role={Role.PRO} size={20} />

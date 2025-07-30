@@ -6,7 +6,8 @@ import TestId from '../../../constants/testId';
 import { logger } from '../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../lib/getTokenCookie';
-import { LevelModel } from '../../../models/mongoose';
+import { LevelModel, QueueMessageModel } from '../../../models/mongoose';
+import { QueueMessageState, QueueMessageType } from '../../../models/schemas/queueMessageSchema';
 import { getServerSideProps } from '../../../pages/[subdomain]/drafts';
 
 beforeAll(async () => {
@@ -943,6 +944,186 @@ describe('pages/drafts page', () => {
       // Clean up test levels
       await LevelModel.deleteMany({
         name: { $in: ['Alpha Level', 'Beta Level', 'Zebra Level'] }
+      });
+    }
+  });
+
+  test('getServerProps populates scheduledQueueMessage data correctly for both sorting methods', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
+
+    const baseTime = new Date();
+    const futureTime = new Date(baseTime.getTime() + 24 * 60 * 60 * 1000); // Tomorrow
+
+    // Create test queue messages first
+    const queueMessage1 = await QueueMessageModel.create({
+      message: 'Test publish message 1',
+      type: QueueMessageType.PUBLISH_LEVEL,
+      state: QueueMessageState.PENDING,
+      runAt: futureTime,
+      priority: 0,
+      dedupeKey: 'test-publish-1'
+    });
+
+    const queueMessage2 = await QueueMessageModel.create({
+      message: 'Test publish message 2',
+      type: QueueMessageType.PUBLISH_LEVEL,
+      state: QueueMessageState.PENDING,
+      runAt: new Date(futureTime.getTime() + 60 * 60 * 1000), // 1 hour later
+      priority: 0,
+      dedupeKey: 'test-publish-2'
+    });
+
+    // Create test draft levels with scheduled queue messages
+    const testLevels = [
+      {
+        name: 'Alpha Scheduled Level',
+        isDraft: true,
+        isDeleted: false,
+        userId: TestId.USER,
+        gameId: DEFAULT_GAME_ID,
+        data: '40000\n12000\n05000\n67890\nABCDE',
+        height: 5,
+        width: 5,
+        leastMoves: 20,
+        ts: Math.floor(Date.now() / 1000),
+        updatedAt: new Date(baseTime.getTime() - 2000),
+        slug: 'alpha-scheduled-level',
+        isRanked: false,
+        scheduledQueueMessageId: queueMessage1._id
+      },
+      {
+        name: 'Beta Scheduled Level',
+        isDraft: true,
+        isDeleted: false,
+        userId: TestId.USER,
+        gameId: DEFAULT_GAME_ID,
+        data: '40000\n12000\n05000\n67890\nABCDE',
+        height: 5,
+        width: 5,
+        leastMoves: 20,
+        ts: Math.floor(Date.now() / 1000),
+        updatedAt: baseTime, // Most recent
+        slug: 'beta-scheduled-level',
+        isRanked: false,
+        scheduledQueueMessageId: queueMessage2._id
+      },
+      {
+        name: 'Charlie Unscheduled Level',
+        isDraft: true,
+        isDeleted: false,
+        userId: TestId.USER,
+        gameId: DEFAULT_GAME_ID,
+        data: '40000\n12000\n05000\n67890\nABCDE',
+        height: 5,
+        width: 5,
+        leastMoves: 20,
+        ts: Math.floor(Date.now() / 1000),
+        updatedAt: new Date(baseTime.getTime() - 1000),
+        slug: 'charlie-unscheduled-level',
+        isRanked: false,
+        // No scheduledQueueMessageId
+      }
+    ];
+
+    await LevelModel.insertMany(testLevels);
+
+    try {
+      // Test name sorting with scheduled data
+      const nameContext = {
+        req: {
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          }
+        },
+        query: {
+          sortBy: 'name'
+        }
+      };
+
+      const nameRet = await getServerSideProps(nameContext as unknown as GetServerSidePropsContext) as any;
+
+      expect(nameRet.props.sortBy).toBe('name');
+
+      // Find our test levels in name-sorted results
+      const alphaLevel = nameRet.props.levels.find((l: any) => l.name === 'Alpha Scheduled Level');
+      const betaLevel = nameRet.props.levels.find((l: any) => l.name === 'Beta Scheduled Level');
+      const charlieLevel = nameRet.props.levels.find((l: any) => l.name === 'Charlie Unscheduled Level');
+
+      expect(alphaLevel).toBeDefined();
+      expect(betaLevel).toBeDefined();
+      expect(charlieLevel).toBeDefined();
+
+      // Verify scheduled levels have the scheduledQueueMessage populated
+      expect(alphaLevel.scheduledQueueMessageId).toBeDefined();
+      expect(alphaLevel.scheduledQueueMessage).toBeDefined();
+      expect(alphaLevel.scheduledQueueMessage.runAt).toBeDefined();
+      expect(alphaLevel.scheduledQueueMessage.type).toBe(QueueMessageType.PUBLISH_LEVEL);
+      expect(alphaLevel.scheduledQueueMessage.state).toBe(QueueMessageState.PENDING);
+
+      expect(betaLevel.scheduledQueueMessageId).toBeDefined();
+      expect(betaLevel.scheduledQueueMessage).toBeDefined();
+      expect(betaLevel.scheduledQueueMessage.runAt).toBeDefined();
+      expect(betaLevel.scheduledQueueMessage.type).toBe(QueueMessageType.PUBLISH_LEVEL);
+      expect(betaLevel.scheduledQueueMessage.state).toBe(QueueMessageState.PENDING);
+
+      // Verify unscheduled level doesn't have scheduledQueueMessage
+      expect(charlieLevel.scheduledQueueMessageId).toBeUndefined();
+      expect(charlieLevel.scheduledQueueMessage).toBeUndefined();
+
+      // Test date sorting with scheduled data
+      const dateContext = {
+        req: {
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          }
+        },
+        query: {
+          sortBy: 'date'
+        }
+      };
+
+      const dateRet = await getServerSideProps(dateContext as unknown as GetServerSidePropsContext) as any;
+
+      expect(dateRet.props.sortBy).toBe('date');
+
+      // Find our test levels in date-sorted results
+      const alphaLevelDate = dateRet.props.levels.find((l: any) => l.name === 'Alpha Scheduled Level');
+      const betaLevelDate = dateRet.props.levels.find((l: any) => l.name === 'Beta Scheduled Level');
+      const charlieLevelDate = dateRet.props.levels.find((l: any) => l.name === 'Charlie Unscheduled Level');
+
+      expect(alphaLevelDate).toBeDefined();
+      expect(betaLevelDate).toBeDefined();
+      expect(charlieLevelDate).toBeDefined();
+
+      // Verify scheduled levels have the scheduledQueueMessage populated in date sorting too
+      expect(alphaLevelDate.scheduledQueueMessageId).toBeDefined();
+      expect(alphaLevelDate.scheduledQueueMessage).toBeDefined();
+      expect(alphaLevelDate.scheduledQueueMessage.runAt).toBeDefined();
+      expect(alphaLevelDate.scheduledQueueMessage.type).toBe(QueueMessageType.PUBLISH_LEVEL);
+      expect(alphaLevelDate.scheduledQueueMessage.state).toBe(QueueMessageState.PENDING);
+
+      expect(betaLevelDate.scheduledQueueMessageId).toBeDefined();
+      expect(betaLevelDate.scheduledQueueMessage).toBeDefined();
+      expect(betaLevelDate.scheduledQueueMessage.runAt).toBeDefined();
+      expect(betaLevelDate.scheduledQueueMessage.type).toBe(QueueMessageType.PUBLISH_LEVEL);
+      expect(betaLevelDate.scheduledQueueMessage.state).toBe(QueueMessageState.PENDING);
+
+      // Verify unscheduled level doesn't have scheduledQueueMessage in date sorting either
+      expect(charlieLevelDate.scheduledQueueMessageId).toBeUndefined();
+      expect(charlieLevelDate.scheduledQueueMessage).toBeUndefined();
+
+      // Verify that the runAt dates match what we created
+      expect(new Date(alphaLevel.scheduledQueueMessage.runAt).getTime()).toBe(futureTime.getTime());
+      expect(new Date(betaLevel.scheduledQueueMessage.runAt).getTime()).toBe(new Date(futureTime.getTime() + 60 * 60 * 1000).getTime());
+      expect(new Date(alphaLevelDate.scheduledQueueMessage.runAt).getTime()).toBe(futureTime.getTime());
+      expect(new Date(betaLevelDate.scheduledQueueMessage.runAt).getTime()).toBe(new Date(futureTime.getTime() + 60 * 60 * 1000).getTime());
+    } finally {
+      // Clean up test data
+      await LevelModel.deleteMany({
+        name: { $in: ['Alpha Scheduled Level', 'Beta Scheduled Level', 'Charlie Unscheduled Level'] }
+      });
+      await QueueMessageModel.deleteMany({
+        _id: { $in: [queueMessage1._id, queueMessage2._id] }
       });
     }
   });

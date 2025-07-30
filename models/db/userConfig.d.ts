@@ -1,5 +1,6 @@
 import { GameId } from '@root/constants/GameId';
 import Role from '@root/constants/role';
+import TourType from '@root/constants/tourType';
 import { Types } from 'mongoose';
 import User from './user';
 

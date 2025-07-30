@@ -2,7 +2,7 @@ import Direction, { directionToVector, getDirectionFromCode } from '@root/consta
 import TileType from '@root/constants/tileType';
 import { GameContext } from '@root/contexts/gameContext';
 import { cloneGameState, GameState, makeMove, undo } from '@root/helpers/gameStateHelpers';
-import isPro from '@root/helpers/isPro';
+import { hasProAccessForLevel } from '@root/helpers/isDemoProAccess';
 import TileTypeHelper from '@root/helpers/tileTypeHelper';
 import useCheckpointAPI from '@root/hooks/useCheckpointAPI';
 import useCheckpoints, { BEST_CHECKPOINT_INDEX } from '@root/hooks/useCheckpoints';
@@ -42,6 +42,8 @@ export interface GameProps {
   disableScrubber?: boolean;
   nextLevel?: EnrichedLevel;
   prevLevel?: EnrichedLevel;
+  isCollectionViewHidden?: boolean;
+  hasCollection?: boolean;
 }
 
 export default function GameRefactored({
@@ -62,6 +64,8 @@ export default function GameRefactored({
   disableScrubber,
   nextLevel,
   prevLevel,
+  isCollectionViewHidden,
+  hasCollection,
 }: GameProps) {
   const levelContext = useContext(LevelContext);
   const { game, deviceInfo, mutateUser, shouldAttemptAuth, user } = useContext(AppContext);
@@ -69,7 +73,8 @@ export default function GameRefactored({
   const { preventKeyDownEvent } = useContext(PageContext);
 
   // Derived values
-  const pro = isPro(user);
+  const pro = hasProAccessForLevel(user, level);
+
   const isMobile = deviceInfo.isMobile;
 
   // Refs for keyboard state
@@ -505,6 +510,8 @@ export default function GameRefactored({
         isPro={pro}
         nextLevel={nextLevel}
         prevLevel={prevLevel}
+        isCollectionViewHidden={isCollectionViewHidden}
+        hasCollection={hasCollection}
       />
     </GameContext.Provider>
   );

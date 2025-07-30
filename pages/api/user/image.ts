@@ -1,12 +1,15 @@
 import { Types } from 'mongoose';
 import { NextApiResponse } from 'next';
 import sharp from 'sharp';
+import AchievementCategory from '../../../constants/achievements/achievementCategory';
 import Dimensions from '../../../constants/dimensions';
+import { GameId } from '../../../constants/GameId';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { ImageModel, UserModel } from '../../../models/mongoose';
+import { queueRefreshAchievements } from '../internal-jobs/worker/queueFunctions';
 
 export const config = {
   api: {
@@ -96,6 +99,7 @@ export default withAuth({ PUT: {} }, async (req: NextApiRequestWithAuth, res: Ne
           ts: ts,
         } }),
       UserModel.updateOne({ _id: req.userId }, { $set: { avatarUpdatedAt: ts } }),
+      queueRefreshAchievements(GameId.THINKY, req.userId, [AchievementCategory.FEATURE_EXPLORER]),
     ]);
 
     return res.status(200).send({ updated: true });

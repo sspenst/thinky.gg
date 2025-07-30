@@ -248,6 +248,8 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
           onStatsSuccess={onStatsSuccess}
           nextLevel={nextLevel}
           prevLevel={prevLevel}
+          isCollectionViewHidden={isCollectionViewHidden}
+          hasCollection={!!collection}
         />
       </div>
       {collection &&

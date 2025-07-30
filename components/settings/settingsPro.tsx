@@ -395,11 +395,20 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
       <div className='text-xs'>
         For questions please contact <Link className='text-blue-300' href='mailto:help@thinky.gg'>help@thinky.gg</Link>.
       </div>
-      <div className='flex flex-col xl:flex-row items-center gap-4 justify-center'>
-        <div className='p-2'>
-          <video autoPlay loop muted playsInline className='rounded-xl'>
-            <source src='https://i.imgur.com/HzFhvYY.mp4' type='video/mp4' />
-          </video>
+      <div className='flex flex-col items-center gap-6 justify-center'>
+        <div className='text-center mb-4'>
+          <h2 className='text-2xl font-bold mb-2'>Experience Pro Features</h2>
+          <div className='flex flex-col gap-2'>
+            <p className='text-gray-400'>Try out Pro features with these demos:</p>
+            <div className='flex gap-4 justify-center'>
+              <a href='https://pathology.thinky.gg/level/k2xl/touchdown' className='bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors'>
+                🎮 Try Pro Level Features
+              </a>
+              <a href='https://pathology.thinky.gg/profile/k2xl/' className='bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-colors'>
+                📊 View Pro Profile Insights
+              </a>
+            </div>
+          </div>
         </div>
         <div className='flex flex-col items-left gap-4'>
           <ProFeature
@@ -472,6 +481,15 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
                 <path d='M7.5 3a.5.5 0 0 1 .5.5v5.21l3.248 1.856a.5.5 0 0 1-.496.868l-3.5-2A.5.5 0 0 1 7 9V3.5a.5.5 0 0 1 .5-.5z' />
               </svg>}
             title='Play History'
+          />
+          <ProFeature
+            description='Schedule your levels to publish at optimal times when your followers are most active'
+            icon={
+              <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='rgb(168 85 247)' className='w-6 h-6'>
+                <path strokeLinecap='round' strokeLinejoin='round' d='M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5a2.25 2.25 0 002.25-2.25m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5a2.25 2.25 0 012.25 2.25v7.5M9 12h6m-6 3h6m-6 3h6' />
+              </svg>
+            }
+            title='Scheduled Publishing'
           />
           <ProFeature
             description='Displayed next to your username across the site'

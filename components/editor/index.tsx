@@ -1,7 +1,9 @@
 import { ValidateLevelResponse } from '@root/constants/Games';
 import { AppContext } from '@root/contexts/appContext';
+import isPro from '@root/helpers/isPro';
 import TileTypeHelper from '@root/helpers/tileTypeHelper';
-import { LucideCode, LucideFlipHorizontal2, LucidePencil, LucidePlay, LucideRepeat2, LucideSave, LucideShare } from 'lucide-react';
+import { ChevronDown, LucideCode, LucideFlipHorizontal2, LucidePencil, LucidePlay, LucideRepeat2, LucideSave, LucideShare } from 'lucide-react';
+import Image from 'next/image';
 import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -17,6 +19,7 @@ import DataModal from '../modal/dataModal';
 import EditLevelModal from '../modal/editLevelModal';
 import ModifyModal from '../modal/modifyModal';
 import PublishLevelModal from '../modal/publishLevelModal';
+import SchedulePublishModal from '../modal/schedulePublishModal';
 import SizeModal from '../modal/sizeModal';
 import StyledTooltip from '../page/styledTooltip';
 
@@ -28,7 +31,7 @@ interface EditorProps {
 }
 
 export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorProps) {
-  const { game, deviceInfo } = useContext(AppContext);
+  const { game, deviceInfo, user } = useContext(AppContext);
   const history = useRef<Level[]>([level]);
   const historyIndex = useRef<number>(0);
   const [isCreateLevelOpen, setIsCreateLevelOpen] = useState(false);
@@ -36,12 +39,15 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
   const [isEditLevelModalOpen, setIsEditLevelOpen] = useState(false);
   const [isModifyOpen, setIsModifyOpen] = useState(false);
   const [isPublishLevelOpen, setIsPublishLevelOpen] = useState(false);
+  const [isSchedulePublishOpen, setIsSchedulePublishOpen] = useState(false);
+  const [isPublishDropdownOpen, setIsPublishDropdownOpen] = useState(false);
   const [isSizeOpen, setIsSizeOpen] = useState(false);
   const { preventKeyDownEvent } = useContext(PageContext);
   const router = useRouter();
   const [tileType, setTileType] = useState<TileType>(TileType.Default);
   const [validateLevelResponse, setValidateLevelResponse] = useState<ValidateLevelResponse>();
   const { id } = router.query;
+  const publishDropdownRef = useRef<HTMLDivElement>(null);
 
   const undo = useCallback(() => {
     if (historyIndex.current === 0) {
@@ -186,12 +192,12 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
   }, [redo, undo]);
 
   const handleKeyDownEvent = useCallback((event: KeyboardEvent) => {
-    if (!isCreateLevelOpen && !isDataOpen && !isEditLevelModalOpen && !isModifyOpen && !isPublishLevelOpen && !isSizeOpen && !preventKeyDownEvent) {
+    if (!isCreateLevelOpen && !isDataOpen && !isEditLevelModalOpen && !isModifyOpen && !isPublishLevelOpen && !isSchedulePublishOpen && !isSizeOpen && !preventKeyDownEvent) {
       const { code } = event;
 
       handleKeyDown(code);
     }
-  }, [handleKeyDown, isCreateLevelOpen, isDataOpen, isEditLevelModalOpen, isModifyOpen, isPublishLevelOpen, isSizeOpen, preventKeyDownEvent]);
+  }, [handleKeyDown, isCreateLevelOpen, isDataOpen, isEditLevelModalOpen, isModifyOpen, isPublishLevelOpen, isSchedulePublishOpen, isSizeOpen, preventKeyDownEvent]);
 
   useEffect(() => {
     document.addEventListener('keydown', handleKeyDownEvent);
@@ -200,6 +206,23 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
       document.removeEventListener('keydown', handleKeyDownEvent);
     };
   }, [handleKeyDownEvent]);
+
+  // Handle clicking outside dropdown to close it
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (publishDropdownRef.current && !publishDropdownRef.current.contains(event.target as Node)) {
+        setIsPublishDropdownOpen(false);
+      }
+    }
+
+    if (isPublishDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isPublishDropdownOpen]);
 
   function historyPush(level: Level) {
     if (level.data !== history.current[history.current.length - 1].data) {
@@ -415,14 +438,60 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
               isDirty || !isValid,
             ),
             new Control(
-              'btn-publish',
+              'btn-publish-main',
               () => setIsPublishLevelOpen(true),
-              <>
-                <div data-tooltip-id='btn-publish-tooltip' data-tooltip-html={isDirty ? 'Save and test before publishing' : level.leastMoves === 0 ? 'Test before publishing' : null}>
-                  <span className='flex gap-1'><LucideShare stroke={isDirty ? 'white' : 'lightgreen'} /> { !isMobile && <div>Publish</div>}</span>
+              <div className='flex items-center gap-1 w-full'>
+                <div className='flex items-center gap-1 flex-1' data-tooltip-id='btn-publish-tooltip' data-tooltip-html={isDirty ? 'Save and test before publishing' : level.leastMoves === 0 ? 'Test before publishing' : null}>
+                  <LucideShare stroke={isDirty ? 'white' : 'lightgreen'} />
+                  {!isMobile && <div>Publish</div>}
                 </div>
+                {isPro(user) && (
+                  <div className='relative' ref={publishDropdownRef}>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsPublishDropdownOpen(!isPublishDropdownOpen);
+                      }}
+                      className='flex items-center p-1 hover:bg-purple-600/20 hover:border-purple-500/50 border border-transparent rounded transition-all duration-200'
+                    >
+                      <ChevronDown size={16} className={`transition-transform duration-200 ${isPublishDropdownOpen ? 'rotate-180' : ''}`} />
+                    </button>
+                    {isPublishDropdownOpen && (
+                      <div className='absolute right-0 bottom-full mb-2 w-56 bg-gradient-to-br from-gray-900 to-gray-800 border border-purple-500/30 rounded-lg shadow-2xl z-50 backdrop-blur-sm'>
+                        <div className='py-2'>
+                          <button
+                            onClick={() => {
+                              setIsSchedulePublishOpen(true);
+                              setIsPublishDropdownOpen(false);
+                            }}
+                            disabled={isDirty || level.leastMoves === 0}
+                            className={`w-full text-left px-4 py-3 transition-all duration-200 flex items-center gap-3 group ${
+                              isDirty || level.leastMoves === 0
+                                ? 'opacity-50 cursor-not-allowed'
+                                : 'hover:bg-gradient-to-r hover:from-purple-600/20 hover:to-blue-600/20'
+                            }`}
+                            title={isDirty ? 'Save and test before scheduling publish' : level.leastMoves === 0 ? 'Test before scheduling publish' : undefined}
+                          >
+                            <div className='flex items-center justify-center w-8 h-8 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg group-hover:scale-110 transition-transform duration-200'>
+                              <svg width='16' height='16' viewBox='0 0 24 24' fill='white' className='drop-shadow-sm'>
+                                <path d='M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.89-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.11-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z' />
+                              </svg>
+                            </div>
+                            <div className='flex-1'>
+                              <div className='flex items-center gap-2'>
+                                <span className='font-medium text-white group-hover:text-purple-200 transition-colors'>Schedule Publish</span>
+                                <Image alt='pro' src='/pro.svg' width={16} height={16} className='opacity-90' />
+                              </div>
+                              <div className='text-xs text-gray-400 group-hover:text-gray-300 transition-colors'>Publish at optimal times</div>
+                            </div>
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
                 <StyledTooltip id='btn-publish-tooltip' />
-              </>,
+              </div>,
               isDirty || level.leastMoves === 0,
             ),
           ]),
@@ -471,6 +540,11 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
     <PublishLevelModal
       closeModal={() => setIsPublishLevelOpen(false)}
       isOpen={isPublishLevelOpen}
+      level={level}
+    />
+    <SchedulePublishModal
+      closeModal={() => setIsSchedulePublishOpen(false)}
+      isOpen={isSchedulePublishOpen}
       level={level}
     />
   </>);

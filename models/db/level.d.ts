@@ -46,6 +46,7 @@ interface Level {
   isRanked: boolean;
   leastMoves: number;
   name: string;
+  scheduledQueueMessageId?: Types.ObjectId;
   slug: string;
   ts: number;
   userId: Types.ObjectId & User;
