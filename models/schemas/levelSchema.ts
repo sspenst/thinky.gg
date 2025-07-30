@@ -107,6 +107,10 @@ const LevelSchema = new mongoose.Schema<Level>(
       minlength: 1,
       maxlength: 50,
     },
+    scheduledQueueMessageId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'QueueMessage',
+    },
     slug: {
       type: String,
       required: true,

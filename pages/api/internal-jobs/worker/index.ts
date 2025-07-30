@@ -209,7 +209,88 @@ async function processQueueMessage(queueMessage: QueueMessage) {
       }
 
       // Need to create the new level notification because technically the image needs to be generated beforehand...
-      await createNewLevelNotifications(lvl.gameId, new Types.ObjectId(lvl.userId._id), lvl._id, undefined);
+      await createNewLevelNotifications(lvl.gameId, new Types.ObjectId((lvl.userId as any)?._id || lvl.userId), lvl._id, undefined);
+    }
+  } else if (queueMessage.type === QueueMessageType.PUBLISH_LEVEL) {
+    const { levelId } = JSON.parse(queueMessage.message) as { levelId: string };
+
+    log = `publishLevel for ${levelId}`;
+    
+    try {
+      // Import additional required models and helpers for publishing
+      const { CacheModel, RecordModel, StatModel, UserConfigModel } = await import('../../../../models/mongoose');
+      const { queueCalcCreatorCounts, queueCalcPlayAttempts, queueGenLevelImage, queueRefreshAchievements, queueRefreshIndexCalcs } = await import('./queueFunctions');
+      const AchievementCategory = await import('@root/constants/achievements/achievementCategory');
+      const { CacheTag } = await import('@root/models/db/cache');
+      const { TimerUtil } = await import('../../../../helpers/getTs');
+
+      const level = await LevelModel.findById(levelId).lean<Level>();
+      
+      if (!level) {
+        log = `publishLevel for ${levelId} failed: level not found`;
+        error = true;
+      } else if (!level.isDraft) {
+        log = `publishLevel for ${levelId} failed: level is not a draft`;
+        error = true;
+      } else {
+        const ts = TimerUtil.getTs();
+        
+        // Remove the scheduled queue message ID from the level
+        await LevelModel.findByIdAndUpdate(levelId, {
+          $unset: { scheduledQueueMessageId: 1 },
+          $set: {
+            calc_stats_completed_count: 1,
+            calc_stats_players_beaten: 1,
+            isDraft: false,
+            ts: ts,
+          },
+        });
+
+        // Create user stats and records
+        await Promise.all([
+          UserConfigModel.findOneAndUpdate({ userId: level.userId, gameId: level.gameId }, {
+            $inc: { calcLevelsSolvedCount: 1, calcLevelsCompletedCount: 1 },
+          }),
+          RecordModel.create({
+            _id: new Types.ObjectId(),
+            gameId: level.gameId,
+            levelId: level._id,
+            moves: level.leastMoves,
+            ts: ts,
+            userId: level.userId,
+          }),
+          StatModel.create({
+            _id: new Types.ObjectId(),
+            attempts: 1,
+            complete: true,
+            gameId: level.gameId,
+            levelId: level._id,
+            moves: level.leastMoves,
+            ts: ts,
+            userId: level.userId,
+          }),
+          // invalidate cache
+          CacheModel.deleteMany({
+            tag: CacheTag.SEARCH_API,
+            gameId: level.gameId,
+          }),
+        ]);
+
+        // Queue additional processing tasks
+        await Promise.all([
+          queueRefreshAchievements(level.gameId, level.userId, [AchievementCategory.default.CREATOR]),
+          queueRefreshIndexCalcs(level._id),
+          queueCalcPlayAttempts(level._id),
+          queueCalcCreatorCounts(level.gameId, level.userId),
+          queueGenLevelImage(level._id, true),
+          createNewLevelNotifications(level.gameId, level.userId, level._id, undefined),
+        ]);
+
+        log = `publishLevel for ${levelId} completed successfully`;
+      }
+    } catch (e: any) {
+      log = `publishLevel for ${levelId} failed: ${e.message}`;
+      error = true;
     }
   } else {
     log = `Unknown queue message type ${queueMessage.type}`;
