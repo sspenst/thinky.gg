@@ -161,7 +161,7 @@ export default function TutorialPathology({ recaptchaPublicKey }: TutorialPathol
         mutateUser();
 
         // Redirect to play page after successful signup
-        window.location.href = '/play';
+        window.location.href = '/chapter/1';
       } else {
         const errorData = await response.json();
 
@@ -913,16 +913,31 @@ export default function TutorialPathology({ recaptchaPublicKey }: TutorialPathol
   const controls: Control[] = [];
   const isLastStep = tutorialStepIndex === getTutorialSteps().length - 1;
 
+  // Add restart button on all steps
+  controls.push(new Control(
+    'control-restart',
+    () => {
+      setTutorialStepIndex(0);
+      sessionStorage.setItem('tutorialStep-Pathology', '0');
+    },
+    <div className='flex items-center text-xs gap-1'>
+      <svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' viewBox='0 0 16 16'>
+        <path fillRule='evenodd' d='M11.854 3.646a.5.5 0 0 1 0 .708L8.207 8l3.647 3.646a.5.5 0 0 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 0 1 .708 0zM4.707 8l3.647-3.646a.5.5 0 0 1 .708.708L5.414 8l3.648 3.646a.5.5 0 0 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 0 1 .708 0z' />
+      </svg>
+      Restart Tutorial
+    </div>,
+    false,
+  ));
+
   if (tutorialStepIndex !== 0) {
-    // Make prev button more muted on last step
-    const mutedPrevControl = new Control(
+    const prevControl = new Control(
       'control-prev',
       () => {
         setTutorialStepIndex(i => i - 1);
         sessionStorage.setItem('tutorialStep-Pathology', (tutorialStepIndex - 1).toString());
       },
-      <div className={`flex justify-center ${isLastStep ? 'opacity-40 text-xs' : ''}`}>
-        <svg xmlns='http://www.w3.org/2000/svg' width={isLastStep ? '16' : '24'} height={isLastStep ? '16' : '24'} fill='currentColor' className='bi bi-arrow-left-short' viewBox='0 0 16 16'>
+      <div className='flex justify-center'>
+        <svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='currentColor' className='bi bi-arrow-left-short' viewBox='0 0 16 16'>
           <path fillRule='evenodd' d='M12 8a.5.5 0 0 1-.5.5H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5H11.5a.5.5 0 0 1 .5.5z' />
         </svg>
         <span className='pr-2 self-center'>
@@ -932,7 +947,7 @@ export default function TutorialPathology({ recaptchaPublicKey }: TutorialPathol
       isPrevButtonDisabled,
     );
 
-    controls.push(mutedPrevControl);
+    controls.push(prevControl);
   }
 
   if (!isLastStep) {
@@ -942,20 +957,6 @@ export default function TutorialPathology({ recaptchaPublicKey }: TutorialPathol
 
     controls.push(skipControl());
     !tutorialStep.onSolve && controls.push(nextControl(isNextButtonDisabled || atIncompleteLevel));
-  } else {
-    // Muted restart button on final step
-    controls.push(new Control(
-      'restart',
-      () => {
-        setTutorialStepIndex(0);
-
-        return;
-      },
-      <button onClick={() => setTutorialStepIndex(0)} className='opacity-40 text-xs'>
-        Restart Tutorial
-      </button>,
-      false,
-    ));
   }
 
   return (
@@ -1003,7 +1004,7 @@ export default function TutorialPathology({ recaptchaPublicKey }: TutorialPathol
               key={tutorialStep.key}
               level={tutorialStep.level}
               onMove={(gameState: GameState) => {
-                const restartButton = document.getElementById('btn-restart') as HTMLButtonElement;
+                const restartButton = document.getElementById('control-restart') as HTMLButtonElement;
 
                 // show restart notification if they have reached the exit in too many moves
                 if (gameState.board[gameState.pos.y][gameState.pos.x].tileType === TileType.Exit && gameState.moves.length > (tutorialStep.level?.leastMoves ?? 0)) {
