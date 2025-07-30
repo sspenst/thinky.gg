@@ -205,6 +205,18 @@ export function NotificationMessage({ notification, onMarkAsRead }: Notification
     </>);
   }
 
+  case NotificationType.SCHEDULED_LEVEL_PUBLISHED: {
+    return (<>
+      {'Your scheduled level was published: '}
+      <FormattedLevelLink
+        gameId={game.id}
+        id={`notification-${notification._id.toString()}`}
+        level={notification.source as EnrichedLevel}
+        onClick={onMarkAsRead}
+      />
+    </>);
+  }
+
   default:
     return null;
   }

@@ -15,6 +15,57 @@ import User from '../../../models/db/user';
 import { CacheModel, LevelModel, RecordModel, StatModel, UserConfigModel } from '../../../models/mongoose';
 import { queueCalcCreatorCounts, queueCalcPlayAttempts, queueGenLevelImage, queueRefreshAchievements, queueRefreshIndexCalcs } from '../internal-jobs/worker/queueFunctions';
 
+export async function validateLevelForPublishing(level: Level, userId: Types.ObjectId, gameId: GameId, action: 'publishing' | 'scheduling publish' = 'publishing') {
+  const game = getGameFromId(gameId);
+
+  // Validate level data
+  if (game.validateLevel) {
+    const validateLevelResult = game.validateLevel(level.data);
+
+    if (validateLevelResult.valid === false) {
+      return validateLevelResult.reasons.join(', ');
+    }
+  }
+
+  // Check move count
+  if (level.leastMoves === 0) {
+    return `You must set a move count before ${action}`;
+  }
+
+  if (level.leastMoves > 2500) {
+    return 'Move count cannot be greater than 2500';
+  }
+
+  // Check for duplicate levels
+  if (await LevelModel.findOne({
+    data: level.data,
+    isDeleted: { $ne: true },
+    isDraft: false,
+    gameId: level.gameId,
+  })) {
+    return 'An identical level already exists';
+  }
+
+  if (await LevelModel.findOne({
+    isDeleted: { $ne: true },
+    isDraft: false,
+    name: level.name,
+    userId: userId,
+    gameId: level.gameId,
+  })) {
+    return 'A level with this name already exists';
+  }
+
+  // Check publish restrictions
+  const restrictionError = await checkPublishRestrictions(gameId, userId);
+
+  if (restrictionError) {
+    return restrictionError;
+  }
+
+  return null; // No errors
+}
+
 export async function checkPublishRestrictions(gameId: GameId, userId: Types.ObjectId) {
   // check last 24h
   const ts = TimerUtil.getTs() - 60 * 60 * 24;
@@ -74,59 +125,13 @@ export default withAuth({ POST: {
   }
 
   const gameId = getGameIdFromReq(req);
-  const game = getGameFromId(gameId);
 
-  if (game.validateLevel) {
-    const validateLevelResult = game.validateLevel(level.data);
+  // Validate the level for publishing
+  const validationError = await validateLevelForPublishing(level, new Types.ObjectId(req.userId), gameId, 'publishing');
 
-    if (validateLevelResult.valid === false) {
-      return res.status(400).json({
-        error: validateLevelResult.reasons.join(', '),
-      });
-    }
-  }
-
-  if (level.leastMoves === 0) {
+  if (validationError) {
     return res.status(400).json({
-      error: 'You must set a move count before publishing',
-    });
-  }
-
-  if (level.leastMoves > 2500) {
-    return res.status(400).json({
-      error: 'Move count cannot be greater than 2500',
-    });
-  }
-
-  // TODO: These queries can probably be combined into one query
-  if (await LevelModel.findOne({
-    data: level.data,
-    isDeleted: { $ne: true },
-    isDraft: false,
-    gameId: level.gameId,
-  })) {
-    return res.status(400).json({
-      error: 'An identical level already exists',
-    });
-  }
-
-  if (await LevelModel.findOne({
-    isDeleted: { $ne: true },
-    isDraft: false,
-    name: level.name,
-    userId: req.userId,
-    gameId: level.gameId,
-  })) {
-    return res.status(400).json({
-      error: 'A level with this name already exists',
-    });
-  }
-
-  const error = await checkPublishRestrictions(level.gameId, req.user._id);
-
-  if (error) {
-    return res.status(400).json({
-      error: error,
+      error: validationError,
     });
   }
 

@@ -8,10 +8,10 @@ import withAuth, { NextApiRequestWithAuth } from '@root/lib/withAuth';
 import Level from '@root/models/db/level';
 import { LevelModel, QueueMessageModel } from '@root/models/mongoose';
 import { queuePublishLevel } from '../internal-jobs/worker/queueFunctions';
-import { checkPublishRestrictions } from '../publish/[id]';
+import { validateLevelForPublishing } from '../publish/[id]';
 import { getGameFromId, getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { QueueMessageState } from '@root/models/schemas/queueMessageSchema';
-import { Types } from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
 
 const ONE_MONTH_SECONDS = 30 * 24 * 60 * 60; // 1 month in seconds
@@ -94,60 +94,12 @@ export default withAuth({
   }
 
   const gameId = getGameIdFromReq(req);
-  const game = getGameFromId(gameId);
 
-  // Validate level
-  if (game.validateLevel) {
-    const validateLevelResult = game.validateLevel(level.data);
-
-    if (validateLevelResult.valid === false) {
-      return res.status(400).json({
-        error: validateLevelResult.reasons.join(', '),
-      });
-    }
-  }
-
-  if (level.leastMoves === 0) {
+  // Validate the level for publishing (using shared validation)
+  const validationError = await validateLevelForPublishing(level, req.userId, gameId, 'scheduling publish');
+  if (validationError) {
     return res.status(400).json({
-      error: 'You must set a move count before scheduling publish',
-    });
-  }
-
-  if (level.leastMoves > 2500) {
-    return res.status(400).json({
-      error: 'Move count cannot be greater than 2500',
-    });
-  }
-
-  // Check for duplicate levels
-  if (await LevelModel.findOne({
-    data: level.data,
-    isDeleted: { $ne: true },
-    isDraft: false,
-    gameId: level.gameId,
-  })) {
-    return res.status(400).json({
-      error: 'An identical level already exists',
-    });
-  }
-
-  if (await LevelModel.findOne({
-    isDeleted: { $ne: true },
-    isDraft: false,
-    name: level.name,
-    userId: req.userId,
-    gameId: level.gameId,
-  })) {
-    return res.status(400).json({
-      error: 'A level with this name already exists',
-    });
-  }
-
-  // Check publish restrictions
-  const restrictionError = await checkPublishRestrictions(level.gameId, req.user._id);
-  if (restrictionError) {
-    return res.status(400).json({
-      error: restrictionError,
+      error: validationError,
     });
   }
 
@@ -201,19 +153,23 @@ async function handleCancelScheduledPublish(req: NextApiRequestWithAuth, res: Ne
     });
   }
 
-  try {
-    // Cancel the queue message
-    await QueueMessageModel.findByIdAndUpdate(level.scheduledQueueMessageId, {
-      state: QueueMessageState.FAILED,
-      processingCompletedAt: new Date(),
-      $push: {
-        log: 'Canceled by user',
-      },
-    });
+  const session = await mongoose.startSession();
 
-    // Remove the scheduled queue message ID from the level
-    await LevelModel.findByIdAndUpdate(id, {
-      $unset: { scheduledQueueMessageId: 1 },
+  try {
+    await session.withTransaction(async () => {
+      // Cancel the queue message
+      await QueueMessageModel.findByIdAndUpdate(level.scheduledQueueMessageId, {
+        state: QueueMessageState.FAILED,
+        processingCompletedAt: new Date(),
+        $push: {
+          log: 'Canceled by user',
+        },
+      }, { session });
+
+      // Remove the scheduled queue message ID from the level
+      await LevelModel.findByIdAndUpdate(id, {
+        $unset: { scheduledQueueMessageId: 1 },
+      }, { session });
     });
 
     return res.status(200).json({
@@ -224,6 +180,8 @@ async function handleCancelScheduledPublish(req: NextApiRequestWithAuth, res: Ne
     return res.status(500).json({
       error: 'Error canceling scheduled publish',
     });
+  } finally {
+    await session.endSession();
   }
 }
 

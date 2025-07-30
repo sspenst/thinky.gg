@@ -7,7 +7,7 @@ import genLevelImage from '@root/helpers/genLevelImage';
 import { checkIfBlocked } from '@root/helpers/getBlockedUserIds';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import isGuest from '@root/helpers/isGuest';
-import { createNewLevelNotifications } from '@root/helpers/notificationHelper';
+import { createNewLevelNotifications, createScheduledLevelPublishedNotification } from '@root/helpers/notificationHelper';
 import { processDiscordMentions } from '@root/helpers/processDiscordMentions';
 import { refreshAchievements } from '@root/helpers/refreshAchievements';
 import { USER_DEFAULT_PROJECTION } from '@root/models/constants/projections';
@@ -284,6 +284,7 @@ async function processQueueMessage(queueMessage: QueueMessage) {
           queueCalcCreatorCounts(level.gameId, level.userId),
           queueGenLevelImage(level._id, true),
           createNewLevelNotifications(level.gameId, level.userId, level._id, undefined),
+          createScheduledLevelPublishedNotification(level.gameId, level.userId, level._id, level.name),
         ]);
 
         log = `publishLevel for ${levelId} completed successfully`;

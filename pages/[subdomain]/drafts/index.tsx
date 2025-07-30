@@ -339,7 +339,7 @@ export default function Create({ levels, user, page, totalCount, levelsPerPage, 
                         </div>
                         {publishDate && (
                           <div className='text-xs mt-1'>
-                            {publishDate.toLocaleDateString()} at {publishDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} {Intl.DateTimeFormat().resolvedOptions().timeZone.split('/').pop()}
+                            {publishDate.toLocaleDateString()} at {publishDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZoneName: 'short' })}
                           </div>
                         )}
                       </div>
