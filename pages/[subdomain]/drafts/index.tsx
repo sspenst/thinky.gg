@@ -191,7 +191,7 @@ export default function Create({ levels, user, page, totalCount, levelsPerPage, 
   const cancelScheduledPublish = async (levelId: string) => {
     try {
       toast.loading('Canceling scheduled publish...');
-      
+
       const response = await fetch(`/api/schedule-publish/${levelId}`, {
         method: 'DELETE',
         credentials: 'include',
@@ -200,17 +200,18 @@ export default function Create({ levels, user, page, totalCount, levelsPerPage, 
       if (response.ok) {
         toast.dismiss();
         toast.success('Scheduled publish canceled');
-        
+
         // Update the level in local state
-        setLocalLevels(prevLevels => 
-          prevLevels.map(level => 
-            level._id.toString() === levelId 
+        setLocalLevels(prevLevels =>
+          prevLevels.map(level =>
+            level._id.toString() === levelId
               ? { ...level, scheduledQueueMessageId: undefined }
               : level
           )
         );
       } else {
         const error = await response.json();
+
         toast.dismiss();
         toast.error(error.error || 'Failed to cancel scheduled publish');
       }
@@ -318,7 +319,7 @@ export default function Create({ levels, user, page, totalCount, levelsPerPage, 
             const isScheduled = level.scheduledQueueMessageId;
             const scheduledMessage = (level as any).scheduledQueueMessage;
             const publishDate = scheduledMessage?.runAt ? new Date(scheduledMessage.runAt) : null;
-            
+
             return (
               <div key={`draft-level-div-${level._id.toString()}`} className='flex flex-col'>
                 <div className='relative'>
@@ -332,8 +333,8 @@ export default function Create({ levels, user, page, totalCount, levelsPerPage, 
                     <div className='absolute inset-0 bg-blue-500/20 border-2 border-blue-500 rounded-lg flex items-center justify-center'>
                       <div className='bg-blue-600 text-white p-2 rounded-lg text-center'>
                         <div className='flex items-center gap-1 text-sm font-medium'>
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.89-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.11-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
+                          <svg width='16' height='16' viewBox='0 0 24 24' fill='currentColor'>
+                            <path d='M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.89-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.11-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z' />
                           </svg>
                           Scheduled
                         </div>
@@ -358,8 +359,8 @@ export default function Create({ levels, user, page, totalCount, levelsPerPage, 
                         Cancel Schedule
                       </button>
                       <span className='text-xs text-gray-400 flex items-center gap-1'>
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                        <svg width='12' height='12' viewBox='0 0 24 24' fill='currentColor'>
+                          <path d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z' />
                         </svg>
                         Cannot edit while scheduled
                       </span>

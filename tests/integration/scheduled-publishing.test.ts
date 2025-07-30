@@ -4,11 +4,11 @@ import { TimerUtil } from '@root/helpers/getTs';
 import dbConnect, { dbDisconnect } from '@root/lib/dbConnect';
 import { LevelModel, QueueMessageModel, RecordModel, StatModel } from '@root/models/mongoose';
 import { QueueMessageState, QueueMessageType } from '@root/models/schemas/queueMessageSchema';
+import { enableFetchMocks } from 'jest-fetch-mock';
+import MockDate from 'mockdate';
+import { Types } from 'mongoose';
 import { processQueueMessages } from '../../pages/api/internal-jobs/worker';
 import { queuePublishLevel } from '../../pages/api/internal-jobs/worker/queueFunctions';
-import { enableFetchMocks } from 'jest-fetch-mock';
-import { Types } from 'mongoose';
-import MockDate from 'mockdate';
 
 enableFetchMocks();
 
@@ -58,11 +58,13 @@ describe('Scheduled Publishing Integration', () => {
 
     // Verify the level is scheduled
     let level = await LevelModel.findById(testLevelId);
+
     expect(level.isDraft).toBe(true);
     expect(level.scheduledQueueMessageId).toEqual(queueMessageId);
 
     // Verify the queue message exists
     let queueMessage = await QueueMessageModel.findById(queueMessageId);
+
     expect(queueMessage.state).toBe(QueueMessageState.PENDING);
     expect(queueMessage.type).toBe(QueueMessageType.PUBLISH_LEVEL);
 
@@ -89,6 +91,7 @@ describe('Scheduled Publishing Integration', () => {
       levelId: testLevelId,
       userId: testUserId,
     });
+
     expect(userRecord).toBeTruthy();
     expect(userRecord.moves).toBe(10);
 
@@ -96,6 +99,7 @@ describe('Scheduled Publishing Integration', () => {
       levelId: testLevelId,
       userId: testUserId,
     });
+
     expect(userStat).toBeTruthy();
     expect(userStat.moves).toBe(10);
     expect(userStat.complete).toBe(true);
@@ -133,6 +137,7 @@ describe('Scheduled Publishing Integration', () => {
 
     // Verify the level is scheduled
     let level = await LevelModel.findById(testLevelId);
+
     expect(level.scheduledQueueMessageId).toEqual(queueMessageId);
 
     // Step 4: Cancel the scheduled publishing (simulating the API)
@@ -154,6 +159,7 @@ describe('Scheduled Publishing Integration', () => {
     expect(level.scheduledQueueMessageId).toBeUndefined(); // No longer scheduled
 
     const queueMessage = await QueueMessageModel.findById(queueMessageId);
+
     expect(queueMessage.state).toBe(QueueMessageState.FAILED);
     expect(queueMessage.log).toContain('Canceled by user');
 
@@ -169,6 +175,7 @@ describe('Scheduled Publishing Integration', () => {
       levelId: testLevelId,
       userId: testUserId,
     });
+
     expect(userRecord).toBeFalsy();
   });
 
@@ -177,7 +184,7 @@ describe('Scheduled Publishing Integration', () => {
     const testLevelId2 = new Types.ObjectId();
     const testLevelId3 = new Types.ObjectId();
     const testUserId = new Types.ObjectId(TestId.USER_PRO);
-    
+
     const now = Date.now();
     const publishDate1 = new Date(now + 1000); // 1 second from now
     const publishDate2 = new Date(now + 2000); // 2 seconds from now
@@ -257,7 +264,7 @@ describe('Scheduled Publishing Integration', () => {
 
     expect(level1.isDraft).toBe(false); // Published
     expect(level2.isDraft).toBe(false); // Published
-    expect(level3.isDraft).toBe(true);  // Still draft (scheduled for future)
+    expect(level3.isDraft).toBe(true); // Still draft (scheduled for future)
 
     expect(level1.scheduledQueueMessageId).toBeUndefined();
     expect(level2.scheduledQueueMessageId).toBeUndefined();

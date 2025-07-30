@@ -4,10 +4,10 @@ import { TimerUtil } from '@root/helpers/getTs';
 import dbConnect, { dbDisconnect } from '@root/lib/dbConnect';
 import { LevelModel, QueueMessageModel, RecordModel, StatModel, UserConfigModel } from '@root/models/mongoose';
 import { QueueMessageState, QueueMessageType } from '@root/models/schemas/queueMessageSchema';
-import { processQueueMessages } from '../../../../../pages/api/internal-jobs/worker';
 import { enableFetchMocks } from 'jest-fetch-mock';
-import { Types } from 'mongoose';
 import MockDate from 'mockdate';
+import { Types } from 'mongoose';
+import { processQueueMessages } from '../../../../../pages/api/internal-jobs/worker';
 
 enableFetchMocks();
 
@@ -65,6 +65,7 @@ describe('PUBLISH_LEVEL queue worker', () => {
 
     // Verify the level was published
     const publishedLevel = await LevelModel.findById(testLevelId);
+
     expect(publishedLevel.isDraft).toBe(false);
     expect(publishedLevel.scheduledQueueMessageId).toBeUndefined();
     expect(publishedLevel.calc_stats_completed_count).toBe(1);
@@ -72,6 +73,7 @@ describe('PUBLISH_LEVEL queue worker', () => {
 
     // Verify queue message was completed
     const completedMessage = await QueueMessageModel.findById(queueMessageId);
+
     expect(completedMessage.state).toBe(QueueMessageState.COMPLETED);
     expect(completedMessage.log).toContain(`publishLevel for ${testLevelId} completed successfully`);
 
@@ -80,6 +82,7 @@ describe('PUBLISH_LEVEL queue worker', () => {
       levelId: testLevelId,
       userId: testUserId,
     });
+
     expect(userRecord).toBeTruthy();
     expect(userRecord.moves).toBe(10);
 
@@ -87,6 +90,7 @@ describe('PUBLISH_LEVEL queue worker', () => {
       levelId: testLevelId,
       userId: testUserId,
     });
+
     expect(userStat).toBeTruthy();
     expect(userStat.moves).toBe(10);
     expect(userStat.complete).toBe(true);
@@ -113,6 +117,7 @@ describe('PUBLISH_LEVEL queue worker', () => {
 
     // Verify queue message failed
     const failedMessage = await QueueMessageModel.findById(queueMessageId);
+
     expect(failedMessage.state).toBe(QueueMessageState.PENDING); // Will retry due to error
     expect(failedMessage.log).toContain(`publishLevel for ${nonExistentLevelId} failed: level not found`);
   });
@@ -157,6 +162,7 @@ describe('PUBLISH_LEVEL queue worker', () => {
 
     // Verify queue message failed
     const failedMessage = await QueueMessageModel.findById(queueMessageId);
+
     expect(failedMessage.state).toBe(QueueMessageState.PENDING); // Will retry due to error
     expect(failedMessage.log).toContain(`publishLevel for ${testLevelId} failed: level is not a draft`);
   });
@@ -201,11 +207,13 @@ describe('PUBLISH_LEVEL queue worker', () => {
 
     // Verify the level was NOT published
     const level = await LevelModel.findById(testLevelId);
+
     expect(level.isDraft).toBe(true); // Still a draft
     expect(level.scheduledQueueMessageId).toEqual(queueMessageId); // Still scheduled
 
     // Verify queue message is still pending
     const pendingMessage = await QueueMessageModel.findById(queueMessageId);
+
     expect(pendingMessage.state).toBe(QueueMessageState.PENDING);
     expect(pendingMessage.isProcessing).toBe(false);
   });
@@ -262,6 +270,7 @@ describe('PUBLISH_LEVEL queue worker', () => {
       userId: testUserId,
       gameId: DEFAULT_GAME_ID,
     });
+
     expect(updatedUserConfig.calcLevelsSolvedCount).toBe(6); // Incremented by 1
     expect(updatedUserConfig.calcLevelsCompletedCount).toBe(4); // Incremented by 1
   });
@@ -337,7 +346,7 @@ describe('PUBLISH_LEVEL queue worker', () => {
     // Verify both levels were published
     const level1 = await LevelModel.findById(testLevelId1);
     const level2 = await LevelModel.findById(testLevelId2);
-    
+
     expect(level1.isDraft).toBe(false);
     expect(level2.isDraft).toBe(false);
     expect(level1.scheduledQueueMessageId).toBeUndefined();
@@ -346,7 +355,7 @@ describe('PUBLISH_LEVEL queue worker', () => {
     // Verify both queue messages completed
     const message1 = await QueueMessageModel.findById(queueMessageId1);
     const message2 = await QueueMessageModel.findById(queueMessageId2);
-    
+
     expect(message1.state).toBe(QueueMessageState.COMPLETED);
     expect(message2.state).toBe(QueueMessageState.COMPLETED);
   });

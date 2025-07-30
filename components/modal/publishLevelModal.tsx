@@ -1,3 +1,5 @@
+import isPro from '@root/helpers/isPro';
+import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { useContext, useState } from 'react';
 import toast from 'react-hot-toast';
@@ -6,8 +8,6 @@ import Level from '../../models/db/level';
 import FormattedAuthorNote from '../formatted/formattedAuthorNote';
 import isNotFullAccountToast from '../toasts/isNotFullAccountToast';
 import Modal from '.';
-import isPro from '@root/helpers/isPro';
-import Image from 'next/image';
 import SchedulePublishModal from './schedulePublishModal';
 
 interface PublishLevelModalProps {
@@ -66,9 +66,10 @@ export default function PublishLevelModal({ closeModal, isOpen, level }: Publish
       // Redirect to Pro page for non-Pro users
       closeModal();
       router.push('/pro');
+
       return;
     }
-    
+
     // Open the schedule modal for Pro users
     setIsScheduleModalOpen(true);
   }
@@ -93,7 +94,6 @@ export default function PublishLevelModal({ closeModal, isOpen, level }: Publish
               </div>
             }
           </div>
-
           {/* Custom Button Row */}
           <div className='flex justify-center gap-3 pt-4'>
             <button
@@ -115,7 +115,6 @@ export default function PublishLevelModal({ closeModal, isOpen, level }: Publish
           </div>
         </div>
       </Modal>
-
       <SchedulePublishModal
         closeModal={() => setIsScheduleModalOpen(false)}
         isOpen={isScheduleModalOpen}

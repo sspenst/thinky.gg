@@ -1,9 +1,9 @@
 import dbConnect, { dbDisconnect } from '@root/lib/dbConnect';
 import { QueueMessageModel } from '@root/models/mongoose';
 import { QueueMessageState, QueueMessageType } from '@root/models/schemas/queueMessageSchema';
-import { queuePublishLevel } from '../../../../../pages/api/internal-jobs/worker/queueFunctions';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types } from 'mongoose';
+import { queuePublishLevel } from '../../../../../pages/api/internal-jobs/worker/queueFunctions';
 
 enableFetchMocks();
 
@@ -26,6 +26,7 @@ describe('queuePublishLevel function', () => {
 
     // Verify the queue message was created correctly
     const queueMessage = await QueueMessageModel.findById(queueMessageId);
+
     expect(queueMessage).toBeTruthy();
     expect(queueMessage.type).toBe(QueueMessageType.PUBLISH_LEVEL);
     expect(queueMessage.state).toBe(QueueMessageState.PENDING);
@@ -36,6 +37,7 @@ describe('queuePublishLevel function', () => {
 
     // Verify the message contains the correct level ID
     const messageData = JSON.parse(queueMessage.message);
+
     expect(messageData.levelId).toBe(testLevelId.toString());
   });
 
@@ -54,6 +56,7 @@ describe('queuePublishLevel function', () => {
 
     // Verify the queue message was created
     const queueMessage = await QueueMessageModel.findById(queueMessageId);
+
     expect(queueMessage).toBeTruthy();
     expect(queueMessage.type).toBe(QueueMessageType.PUBLISH_LEVEL);
   });
@@ -103,6 +106,7 @@ describe('queuePublishLevel function', () => {
     const queueMessageId = await queuePublishLevel(testLevelId, publishDate);
 
     const queueMessage = await QueueMessageModel.findById(queueMessageId);
+
     expect(queueMessage).toBeTruthy();
     expect(queueMessage.runAt.getTime()).toBeCloseTo(publishDate.getTime(), -3); // Within 1 second
   });

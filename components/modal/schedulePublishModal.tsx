@@ -1,15 +1,15 @@
-import { useContext, useState, useMemo, useEffect } from 'react';
+import isPro from '@root/helpers/isPro';
+import useProStatsUser, { ProStatsUserType } from '@root/hooks/useProStatsUser';
+import Link from 'next/link';
+import { useRouter } from 'next/router';
+import { useContext, useEffect, useMemo, useState } from 'react';
 import toast from 'react-hot-toast';
 import { AppContext } from '../../contexts/appContext';
 import Level from '../../models/db/level';
 import FormattedAuthorNote from '../formatted/formattedAuthorNote';
+import { TimeFilter } from '../profile/profileInsights';
 import isNotFullAccountToast from '../toasts/isNotFullAccountToast';
 import Modal from '.';
-import isPro from '@root/helpers/isPro';
-import Link from 'next/link';
-import useProStatsUser, { ProStatsUserType } from '@root/hooks/useProStatsUser';
-import { TimeFilter } from '../profile/profileInsights';
-import { useRouter } from 'next/router';
 
 interface SchedulePublishModalProps {
   closeModal: () => void;
@@ -23,12 +23,12 @@ export default function SchedulePublishModal({ closeModal, isOpen, level }: Sche
   const [timezone, setTimezone] = useState(Intl.DateTimeFormat().resolvedOptions().timeZone);
   const { user } = useContext(AppContext);
   const router = useRouter();
-  
+
   // Get follower activity data for best time recommendations
   const { proStatsUser: followerData, isLoading: isLoadingFollowers } = useProStatsUser(
-    user, 
-    ProStatsUserType.FollowerActivityPatterns, 
-    TimeFilter.ALL, 
+    user,
+    ProStatsUserType.FollowerActivityPatterns,
+    TimeFilter.ALL,
     !isPro(user)
   );
 
@@ -46,17 +46,18 @@ export default function SchedulePublishModal({ closeModal, isOpen, level }: Sche
   const getBestTimeToPublish = () => {
     if (followerData && followerData[ProStatsUserType.FollowerActivityPatterns] && followerData[ProStatsUserType.FollowerActivityPatterns].followerCount >= 5) {
       const recommendations = followerData[ProStatsUserType.FollowerActivityPatterns].recommendations;
+
       return `${recommendations.bestDayLabel}s at ${recommendations.bestTimeLabel}`;
     }
+
     return 'Build your following to get personalized recommendations';
   };
 
-  
   // Get available timezones for the dropdown
   const timezones = useMemo(() => {
     const commonTimezones = [
       'America/New_York',
-      'America/Chicago', 
+      'America/Chicago',
       'America/Denver',
       'America/Los_Angeles',
       'Europe/London',
@@ -67,13 +68,14 @@ export default function SchedulePublishModal({ closeModal, isOpen, level }: Sche
       'Australia/Sydney',
       'UTC'
     ];
-    
+
     // Add user's current timezone if not in common list
     const userTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
     if (!commonTimezones.includes(userTz)) {
       commonTimezones.unshift(userTz);
     }
-    
+
     return commonTimezones.map(tz => ({
       value: tz,
       label: tz.replace('_', ' ').replace('/', ' / ')
@@ -85,7 +87,7 @@ export default function SchedulePublishModal({ closeModal, isOpen, level }: Sche
     if (isOpen && !publishDateTime) {
       // Calculate the next optimal publish time
       let optimalTime;
-      
+
       if (followerData && followerData[ProStatsUserType.FollowerActivityPatterns] && followerData[ProStatsUserType.FollowerActivityPatterns].followerCount >= 5) {
         const recommendations = followerData[ProStatsUserType.FollowerActivityPatterns].recommendations;
         const bestDay = recommendations.bestDay; // 0 = Sunday, 1 = Monday, etc.
@@ -97,6 +99,7 @@ export default function SchedulePublishModal({ closeModal, isOpen, level }: Sche
 
         // Calculate days until the next optimal day
         let daysUntilOptimal = bestDay - currentDay;
+
         if (daysUntilOptimal < 0) {
           daysUntilOptimal += 7; // Next week
         } else if (daysUntilOptimal === 0 && currentHour >= bestHour) {
@@ -105,21 +108,25 @@ export default function SchedulePublishModal({ closeModal, isOpen, level }: Sche
 
         // Create the optimal publish date
         const optimalDate = new Date(now);
+
         optimalDate.setDate(now.getDate() + daysUntilOptimal);
         optimalDate.setHours(bestHour, 0, 0, 0); // Set to the best hour with 0 minutes/seconds
 
         // Convert to local datetime-local format
         const localDateTime = new Date(optimalDate.getTime() - optimalDate.getTimezoneOffset() * 60000);
+
         optimalTime = localDateTime.toISOString().slice(0, 16);
       } else {
         // Default to tomorrow at 2 PM if no recommendations available
         const tomorrow = new Date();
+
         tomorrow.setDate(tomorrow.getDate() + 1);
         tomorrow.setHours(14, 0, 0, 0);
         const localDateTime = new Date(tomorrow.getTime() - tomorrow.getTimezoneOffset() * 60000);
+
         optimalTime = localDateTime.toISOString().slice(0, 16);
       }
-      
+
       setPublishDateTime(optimalTime);
     }
   }, [isOpen, publishDateTime, followerData, isLoadingFollowers]);
@@ -134,11 +141,13 @@ export default function SchedulePublishModal({ closeModal, isOpen, level }: Sche
   const handleSchedule = () => {
     if (!publishDateTime) {
       toast.error('Please select a publish date and time');
+
       return;
     }
 
     if (level.leastMoves === 0) {
       toast.error('You must test the level and set a move count before scheduling publish');
+
       return;
     }
 
@@ -165,15 +174,17 @@ export default function SchedulePublishModal({ closeModal, isOpen, level }: Sche
         toast.error('Scheduled publishing is a Pro feature');
       } else if (res.status === 200) {
         const response = await res.json();
+
         closeModal();
 
         toast.dismiss();
         toast.success(`Level scheduled to publish on ${new Date(response.publishAt).toLocaleString()}`);
-        
+
         // Redirect to drafts page to show the scheduled level
         router.push('/drafts');
       } else {
         const resp = await res.json();
+
         toast.dismiss();
         toast.error(resp.error);
       }
@@ -199,7 +210,7 @@ export default function SchedulePublishModal({ closeModal, isOpen, level }: Sche
             <div className='text-6xl mb-4'>⏰</div>
             <h3 className='text-lg font-bold mb-2'>Schedule Your Level Publishing</h3>
             <p className='text-gray-400 mb-4'>
-              Schedule your levels to publish at optimal times when your followers are most active. 
+              Schedule your levels to publish at optimal times when your followers are most active.
               This Pro feature helps maximize engagement and reach.
             </p>
           </div>
@@ -213,10 +224,9 @@ export default function SchedulePublishModal({ closeModal, isOpen, level }: Sche
               <li>• Cancel or reschedule anytime before publishing</li>
             </ul>
           </div>
-
           <div className='text-center'>
-            <Link 
-              href='/pro' 
+            <Link
+              href='/pro'
               className='inline-block bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-bold py-2 px-6 rounded-lg transition-all duration-200'
               onClick={closeModal}
             >
@@ -243,7 +253,6 @@ export default function SchedulePublishModal({ closeModal, isOpen, level }: Sche
           <br />
           <span className='font-bold'>Moves:</span> {level.leastMoves}
         </div>
-
         {!level.authorNote ? null : (
           <div>
             <span className='font-bold'>Author Note:</span>
@@ -251,7 +260,6 @@ export default function SchedulePublishModal({ closeModal, isOpen, level }: Sche
             <FormattedAuthorNote authorNote={level.authorNote} />
           </div>
         )}
-
         {level.leastMoves === 0 && (
           <div className='bg-amber-500/20 rounded-lg p-3 border border-amber-500/30'>
             <div className='flex items-start gap-2'>
@@ -265,7 +273,6 @@ export default function SchedulePublishModal({ closeModal, isOpen, level }: Sche
             </div>
           </div>
         )}
-
         <div className='space-y-4 border-t border-gray-600 pt-4'>
           <div>
             <label htmlFor='publishDateTime' className='block text-sm font-medium mb-2'>
@@ -284,7 +291,6 @@ export default function SchedulePublishModal({ closeModal, isOpen, level }: Sche
               Schedule up to 1 month in advance.
             </p>
           </div>
-
           <div>
             <label htmlFor='timezone' className='block text-sm font-medium mb-2'>
               Timezone
@@ -302,7 +308,6 @@ export default function SchedulePublishModal({ closeModal, isOpen, level }: Sche
               ))}
             </select>
           </div>
-
           <div className='bg-blue-500/20 rounded-lg p-3 border border-blue-500/30'>
             <div className='flex items-start gap-2'>
               <span className='text-blue-400 text-lg'>💡</span>
@@ -311,7 +316,7 @@ export default function SchedulePublishModal({ closeModal, isOpen, level }: Sche
                 <p className='text-sm text-gray-300'>
                   Based on your followers' activity, the optimal time is <strong>{getBestTimeToPublish()}</strong>.
                 </p>
-                <Link 
+                <Link
                   href={`/profile/${user?.name}/insights?subtab=creator&timeFilter=all`}
                   className='text-blue-400 hover:text-blue-300 text-sm underline'
                   target='_blank'

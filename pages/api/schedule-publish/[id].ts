@@ -1,22 +1,22 @@
-import isPro from '@root/helpers/isPro';
-import isFullAccount from '@root/helpers/isFullAccount';
-import { TimerUtil } from '@root/helpers/getTs';
-import { logger } from '@root/helpers/logger';
 import { ValidObjectId, ValidType } from '@root/helpers/apiWrapper';
+import { getGameFromId, getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
+import { TimerUtil } from '@root/helpers/getTs';
+import isFullAccount from '@root/helpers/isFullAccount';
+import isPro from '@root/helpers/isPro';
+import { logger } from '@root/helpers/logger';
 import dbConnect from '@root/lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '@root/lib/withAuth';
 import Level from '@root/models/db/level';
 import { LevelModel, QueueMessageModel } from '@root/models/mongoose';
-import { queuePublishLevel } from '../internal-jobs/worker/queueFunctions';
-import { validateLevelForPublishing } from '../publish/[id]';
-import { getGameFromId, getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { QueueMessageState } from '@root/models/schemas/queueMessageSchema';
 import mongoose, { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
+import { queuePublishLevel } from '../internal-jobs/worker/queueFunctions';
+import { validateLevelForPublishing } from '../publish/[id]';
 
 const ONE_MONTH_SECONDS = 30 * 24 * 60 * 60; // 1 month in seconds
 
-export default withAuth({ 
+export default withAuth({
   POST: {
     query: {
       id: ValidObjectId(),
@@ -34,6 +34,7 @@ export default withAuth({
   if (req.method === 'DELETE') {
     return handleCancelScheduledPublish(req, res);
   }
+
   if (!isFullAccount(req.user)) {
     return res.status(401).json({
       error: 'Scheduling a level publish requires a full account with a confirmed email'
@@ -63,6 +64,7 @@ export default withAuth({
 
   // Check if the publish date is more than 1 month in the future
   const maxDate = new Date(now.getTime() + ONE_MONTH_SECONDS * 1000);
+
   if (publishDate > maxDate) {
     return res.status(400).json({
       error: 'Cannot schedule more than 1 month in advance'
@@ -97,6 +99,7 @@ export default withAuth({
 
   // Validate the level for publishing (using shared validation)
   const validationError = await validateLevelForPublishing(level, req.userId, gameId, 'scheduling publish');
+
   if (validationError) {
     return res.status(400).json({
       error: validationError,
@@ -119,6 +122,7 @@ export default withAuth({
     });
   } catch (err) {
     logger.error(err);
+
     return res.status(500).json({
       error: 'Error scheduling level publish',
     });
@@ -177,6 +181,7 @@ async function handleCancelScheduledPublish(req: NextApiRequestWithAuth, res: Ne
     });
   } catch (err) {
     logger.error(err);
+
     return res.status(500).json({
       error: 'Error canceling scheduled publish',
     });
@@ -191,4 +196,4 @@ export const config = {
       sizeLimit: '1mb',
     },
   },
-}
+};

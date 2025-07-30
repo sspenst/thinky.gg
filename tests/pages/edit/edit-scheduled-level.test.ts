@@ -6,8 +6,8 @@ import { getTokenCookieValue } from '@root/lib/getTokenCookie';
 import { LevelModel, QueueMessageModel } from '@root/models/mongoose';
 import { QueueMessageState, QueueMessageType } from '@root/models/schemas/queueMessageSchema';
 import { enableFetchMocks } from 'jest-fetch-mock';
-import { GetServerSidePropsContext } from 'next';
 import { Types } from 'mongoose';
+import { GetServerSidePropsContext } from 'next';
 import { getServerSideProps } from '../../../pages/[subdomain]/edit/[id]';
 
 enableFetchMocks();
@@ -64,7 +64,6 @@ describe('/edit/[id] page protection', () => {
       },
     } as GetServerSidePropsContext;
 
-
     const result = await getServerSideProps(mockContext);
 
     expect(result).toEqual({
@@ -105,7 +104,6 @@ describe('/edit/[id] page protection', () => {
       },
     } as GetServerSidePropsContext;
 
-
     const result = await getServerSideProps(mockContext);
 
     expect(result).toHaveProperty('props');
@@ -124,7 +122,6 @@ describe('/edit/[id] page protection', () => {
         headers: { host: 'pathology.thinky.gg' },
       },
     } as GetServerSidePropsContext;
-
 
     const result = await getServerSideProps(mockContext);
 

@@ -215,7 +215,7 @@ async function processQueueMessage(queueMessage: QueueMessage) {
     const { levelId } = JSON.parse(queueMessage.message) as { levelId: string };
 
     log = `publishLevel for ${levelId}`;
-    
+
     try {
       // Import additional required models and helpers for publishing
       const { CacheModel, RecordModel, StatModel, UserConfigModel } = await import('../../../../models/mongoose');
@@ -225,7 +225,7 @@ async function processQueueMessage(queueMessage: QueueMessage) {
       const { TimerUtil } = await import('../../../../helpers/getTs');
 
       const level = await LevelModel.findById(levelId).lean<Level>();
-      
+
       if (!level) {
         log = `publishLevel for ${levelId} failed: level not found`;
         error = true;
@@ -234,7 +234,7 @@ async function processQueueMessage(queueMessage: QueueMessage) {
         error = true;
       } else {
         const ts = TimerUtil.getTs();
-        
+
         // Remove the scheduled queue message ID from the level
         await LevelModel.findByIdAndUpdate(levelId, {
           $unset: { scheduledQueueMessageId: 1 },

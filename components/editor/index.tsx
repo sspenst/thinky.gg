@@ -1,8 +1,8 @@
 import { ValidateLevelResponse } from '@root/constants/Games';
 import { AppContext } from '@root/contexts/appContext';
-import TileTypeHelper from '@root/helpers/tileTypeHelper';
 import isPro from '@root/helpers/isPro';
-import { LucideCode, LucideFlipHorizontal2, LucidePencil, LucidePlay, LucideRepeat2, LucideSave, LucideShare, ChevronDown } from 'lucide-react';
+import TileTypeHelper from '@root/helpers/tileTypeHelper';
+import { ChevronDown, LucideCode, LucideFlipHorizontal2, LucidePencil, LucidePlay, LucideRepeat2, LucideSave, LucideShare } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
@@ -466,15 +466,15 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
                             }}
                             disabled={isDirty || level.leastMoves === 0}
                             className={`w-full text-left px-4 py-3 transition-all duration-200 flex items-center gap-3 group ${
-                              isDirty || level.leastMoves === 0 
-                                ? 'opacity-50 cursor-not-allowed' 
+                              isDirty || level.leastMoves === 0
+                                ? 'opacity-50 cursor-not-allowed'
                                 : 'hover:bg-gradient-to-r hover:from-purple-600/20 hover:to-blue-600/20'
                             }`}
                             title={isDirty ? 'Save and test before scheduling publish' : level.leastMoves === 0 ? 'Test before scheduling publish' : undefined}
                           >
                             <div className='flex items-center justify-center w-8 h-8 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg group-hover:scale-110 transition-transform duration-200'>
-                              <svg width="16" height="16" viewBox="0 0 24 24" fill="white" className='drop-shadow-sm'>
-                                <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.89-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.11-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
+                              <svg width='16' height='16' viewBox='0 0 24 24' fill='white' className='drop-shadow-sm'>
+                                <path d='M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.89-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.11-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z' />
                               </svg>
                             </div>
                             <div className='flex-1'>
