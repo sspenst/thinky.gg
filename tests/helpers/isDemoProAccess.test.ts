@@ -6,10 +6,10 @@ import { Types } from 'mongoose';
 
 describe('isDemoProAccess helper functions', () => {
   describe('isDemoProLevel', () => {
-    test('should return true for k2xl/touchtown level', () => {
+    test('should return true for k2xl/touchdown level', () => {
       const demoLevel = {
         userId: { name: 'k2xl' },
-        slug: 'touchtown',
+        slug: 'k2xl/touchdown',
       } as EnrichedLevel;
 
       expect(isDemoProLevel(demoLevel)).toBe(true);
@@ -27,7 +27,7 @@ describe('isDemoProAccess helper functions', () => {
     test('should return false for k2xl user with different slug', () => {
       const wrongSlugLevel = {
         userId: { name: 'k2xl' },
-        slug: 'different-level',
+        slug: 'k2xl/different-level',
       } as EnrichedLevel;
 
       expect(isDemoProLevel(wrongSlugLevel)).toBe(false);
@@ -86,11 +86,11 @@ describe('isDemoProAccess helper functions', () => {
       _id: new Types.ObjectId(),
       name: 'regularuser',
       roles: [],
-    } as User;
+    } as Partial<User>;
 
     const demoLevel = {
       userId: { name: 'k2xl' },
-      slug: 'touchtown',
+      slug: 'k2xl/touchdown',
     } as EnrichedLevel;
 
     const regularLevel = {

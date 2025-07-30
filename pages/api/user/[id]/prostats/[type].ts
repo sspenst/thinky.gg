@@ -946,7 +946,7 @@ export default withAuth({
 
   // Check access for restricted endpoints
   if (restrictedEndpoints.includes(type as ProStatsUserType)) {
-    if (!hasAccess) {
+    if (!hasAccess || req.user._id.toString() !== profileUser._id.toString()) {
       return res.status(401).json({
         error: 'Not authorized',
       });
