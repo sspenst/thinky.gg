@@ -71,7 +71,7 @@ export interface ProStatsUser {
   };
 }
 
-export default function useProStatsUser(user: User | null, type: ProStatsUserType, timeFilter: TimeFilter = TimeFilter.ALL, disable = false) {
+export default function useProStatsUser(user: User | null | undefined, type: ProStatsUserType, timeFilter: TimeFilter = TimeFilter.ALL, disable = false) {
   const timeParam = timeFilter !== TimeFilter.ALL ? `?timeFilter=${timeFilter}` : '';
   const { data, error, isLoading, mutate } = useSWRHelper<ProStatsUser>('/api/user/' + user?._id + '/prostats/' + type + timeParam, {}, {
     revalidateOnFocus: false,

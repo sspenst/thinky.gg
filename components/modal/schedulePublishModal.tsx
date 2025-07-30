@@ -4,12 +4,12 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useContext, useEffect, useMemo, useState } from 'react';
 import toast from 'react-hot-toast';
+import Modal from '.';
 import { AppContext } from '../../contexts/appContext';
 import Level from '../../models/db/level';
 import FormattedAuthorNote from '../formatted/formattedAuthorNote';
 import { TimeFilter } from '../profile/profileInsights';
 import isNotFullAccountToast from '../toasts/isNotFullAccountToast';
-import Modal from '.';
 
 interface SchedulePublishModalProps {
   closeModal: () => void;
@@ -314,7 +314,7 @@ export default function SchedulePublishModal({ closeModal, isOpen, level }: Sche
               <div>
                 <h4 className='font-medium text-blue-300'>Best Time to Publish</h4>
                 <p className='text-sm text-gray-300'>
-                  Based on your followers' activity, the optimal time is <strong>{getBestTimeToPublish()}</strong>.
+                  Based on your followers&apos; activity, the optimal time is <strong>{getBestTimeToPublish()}</strong>.
                 </p>
                 <Link
                   href={`/profile/${user?.name}/insights?subtab=creator&timeFilter=all`}
