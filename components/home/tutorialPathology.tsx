@@ -3,10 +3,8 @@
 import { createPopper, Instance, Placement } from '@popperjs/core';
 import styles from '@root/components/level/Controls.module.css';
 import { directionToVector } from '@root/constants/direction';
-import { GameId } from '@root/constants/GameId';
 import TileType from '@root/constants/tileType';
 import { GameState } from '@root/helpers/gameStateHelpers';
-import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import classNames from 'classnames';
 import { ArrowBigDown, Trophy } from 'lucide-react';
 import { Types } from 'mongoose';
@@ -75,7 +73,7 @@ export default function TutorialPathology({ recaptchaPublicKey }: TutorialPathol
   const globalTimeout = useRef<NodeJS.Timeout | null>(null);
   const [isNextButtonDisabled, setIsNextButtonDisabled] = useState(false);
   const [isPrevButtonDisabled, setIsPrevButtonDisabled] = useState(false);
-  const { mutateUser, user, deviceInfo } = useContext(AppContext);
+  const { mutateUser, user, deviceInfo, game } = useContext(AppContext);
   const [popperInstance, setPopperInstance] = useState<Instance | null>(null);
   const popperUpdateInterval = useRef<NodeJS.Timeout | null>(null);
   const [showNiceJob, setShowNiceJob] = useState(false);
@@ -163,7 +161,6 @@ export default function TutorialPathology({ recaptchaPublicKey }: TutorialPathol
         mutateUser();
 
         // Redirect to play page after successful signup
-        const game = getGameFromId(GameId.PATHOLOGY);
         const url = game.baseUrl + '/chapter/1';
 
         window.location.href = url;
@@ -627,7 +624,7 @@ export default function TutorialPathology({ recaptchaPublicKey }: TutorialPathol
           {isLoggedIn ? (
             <div className='text-center'>
               <Link
-                href='/chapter/1'
+                href={game.baseUrl + '/chapter/1'}
                 className='w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 px-6 rounded-lg text-center transition-colors duration-200 fadeIn inline-block'
                 style={{
                   pointerEvents: 'all',
