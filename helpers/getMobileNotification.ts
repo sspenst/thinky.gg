@@ -161,6 +161,23 @@ export default function getMobileNotification(gameId: GameId, notification: Noti
     return mobileNotification;
   }
 
+  case NotificationType.LEVEL_OF_DAY: {
+    mobileNotification.title = game.displayName + ' - Level of the Day';
+
+    if (notification.source && (notification.source as EnrichedLevel)._id) {
+      const levelOfDay = notification.source as EnrichedLevel;
+
+      mobileNotification.body = notification.message || `Check out today's ${game.displayName} level of the day!`;
+      mobileNotification.imageUrl = `${host}/api/level/image/${levelOfDay._id}.png`;
+      mobileNotification.url = `${host}/level-of-day`;
+    } else {
+      mobileNotification.body = notification.message || `Check out today's ${game.displayName} level of the day!`;
+      mobileNotification.url = `${host}/level-of-day`;
+    }
+
+    return mobileNotification;
+  }
+
   default:
     return mobileNotification;
   }

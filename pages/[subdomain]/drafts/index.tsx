@@ -11,7 +11,8 @@ import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { ParsedUrlQueryInput } from 'querystring';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
 import Page from '../../../components/page/page';
 import { getUserFromToken } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
@@ -59,30 +60,44 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const totalCount = await LevelModel.countDocuments(searchQuery);
 
   // Build sort criteria based on sortBy parameter
-  if (sortBy === 'name') {
-    // Simple sort by name - no need for aggregation
-    const levels = await LevelModel.find<Level>(searchQuery)
-      .sort({ name: 1, _id: 1 })
-      .skip((page - 1) * levelsPerPage)
-      .limit(levelsPerPage);
+  let levels: Level[];
 
-    return {
-      props: {
-        levels: JSON.parse(JSON.stringify(levels)),
-        user: JSON.parse(JSON.stringify(reqUser)),
-        page: page,
-        totalCount: totalCount,
-        levelsPerPage: levelsPerPage,
-        search: search,
-        sortBy: sortBy,
-      },
-    };
-  } else {
-    // Date sorting with updatedAt fallback to ts
-    const levels = await LevelModel.aggregate<Level>([
+  if (sortBy === 'name') {
+    // Name sorting with aggregation to properly populate scheduledQueueMessage
+    levels = await LevelModel.aggregate<Level>([
       { $match: searchQuery },
       {
+        $lookup: {
+          from: 'queuemessages',
+          localField: 'scheduledQueueMessageId',
+          foreignField: '_id',
+          as: 'scheduledQueueMessage'
+        }
+      },
+      {
         $addFields: {
+          scheduledQueueMessage: { $arrayElemAt: ['$scheduledQueueMessage', 0] }
+        }
+      },
+      { $sort: { name: 1, _id: 1 } },
+      { $skip: (page - 1) * levelsPerPage },
+      { $limit: levelsPerPage }
+    ]);
+  } else {
+    // Date sorting with updatedAt fallback to ts and populated scheduledQueueMessageId
+    levels = await LevelModel.aggregate<Level>([
+      { $match: searchQuery },
+      {
+        $lookup: {
+          from: 'queuemessages',
+          localField: 'scheduledQueueMessageId',
+          foreignField: '_id',
+          as: 'scheduledQueueMessage'
+        }
+      },
+      {
+        $addFields: {
+          scheduledQueueMessage: { $arrayElemAt: ['$scheduledQueueMessage', 0] },
           sortDate: {
             $ifNull: ['$updatedAt', { $toDate: { $multiply: ['$ts', 1000] } }]
           }
@@ -93,19 +108,19 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       { $limit: levelsPerPage },
       { $unset: 'sortDate' }
     ]);
-
-    return {
-      props: {
-        levels: JSON.parse(JSON.stringify(levels)),
-        user: JSON.parse(JSON.stringify(reqUser)),
-        page: page,
-        totalCount: totalCount,
-        levelsPerPage: levelsPerPage,
-        search: search,
-        sortBy: sortBy,
-      },
-    };
   }
+
+  return {
+    props: {
+      levels: JSON.parse(JSON.stringify(levels)),
+      user: JSON.parse(JSON.stringify(reqUser)),
+      page: page,
+      totalCount: totalCount,
+      levelsPerPage: levelsPerPage,
+      search: search,
+      sortBy: sortBy,
+    },
+  };
 }
 
 export interface CreatePageProps {
@@ -129,10 +144,23 @@ interface RouterQuery extends ParsedUrlQueryInput {
 /* istanbul ignore next */
 export default function Create({ levels, user, page, totalCount, levelsPerPage, search, sortBy }: CreatePageProps) {
   const [searchText, setSearchText] = useState(search);
+  const [localLevels, setLocalLevels] = useState(levels);
   const router = useRouter();
 
   // Use the server-provided sortBy value directly
   const currentSort = sortBy as SortOption;
+
+  // Get the correct pathname for subdomain-aware routing
+  const pathname = router.pathname.replace('/[subdomain]', '');
+
+  // Sync state with props when they change
+  useEffect(() => {
+    setSearchText(search);
+  }, [search]);
+
+  useEffect(() => {
+    setLocalLevels(levels);
+  }, [levels]);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const setSearchTextDebounce = useCallback(
@@ -151,11 +179,14 @@ export default function Create({ levels, user, page, totalCount, levelsPerPage, 
         query.sortBy = currentSort;
       }
 
-      router.push({
-        pathname: '/drafts',
+      // Remove subdomain from query as it's handled by the pathname
+      delete query.subdomain;
+
+      router.replace({
+        pathname: pathname,
         query: query,
       });
-    }, 500), [currentSort]);
+    }, 500), [currentSort, pathname]);
 
   const handleSortChange = (newSortBy: SortOption) => {
     const query: RouterQuery = {
@@ -170,15 +201,52 @@ export default function Create({ levels, user, page, totalCount, levelsPerPage, 
       query.sortBy = newSortBy;
     }
 
-    router.push({
-      pathname: '/drafts',
+    // Remove subdomain from query as it's handled by the pathname
+    delete query.subdomain;
+
+    router.replace({
+      pathname: pathname,
       query: query,
     });
   };
 
+  const cancelScheduledPublish = async (levelId: string) => {
+    try {
+      toast.loading('Canceling scheduled publish...');
+
+      const response = await fetch(`/api/schedule-publish/${levelId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        toast.dismiss();
+        toast.success('Scheduled publish canceled');
+
+        // Update the level in local state
+        setLocalLevels(prevLevels =>
+          prevLevels.map(level =>
+            level._id.toString() === levelId
+              ? { ...level, scheduledQueueMessageId: undefined }
+              : level
+          )
+        );
+      } else {
+        const error = await response.json();
+
+        toast.dismiss();
+        toast.error(error.error || 'Failed to cancel scheduled publish');
+      }
+    } catch (err) {
+      console.error(err);
+      toast.dismiss();
+      toast.error('Error canceling scheduled publish');
+    }
+  };
+
   // Since sorting is now done server-side, we don't need client-side sorting
-  // Just use the levels as returned from the server
-  const sortedLevels = levels;
+  // Use local levels to reflect any updates from canceling scheduled publishes
+  const sortedLevels = localLevels;
 
   const totalPages = Math.ceil(totalCount / levelsPerPage);
 
@@ -270,15 +338,57 @@ export default function Create({ levels, user, page, totalCount, levelsPerPage, 
         
         <div className='flex flex-wrap justify-center gap-4'>
           {sortedLevels.map(level => {
+            const isScheduled = level.scheduledQueueMessageId;
+            const scheduledMessage = (level as any).scheduledQueueMessage;
+            const publishDate = scheduledMessage?.runAt ? new Date(scheduledMessage.runAt) : null;
+
             return (
               <div key={`draft-level-div-${level._id.toString()}`} className='flex flex-col'>
-                <LevelCard
-                  href={`/edit/${level._id.toString()}`}
-                  id='draft-level'
-                  key={`draft-level-${level._id.toString()}`}
-                  level={level}
-                />
-                <span className='text-center'><FormattedDate prefix='Updated' date={level?.updatedAt} className='italic text-xs' /></span>
+                <div className='relative'>
+                  <LevelCard
+                    href={isScheduled ? undefined : `/edit/${level._id.toString()}`}
+                    id='draft-level'
+                    key={`draft-level-${level._id.toString()}`}
+                    level={level}
+                  />
+                  {isScheduled && (
+                    <div className='absolute inset-0 bg-blue-500/20 border-2 border-blue-500 rounded-lg flex items-center justify-center'>
+                      <div className='bg-blue-600 text-white p-2 rounded-lg text-center'>
+                        <div className='flex items-center gap-1 text-sm font-medium'>
+                          <svg width='16' height='16' viewBox='0 0 24 24' fill='currentColor'>
+                            <path d='M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.89-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.11-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z' />
+                          </svg>
+                          Scheduled
+                        </div>
+                        {publishDate && (
+                          <div className='text-xs mt-1'>
+                            {publishDate.toLocaleDateString()} at {publishDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZoneName: 'short' })}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+                
+                <div className='text-center mt-1'>
+                  <FormattedDate prefix='Updated' date={level?.updatedAt} className='italic text-xs block' />
+                  {isScheduled && (
+                    <div className='flex gap-2 justify-center mt-2'>
+                      <button
+                        onClick={() => cancelScheduledPublish(level._id.toString())}
+                        className='text-xs bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded'
+                      >
+                        Cancel Schedule
+                      </button>
+                      <span className='text-xs text-gray-400 flex items-center gap-1'>
+                        <svg width='12' height='12' viewBox='0 0 24 24' fill='currentColor'>
+                          <path d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z' />
+                        </svg>
+                        Cannot edit while scheduled
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
             );
           })}
@@ -290,7 +400,7 @@ export default function Create({ levels, user, page, totalCount, levelsPerPage, 
               <Link
                 className='ml-2 underline'
                 href={{
-                  pathname: '/drafts',
+                  pathname: pathname,
                   query: {
                     ...(page !== 2 && { page: page - 1 }),
                     ...(searchText && { search: searchText }),
@@ -306,7 +416,7 @@ export default function Create({ levels, user, page, totalCount, levelsPerPage, 
               <Link
                 className='ml-2 underline'
                 href={{
-                  pathname: '/drafts',
+                  pathname: pathname,
                   query: {
                     page: page + 1,
                     ...(searchText && { search: searchText }),

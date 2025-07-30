@@ -1,3 +1,4 @@
+import { DeviceState } from '../schemas/deviceSchema';
 import User from './user';
 
 interface Device {
@@ -10,6 +11,7 @@ interface Device {
   deviceOSVersion: string;
   updatedAt: Date;
   userId: Types.ObjectId & User;
+  state: DeviceState;
 }
 
 export default Device;

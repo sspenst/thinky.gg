@@ -53,7 +53,7 @@ describe('pages/chapter2 page', () => {
 
     expect(ret).toBeDefined();
     expect(ret.redirect).toBeDefined();
-    expect(ret.redirect?.destination).toBe('/play');
+    expect(ret.redirect?.destination).toBe('/chapter/2');
   });
   test('getServerSideProps logged in chapterUnlocked 2', async () => {
     await UserConfigModel.updateOne({ userId: new Types.ObjectId(TestId.USER) }, { $set: { chapterUnlocked: 2 } });
@@ -70,9 +70,8 @@ describe('pages/chapter2 page', () => {
     const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext) as any;
 
     expect(ret).toBeDefined();
-    expect(ret.props).toBeDefined();
-    expect(ret.props?.enrichedCollections).toBeDefined();
-    expect(ret.props?.enrichedCollections[0]._id).toBe(TestId.COLLECTION);
+    expect(ret.redirect).toBeDefined();
+    expect(ret.redirect?.destination).toBe('/chapter/2');
   });
   test('getServerSideProps logged in no collection exists', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
@@ -89,6 +88,7 @@ describe('pages/chapter2 page', () => {
     const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext) as any;
 
     expect(ret).toBeDefined();
-    expect(ret.props).toBeUndefined();
+    expect(ret.redirect).toBeDefined();
+    expect(ret.redirect?.destination).toBe('/chapter/2');
   });
 });

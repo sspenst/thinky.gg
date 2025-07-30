@@ -49,20 +49,74 @@ export default function SettingsNotifications() {
     });
   }
 
-  const allNotifs = Object.values(NotificationType);
-
-  const notifLabels = {
-    [NotificationType.ADMIN_MESSAGE]: 'Admin message',
-    [NotificationType.NEW_ACHIEVEMENT]: 'New achievement',
-    [NotificationType.NEW_FOLLOWER]: 'New follower',
-    [NotificationType.NEW_LEVEL]: 'New level from someone you follow',
-    [NotificationType.NEW_LEVEL_ADDED_TO_COLLECTION]: 'Someone adds your level to a collection',
-    [NotificationType.NEW_RECORD_ON_A_LEVEL_YOU_SOLVED]: 'New record on a level you previously solved',
-    [NotificationType.NEW_REVIEW_ON_YOUR_LEVEL]: 'New review on one of your levels',
-    [NotificationType.NEW_WALL_POST]: 'New profile comment',
-    [NotificationType.NEW_WALL_REPLY]: 'New reply to profile comment',
-    [NotificationType.UPGRADED_TO_PRO]: 'Upgraded to Pro',
+  // Group notifications by category for better organization
+  const notificationGroups = {
+    'Daily Content': [
+      {
+        type: NotificationType.LEVEL_OF_DAY,
+        label: 'Level of the day',
+        description: 'Daily featured level recommendations'
+      }
+    ],
+    'Community & Social': [
+      {
+        type: NotificationType.NEW_FOLLOWER,
+        label: 'New follower',
+        description: 'When someone starts following you'
+      },
+      {
+        type: NotificationType.NEW_LEVEL,
+        label: 'New level from someone you follow',
+        description: 'When creators you follow publish new levels'
+      },
+      {
+        type: NotificationType.NEW_WALL_POST,
+        label: 'Profile comments',
+        description: 'When someone comments on your profile'
+      },
+      {
+        type: NotificationType.NEW_WALL_REPLY,
+        label: 'Comment replies',
+        description: 'When someone replies to your comments'
+      }
+    ],
+    'Your Content': [
+      {
+        type: NotificationType.NEW_REVIEW_ON_YOUR_LEVEL,
+        label: 'Reviews on your levels',
+        description: 'When someone reviews your levels'
+      },
+      {
+        type: NotificationType.NEW_LEVEL_ADDED_TO_COLLECTION,
+        label: 'Level added to collection',
+        description: 'When your level is added to a collection'
+      },
+      {
+        type: NotificationType.NEW_RECORD_ON_A_LEVEL_YOU_SOLVED,
+        label: 'New records',
+        description: 'When someone beats your record on a level'
+      }
+    ],
+    'Achievements & Account': [
+      {
+        type: NotificationType.NEW_ACHIEVEMENT,
+        label: 'New achievement',
+        description: 'When you unlock achievements'
+      },
+      {
+        type: NotificationType.UPGRADED_TO_PRO,
+        label: 'Pro upgrade',
+        description: 'Account upgrade confirmations'
+      },
+      {
+        type: NotificationType.ADMIN_MESSAGE,
+        label: 'Admin messages',
+        description: 'Important announcements from administrators'
+      }
+    ]
   };
+
+  const allNotifs = Object.values(NotificationType);
 
   if (!user || !userConfig) {
     return null;
@@ -93,154 +147,164 @@ export default function SettingsNotifications() {
 
   const guest = isGuest(user);
 
-  return (
-    <div className='flex flex-col items-center gap-6 mb-4'>
-      <div className='max-w-sm'>
-        <table className='table-fixed'>
-          <thead>
-            <tr className='border-b' style={{ borderColor: 'var(--bg-color-4)' }}>
-              <th className='p-2 text-left'>Notifications</th>
-              {!guest &&
-                <th className='p-2'>
-                  <div id='toggleAllEmailNotifs' className='flex justify-center gap-2'>
-                    <label className='text-sm' htmlFor='toggleAllEmailNotifs'>
-                    Email
-                    </label>
-                    <input
-                      checked={disallowedEmailNotifications.length === 0}
-                      disabled={isUserConfigLoading}
-                      id='toggleAllEmailNotifs'
-                      name='toggleAllEmailNotifs'
-                      onChange={() => {
-                        if (disallowedEmailNotifications.length !== 0) {
-                          updateUserConfig(
-                            JSON.stringify({
-                              disallowedEmailNotifications: [],
-                            }),
-                            'notification settings',
-                          );
-                        } else {
-                          updateUserConfig(
-                            JSON.stringify({
-                              disallowedEmailNotifications: allNotifs,
-                            }),
-                            'notification settings',
-                          );
-                        }
-                      }}
-                      type='checkbox'
-                    />
-                  </div>
-                </th>
-              }
-              <th className='p-2 pl-4'>
-                <div id='toggleAllPushNotifs' className='flex justify-center gap-2'>
-                  <label className='text-sm' htmlFor='toggleAllPushNotifs'>
-                    Push
-                  </label>
-                  <input
-                    checked={disallowedPushNotifications.length === 0}
-                    disabled={isUserConfigLoading}
-                    id='toggleAllPushNotifs'
-                    name='toggleAllPushNotifs'
-                    onChange={() => {
-                      if (disallowedPushNotifications.length !== 0) {
-                        updateUserConfig(
-                          JSON.stringify({
-                            disallowedPushNotifications: [],
-                          }),
-                          'notification settings',
-                        );
-                      } else {
-                        updateUserConfig(
-                          JSON.stringify({
-                            disallowedPushNotifications: allNotifs,
-                          }),
-                          'notification settings',
-                        );
-                      }
-                    }}
-                    type='checkbox'
-                  />
-                </div>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {allNotifs.map((notif) => {
-              const label = notifLabels[notif];
+  const NotificationToggle = ({ notif, isEmail }: { notif: NotificationType, isEmail: boolean }) => (
+    <label className='relative inline-flex items-center cursor-pointer'>
+      <input
+        type='checkbox'
+        className='sr-only peer'
+        checked={isEmail ? !disallowedEmailNotifications.includes(notif) : !disallowedPushNotifications.includes(notif)}
+        disabled={isUserConfigLoading}
+        onChange={() => updateNotifs(notif, isEmail ? 'email' : 'push')}
+      />
+      <div className='w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[""] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600' />
+    </label>
+  );
 
-              return (
-                <tr key={notif} className='border-b' style={{ borderColor: 'var(--bg-color-4)' }}>
-                  <td className='p-2'>
-                    <label className='text-sm' htmlFor={notif}>
-                      {label}
-                    </label>
-                  </td>
-                  {!guest &&
-                    <td className='p-2 text-center'>
-                      <input
-                        checked={!disallowedEmailNotifications.includes(notif)}
-                        disabled={isUserConfigLoading}
-                        id={notif + '-email'}
-                        name={notif}
-                        onChange={() => updateNotifs(notif, 'email')}
-                        type='checkbox'
-                      />
-                    </td>
-                  }
-                  <td className='p-2 text-center'>
-                    <input
-                      checked={!disallowedPushNotifications.includes(notif)}
-                      disabled={isUserConfigLoading}
-                      id={notif + '-push'}
-                      name={notif}
-                      onChange={() => updateNotifs(notif, 'push')}
-                      type='checkbox'
-                    />
-                  </td>
-                </tr>
+  const GlobalToggle = ({ isEmail }: { isEmail: boolean }) => {
+    const isAllEnabled = isEmail
+      ? disallowedEmailNotifications.length === 0
+      : disallowedPushNotifications.length === 0;
+
+    return (
+      <label className='relative inline-flex items-center cursor-pointer'>
+        <input
+          type='checkbox'
+          className='sr-only peer'
+          checked={isAllEnabled}
+          disabled={isUserConfigLoading}
+          onChange={() => {
+            if (isEmail) {
+              updateUserConfig(
+                JSON.stringify({
+                  disallowedEmailNotifications: isAllEnabled ? allNotifs : [],
+                }),
+                'notification settings',
               );
-            })}
-            {!guest &&
-              <tr key='level-of-the-day' className='border-b' style={{ borderColor: 'var(--bg-color-4)' }}>
-                <td className='p-2'>
-                  <label className='text-sm' htmlFor='level-of-the-day'>
-                    Level of the day
-                  </label>
-                </td>
-                <td className='px-4 py-2 text-center'>
-                  <input
-                    checked={emailDigest === EmailDigestSettingType.DAILY}
-                    disabled={isUserConfigLoading}
-                    id='level-of-the-day'
-                    name='level-of-the-day'
-                    onChange={option => {
-                      if (!option) {
-                        return;
-                      }
-
-                      const newEmailDigest = emailDigest === EmailDigestSettingType.DAILY ? EmailDigestSettingType.NONE : EmailDigestSettingType.DAILY;
-
-                      updateUserConfig(
-                        JSON.stringify({
-                          emailDigest: newEmailDigest,
-                        }), 'notification settings',
-                      );
-
-                      setEmailDigest(newEmailDigest);
-                    }}
-                    type='checkbox'
-                  />
-                </td>
-                <td className='px-4 py-2 text-center'>
-                  {null}
-                </td>
-              </tr>
+            } else {
+              updateUserConfig(
+                JSON.stringify({
+                  disallowedPushNotifications: isAllEnabled ? allNotifs : [],
+                }),
+                'notification settings',
+              );
             }
-          </tbody>
-        </table>
+          }}
+        />
+        <div className='w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[""] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600' />
+      </label>
+    );
+  };
+
+  return (
+    <div className='flex flex-col gap-8 max-w-4xl mx-auto p-6'>
+      {/* Header with global toggles */}
+      <div className='text-center'>
+        <h2 className='text-2xl font-bold mb-4'>Notification Preferences</h2>
+        <p className='text-gray-600 dark:text-gray-400 mb-6'>
+          Choose how you want to be notified about activity and updates
+        </p>
+        
+        <div className='flex justify-center gap-8 mb-6'>
+          {!guest && (
+            <div className='flex items-center gap-3'>
+              <span className='text-sm font-medium'>Email notifications</span>
+              <GlobalToggle isEmail={true} />
+              <span className='text-xs text-gray-500'>All</span>
+            </div>
+          )}
+          <div className='flex items-center gap-3'>
+            <span className='text-sm font-medium'>Push notifications</span>
+            <GlobalToggle isEmail={false} />
+            <span className='text-xs text-gray-500'>All</span>
+          </div>
+        </div>
       </div>
+      {/* Notification groups */}
+      {Object.entries(notificationGroups).map(([groupName, notifications]) => (
+        <div key={groupName} className='bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6'>
+          <h3 className='text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100'>
+            {groupName}
+          </h3>
+          
+          <div className='space-y-4'>
+            {notifications.map(({ type, label, description }) => (
+              <div key={type} className='flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg'>
+                <div className='flex-1'>
+                  <h4 className='text-sm font-medium text-gray-900 dark:text-gray-100'>
+                    {label}
+                  </h4>
+                  <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>
+                    {description}
+                  </p>
+                </div>
+                
+                <div className='flex items-center gap-6 ml-4'>
+                  {!guest && (
+                    <div className='flex items-center gap-2'>
+                      <span className='text-xs text-gray-600 dark:text-gray-400'>Email</span>
+                      <NotificationToggle notif={type} isEmail={true} />
+                    </div>
+                  )}
+                  <div className='flex items-center gap-2'>
+                    <span className='text-xs text-gray-600 dark:text-gray-400'>Push</span>
+                    <NotificationToggle notif={type} isEmail={false} />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+      
+      {/* Email digest settings */}
+      {!guest && (
+        <div className='bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800 p-6'>
+          <h3 className='text-lg font-semibold mb-2 text-blue-900 dark:text-blue-100'>
+            📧 Email Digest
+          </h3>
+          <p className='text-sm text-blue-700 dark:text-blue-300 mb-4'>
+            Receive a daily summary email with level of the day and recent notifications
+          </p>
+          
+          <div className='flex items-center gap-4'>
+            <label className='flex items-center gap-2 cursor-pointer'>
+              <input
+                type='radio'
+                name='emailDigest'
+                checked={emailDigest === EmailDigestSettingType.DAILY}
+                disabled={isUserConfigLoading}
+                onChange={() => {
+                  updateUserConfig(
+                    JSON.stringify({ emailDigest: EmailDigestSettingType.DAILY }),
+                    'email digest settings'
+                  );
+                  setEmailDigest(EmailDigestSettingType.DAILY);
+                }}
+                className='text-blue-600'
+              />
+              <span className='text-sm'>Daily digest</span>
+            </label>
+            
+            <label className='flex items-center gap-2 cursor-pointer'>
+              <input
+                type='radio'
+                name='emailDigest'
+                checked={emailDigest === EmailDigestSettingType.NONE}
+                disabled={isUserConfigLoading}
+                onChange={() => {
+                  updateUserConfig(
+                    JSON.stringify({ emailDigest: EmailDigestSettingType.NONE }),
+                    'email digest settings'
+                  );
+                  setEmailDigest(EmailDigestSettingType.NONE);
+                }}
+                className='text-blue-600'
+              />
+              <span className='text-sm'>No digest emails</span>
+            </label>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -175,8 +175,6 @@ export async function getReviewsForUserId(gameId: GameId | undefined, id: string
 
     const reviews = await ReviewModel.aggregate(pipeline);
 
-    console.log(reviews);
-
     return reviews.map(review => {
       cleanReview(review.levelId.complete, reqUser, review);
       cleanUser(review.userId);
