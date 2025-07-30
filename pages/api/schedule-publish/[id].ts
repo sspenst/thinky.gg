@@ -106,19 +106,22 @@ export default withAuth({
     });
   }
 
-  try {
-    // Queue the level for publishing
-    const queueMessageId = await queuePublishLevel(level._id, publishDate);
+  const session = await mongoose.startSession();
 
-    // Update the level with the queue message ID
-    await LevelModel.findByIdAndUpdate(id, {
-      scheduledQueueMessageId: queueMessageId,
+  try {
+    await session.withTransaction(async () => {
+      // Queue the level for publishing
+      const queueMessageId = await queuePublishLevel(level._id, publishDate, { session });
+
+      // Update the level with the queue message ID
+      await LevelModel.findByIdAndUpdate(id, {
+        scheduledQueueMessageId: queueMessageId,
+      }, { session });
     });
 
     return res.status(200).json({
       message: 'Level scheduled for publishing',
       publishAt: publishDate.toISOString(),
-      queueMessageId: queueMessageId.toString(),
     });
   } catch (err) {
     logger.error(err);
@@ -126,6 +129,8 @@ export default withAuth({
     return res.status(500).json({
       error: 'Error scheduling level publish',
     });
+  } finally {
+    await session.endSession();
   }
 });
 

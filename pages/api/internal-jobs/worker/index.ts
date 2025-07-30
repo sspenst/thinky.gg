@@ -217,12 +217,8 @@ async function processQueueMessage(queueMessage: QueueMessage) {
     log = `publishLevel for ${levelId}`;
 
     try {
-      // Import additional required models and helpers for publishing
-      const { CacheModel, RecordModel, StatModel, UserConfigModel } = await import('../../../../models/mongoose');
-      const { queueCalcCreatorCounts, queueCalcPlayAttempts, queueGenLevelImage, queueRefreshAchievements, queueRefreshIndexCalcs } = await import('./queueFunctions');
-      const AchievementCategory = await import('@root/constants/achievements/achievementCategory');
-      const { CacheTag } = await import('@root/models/db/cache');
-      const { TimerUtil } = await import('../../../../helpers/getTs');
+      // Import the shared publishLevel function
+      const { publishLevel } = await import('../../publish/[id]');
 
       const level = await LevelModel.findById(levelId).lean<Level>();
 
@@ -233,59 +229,11 @@ async function processQueueMessage(queueMessage: QueueMessage) {
         log = `publishLevel for ${levelId} failed: level is not a draft`;
         error = true;
       } else {
-        const ts = TimerUtil.getTs();
+        // Use the shared publishLevel function
+        await publishLevel(level, level.userId);
 
-        // Remove the scheduled queue message ID from the level
-        await LevelModel.findByIdAndUpdate(levelId, {
-          $unset: { scheduledQueueMessageId: 1 },
-          $set: {
-            calc_stats_completed_count: 1,
-            calc_stats_players_beaten: 1,
-            isDraft: false,
-            ts: ts,
-          },
-        });
-
-        // Create user stats and records
-        await Promise.all([
-          UserConfigModel.findOneAndUpdate({ userId: level.userId, gameId: level.gameId }, {
-            $inc: { calcLevelsSolvedCount: 1, calcLevelsCompletedCount: 1 },
-          }),
-          RecordModel.create({
-            _id: new Types.ObjectId(),
-            gameId: level.gameId,
-            levelId: level._id,
-            moves: level.leastMoves,
-            ts: ts,
-            userId: level.userId,
-          }),
-          StatModel.create({
-            _id: new Types.ObjectId(),
-            attempts: 1,
-            complete: true,
-            gameId: level.gameId,
-            levelId: level._id,
-            moves: level.leastMoves,
-            ts: ts,
-            userId: level.userId,
-          }),
-          // invalidate cache
-          CacheModel.deleteMany({
-            tag: CacheTag.SEARCH_API,
-            gameId: level.gameId,
-          }),
-        ]);
-
-        // Queue additional processing tasks
-        await Promise.all([
-          queueRefreshAchievements(level.gameId, level.userId, [AchievementCategory.default.CREATOR]),
-          queueRefreshIndexCalcs(level._id),
-          queueCalcPlayAttempts(level._id),
-          queueCalcCreatorCounts(level.gameId, level.userId),
-          queueGenLevelImage(level._id, true),
-          createNewLevelNotifications(level.gameId, level.userId, level._id, undefined),
-          createScheduledLevelPublishedNotification(level.gameId, level.userId, level._id, level.name),
-        ]);
+        // Send notification that scheduled level was published
+        await createScheduledLevelPublishedNotification(level.gameId, level.userId, level._id, level.name);
 
         log = `publishLevel for ${levelId} completed successfully`;
       }
