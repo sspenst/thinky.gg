@@ -3,6 +3,7 @@ import { AppContext } from '@root/contexts/appContext';
 import TileTypeHelper from '@root/helpers/tileTypeHelper';
 import isPro from '@root/helpers/isPro';
 import { LucideCode, LucideFlipHorizontal2, LucidePencil, LucidePlay, LucideRepeat2, LucideSave, LucideShare, ChevronDown } from 'lucide-react';
+import Image from 'next/image';
 import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -451,26 +452,37 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
                         e.stopPropagation();
                         setIsPublishDropdownOpen(!isPublishDropdownOpen);
                       }}
-                      className='flex items-center p-1 hover:bg-gray-700 rounded'
+                      className='flex items-center p-1 hover:bg-purple-600/20 hover:border-purple-500/50 border border-transparent rounded transition-all duration-200'
                     >
-                      <ChevronDown size={16} />
+                      <ChevronDown size={16} className={`transition-transform duration-200 ${isPublishDropdownOpen ? 'rotate-180' : ''}`} />
                     </button>
                     {isPublishDropdownOpen && (
-                      <div className='absolute right-0 bottom-full mb-2 w-48 bg-gray-800 border border-gray-600 rounded-lg shadow-lg z-50'>
-                        <div className='py-1'>
+                      <div className='absolute right-0 bottom-full mb-2 w-56 bg-gradient-to-br from-gray-900 to-gray-800 border border-purple-500/30 rounded-lg shadow-2xl z-50 backdrop-blur-sm'>
+                        <div className='py-2'>
                           <button
                             onClick={() => {
                               setIsSchedulePublishOpen(true);
                               setIsPublishDropdownOpen(false);
                             }}
-                            className='w-full text-left px-3 py-2 hover:bg-gray-700 flex items-center gap-2'
+                            disabled={isDirty || level.leastMoves === 0}
+                            className={`w-full text-left px-4 py-3 transition-all duration-200 flex items-center gap-3 group ${
+                              isDirty || level.leastMoves === 0 
+                                ? 'opacity-50 cursor-not-allowed' 
+                                : 'hover:bg-gradient-to-r hover:from-purple-600/20 hover:to-blue-600/20'
+                            }`}
+                            title={isDirty ? 'Save and test before scheduling publish' : level.leastMoves === 0 ? 'Test before scheduling publish' : undefined}
                           >
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                              <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.89-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.11-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
-                            </svg>
-                            <div>
-                              <div className='font-medium'>Schedule Publish</div>
-                              <div className='text-xs text-gray-400'>Pro feature</div>
+                            <div className='flex items-center justify-center w-8 h-8 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg group-hover:scale-110 transition-transform duration-200'>
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="white" className='drop-shadow-sm'>
+                                <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.89-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.11-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
+                              </svg>
+                            </div>
+                            <div className='flex-1'>
+                              <div className='flex items-center gap-2'>
+                                <span className='font-medium text-white group-hover:text-purple-200 transition-colors'>Schedule Publish</span>
+                                <Image alt='pro' src='/pro.svg' width={16} height={16} className='opacity-90' />
+                              </div>
+                              <div className='text-xs text-gray-400 group-hover:text-gray-300 transition-colors'>Publish at optimal times</div>
                             </div>
                           </button>
                         </div>

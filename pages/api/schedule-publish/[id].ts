@@ -2,7 +2,7 @@ import isPro from '@root/helpers/isPro';
 import isFullAccount from '@root/helpers/isFullAccount';
 import { TimerUtil } from '@root/helpers/getTs';
 import { logger } from '@root/helpers/logger';
-import { ValidObjectId } from '@root/helpers/apiWrapper';
+import { ValidObjectId, ValidType } from '@root/helpers/apiWrapper';
 import dbConnect from '@root/lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '@root/lib/withAuth';
 import Level from '@root/models/db/level';
@@ -22,7 +22,7 @@ export default withAuth({
       id: ValidObjectId(),
     },
     body: {
-      publishAt: 'string',
+      publishAt: ValidType('string', true),
     },
   },
   DELETE: {
