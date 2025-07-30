@@ -1,6 +1,5 @@
 import { ValidObjectId, ValidType } from '@root/helpers/apiWrapper';
-import { getGameFromId, getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
-import { TimerUtil } from '@root/helpers/getTs';
+import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import isFullAccount from '@root/helpers/isFullAccount';
 import isPro from '@root/helpers/isPro';
 import { logger } from '@root/helpers/logger';
@@ -98,7 +97,7 @@ export default withAuth({
   const gameId = getGameIdFromReq(req);
 
   // Validate the level for publishing (using shared validation)
-  const validationError = await validateLevelForPublishing(level, req.userId, gameId, 'scheduling publish');
+  const validationError = await validateLevelForPublishing(level, new Types.ObjectId(req.userId), gameId, 'scheduling publish');
 
   if (validationError) {
     return res.status(400).json({
