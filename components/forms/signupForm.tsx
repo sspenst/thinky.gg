@@ -3,7 +3,7 @@ import { blueButton } from '@root/helpers/className';
 import classNames from 'classnames';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import ReCAPTCHA from 'react-google-recaptcha';
 import toast from 'react-hot-toast';
 import { useSWRConfig } from 'swr';
@@ -191,7 +191,7 @@ export default function SignupForm({ recaptchaPublicKey }: SignupFormProps) {
 
           // For OAuth users, skip email confirmation if their email is verified by the provider
           if (oauthData) {
-            router.push('/play');
+            router.push('/chapter/1'); // go to first chapter instead of /play
           } else {
             router.push('/confirm-email');
           }
