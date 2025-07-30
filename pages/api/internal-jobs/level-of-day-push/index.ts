@@ -3,7 +3,8 @@ import { Games } from '@root/constants/Games';
 import NotificationType from '@root/constants/notificationType';
 import Device from '@root/models/db/device';
 import User from '@root/models/db/user';
-import { DeviceModel, NotificationModel, PlayAttemptModel, UserModel } from '@root/models/mongoose';
+import UserConfig from '@root/models/db/userConfig';
+import { DeviceModel, NotificationModel, PlayAttemptModel, UserConfigModel, UserModel } from '@root/models/mongoose';
 import { DeviceState } from '@root/models/schemas/deviceSchema';
 import { Types } from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
@@ -12,9 +13,11 @@ import { logger } from '../../../../helpers/logger';
 import dbConnect from '../../../../lib/dbConnect';
 import { getLevelOfDay } from '../../level-of-day';
 import { bulkQueuePushNotification } from '../worker/queueFunctions';
+import { getStreak } from '../../../../lib/cleanUser';
 
 interface UserWithDeviceAndActivity extends User {
   devices: Device[];
+  config?: UserConfig;
   lastMonthActivity: {
     hourOfDay: number;
     count: number;
@@ -62,6 +65,28 @@ async function findEligibleUsers(): Promise<UserWithDeviceAndActivity[]> {
     {
       $match: {
         'devices.0': { $exists: true }
+      }
+    },
+    // Look up user's config for streak information
+    {
+      $lookup: {
+        from: UserConfigModel.collection.name,
+        localField: '_id',
+        foreignField: 'userId',
+        as: 'config',
+        pipeline: [
+          {
+            $project: {
+              calcCurrentStreak: 1,
+              lastPlayedAt: 1
+            }
+          }
+        ]
+      }
+    },
+    {
+      $addFields: {
+        config: { $arrayElemAt: ['$config', 0] }
       }
     },
     // Check if they've already received a level of day notification today
@@ -180,7 +205,7 @@ function determineOptimalSendTime(user: UserWithDeviceAndActivity): Date {
   return sendTime;
 }
 
-function createLevelOfDayMessage(level: any, gameDisplayName: string): string {
+function createLevelOfDayMessage(level: any, gameDisplayName: string, userConfig?: UserConfig): string {
   const difficultyEstimate = level.calc_difficulty_completion_estimate ?? level.calc_difficulty_estimate ?? -1;
   const difficulty = getDifficultyFromEstimate(difficultyEstimate);
 
@@ -188,6 +213,21 @@ function createLevelOfDayMessage(level: any, gameDisplayName: string): string {
   const difficultyText = difficulty.name !== 'Pending'
     ? `${difficulty.emoji} ${difficulty.name}`
     : '⏳ New';
+
+  // Get streak information if available
+  let streakText = '';
+  if (userConfig) {
+    const { streak, timeToKeepStreak } = getStreak(userConfig);
+    if (streak > 0) {
+      if (timeToKeepStreak > 0) {
+        // User has a streak but hasn't played today
+        streakText = `🔥 Keep your ${streak}-day streak alive! `;
+      } else {
+        // User already played today
+        streakText = `🔥 ${streak}-day streak going strong! `;
+      }
+    }
+  }
 
   // Day-specific messaging with 5 random options for each day
   const today = new Date();
@@ -248,7 +288,7 @@ function createLevelOfDayMessage(level: any, gameDisplayName: string): string {
   const dayMessages = daySpecificMessages[dayOfWeek];
   const randomMessage = dayMessages[Math.floor(Math.random() * dayMessages.length)];
 
-  return `${randomMessage} ${gameDisplayName} level of the day! Difficulty: ${difficultyText}`;
+  return `${streakText}${randomMessage} ${gameDisplayName} level of the day! Difficulty: ${difficultyText}`;
 }
 
 export async function sendLevelOfDayPushNotifications(limit: number) {
@@ -300,7 +340,7 @@ export async function sendLevelOfDayPushNotifications(limit: number) {
             const gameDisplayName = game?.displayName || userLevelOfDay.gameId;
 
             // Create an engaging message with level details
-            const notificationMessage = createLevelOfDayMessage(userLevelOfDay, gameDisplayName);
+            const notificationMessage = createLevelOfDayMessage(userLevelOfDay, gameDisplayName, user.config);
 
             // Create notification
             const notification = await NotificationModel.create([{
