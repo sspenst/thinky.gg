@@ -278,22 +278,32 @@ export default function ChapterPage({ enrichedCollections, reqUser, solvedLevels
       {/* Game World Map Style Header */}
       <div className='relative min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 overflow-hidden'>
         {/* Animated Star Field Background with Progress Constellations */}
-        <div className='absolute inset-0'>
+        <div className='absolute inset-0 animate-fadeIn'>
           {/* Regular stars */}
-          {[...Array(40)].map((_, i) => (
-            <div
-              key={i}
-              className='absolute bg-white rounded-full animate-pulse'
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                width: `${Math.random() * 3 + 1}px`,
-                height: `${Math.random() * 3 + 1}px`,
-                animationDelay: `${Math.random() * 3}s`,
-                animationDuration: `${Math.random() * 2 + 1}s`,
-              }}
-            />
-          ))}
+          {[...Array(40)].map((_, i) => {
+            // Use deterministic values based on index to avoid hydration mismatch
+            const pseudoRandom = (seed: number, max: number) => ((seed * 9.869604401089358) % max);
+            const left = pseudoRandom(i * 2.3, 100);
+            const top = pseudoRandom(i * 3.7, 100);
+            const size = pseudoRandom(i * 1.3, 3) + 1;
+            const delay = pseudoRandom(i * 2.1, 3);
+            const duration = pseudoRandom(i * 1.7, 2) + 1;
+            
+            return (
+              <div
+                key={i}
+                className='absolute bg-white rounded-full animate-pulse'
+                style={{
+                  left: `${left}%`,
+                  top: `${top}%`,
+                  width: `${size}px`,
+                  height: `${size}px`,
+                  animationDelay: `${delay}s`,
+                  animationDuration: `${duration}s`,
+                }}
+              />
+            );
+          })}
           
           {/* Progress Constellation - represents completed levels */}
           {[...Array(Math.min(solvedLevels, 12))].map((_, i) => (
@@ -343,7 +353,7 @@ export default function ChapterPage({ enrichedCollections, reqUser, solvedLevels
           )}
           
           {/* Floating Current Rank Display */}
-          <div className='absolute top-4 sm:top-6 left-1/2 transform -translate-x-1/2 z-20'>
+          <div className='absolute top-4 sm:top-6 left-1/2 transform -translate-x-1/2 z-20 animate-fadeInDown' style={{ animationDelay: '0.5s' }}>
             <Link href='/achievements#category-LEVEL_COMPLETION' className='block hover:scale-105 transition-transform duration-300'>
               <div className='bg-black/20 backdrop-blur-sm border border-white/20 rounded-xl px-4 py-3 sm:px-6 sm:py-4 text-white text-center cursor-pointer hover:bg-black/30 transition-colors duration-300'>
                 <div className='text-xs opacity-70 mb-2'>CURRENT RANK</div>
@@ -375,7 +385,7 @@ export default function ChapterPage({ enrichedCollections, reqUser, solvedLevels
           </div>
           
           {/* Floating Chapter Progress */}
-          <div className='absolute bottom-24 left-4 sm:bottom-32 sm:left-6 lg:bottom-40 lg:left-12'>
+          <div className='absolute bottom-24 left-4 sm:bottom-32 sm:left-6 lg:bottom-40 lg:left-12 animate-fadeInLeft' style={{ animationDelay: '0.7s' }}>
             <div className='bg-black/20 backdrop-blur-sm border border-white/20 rounded-xl px-3 py-2 sm:px-4 sm:py-3 text-white'>
               <div className='text-xs opacity-70 mb-1'>CHAPTER {chapterNumber}</div>
               <div className='text-sm sm:text-lg font-black bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent'>
@@ -386,7 +396,7 @@ export default function ChapterPage({ enrichedCollections, reqUser, solvedLevels
           
           {/* Floating Next Chapter Info */}
           {solvedLevels < totalLevels && (
-            <div className='absolute bottom-24 right-4 sm:bottom-32 sm:right-6 lg:bottom-40 lg:right-12'>
+            <div className='absolute bottom-24 right-4 sm:bottom-32 sm:right-6 lg:bottom-40 lg:right-12 animate-fadeInRight' style={{ animationDelay: '0.9s' }}>
               <div className='bg-black/20 backdrop-blur-sm border border-white/20 rounded-xl px-3 py-2 sm:px-4 sm:py-3 text-white text-right'>
                 <div className='text-xs opacity-70 mb-1'>TO NEXT CHAPTER</div>
                 <div className='text-sm sm:text-lg font-black bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent'>
@@ -398,30 +408,30 @@ export default function ChapterPage({ enrichedCollections, reqUser, solvedLevels
         </div>
         
         {/* Floating Geometric Shapes */}
-        <div className='absolute inset-0 opacity-10'>
-          <div className='absolute top-20 left-10 w-32 h-32 border-4 border-cyan-400 transform rotate-45 animate-spin' style={{ animationDuration: '20s' }} />
-          <div className='absolute top-40 right-20 w-24 h-24 bg-gradient-to-r from-purple-500 to-pink-500 transform rotate-12 animate-bounce' style={{ animationDelay: '1s' }} />
-          <div className='absolute bottom-32 left-1/4 w-16 h-16 border-4 border-yellow-400 rounded-full animate-pulse' style={{ animationDelay: '2s' }} />
-          <div className='absolute bottom-20 right-1/3 w-20 h-20 bg-gradient-to-r from-blue-500 to-green-500 transform -rotate-12 animate-bounce' style={{ animationDelay: '1.5s' }} />
+        <div className='absolute inset-0 animate-fadeIn' style={{ animationDelay: '0.3s' }}>
+          <div className='absolute top-20 left-10 w-32 h-32 border-4 border-cyan-400 transform rotate-45 animate-spin opacity-10' style={{ animationDuration: '20s' }} />
+          <div className='absolute top-40 right-20 w-24 h-24 bg-gradient-to-r from-purple-500 to-pink-500 transform rotate-12 animate-bounce opacity-10' style={{ animationDelay: '1s' }} />
+          <div className='absolute bottom-32 left-1/4 w-16 h-16 border-4 border-yellow-400 rounded-full animate-pulse opacity-10' style={{ animationDelay: '2s' }} />
+          <div className='absolute bottom-20 right-1/3 w-20 h-20 bg-gradient-to-r from-blue-500 to-green-500 transform -rotate-12 animate-bounce opacity-10' style={{ animationDelay: '1.5s' }} />
         </div>
         
         {/* Bottom Gradient Overlay for smooth transition */}
         <div className='absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-indigo-900 via-purple-900/50 to-transparent z-5' />
         <div className='relative z-10 flex flex-col items-center justify-center min-h-screen px-4 py-8'>
           {/* Chapter Title */}
-          <div className='mb-8 sm:mb-10'>
+          <div className='mb-8 sm:mb-10 animate-fadeInDown' style={{ animationDelay: '0.3s' }}>
             <div className='text-yellow-400 font-black text-2xl sm:text-3xl text-center'>
               {config.title}
             </div>
           </div>
           
           {/* Dramatic Title */}
-          <h1 className='text-4xl sm:text-6xl lg:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 mb-6 text-center leading-tight px-2'>
+          <h1 className='text-4xl sm:text-6xl lg:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 mb-6 text-center leading-tight px-2 animate-fadeInScale' style={{ animationDelay: '0.5s' }}>
             {config.subtitle}
           </h1>
           
           {/* Epic Progress Ring */}
-          <div className='relative mb-8 sm:mb-12'>
+          <div className='relative mb-8 sm:mb-12 animate-fadeInScale' style={{ animationDelay: '0.7s' }}>
             <svg className='w-48 h-48 sm:w-64 sm:h-64 transform -rotate-90' viewBox='0 0 256 256'>
               {/* Background ring */}
               <circle
@@ -463,7 +473,7 @@ export default function ChapterPage({ enrichedCollections, reqUser, solvedLevels
           </div>
           
           {/* Action Buttons */}
-          <div className='flex flex-col sm:flex-row gap-4 sm:gap-6 mb-8 sm:mb-12 items-center justify-center'>
+          <div className='flex flex-col sm:flex-row gap-4 sm:gap-6 mb-8 sm:mb-12 items-center justify-center animate-fadeInUp' style={{ animationDelay: '0.9s' }}>
             {solvedLevels < totalLevels && (
               <Link
                 href={`/chapter/${chapterNumber}?continue=true`}

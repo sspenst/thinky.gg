@@ -1,4 +1,5 @@
 import Role from '@root/constants/role';
+import { hasProAccessForProfile } from '@root/helpers/isDemoProAccess';
 import useProStatsUser, { ProStatsUserType } from '@root/hooks/useProStatsUser';
 import dayjs from 'dayjs';
 import React, { useMemo, useState } from 'react';
@@ -27,7 +28,7 @@ interface PercentileData {
 }
 
 export default function ProfileInsightsPeerComparisons({ user, reqUser, timeFilter }: ProfileInsightsPeerComparisonsProps) {
-  const canViewPeerComparisons = (reqUser?._id === user._id) || (reqUser?.roles?.includes(Role.ADMIN));
+  const canViewPeerComparisons = (reqUser?._id === user._id) || (reqUser?.roles?.includes(Role.ADMIN) || hasProAccessForProfile(reqUser, user));
   const { proStatsUser: difficultyData, isLoading } = useProStatsUser(user, ProStatsUserType.DifficultyLevelsComparisons, timeFilter, !canViewPeerComparisons);
   const [showTooltip, setShowTooltip] = useState(false);
 

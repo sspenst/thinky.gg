@@ -7,7 +7,7 @@ import StyledTooltip from '@root/components/page/styledTooltip';
 import Dimensions from '@root/constants/dimensions';
 import Role from '@root/constants/role';
 import { AppContext } from '@root/contexts/appContext';
-import isPro from '@root/helpers/isPro';
+import { hasProAccessForLevel } from '@root/helpers/isDemoProAccess';
 import classNames from 'classnames';
 import Link from 'next/link';
 import { Fragment, useContext, useEffect, useState } from 'react';
@@ -31,7 +31,7 @@ export default function LevelInfoCompletions() {
 
     toast.dismiss();
 
-    if (!isPro(user)) {
+    if (levelContext?.level && !hasProAccessForLevel(user, levelContext.level)) {
       toast.dismiss();
       toast.error('You must be a Pro to see all completions for this level.');
 
@@ -156,7 +156,7 @@ export default function LevelInfoCompletions() {
 
   return (
     <TabGroup className='flex flex-col gap-2'>
-      {isPro(user) && <>
+      {levelContext?.level && hasProAccessForLevel(user, levelContext?.level) && <>
         <TabList className='flex flex-wrap gap-x-1 items-start rounded text-sm'>
           <Tab as={Fragment}>
             {({ selected }) => (
@@ -191,7 +191,7 @@ export default function LevelInfoCompletions() {
           }}>
             {completionDivs}
           </div>
-          {isPro(user) &&
+          {levelContext?.level && hasProAccessForLevel(user, levelContext?.level) &&
             <div className='flex flex-col text-sm mt-3 italic'>
               <span>{solves} solve{solves === 1 ? '' : 's'}</span>
               <span>{completions} completion{completions === 1 ? '' : 's'}</span>
@@ -247,7 +247,7 @@ export default function LevelInfoCompletions() {
           </ResponsiveContainer>
         </TabPanel>
       </TabPanels>
-      {!isPro(user) &&
+      {levelContext?.level && !hasProAccessForLevel(user, levelContext.level) &&
         <div className='flex gap-3 items-center'>
           <RoleIcon id='level-info-completions' role={Role.PRO} size={20} />
           <div>

@@ -4,6 +4,7 @@ import GraphType from '@root/constants/graphType';
 import { getEnrichUserConfigPipelineStage } from '@root/helpers/enrich';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import { getRecordsByUserId } from '@root/helpers/getRecordsByUserId';
+import isPro from '@root/helpers/isPro';
 import { USER_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import User from '@root/models/db/user';
 import { AuthProvider } from '@root/models/db/userAuth';
@@ -12,7 +13,7 @@ import { NextApiResponse } from 'next';
 import { TimeFilter } from '../../../../../components/profile/profileInsights';
 import Role from '../../../../../constants/role';
 import { ValidEnum } from '../../../../../helpers/apiWrapper';
-import isPro from '../../../../../helpers/isPro';
+import { hasProAccessForProfile } from '../../../../../helpers/isDemoProAccess';
 import { ProStatsUserType } from '../../../../../hooks/useProStatsUser';
 import cleanUser from '../../../../../lib/cleanUser';
 import withAuth, { NextApiRequestWithAuth } from '../../../../../lib/withAuth';
@@ -912,17 +913,28 @@ export default withAuth({
     }
   }
 }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
-  const isAdmin = req.user?.roles?.includes(Role.ADMIN);
-  const hasAccess = isPro(req.user) || isAdmin;
+  const { id: userId, type, timeFilter } = req.query as { id: string, type: string, timeFilter?: string };
 
-  if (!hasAccess) {
+  // Get the profile user to check for demo access
+  const profileUser = await UserModel.findById(userId, { name: 1 });
+
+  if (!profileUser) {
+    return res.status(404).json({
+      error: 'User not found',
+    });
+  }
+
+  const isAdmin = req.user?.roles?.includes(Role.ADMIN);
+  const hasAccess = hasProAccessForProfile(req.user, profileUser) || isAdmin;
+
+  let scoreHistory, difficultyLevelsComparisons, mostSolvesForUserLevels, playLogForUserCreatedLevels, records, followerActivityPatterns;
+
+  if (!hasAccess && !isPro(req.user)) {
+  // If user does not have access, return 401 Unauthorized for all pro endpoints
     return res.status(401).json({
       error: 'Not authorized',
     });
   }
-
-  const { id: userId, type, timeFilter } = req.query as { id: string, type: string, timeFilter?: string };
-  let scoreHistory, difficultyLevelsComparisons, mostSolvesForUserLevels, playLogForUserCreatedLevels, records, followerActivityPatterns;
 
   // Define which endpoints require own profile or admin access
   const restrictedEndpoints = [
@@ -934,7 +946,7 @@ export default withAuth({
 
   // Check access for restricted endpoints
   if (restrictedEndpoints.includes(type as ProStatsUserType)) {
-    if (userId !== req.user._id.toString() && !isAdmin) {
+    if (!hasAccess) {
       return res.status(401).json({
         error: 'Not authorized',
       });

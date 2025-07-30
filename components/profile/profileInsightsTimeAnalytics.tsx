@@ -1,5 +1,6 @@
 import Role from '@root/constants/role';
 import { DateAndSum } from '@root/contexts/levelContext';
+import { hasProAccessForProfile } from '@root/helpers/isDemoProAccess';
 import useProStatsUser, { ProStatsUserType } from '@root/hooks/useProStatsUser';
 import dayjs from 'dayjs';
 import timezone from 'dayjs/plugin/timezone';
@@ -77,7 +78,7 @@ function formatTimePerLevel(seconds: number): string {
 }
 
 export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter }: ProfileInsightsTimeAnalyticsProps) {
-  const canViewTimeAnalytics = (reqUser?._id === user._id) || (reqUser?.roles?.includes(Role.ADMIN));
+  const canViewTimeAnalytics = (reqUser?._id === user._id) || (reqUser?.roles?.includes(Role.ADMIN)) || hasProAccessForProfile(reqUser, user);
   const { proStatsUser: scoreHistory, isLoading: isLoadingScoreHistory } = useProStatsUser(user, ProStatsUserType.ScoreHistory, timeFilter, !canViewTimeAnalytics);
   const { proStatsUser: difficultyData, isLoading: isLoadingDifficulty } = useProStatsUser(user, ProStatsUserType.DifficultyLevelsComparisons, timeFilter, !canViewTimeAnalytics);
 

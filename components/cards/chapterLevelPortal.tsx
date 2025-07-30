@@ -3,7 +3,7 @@ import getPngDataClient from '@root/helpers/getPngDataClient';
 import useUrl from '@root/hooks/useUrl';
 import { EnrichedLevel } from '@root/models/db/level';
 import Link from 'next/link';
-import { useContext, useMemo } from 'react';
+import { useContext, useEffect, useState } from 'react';
 
 interface ChapterLevelPortalProps {
   href?: string;
@@ -18,12 +18,13 @@ export default function ChapterLevelPortal({ href, id, level, onClick }: Chapter
 
   const defaultUrl = getUrl(level?.gameId, `/level/${level?.slug}`);
 
-  const backgroundImage = useMemo(() => {
-    if (level && level.data) {
-      return getPngDataClient(level.gameId || pageGame.id, level.data);
-    }
+  const [backgroundImage, setBackgroundImage] = useState<string | undefined>(undefined);
 
-    return undefined;
+  useEffect(() => {
+    if (level && level.data) {
+      const image = getPngDataClient(level.gameId || pageGame.id, level.data);
+      setBackgroundImage(image);
+    }
   }, [pageGame.id, level]);
 
   if (level === undefined) {

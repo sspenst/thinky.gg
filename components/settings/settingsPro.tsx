@@ -395,11 +395,20 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
       <div className='text-xs'>
         For questions please contact <Link className='text-blue-300' href='mailto:help@thinky.gg'>help@thinky.gg</Link>.
       </div>
-      <div className='flex flex-col xl:flex-row items-center gap-4 justify-center'>
-        <div className='p-2'>
-          <video autoPlay loop muted playsInline className='rounded-xl'>
-            <source src='https://i.imgur.com/HzFhvYY.mp4' type='video/mp4' />
-          </video>
+      <div className='flex flex-col items-center gap-6 justify-center'>
+        <div className='text-center mb-4'>
+          <h2 className='text-2xl font-bold mb-2'>Experience Pro Features</h2>
+          <div className='flex flex-col gap-2'>
+            <p className='text-gray-400'>Try out Pro features with these demos:</p>
+            <div className='flex gap-4 justify-center'>
+              <a href="https://pathology.thinky.gg/level/k2xl/touchtown" className='bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors'>
+                🎮 Try Pro Level Features
+              </a>
+              <a href="https://pathology.thinky.gg/profile/k2xl/" className='bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-colors'>
+                📊 View Pro Profile Insights
+              </a>
+            </div>
+          </div>
         </div>
         <div className='flex flex-col items-left gap-4'>
           <ProFeature

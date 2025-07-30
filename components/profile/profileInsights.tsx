@@ -1,5 +1,6 @@
 import Role from '@root/constants/role';
 import { AppContext } from '@root/contexts/appContext';
+import { hasProAccessForProfile, isDemoProProfile, DEMO_USERNAME } from '@root/helpers/isDemoProAccess';
 import isPro from '@root/helpers/isPro';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -182,14 +183,41 @@ export default function ProfileInsights({ reqUser, user }: ProfileInsightsProps)
   }, [router.query.subtab, router.query.timeFilter, isInitialized, activeTab, timeFilter]);
 
   const isAdmin = reqUser?.roles?.includes(Role.ADMIN);
-  const hasAccess = isPro(reqUser) || isAdmin;
+  const hasAccess = hasProAccessForProfile(reqUser, user) || isAdmin;
+  const isDemoProfile = isDemoProProfile(user);
 
   if (!hasAccess) {
     return (
-      <div className='text-center text-lg break-words'>
-        Get <Link href='/pro' className='text-blue-300'>
-          {game.displayName} Pro
-        </Link> to unlock additional insights for {user.name}.
+      <div className='flex flex-col items-center justify-center min-h-96 p-8'>
+        <div className='bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl p-8 max-w-2xl w-full text-center shadow-xl'>
+          <div className='text-6xl mb-4'>📊</div>
+          <h2 className='text-2xl font-bold text-white mb-4'>
+            Unlock Advanced Insights
+          </h2>
+          <p className='text-blue-100 mb-6 text-lg leading-relaxed'>
+            Get detailed analytics, performance tracking, peer comparisons, and time insights for <strong>{user.name}</strong> with {game.displayName} Pro.
+          </p>
+          
+          <div className='flex flex-col sm:flex-row gap-4 justify-center items-center'>
+            <Link 
+              href='/pro' 
+              className='bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors shadow-lg'
+            >
+              Get {game.displayName} Pro
+            </Link>
+            
+            <Link 
+              href={`/profile/${DEMO_USERNAME}/insights`} 
+              className='bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-800 transition-colors border border-blue-500'
+            >
+              View Demo Profile
+            </Link>
+          </div>
+          
+          <p className='text-blue-200 text-sm mt-4'>
+            See what Pro insights look like with our demo profile
+          </p>
+        </div>
       </div>
     );
   }
@@ -204,6 +232,15 @@ export default function ProfileInsights({ reqUser, user }: ProfileInsightsProps)
 
   return (
     <div className='flex flex-col gap-6 w-full'>
+      {/* Demo Pro Disclaimer */}
+      {isDemoProfile && !isPro(reqUser) && (
+        <div className='bg-blue-900 border border-blue-600 rounded-lg p-3 text-center'>
+          <p className='text-blue-200 text-sm'>
+            ✨ <strong>Demo Mode:</strong> You&apos;re experiencing Pro insights features on this demo profile.
+            <Link href='/pro' className='text-blue-300 underline ml-1'>Get {game.displayName} Pro</Link> to unlock these insights for your profile!
+          </p>
+        </div>
+      )}
       {/* Admin Disclaimer */}
       {isAdmin && reqUser?._id !== user._id && (
         <div className='bg-yellow-900 border border-yellow-600 rounded-lg p-3 text-center'>

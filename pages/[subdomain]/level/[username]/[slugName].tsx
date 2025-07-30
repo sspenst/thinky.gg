@@ -7,8 +7,9 @@ import Collection, { EnrichedCollection } from '@root/models/db/collection';
 import { getCollection } from '@root/pages/api/collection-by-id/[id]';
 import { Types } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
-import { useRouter } from 'next/router';
 import { ArticleJsonLd, NextSeo } from 'next-seo';
+import Link from 'next/link';
+import { useRouter } from 'next/router';
 import { ParsedUrlQuery } from 'querystring';
 import { useCallback, useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
@@ -18,6 +19,8 @@ import Page from '../../../../components/page/page';
 import Dimensions from '../../../../constants/dimensions';
 import { LevelContext } from '../../../../contexts/levelContext';
 import getProfileSlug from '../../../../helpers/getProfileSlug';
+import { isDemoProLevel } from '../../../../helpers/isDemoProAccess';
+import isPro from '../../../../helpers/isPro';
 import useProStatsLevel from '../../../../hooks/useProStatsLevel';
 import { getUserFromToken } from '../../../../lib/withAuth';
 import { EnrichedLevel } from '../../../../models/db/level';
@@ -89,6 +92,7 @@ export default function LevelPage({ _collection, _level, reqUser }: LevelProps) 
   const { mutateProStatsLevel, proStatsLevel } = useProStatsLevel(level);
   const router = useRouter();
   const { game, tempCollection, setTempCollection } = useContext(AppContext);
+  const isDemoLevel = isDemoProLevel(level);
   const { chapter, cid, slugName, ts, username } = router.query as LevelUrlQueryParams;
 
   const mutateCollection = useCallback(async () => {
@@ -238,6 +242,7 @@ export default function LevelPage({ _collection, _level, reqUser }: LevelProps) 
   }, [mutateRecords]);
 
   const [reviews, setReviews] = useState<Review[]>();
+  const [isDemoBannerClosed, setIsDemoBannerClosed] = useState(false);
 
   const mutateReviews = useCallback(() => {
     fetch(`/api/reviews/${level._id}`, {
@@ -367,6 +372,28 @@ export default function LevelPage({ _collection, _level, reqUser }: LevelProps) 
           subtitleHref={showSubtitle ? getProfileSlug(level.userId) : undefined}
           title={level.name ?? 'Loading...'}
         >
+          {isDemoLevel && !isPro(reqUser) && !isDemoBannerClosed && (
+            <div className='bg-gradient-to-r from-blue-600 to-purple-600 border-b border-blue-400 p-3 text-center relative'>
+              <div className='flex items-center justify-center gap-2 text-white max-w-4xl mx-auto pr-8'>
+                <span className='text-yellow-300'>✨</span>
+                <span className='text-sm font-medium'>
+                  <strong>Demo Mode:</strong> You&apos;re experiencing Pro features on this level.
+                </span>
+                <Link href='/pro' className='text-blue-200 underline hover:text-white font-medium whitespace-nowrap'>
+                  Get {game.displayName} Pro
+                </Link>
+              </div>
+              <button
+                className='absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-200 hover:text-white transition-colors'
+                onClick={() => setIsDemoBannerClosed(true)}
+                aria-label='Close banner'
+              >
+                <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                  <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M6 18L18 6M6 6l12 12' />
+                </svg>
+              </button>
+            </div>
+          )}
           <GameWrapper
             chapter={chapter as string | undefined}
             collection={collection}

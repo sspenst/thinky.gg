@@ -1,5 +1,6 @@
 import Role from '@root/constants/role';
 import { AppContext } from '@root/contexts/appContext';
+import { hasProAccessForProfile } from '@root/helpers/isDemoProAccess';
 import useProStatsUser, { ProStatsUserType } from '@root/hooks/useProStatsUser';
 import dayjs from 'dayjs';
 import advancedFormat from 'dayjs/plugin/advancedFormat';
@@ -66,7 +67,7 @@ function getPerformanceColor(performance: number, baseline: number = 50): string
 
 export default function ProfileInsightsPerformanceOverview({ user, reqUser, timeFilter }: ProfileInsightsPerformanceOverviewProps) {
   const { game: _game } = useContext(AppContext);
-  const canViewFullOverview = (reqUser?._id === user._id) || (reqUser?.roles?.includes(Role.ADMIN));
+  const canViewFullOverview = (reqUser?._id === user._id) || (reqUser?.roles?.includes(Role.ADMIN)) || hasProAccessForProfile(reqUser, user);
 
   const { proStatsUser: difficultyData, isLoading: isLoadingDifficulty } = useProStatsUser(user, ProStatsUserType.DifficultyLevelsComparisons, timeFilter, !canViewFullOverview);
   const { proStatsUser: _scoreHistory, isLoading: isLoadingScoreHistory } = useProStatsUser(user, ProStatsUserType.ScoreHistory, timeFilter, false);

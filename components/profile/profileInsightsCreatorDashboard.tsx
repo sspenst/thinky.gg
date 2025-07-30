@@ -1,4 +1,5 @@
 import Role from '@root/constants/role';
+import { hasProAccessForProfile } from '@root/helpers/isDemoProAccess';
 import useProStatsUser, { ProStatsUserType } from '@root/hooks/useProStatsUser';
 import dayjs from 'dayjs';
 import timezone from 'dayjs/plugin/timezone';
@@ -35,7 +36,7 @@ interface LevelEngagementData {
 }
 
 export default function ProfileInsightsCreatorDashboard({ user, reqUser, timeFilter }: ProfileInsightsCreatorDashboardProps) {
-  const canViewCreatorDashboard = (reqUser?._id === user._id) || (reqUser?.roles?.includes(Role.ADMIN));
+  const canViewCreatorDashboard = (reqUser?._id === user._id) || (reqUser?.roles?.includes(Role.ADMIN)) || hasProAccessForProfile(reqUser, user);
   const { proStatsUser: playLogData, isLoading: isLoadingPlayLog } = useProStatsUser(user, ProStatsUserType.PlayLogForUserCreatedLevels, timeFilter, !canViewCreatorDashboard);
   const { proStatsUser: followerData, isLoading: isLoadingFollowers } = useProStatsUser(user, ProStatsUserType.FollowerActivityPatterns, timeFilter, !canViewCreatorDashboard);
 
