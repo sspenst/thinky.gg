@@ -20,7 +20,7 @@ interface SignupFormProps {
 export default function SignupForm({ recaptchaPublicKey }: SignupFormProps) {
   const { cache } = useSWRConfig();
   const [email, setEmail] = useState<string>('');
-  const { mutateUser, setShouldAttemptAuth } = useContext(AppContext);
+  const { mutateUser, setShouldAttemptAuth, game } = useContext(AppContext);
   const [password, setPassword] = useState<string>('');
   const recaptchaRef = useRef<ReCAPTCHA>(null);
   const router = useRouter();
@@ -191,7 +191,7 @@ export default function SignupForm({ recaptchaPublicKey }: SignupFormProps) {
 
           // For OAuth users, skip email confirmation if their email is verified by the provider
           if (oauthData) {
-            router.push('/chapter/1'); // go to first chapter instead of /play
+            router.push(game.baseUrl + '/chapter/1'); // go to first chapter instead of /play
           } else {
             router.push('/confirm-email');
           }
