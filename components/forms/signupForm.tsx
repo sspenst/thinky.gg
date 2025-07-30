@@ -1,5 +1,7 @@
 import { TERMS_OF_SERVICE_URL } from '@root/constants/externalLinks';
+import { GameId } from '@root/constants/GameId';
 import { blueButton } from '@root/helpers/className';
+import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import classNames from 'classnames';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -191,7 +193,7 @@ export default function SignupForm({ recaptchaPublicKey }: SignupFormProps) {
 
           // For OAuth users, skip email confirmation if their email is verified by the provider
           if (oauthData) {
-            router.push(game.baseUrl + '/chapter/1'); // go to first chapter instead of /play
+            router.push(getGameFromId(GameId.PATHOLOGY).baseUrl + '/chapter/1'); // go to first chapter instead of /play for pathology
           } else {
             router.push('/confirm-email');
           }

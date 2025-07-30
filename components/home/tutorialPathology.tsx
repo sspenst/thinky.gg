@@ -176,7 +176,7 @@ export default function TutorialPathology({ recaptchaPublicKey }: TutorialPathol
     } finally {
       setIsSigningUp(false);
     }
-  }, [username, email, password, mutateUser, recaptchaPublicKey, showRecaptcha, recaptchaToken]);
+  }, [username, email, password, recaptchaPublicKey, showRecaptcha, recaptchaToken, mutateUser, game.baseUrl]);
 
   // Auto-submit when reCAPTCHA token is received
   useEffect(() => {
@@ -794,7 +794,7 @@ export default function TutorialPathology({ recaptchaPublicKey }: TutorialPathol
         </div>,
       },
     ] as TutorialStep[];
-  }, [deviceInfo.isMobile, isLoggedIn, niceJob, showEmailSignup, username, email, password, isSigningUp, handleInlineSignup, recaptchaPublicKey, showRecaptcha, recaptchaToken]);
+  }, [deviceInfo.isMobile, niceJob, isLoggedIn, game.baseUrl, showEmailSignup, username, email, password, recaptchaPublicKey, showRecaptcha, isSigningUp, handleInlineSignup]);
 
   useEffect(() => {
     const sessionStorageTutorialStep = sessionStorage.getItem('tutorialStep-Pathology');
