@@ -11,7 +11,7 @@ import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { ParsedUrlQueryInput } from 'querystring';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import Page from '../../../components/page/page';
 import { getUserFromToken } from '../../../lib/withAuth';
@@ -60,28 +60,32 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const totalCount = await LevelModel.countDocuments(searchQuery);
 
   // Build sort criteria based on sortBy parameter
-  if (sortBy === 'name') {
-    // Simple sort by name with populated scheduledQueueMessageId
-    const levels = await LevelModel.find<Level>(searchQuery)
-      .populate('scheduledQueueMessageId')
-      .sort({ name: 1, _id: 1 })
-      .skip((page - 1) * levelsPerPage)
-      .limit(levelsPerPage);
+  let levels: Level[];
 
-    return {
-      props: {
-        levels: JSON.parse(JSON.stringify(levels)),
-        user: JSON.parse(JSON.stringify(reqUser)),
-        page: page,
-        totalCount: totalCount,
-        levelsPerPage: levelsPerPage,
-        search: search,
-        sortBy: sortBy,
+  if (sortBy === 'name') {
+    // Name sorting with aggregation to properly populate scheduledQueueMessage
+    levels = await LevelModel.aggregate<Level>([
+      { $match: searchQuery },
+      {
+        $lookup: {
+          from: 'queuemessages',
+          localField: 'scheduledQueueMessageId',
+          foreignField: '_id',
+          as: 'scheduledQueueMessage'
+        }
       },
-    };
+      {
+        $addFields: {
+          scheduledQueueMessage: { $arrayElemAt: ['$scheduledQueueMessage', 0] }
+        }
+      },
+      { $sort: { name: 1, _id: 1 } },
+      { $skip: (page - 1) * levelsPerPage },
+      { $limit: levelsPerPage }
+    ]);
   } else {
     // Date sorting with updatedAt fallback to ts and populated scheduledQueueMessageId
-    const levels = await LevelModel.aggregate<Level>([
+    levels = await LevelModel.aggregate<Level>([
       { $match: searchQuery },
       {
         $lookup: {
@@ -104,19 +108,19 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       { $limit: levelsPerPage },
       { $unset: 'sortDate' }
     ]);
-
-    return {
-      props: {
-        levels: JSON.parse(JSON.stringify(levels)),
-        user: JSON.parse(JSON.stringify(reqUser)),
-        page: page,
-        totalCount: totalCount,
-        levelsPerPage: levelsPerPage,
-        search: search,
-        sortBy: sortBy,
-      },
-    };
   }
+
+  return {
+    props: {
+      levels: JSON.parse(JSON.stringify(levels)),
+      user: JSON.parse(JSON.stringify(reqUser)),
+      page: page,
+      totalCount: totalCount,
+      levelsPerPage: levelsPerPage,
+      search: search,
+      sortBy: sortBy,
+    },
+  };
 }
 
 export interface CreatePageProps {
@@ -146,6 +150,18 @@ export default function Create({ levels, user, page, totalCount, levelsPerPage, 
   // Use the server-provided sortBy value directly
   const currentSort = sortBy as SortOption;
 
+  // Get the correct pathname for subdomain-aware routing
+  const pathname = router.pathname.replace('/[subdomain]', '');
+
+  // Sync state with props when they change
+  useEffect(() => {
+    setSearchText(search);
+  }, [search]);
+
+  useEffect(() => {
+    setLocalLevels(levels);
+  }, [levels]);
+
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const setSearchTextDebounce = useCallback(
     debounce((searchTerm: string) => {
@@ -163,11 +179,14 @@ export default function Create({ levels, user, page, totalCount, levelsPerPage, 
         query.sortBy = currentSort;
       }
 
-      router.push({
-        pathname: '/drafts',
+      // Remove subdomain from query as it's handled by the pathname
+      delete query.subdomain;
+
+      router.replace({
+        pathname: pathname,
         query: query,
       });
-    }, 500), [currentSort]);
+    }, 500), [currentSort, pathname]);
 
   const handleSortChange = (newSortBy: SortOption) => {
     const query: RouterQuery = {
@@ -182,8 +201,11 @@ export default function Create({ levels, user, page, totalCount, levelsPerPage, 
       query.sortBy = newSortBy;
     }
 
-    router.push({
-      pathname: '/drafts',
+    // Remove subdomain from query as it's handled by the pathname
+    delete query.subdomain;
+
+    router.replace({
+      pathname: pathname,
       query: query,
     });
   };
@@ -378,7 +400,7 @@ export default function Create({ levels, user, page, totalCount, levelsPerPage, 
               <Link
                 className='ml-2 underline'
                 href={{
-                  pathname: '/drafts',
+                  pathname: pathname,
                   query: {
                     ...(page !== 2 && { page: page - 1 }),
                     ...(searchText && { search: searchText }),
@@ -394,7 +416,7 @@ export default function Create({ levels, user, page, totalCount, levelsPerPage, 
               <Link
                 className='ml-2 underline'
                 href={{
-                  pathname: '/drafts',
+                  pathname: pathname,
                   query: {
                     page: page + 1,
                     ...(searchText && { search: searchText }),
