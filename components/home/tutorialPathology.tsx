@@ -3,8 +3,10 @@
 import { createPopper, Instance, Placement } from '@popperjs/core';
 import styles from '@root/components/level/Controls.module.css';
 import { directionToVector } from '@root/constants/direction';
+import { GameId } from '@root/constants/GameId';
 import TileType from '@root/constants/tileType';
 import { GameState } from '@root/helpers/gameStateHelpers';
+import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import classNames from 'classnames';
 import { ArrowBigDown, Trophy } from 'lucide-react';
 import { Types } from 'mongoose';
@@ -161,7 +163,10 @@ export default function TutorialPathology({ recaptchaPublicKey }: TutorialPathol
         mutateUser();
 
         // Redirect to play page after successful signup
-        window.location.href = '/chapter/1';
+        const game = getGameFromId(GameId.PATHOLOGY);
+        const url = game.baseUrl + '/chapter/1';
+
+        window.location.href = url;
       } else {
         const errorData = await response.json();
 
