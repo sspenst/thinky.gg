@@ -10,10 +10,10 @@ import { Types } from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper, { ValidType } from '../../../../helpers/apiWrapper';
 import { logger } from '../../../../helpers/logger';
+import { getStreak } from '../../../../lib/cleanUser';
 import dbConnect from '../../../../lib/dbConnect';
 import { getLevelOfDay } from '../../level-of-day';
 import { bulkQueuePushNotification } from '../worker/queueFunctions';
-import { getStreak } from '../../../../lib/cleanUser';
 
 interface UserWithDeviceAndActivity extends User {
   devices: Device[];
@@ -216,8 +216,10 @@ function createLevelOfDayMessage(level: any, gameDisplayName: string, userConfig
 
   // Get streak information if available
   let streakText = '';
+
   if (userConfig) {
     const { streak, timeToKeepStreak } = getStreak(userConfig);
+
     if (streak > 0) {
       if (timeToKeepStreak > 0) {
         // User has a streak but hasn't played today

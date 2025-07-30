@@ -185,6 +185,22 @@ export async function queueGenLevelImage(levelId: Types.ObjectId, postToDiscord:
   }), options);
 }
 
+export async function queuePublishLevel(levelId: Types.ObjectId, runAt: Date, options?: QueryOptions): Promise<Types.ObjectId> {
+  const queueMessage = await QueueMessageModel.create({
+    _id: new Types.ObjectId(),
+    dedupeKey: `publish-level-${levelId.toString()}`,
+    message: JSON.stringify({ levelId: levelId.toString() }),
+    state: QueueMessageState.PENDING,
+    type: QueueMessageType.PUBLISH_LEVEL,
+    runAt: runAt,
+    processingAttempts: 0,
+    isProcessing: false,
+    ...(options || {}),
+  });
+
+  return queueMessage._id;
+}
+
 /**
  * @param userIds
  * @param gameId

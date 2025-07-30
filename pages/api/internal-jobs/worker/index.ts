@@ -7,7 +7,7 @@ import genLevelImage from '@root/helpers/genLevelImage';
 import { checkIfBlocked } from '@root/helpers/getBlockedUserIds';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import isGuest from '@root/helpers/isGuest';
-import { createNewLevelNotifications } from '@root/helpers/notificationHelper';
+import { createNewLevelNotifications, createScheduledLevelPublishedNotification } from '@root/helpers/notificationHelper';
 import { processDiscordMentions } from '@root/helpers/processDiscordMentions';
 import { refreshAchievements } from '@root/helpers/refreshAchievements';
 import { USER_DEFAULT_PROJECTION } from '@root/models/constants/projections';
@@ -209,7 +209,37 @@ async function processQueueMessage(queueMessage: QueueMessage) {
       }
 
       // Need to create the new level notification because technically the image needs to be generated beforehand...
-      await createNewLevelNotifications(lvl.gameId, new Types.ObjectId(lvl.userId._id), lvl._id, undefined);
+      await createNewLevelNotifications(lvl.gameId, new Types.ObjectId((lvl.userId as any)?._id || lvl.userId), lvl._id, undefined);
+    }
+  } else if (queueMessage.type === QueueMessageType.PUBLISH_LEVEL) {
+    const { levelId } = JSON.parse(queueMessage.message) as { levelId: string };
+
+    log = `publishLevel for ${levelId}`;
+
+    try {
+      // Import the shared publishLevel function
+      const { publishLevel } = await import('../../publish/[id]');
+
+      const level = await LevelModel.findById(levelId).lean<Level>();
+
+      if (!level) {
+        log = `publishLevel for ${levelId} failed: level not found`;
+        error = true;
+      } else if (!level.isDraft) {
+        log = `publishLevel for ${levelId} failed: level is not a draft`;
+        error = true;
+      } else {
+        // Use the shared publishLevel function
+        await publishLevel(level, level.userId);
+
+        // Send notification that scheduled level was published
+        await createScheduledLevelPublishedNotification(level.gameId, level.userId, level._id, level.name);
+
+        log = `publishLevel for ${levelId} completed successfully`;
+      }
+    } catch (e: any) {
+      log = `publishLevel for ${levelId} failed: ${e.message}`;
+      error = true;
     }
   } else {
     log = `Unknown queue message type ${queueMessage.type}`;
