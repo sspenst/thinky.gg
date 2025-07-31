@@ -20,7 +20,10 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   if (!reqUser) {
     return {
-      notFound: true,
+      redirect: {
+        destination: '/login?redirect=' + encodeURIComponent(context.resolvedUrl),
+        permanent: false,
+      },
     };
   }
 
