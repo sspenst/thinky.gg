@@ -30,7 +30,6 @@ interface GameLayoutProps {
 export default function GameLayout({ controls, disableCheckpoints, gameState, level, onCellClick, onScrub, isPro, nextLevel, prevLevel, isCollectionViewHidden, hasCollection }: GameLayoutProps) {
   const [fullScreen, setFullScreen] = useState(false);
   const [isCheckpointOpen, setIsCheckpointOpen] = useState(false);
-  const [isLandscape, setIsLandscape] = useState(false);
   const { setPreventKeyDownEvent, setShowHeader } = useContext(PageContext);
   const { deviceInfo } = useContext(AppContext);
 
@@ -47,21 +46,6 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, le
   }, []);
 
   useEffect(() => {
-    function handleOrientationChange() {
-      setIsLandscape(window.innerWidth > window.innerHeight);
-    }
-
-    handleOrientationChange(); // Check initial orientation
-    window.addEventListener('resize', handleOrientationChange);
-    window.addEventListener('orientationchange', handleOrientationChange);
-
-    return () => {
-      window.removeEventListener('resize', handleOrientationChange);
-      window.removeEventListener('orientationchange', handleOrientationChange);
-    };
-  }, []);
-
-  useEffect(() => {
     setShowHeader(!fullScreen);
   }, [fullScreen, setShowHeader]);
 
@@ -70,7 +54,7 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, le
       backgroundColor: 'var(--bg-color)',
     }}>
       {/* Navigation buttons */}
-      <div className={`mx-4 ${deviceInfo.isMobile && isLandscape ? 'my-0.5' : 'm-1'}`}>
+      <div className='mx-4 m-1'>
 
         <div className='flex justify-between items-center'>
           {controls.find(c => c.id === 'btn-prev') && (
@@ -107,17 +91,7 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, le
           )}
         </div>
       </div>
-      {/* Mobile landscape scrubber at top */}
-      {deviceInfo.isMobile && isLandscape && onScrub && (
-        <div className='bg-color border-b border-color-3 px-2 pb-2'>
-          <Scrubber
-            gameState={gameState}
-            onScrub={onScrub}
-            isPro={isPro}
-          />
-        </div>
-      )}
-      <div className={`flex grow relative ${deviceInfo.isMobile && isLandscape ? 'mb-16' : 'mb-32'}`}>
+      <div className='flex grow relative'>
         <Grid
           gameState={gameState}
           id={level._id.toString()}
@@ -133,7 +107,7 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, le
       
       {/* Bottom controls */}
       <div
-        className='fixed bottom-0 left-0 right-0 bg-color z-40 border-t border-color-3'
+        className='bg-color border-color-3'
         style={{
           right: deviceInfo.screenSize >= ScreenSize.XL ? // xl breakpoint
             (hasCollection && !isCollectionViewHidden ? '640px' : '400px') : // collection (240px) + info (400px) OR just info (400px)
@@ -141,7 +115,7 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, le
         }}
       >
         <div className='gap-2 mx-3 py-2 transition-opacity flex flex-col'>
-          {onScrub && !(deviceInfo.isMobile && isLandscape) && <div className='mb-2'><Scrubber
+          {onScrub && <div className='mb-2'><Scrubber
             gameState={gameState}
             onScrub={onScrub}
             isPro={isPro}
