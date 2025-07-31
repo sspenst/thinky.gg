@@ -362,7 +362,7 @@ export async function sendLevelOfDayPushNotifications(limit: number) {
               const sendTime = determineOptimalSendTime(user);
 
               // Queue the push notification with the scheduled time
-              await bulkQueuePushNotification([notification[0]._id], session, sendTime, false); // false = no email, only push. email is done in the digest
+              await bulkQueuePushNotification([notification[0]._id], session, sendTime, true); // true = no email, only push. email is done in the digest
 
               sentCount++;
             } else {
