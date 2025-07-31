@@ -58,46 +58,46 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   // Get total count of draft levels with search filter
   const totalCount = await LevelModel.countDocuments(searchQuery);
-
   // Build sort criteria based on sortBy parameter
   let levels: Level[];
 
   if (sortBy === 'name') {
-    // Name sorting with aggregation to properly populate scheduledQueueMessage
+    // Use separate queries approach - much faster than $lookup
+    // Get levels without lookup first
     levels = await LevelModel.aggregate<Level>([
       { $match: searchQuery },
-      {
-        $lookup: {
-          from: 'queuemessages',
-          localField: 'scheduledQueueMessageId',
-          foreignField: '_id',
-          as: 'scheduledQueueMessage'
-        }
-      },
-      {
-        $addFields: {
-          scheduledQueueMessage: { $arrayElemAt: ['$scheduledQueueMessage', 0] }
-        }
-      },
       { $sort: { name: 1, _id: 1 } },
       { $skip: (page - 1) * levelsPerPage },
       { $limit: levelsPerPage }
     ]);
+    
+    // Find which levels have scheduled messages and get those messages in a separate query
+    const scheduledLevelIds = levels
+      .filter(level => level.scheduledQueueMessageId)
+      .map(level => level.scheduledQueueMessageId);
+    
+    let queueMessages = [];
+    if (scheduledLevelIds.length > 0) {
+      const { QueueMessageModel } = await import('../../../models/mongoose');
+      queueMessages = await QueueMessageModel.find({
+        _id: { $in: scheduledLevelIds }
+      }).lean();
+    }
+    
+    // Attach queue messages to levels
+    const queueMessageMap = new Map(queueMessages.map(msg => [msg._id.toString(), msg]));
+    levels.forEach(level => {
+      if (level.scheduledQueueMessageId) {
+        (level as any).scheduledQueueMessage = queueMessageMap.get(level.scheduledQueueMessageId.toString());
+      }
+    });
   } else {
-    // Date sorting with updatedAt fallback to ts and populated scheduledQueueMessageId
+    // Use separate queries approach for date sorting too
+    // Get levels without lookup first
     levels = await LevelModel.aggregate<Level>([
       { $match: searchQuery },
       {
-        $lookup: {
-          from: 'queuemessages',
-          localField: 'scheduledQueueMessageId',
-          foreignField: '_id',
-          as: 'scheduledQueueMessage'
-        }
-      },
-      {
         $addFields: {
-          scheduledQueueMessage: { $arrayElemAt: ['$scheduledQueueMessage', 0] },
           sortDate: {
             $ifNull: ['$updatedAt', { $toDate: { $multiply: ['$ts', 1000] } }]
           }
@@ -108,6 +108,27 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       { $limit: levelsPerPage },
       { $unset: 'sortDate' }
     ]);
+    
+    // Find which levels have scheduled messages and get those messages in a separate query
+    const scheduledLevelIds = levels
+      .filter(level => level.scheduledQueueMessageId)
+      .map(level => level.scheduledQueueMessageId);
+    
+    let queueMessages = [];
+    if (scheduledLevelIds.length > 0) {
+      const { QueueMessageModel } = await import('../../../models/mongoose');
+      queueMessages = await QueueMessageModel.find({
+        _id: { $in: scheduledLevelIds }
+      }).lean();
+    }
+    
+    // Attach queue messages to levels
+    const queueMessageMap = new Map(queueMessages.map(msg => [msg._id.toString(), msg]));
+    levels.forEach(level => {
+      if (level.scheduledQueueMessageId) {
+        (level as any).scheduledQueueMessage = queueMessageMap.get(level.scheduledQueueMessageId.toString());
+      }
+    });
   }
 
   return {

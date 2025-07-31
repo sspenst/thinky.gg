@@ -161,6 +161,8 @@ LevelSchema.index({ gameId: 1, isDraft: 1, isDeleted: 1, ts: -1 });
 LevelSchema.index({ gameId: 1, calc_difficulty_estimate: 1, isRanked: 1 });
 LevelSchema.index({ gameId: 1, calc_reviews_score_laplace: 1, ts: -1 });
 LevelSchema.index({ gameId: 1, userId: 1, isDraft: 1 });
+LevelSchema.index({ gameId: 1, userId: 1, isDraft: 1, isDeleted: 1, name: 1 }); // For drafts name sorting
+LevelSchema.index({ gameId: 1, userId: 1, isDraft: 1, isDeleted: 1, updatedAt: -1 }); // For drafts date sorting
 
 // ProStats performance optimization index
 LevelSchema.index({
