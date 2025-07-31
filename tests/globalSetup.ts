@@ -5,7 +5,7 @@ import { MongoMemoryReplSet } from 'mongodb-memory-server';
 module.exports = async () => {
   const mongoServerPool = [];
   const mongoServerUris = [];
-  const num = 4;
+  const num = 1;
 
   process.env.MONGODB_TEST_URI_COUNT = num.toString();
 
