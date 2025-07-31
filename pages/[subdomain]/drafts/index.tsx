@@ -7,6 +7,7 @@ import { redirectToLogin } from '@root/helpers/redirectToLogin';
 import classNames from 'classnames';
 import debounce from 'debounce';
 import { FilterQuery } from 'mongoose';
+import QueueMessage from '../../../models/db/queueMessage';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -76,7 +77,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       .filter(level => level.scheduledQueueMessageId)
       .map(level => level.scheduledQueueMessageId);
     
-    let queueMessages = [];
+    let queueMessages: QueueMessage[] = [];
     if (scheduledLevelIds.length > 0) {
       const { QueueMessageModel } = await import('../../../models/mongoose');
       queueMessages = await QueueMessageModel.find({
@@ -114,7 +115,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       .filter(level => level.scheduledQueueMessageId)
       .map(level => level.scheduledQueueMessageId);
     
-    let queueMessages = [];
+    let queueMessages: QueueMessage[] = [];
     if (scheduledLevelIds.length > 0) {
       const { QueueMessageModel } = await import('../../../models/mongoose');
       queueMessages = await QueueMessageModel.find({
