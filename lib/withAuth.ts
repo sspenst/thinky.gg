@@ -19,6 +19,7 @@ export interface NextApiRequestWithAuth extends NextApiRequestWrapper {
   gameId: GameId;
   user: User;
   userId: string;
+  impersonatingAdminId?: string;
 }
 
 export async function getUserFromToken(
@@ -46,6 +47,8 @@ export async function getUserFromToken(
 
   const decoded = verifiedSignature;
   const userId = decoded.userId as string;
+  const isImpersonating = decoded.isImpersonating as boolean;
+  const adminId = decoded.adminId as string;
   // dynamically import newrelic
   const newrelic = process.env.NODE_ENV === 'test' ? undefined : await import('newrelic');
 
@@ -75,7 +78,8 @@ export async function getUserFromToken(
             lastGame: gameId
           },
         }),
-        ...ipData,
+        // Don't track IP addresses when impersonating
+        ...(isImpersonating ? {} : ipData),
       },
       { new: true, projection: '+email +bio +emailConfirmed' },
     ).lean<User>(),
@@ -88,6 +92,11 @@ export async function getUserFromToken(
 
   if (user && userConfig) {
     user.config = userConfig as UserConfig;
+  }
+
+  // Add impersonation info to user object
+  if (user && isImpersonating && adminId) {
+    (user as any).impersonatingAdminId = adminId;
   }
 
   return user;
@@ -120,16 +129,20 @@ export default function withAuth(
         });
       }
 
-      const refreshCookie = getTokenCookie(
-        reqUser._id.toString(),
-        req.headers?.host
-      );
+      // Only refresh cookie if not impersonating to preserve impersonation state
+      if (!(reqUser as any).impersonatingAdminId) {
+        const refreshCookie = getTokenCookie(
+          reqUser._id.toString(),
+          req.headers?.host
+        );
 
-      res.setHeader('Set-Cookie', refreshCookie);
+        res.setHeader('Set-Cookie', refreshCookie);
+      }
 
       req.gameId = getGameIdFromReq(req);
       req.user = reqUser;
       req.userId = reqUser._id.toString();
+      req.impersonatingAdminId = (reqUser as any).impersonatingAdminId;
 
       const validate = parseReq(validator, req);
 

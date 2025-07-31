@@ -54,6 +54,7 @@ export default withAuth({
     return res.status(200).json({ ...enrichedUser, ...{
       config: userConfig,
       multiplayerProfile: multiplayerProfile,
+      ...(req.impersonatingAdminId ? { impersonatingAdminId: req.impersonatingAdminId } : {}),
     } });
   } else if (req.method === 'PUT') {
     if (isGuest(req.user)) {
