@@ -374,12 +374,20 @@ export default function Create({ levels, user, page, totalCount, levelsPerPage, 
                   <FormattedDate prefix='Updated' date={level?.updatedAt} className='italic text-xs block' />
                   {isScheduled && (
                     <div className='flex gap-2 justify-center mt-2'>
-                      <button
+                      <div
                         onClick={() => cancelScheduledPublish(level._id.toString())}
-                        className='text-xs bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded'
+                        className='text-xs bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded cursor-pointer'
+                        role='button'
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            cancelScheduledPublish(level._id.toString());
+                          }
+                        }}
                       >
                         Cancel Schedule
-                      </button>
+                      </div>
                       <span className='text-xs text-gray-400 flex items-center gap-1'>
                         <svg width='12' height='12' viewBox='0 0 24 24' fill='currentColor'>
                           <path d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z' />
