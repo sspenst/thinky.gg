@@ -498,7 +498,7 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser, timeFil
         </div>
       </div>
       {/* Follower Activity Analysis */}
-      {followerData && followerData[ProStatsUserType.FollowerActivityPatterns] && followerData[ProStatsUserType.FollowerActivityPatterns].followerCount >= 5 && <div className='flex flex-col gap-2'>
+      {followerData && followerData[ProStatsUserType.FollowerActivityPatterns] && followerData[ProStatsUserType.FollowerActivityPatterns].activeFollowerCount >= 5 && <div className='flex flex-col gap-2'>
         <h2 className='text-xl font-bold text-center'>Best Time to Publish</h2>
         <p className='text-sm text-gray-400 text-center mb-4'>
             Optimal timing based on when your {followerData[ProStatsUserType.FollowerActivityPatterns]?.activeFollowerCount} active followers are most engaged
@@ -886,7 +886,7 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser, timeFil
                   </div>
                 </div>
               )}
-              {followerData && followerData[ProStatsUserType.FollowerActivityPatterns] && followerData[ProStatsUserType.FollowerActivityPatterns].followerCount >= 5 && (
+              {followerData && followerData[ProStatsUserType.FollowerActivityPatterns] && followerData[ProStatsUserType.FollowerActivityPatterns].activeFollowerCount >= 5 && (
                 <div className='flex items-start gap-3 p-3 bg-amber-500/10 rounded-lg border-l-4 border-amber-500'>
                   <span className='text-amber-400 text-lg'>⏰</span>
                   <div>
@@ -896,7 +896,7 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser, timeFil
                   </div>
                 </div>
               )}
-              {(!followerData || !followerData[ProStatsUserType.FollowerActivityPatterns] || followerData[ProStatsUserType.FollowerActivityPatterns].followerCount < 5) && (
+              {(!followerData || !followerData[ProStatsUserType.FollowerActivityPatterns] || followerData[ProStatsUserType.FollowerActivityPatterns].activeFollowerCount < 5) && (
                 <div className='flex items-start gap-3 p-3 bg-amber-500/10 rounded-lg border-l-4 border-amber-500'>
                   <span className='text-amber-400 text-lg'>👥</span>
                   <div>
