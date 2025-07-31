@@ -43,6 +43,7 @@ export interface ReqUser extends User {
   config: UserConfig;
   multiplayerProfile?: MultiplayerProfile;
   notifications: Notification[];
+  impersonatingAdminId?: string;
 }
 
 export interface UserWithMultiplayerProfile extends User {
