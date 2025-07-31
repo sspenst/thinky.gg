@@ -399,11 +399,11 @@ export default function ProfileInsightsPeerComparisons({ user, reqUser, timeFilt
 
   return (
     <div className='flex flex-col gap-6 w-full'>
-      {/* Player Strength */}
+      {/* Player Speed Score */}
       {competitionScore !== null && competitionScoreDetails && (
         <div className='bg-gray-800 rounded-lg p-6 text-center'>
           <div className='flex items-center justify-center gap-2 mb-2'>
-            <h2 className='text-xl font-bold'>Player Strength</h2>
+            <h2 className='text-xl font-bold'>Player Speed Score</h2>
             <span className='text-xs bg-blue-500 text-white px-2 py-1 rounded-full'>BETA</span>
           </div>
           <div className='text-5xl font-bold mb-2' style={{ color: competitionScore >= 75 ? '#10B981' : competitionScore >= 50 ? '#3B82F6' : competitionScore >= 25 ? '#F59E0B' : '#EF4444' }}>
@@ -420,7 +420,7 @@ export default function ProfileInsightsPeerComparisons({ user, reqUser, timeFilt
           </button>
           {showTooltip && (
             <div className='mt-4 bg-gray-700 rounded-lg p-4 text-left'>
-              <div className='font-bold mb-3 text-center'>Player Strength Calculation</div>
+              <div className='font-bold mb-3 text-center'>Player Speed Score Calculation</div>
               <div className='mb-4'>
                 <div className='font-semibold mb-2 text-yellow-400'>How it works:</div>
                 <div className='text-sm space-y-1'>
