@@ -6,7 +6,6 @@ import { ChevronDown, LucideCode, LucideFlipHorizontal2, LucidePencil, LucidePla
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { renderToStaticMarkup } from 'react-dom/server';
 import toast from 'react-hot-toast';
 import TileType from '../../constants/tileType';
 import { PageContext } from '../../contexts/pageContext';
@@ -368,11 +367,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
 
   const isValid = !validateLevelResponse || validateLevelResponse.valid;
   const btnTestTooltip = !isValid ?
-    renderToStaticMarkup(
-      <div className='flex flex-col items-start'>
-        {validateLevelResponse.reasons.map(reason => <div key={'reason-' + reason}>{reason}</div>)}
-      </div>
-    ) : isDirty ? 'Save before testing' : null;
+    validateLevelResponse.reasons.join('\n') : isDirty ? 'Save before testing' : null;
 
   const isMobile = deviceInfo.isMobile;
 
@@ -429,7 +424,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
               'btn-test',
               () => router.push(`/test/${id}`),
               <div className='flex flex-row'>
-                <div data-tooltip-id='btn-test-tooltip' data-tooltip-html={btnTestTooltip}>
+                <div data-tooltip-id='btn-test-tooltip' data-tooltip-content={btnTestTooltip}>
                   {!isValid && '⚠️ '}
                 </div>
                 {modifyPlay}
@@ -441,36 +436,54 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
               'btn-publish-main',
               () => setIsPublishLevelOpen(true),
               <div className='flex items-center gap-1 w-full'>
-                <div className='flex items-center gap-1 flex-1' data-tooltip-id='btn-publish-tooltip' data-tooltip-html={isDirty ? 'Save and test before publishing' : level.leastMoves === 0 ? 'Test before publishing' : null}>
+                <div className='flex items-center gap-1 flex-1' data-tooltip-id='btn-publish-tooltip' data-tooltip-content={isDirty ? 'Save and test before publishing' : level.leastMoves === 0 ? 'Test before publishing' : null}>
                   <LucideShare stroke={isDirty ? 'white' : 'lightgreen'} />
                   {!isMobile && <div>Publish</div>}
                 </div>
                 {isPro(user) && (
                   <div className='relative' ref={publishDropdownRef}>
-                    <button
+                    <div
                       onClick={(e) => {
                         e.stopPropagation();
                         setIsPublishDropdownOpen(!isPublishDropdownOpen);
                       }}
-                      className='flex items-center p-1 hover:bg-purple-600/20 hover:border-purple-500/50 border border-transparent rounded transition-all duration-200'
+                      className='flex items-center p-1 hover:bg-purple-600/20 hover:border-purple-500/50 border border-transparent rounded transition-all duration-200 cursor-pointer'
+                      role='button'
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setIsPublishDropdownOpen(!isPublishDropdownOpen);
+                        }
+                      }}
                     >
                       <ChevronDown size={16} className={`transition-transform duration-200 ${isPublishDropdownOpen ? 'rotate-180' : ''}`} />
-                    </button>
+                    </div>
                     {isPublishDropdownOpen && (
                       <div className='absolute right-0 bottom-full mb-2 w-56 bg-gradient-to-br from-gray-900 to-gray-800 border border-purple-500/30 rounded-lg shadow-2xl z-50 backdrop-blur-sm'>
                         <div className='py-2'>
-                          <button
+                          <div
                             onClick={() => {
+                              if (isDirty || level.leastMoves === 0) return;
                               setIsSchedulePublishOpen(true);
                               setIsPublishDropdownOpen(false);
                             }}
-                            disabled={isDirty || level.leastMoves === 0}
                             className={`w-full text-left px-4 py-3 transition-all duration-200 flex items-center gap-3 group ${
                               isDirty || level.leastMoves === 0
                                 ? 'opacity-50 cursor-not-allowed'
-                                : 'hover:bg-gradient-to-r hover:from-purple-600/20 hover:to-blue-600/20'
+                                : 'hover:bg-gradient-to-r hover:from-purple-600/20 hover:to-blue-600/20 cursor-pointer'
                             }`}
                             title={isDirty ? 'Save and test before scheduling publish' : level.leastMoves === 0 ? 'Test before scheduling publish' : undefined}
+                            role='button'
+                            tabIndex={isDirty || level.leastMoves === 0 ? -1 : 0}
+                            onKeyDown={(e) => {
+                              if ((e.key === 'Enter' || e.key === ' ') && !(isDirty || level.leastMoves === 0)) {
+                                e.preventDefault();
+                                setIsSchedulePublishOpen(true);
+                                setIsPublishDropdownOpen(false);
+                              }
+                            }}
                           >
                             <div className='flex items-center justify-center w-8 h-8 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg group-hover:scale-110 transition-transform duration-200'>
                               <svg width='16' height='16' viewBox='0 0 24 24' fill='white' className='drop-shadow-sm'>
@@ -484,7 +497,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
                               </div>
                               <div className='text-xs text-gray-400 group-hover:text-gray-300 transition-colors'>Publish at optimal times</div>
                             </div>
-                          </button>
+                          </div>
                         </div>
                       </div>
                     )}

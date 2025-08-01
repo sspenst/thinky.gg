@@ -3,7 +3,7 @@
 import { MongoMemoryReplSet } from 'mongodb-memory-server';
 
 module.exports = async () => {
-  const mongoServerPool = [];
+  const mongoServerPool = [] as any;
   const mongoServerUris = [];
   const num = 2;
 
