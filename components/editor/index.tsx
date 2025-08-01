@@ -1,6 +1,5 @@
 import { ValidateLevelResponse } from '@root/constants/Games';
 import { AppContext } from '@root/contexts/appContext';
-import isPro from '@root/helpers/isPro';
 import TileTypeHelper from '@root/helpers/tileTypeHelper';
 import { ChevronDown, LucideCode, LucideFlipHorizontal2, LucidePencil, LucidePlay, LucideRepeat2, LucideSave, LucideShare } from 'lucide-react';
 import Image from 'next/image';
@@ -384,7 +383,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
   const modifySave = isMobile ? <LucideSave /> : <div className='flex gap-1'><LucideSave /><span>Save</span></div>;
 
   const modifyEdit = isMobile ? <LucidePencil /> : <div className='flex gap-1'><LucidePencil /><span>Edit</span></div>;
-  const modifyPlay = isMobile ? <LucidePlay /> : <div className='flex gap-1'><LucidePlay /><span>Play</span></div>;
+  const modifyPlay = isMobile ? <LucidePlay /> : <div className='flex gap-1'><LucidePlay /><span>Test</span></div>;
 
   return (<>
     <div className='flex flex-col h-full'>
@@ -440,7 +439,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
                   <LucideShare stroke={isDirty ? 'white' : 'lightgreen'} />
                   {!isMobile && <div>Publish</div>}
                 </div>
-                {isPro(user) && (
+                {(
                   <div className='relative' ref={publishDropdownRef}>
                     <div
                       onClick={(e) => {
