@@ -1,17 +1,18 @@
 import { DEFAULT_GAME_ID, GameId } from '@root/constants/GameId';
+import TestId from '@root/constants/testId';
 import NotificationType from '@root/constants/notificationType';
 import { NextApiRequestWrapper } from '@root/helpers/apiWrapper';
 import { enableFetchMocks } from 'jest-fetch-mock';
+import MockDate from 'mockdate';
 import { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
-import TestId from '../../../../constants/testId';
 import { logger } from '../../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
-import { DeviceModel, NotificationModel, PlayAttemptModel, QueueMessageModel, UserModel } from '../../../../models/mongoose';
+import { DeviceModel, LevelModel, NotificationModel, PlayAttemptModel, QueueMessageModel, UserConfigModel, UserModel } from '../../../../models/mongoose';
 import { DeviceState } from '../../../../models/schemas/deviceSchema';
 import { QueueMessageType } from '../../../../models/schemas/queueMessageSchema';
-import handler from '../../../../pages/api/internal-jobs/level-of-day-push';
+import handler from '../../../../pages/api/internal-jobs/level-of-day-push/index';
 
 // Mock firebase-admin
 jest.mock('firebase-admin', () => ({
@@ -29,6 +30,20 @@ jest.mock('firebase-admin', () => ({
   }),
 }));
 
+// Mock getLevelOfDay to return a test level
+jest.mock('../../../../pages/api/level-of-day', () => ({
+  getLevelOfDay: jest.fn().mockResolvedValue({
+    _id: TestId.LEVEL,
+    gameId: GameId.PATHOLOGY,
+    name: 'Test Level',
+    slug: 'test-level',
+    data: '40013\n12000\n05000\n67890\nABCD0',
+    userId: TestId.USER,
+    calc_difficulty_estimate: 100,
+    calc_difficulty_completion_estimate: 100,
+  }),
+}));
+
 beforeAll(async () => {
   await dbConnect();
 });
@@ -39,18 +54,80 @@ afterAll(async () => {
 
 afterEach(async () => {
   jest.restoreAllMocks();
+  MockDate.reset();
 });
 
 enableFetchMocks();
 
 describe('Level of Day Push Notifications', () => {
   beforeEach(async () => {
-    // Clean up test data
+    // Clean up ALL test data to ensure proper isolation
     await Promise.all([
-      NotificationModel.deleteMany({ type: NotificationType.LEVEL_OF_DAY }),
-      QueueMessageModel.deleteMany({ type: QueueMessageType.PUSH_NOTIFICATION }),
+      NotificationModel.deleteMany({}), // Delete ALL notifications, not just LEVEL_OF_DAY
+      QueueMessageModel.deleteMany({}), // Delete ALL queue messages
       DeviceModel.deleteMany({}),
+      PlayAttemptModel.deleteMany({}),
+      // Also clean up any UserConfig that might have been created
+      UserConfigModel.deleteMany({}),
     ]);
+
+    // Create test level
+    await LevelModel.findOneAndUpdate(
+      { _id: TestId.LEVEL },
+      {
+        _id: TestId.LEVEL,
+        gameId: GameId.PATHOLOGY,
+        name: 'Test Level',
+        slug: 'test-level',
+        data: '40013\n12000\n05000\n67890\nABCD0',
+        userId: TestId.USER,
+        calc_difficulty_estimate: 100,
+        calc_difficulty_completion_estimate: 100,
+        isDraft: false,
+        isDeleted: false,
+      },
+      { upsert: true }
+    );
+
+    // Create test users if they don't exist
+    await UserModel.findOneAndUpdate(
+      { _id: TestId.USER },
+      { 
+        _id: TestId.USER,
+        name: 'TestUser',
+        email: 'test@example.com',
+        isGuest: false,
+        disallowedPushNotifications: [],
+        lastGame: GameId.PATHOLOGY
+      },
+      { upsert: true }
+    );
+
+    await UserModel.findOneAndUpdate(
+      { _id: TestId.USER_B },
+      { 
+        _id: TestId.USER_B,
+        name: 'TestUserB',
+        email: 'testb@example.com',
+        isGuest: false,
+        disallowedPushNotifications: [],
+        lastGame: GameId.PATHOLOGY
+      },
+      { upsert: true }
+    );
+
+    await UserModel.findOneAndUpdate(
+      { _id: TestId.USER_GUEST },
+      { 
+        _id: TestId.USER_GUEST,
+        name: 'GuestUser',
+        email: 'guest@example.com',
+        isGuest: true,
+        disallowedPushNotifications: [],
+        lastGame: GameId.PATHOLOGY
+      },
+      { upsert: true }
+    );
   });
 
   test('send with an invalid process.env var', async () => {
@@ -84,6 +161,10 @@ describe('Level of Day Push Notifications', () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     jest.spyOn(logger, 'info').mockImplementation(() => ({} as Logger));
     jest.spyOn(logger, 'warn').mockImplementation(() => ({} as Logger));
+
+    // Ensure absolutely no existing notifications that could interfere
+    await NotificationModel.deleteMany({});
+    await QueueMessageModel.deleteMany({});
 
     // Create test device for user
     await DeviceModel.create({
@@ -385,6 +466,10 @@ describe('Level of Day Push Notifications', () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     jest.spyOn(logger, 'info').mockImplementation(() => ({} as Logger));
     jest.spyOn(logger, 'warn').mockImplementation(() => ({} as Logger));
+
+    // Mock the date to be a Tuesday at 10am UTC (before the optimal 3pm time)
+    const mockedDate = new Date('2024-01-16T10:00:00.000Z'); // Tuesday, Jan 16, 2024, 10:00 UTC
+    MockDate.set(mockedDate);
 
     const now = new Date();
     const dayOfWeek = now.getUTCDay();
