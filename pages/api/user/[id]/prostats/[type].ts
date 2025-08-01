@@ -141,12 +141,111 @@ async function getDifficultyDataComparisons(gameId: GameId, userId: string, time
       }
     },
     {
+      $lookup: {
+        from: PlayAttemptModel.collection.name,
+        let: { 
+          levelId: '$level._id',
+          currentUserId: new mongoose.Types.ObjectId(userId)
+        },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  { $eq: ['$levelId', '$$levelId'] },
+                  { $ne: ['$userId', '$$currentUserId'] }, // Exclude current user
+                  { $eq: ['$attemptContext', AttemptContext.JUST_SOLVED] }
+                ]
+              }
+            }
+          },
+          {
+            $group: {
+              _id: null,
+              uniqueUsers: { $addToSet: '$userId' }
+            }
+          },
+          {
+            $lookup: {
+              from: PlayAttemptModel.collection.name,
+              let: { 
+                levelId: '$$levelId',
+                uniqueUsers: '$uniqueUsers'
+              },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $and: [
+                        { $eq: ['$levelId', '$$levelId'] },
+                        { $in: ['$userId', '$$uniqueUsers'] },
+                        { $ne: ['$startTime', '$endTime'] },
+                        { $in: ['$attemptContext', [AttemptContext.JUST_SOLVED, AttemptContext.UNSOLVED]] }
+                      ]
+                    }
+                  }
+                },
+                {
+                  $group: {
+                    _id: null,
+                    totalDuration: { $sum: { $subtract: ['$endTime', '$startTime'] } },
+                    count: { $sum: 1 }
+                  }
+                }
+              ],
+              as: 'durations'
+            }
+          },
+          {
+            $project: {
+              userCount: { $size: '$uniqueUsers' },
+              totalDuration: { $ifNull: [{ $arrayElemAt: ['$durations.totalDuration', 0] }, 0] }
+            }
+          }
+        ],
+        as: 'communityData'
+      }
+    },
+    {
       $addFields: {
         otherPlayattemptsAverageDuration: {
+          $let: {
+            vars: {
+              data: { $arrayElemAt: ['$communityData', 0] }
+            },
+            in: {
+              $cond: {
+                if: { 
+                  $and: [
+                    { $ne: ['$$data', null] },
+                    { $gt: ['$$data.userCount', 0] },
+                    { $gt: ['$$data.totalDuration', 0] }
+                  ]
+                },
+                then: { $divide: ['$$data.totalDuration', '$$data.userCount'] },
+                else: {
+                  // Fallback to original calculation
+                  $cond: {
+                    if: { $gt: ['$level.calc_playattempts_just_beaten_count', 1] },
+                    then: { $divide: ['$level.calc_playattempts_duration_sum', '$level.calc_playattempts_just_beaten_count'] },
+                    else: null
+                  }
+                }
+              }
+            }
+          }
+        },
+        // Keep the original count for display (but subtract 1 if current user has solved it)
+        calc_playattempts_just_beaten_count_display: {
           $cond: {
-            if: { $gt: ['$level.calc_playattempts_just_beaten_count', 1] },
-            then: { $divide: ['$level.calc_playattempts_duration_sum', '$level.calc_playattempts_just_beaten_count'] },
-            else: null
+            if: { 
+              $and: [
+                { $gt: ['$myplayattempts.sumDuration', 0] },
+                { $gt: ['$level.calc_playattempts_just_beaten_count', 0] }
+              ]
+            },
+            then: { $subtract: ['$level.calc_playattempts_just_beaten_count', 1] },
+            else: '$level.calc_playattempts_just_beaten_count'
           }
         }
       }
@@ -160,7 +259,7 @@ async function getDifficultyDataComparisons(gameId: GameId, userId: string, time
         ts: 1,
         myPlayattemptsSumDuration: '$myplayattempts.sumDuration',
         otherPlayattemptsAverageDuration: 1,
-        calc_playattempts_just_beaten_count: '$level.calc_playattempts_just_beaten_count',
+        calc_playattempts_just_beaten_count: '$calc_playattempts_just_beaten_count_display',
         performanceRatio: {
           $cond: {
             if: {

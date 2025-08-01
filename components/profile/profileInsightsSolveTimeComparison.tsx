@@ -191,7 +191,7 @@ export default function ProfileInsightsSolveTimeComparison({ user, timeFilter }:
                       <span className='font-bold'>{`${name} (${getDifficultyFromEstimate(difficulty).name})`}</span>
                       <div className='flex flex-col'>
                         <span>{user.name}: <span className='font-bold'>{timeTakenToSolve}</span></span>
-                        <span>Others: <span className='font-bold'>{timeTakenForOthersToSolve}</span></span>
+                        <span>Others: <span className='font-bold'>{timeTakenForOthersToSolve}</span> - {difficultyLevelComparison.calc_playattempts_just_beaten_count} solvers</span>
                       </div>
                       <span className='text-xs'>
                         {`${multiplier}x ${(diff >= 1 ? 'faster' : 'slower')} than average`}
