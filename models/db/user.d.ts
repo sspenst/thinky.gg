@@ -17,6 +17,7 @@ interface User {
   disableStreakPopup?: boolean,
   disallowedEmailNotifications?: NotificationType[];
   disallowedPushNotifications?: NotificationType[];
+  disallowedInboxNotifications?: NotificationType[];
   email: string;
   emailConfirmationToken: string;
   emailConfirmed: boolean;

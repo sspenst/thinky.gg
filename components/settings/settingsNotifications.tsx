@@ -124,10 +124,13 @@ export default function SettingsNotifications() {
 
   const disallowedEmailNotifications = user.disallowedEmailNotifications ?? [];
   const disallowedPushNotifications = user.disallowedPushNotifications ?? [];
+  const disallowedInboxNotifications = user.disallowedInboxNotifications ?? [];
 
-  // Create a formatted list of all notification types with two checkboxes... one for email and one for mobile push notifications.
-  const updateNotifs = (notif: NotificationType, type: 'email' | 'push') => {
-    const notifList = type === 'email' ? disallowedEmailNotifications : disallowedPushNotifications;
+  // Create a formatted list of all notification types with checkboxes for email, push, and inbox notifications.
+  const updateNotifs = (notif: NotificationType, type: 'email' | 'push' | 'inbox') => {
+    const notifList = type === 'email' ? disallowedEmailNotifications : 
+                     type === 'push' ? disallowedPushNotifications : 
+                     disallowedInboxNotifications;
     const notifIndex = notifList.indexOf(notif);
 
     if (notifIndex === -1) {
@@ -140,6 +143,7 @@ export default function SettingsNotifications() {
       JSON.stringify({
         disallowedEmailNotifications: disallowedEmailNotifications,
         disallowedPushNotifications: disallowedPushNotifications,
+        disallowedInboxNotifications: disallowedInboxNotifications,
       }),
       'notification settings',
     );
@@ -147,23 +151,27 @@ export default function SettingsNotifications() {
 
   const guest = isGuest(user);
 
-  const NotificationToggle = ({ notif, isEmail }: { notif: NotificationType, isEmail: boolean }) => (
+  const NotificationToggle = ({ notif, type }: { notif: NotificationType, type: 'email' | 'push' | 'inbox' }) => (
     <label className='relative inline-flex items-center cursor-pointer'>
       <input
         type='checkbox'
         className='sr-only peer'
-        checked={isEmail ? !disallowedEmailNotifications.includes(notif) : !disallowedPushNotifications.includes(notif)}
+        checked={
+          type === 'email' ? !disallowedEmailNotifications.includes(notif) :
+          type === 'push' ? !disallowedPushNotifications.includes(notif) :
+          !disallowedInboxNotifications.includes(notif)
+        }
         disabled={isUserConfigLoading}
-        onChange={() => updateNotifs(notif, isEmail ? 'email' : 'push')}
+        onChange={() => updateNotifs(notif, type)}
       />
       <div className='w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[""] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600' />
     </label>
   );
 
-  const GlobalToggle = ({ isEmail }: { isEmail: boolean }) => {
-    const isAllEnabled = isEmail
-      ? disallowedEmailNotifications.length === 0
-      : disallowedPushNotifications.length === 0;
+  const GlobalToggle = ({ type }: { type: 'email' | 'push' | 'inbox' }) => {
+    const isAllEnabled = type === 'email' ? disallowedEmailNotifications.length === 0 :
+                        type === 'push' ? disallowedPushNotifications.length === 0 :
+                        disallowedInboxNotifications.length === 0;
 
     return (
       <label className='relative inline-flex items-center cursor-pointer'>
@@ -173,17 +181,30 @@ export default function SettingsNotifications() {
           checked={isAllEnabled}
           disabled={isUserConfigLoading}
           onChange={() => {
-            if (isEmail) {
+            if (type === 'email') {
               updateUserConfig(
                 JSON.stringify({
                   disallowedEmailNotifications: isAllEnabled ? allNotifs : [],
+                  disallowedPushNotifications: disallowedPushNotifications,
+                  disallowedInboxNotifications: disallowedInboxNotifications,
+                }),
+                'notification settings',
+              );
+            } else if (type === 'push') {
+              updateUserConfig(
+                JSON.stringify({
+                  disallowedEmailNotifications: disallowedEmailNotifications,
+                  disallowedPushNotifications: isAllEnabled ? allNotifs : [],
+                  disallowedInboxNotifications: disallowedInboxNotifications,
                 }),
                 'notification settings',
               );
             } else {
               updateUserConfig(
                 JSON.stringify({
-                  disallowedPushNotifications: isAllEnabled ? allNotifs : [],
+                  disallowedEmailNotifications: disallowedEmailNotifications,
+                  disallowedPushNotifications: disallowedPushNotifications,
+                  disallowedInboxNotifications: isAllEnabled ? allNotifs : [],
                 }),
                 'notification settings',
               );
@@ -208,13 +229,18 @@ export default function SettingsNotifications() {
           {!guest && (
             <div className='flex items-center gap-3'>
               <span className='text-sm font-medium'>Email notifications</span>
-              <GlobalToggle isEmail={true} />
+              <GlobalToggle type='email' />
               <span className='text-xs text-gray-500'>All</span>
             </div>
           )}
           <div className='flex items-center gap-3'>
             <span className='text-sm font-medium'>Push notifications</span>
-            <GlobalToggle isEmail={false} />
+            <GlobalToggle type='push' />
+            <span className='text-xs text-gray-500'>All</span>
+          </div>
+          <div className='flex items-center gap-3'>
+            <span className='text-sm font-medium'>Inbox notifications</span>
+            <GlobalToggle type='inbox' />
             <span className='text-xs text-gray-500'>All</span>
           </div>
         </div>
@@ -242,12 +268,16 @@ export default function SettingsNotifications() {
                   {!guest && (
                     <div className='flex items-center gap-2'>
                       <span className='text-xs text-gray-600 dark:text-gray-400'>Email</span>
-                      <NotificationToggle notif={type} isEmail={true} />
+                      <NotificationToggle notif={type} type='email' />
                     </div>
                   )}
                   <div className='flex items-center gap-2'>
                     <span className='text-xs text-gray-600 dark:text-gray-400'>Push</span>
-                    <NotificationToggle notif={type} isEmail={false} />
+                    <NotificationToggle notif={type} type='push' />
+                  </div>
+                  <div className='flex items-center gap-2'>
+                    <span className='text-xs text-gray-600 dark:text-gray-400'>Inbox</span>
+                    <NotificationToggle notif={type} type='inbox' />
                   </div>
                 </div>
               </div>

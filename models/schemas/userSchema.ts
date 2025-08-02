@@ -49,6 +49,11 @@ const UserSchema = new mongoose.Schema<User>({
     required: true,
     default: [],
   },
+  disallowedInboxNotifications: {
+    type: [{ type: String, enum: NotificationType }],
+    required: true,
+    default: [],
+  },
   email: {
     type: String,
     required: true,

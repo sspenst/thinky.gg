@@ -78,6 +78,11 @@ export async function getEnrichedNotifications(reqUser: User, filters?: any, lim
     ];
   }
 
+  // Filter out notifications based on inbox preferences
+  if (reqUser.disallowedInboxNotifications && reqUser.disallowedInboxNotifications.length > 0) {
+    baseMatch.type = { $nin: reqUser.disallowedInboxNotifications };
+  }
+
   // Build the full pipeline with proper typing
   const pipeline: PipelineStage[] = [
     { $match: baseMatch },
