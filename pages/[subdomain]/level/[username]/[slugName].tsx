@@ -7,9 +7,9 @@ import Collection, { EnrichedCollection } from '@root/models/db/collection';
 import { getCollection } from '@root/pages/api/collection-by-id/[id]';
 import { Types } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
+import { ArticleJsonLd, NextSeo } from 'next-seo';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { ArticleJsonLd, NextSeo } from 'next-seo';
 import { ParsedUrlQuery } from 'querystring';
 import { useCallback, useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
@@ -170,7 +170,7 @@ export default function LevelPage({ _collection, _level, reqUser }: LevelProps) 
 
   const mutateLevel = useCallback(() => {
     // TODO: if we change this to level by id, then we could auto-redirect you to the new slug if the level name updates
-    fetch(`/api/level-by-slug/${username}/${slugName}`, {
+    fetch(`/api/level-by-slug/${username || level.userId?.name}/${slugName || level.slug}`, {
       method: 'GET',
     }).then(async res => {
       if (res.status === 200) {
