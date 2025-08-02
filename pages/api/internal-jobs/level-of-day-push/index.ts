@@ -206,7 +206,7 @@ function determineOptimalSendTime(user: UserWithDeviceAndActivity): Date {
 }
 
 function createLevelOfDayMessage(level: any, gameDisplayName: string, userConfig?: UserConfig): string {
-  const difficultyEstimate = level.calc_difficulty_completion_estimate ?? level.calc_difficulty_estimate ?? -1;
+  const difficultyEstimate = level.calc_difficulty_estimate;
   const difficulty = getDifficultyFromEstimate(difficultyEstimate);
 
   // Create an engaging message with level name and difficulty
