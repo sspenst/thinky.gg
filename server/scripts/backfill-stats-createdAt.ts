@@ -10,7 +10,7 @@ const progressBar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_cla
 async function Go() {
   await dbConnect();
   // grab all stats where createdAt is undefined
-  const statsWithUndefinedCreatedAt = await StatModel.countDocuments({ createdAt: { $exists: false } }, { _id: 1 });
+  const statsWithUndefinedCreatedAt = await StatModel.countDocuments({ createdAt: { $exists: false } });
 
   const start = Date.now();
 
