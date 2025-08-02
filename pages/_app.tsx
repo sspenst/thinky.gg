@@ -83,6 +83,14 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
               type: 'website',
               url: `${selectedGame.baseUrl}'`,
               siteName: selectedGame.displayName,
+              images: [
+                {
+                  url: 'https://i.imgur.com/HXqAKZg.png',
+                  width: 1200,
+                  height: 630,
+                  alt: selectedGame.displayName,
+                },
+              ],
             }}
             twitter={{
               handle: '@thinkygg',
