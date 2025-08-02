@@ -61,6 +61,7 @@ jest.mock('nodemailer', () => ({
 describe('account settings notification preferences', () => {
   const disallowedEmailNotifications = [] as NotificationType[];
   const disallowedPushNotifications = [NotificationType.NEW_FOLLOWER];
+  const disallowedInboxNotifications = [NotificationType.NEW_RECORD_ON_A_LEVEL_YOU_SOLVED];
 
   // enable all notifications
   test('enable all notifications except for new follower', async () => {
@@ -71,6 +72,7 @@ describe('account settings notification preferences', () => {
           body: {
             disallowedEmailNotifications: disallowedEmailNotifications,
             disallowedPushNotifications: disallowedPushNotifications,
+            disallowedInboxNotifications: disallowedInboxNotifications,
             emailDigestSetting: EmailDigestSettingType.DAILY,
           }
         } as unknown as NextApiRequestWithAuth;
@@ -89,6 +91,7 @@ describe('account settings notification preferences', () => {
 
         expect(user.disallowedEmailNotifications).toEqual(disallowedEmailNotifications);
         expect(user.disallowedPushNotifications).toEqual(disallowedPushNotifications);
+        expect(user.disallowedInboxNotifications).toEqual(disallowedInboxNotifications);
       },
     });
   });
