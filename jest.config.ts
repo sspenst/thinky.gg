@@ -53,7 +53,6 @@ export default {
     }],
     'node_modules/(react-dnd|dnd-core|@react-dnd|react-dnd-html5-backend)/.+\\.(j|t)sx?$': 'ts-jest',
     '^.+\\.tsx$': ['ts-jest', {
-      isolatedModules: true,
       tsconfig: {
         // Updated to use the new JSX transform which doesn't require React imports
         jsx: 'react-jsx',

@@ -84,9 +84,8 @@
     "lint": "next lint",
     "test": "NODE_ENV=test jest --verbose",
     "test:watch": "NODE_ENV=test jest --watch",
-    "test:oauth": "NODE_ENV=test jest --verbose --testPathPattern=\"(oauth|auth)\"",
+    "test:oauth": "NODE_ENV=test jest --verbose --testPathPatterns \"(oauth|auth)\"",
     "test:coverage": "NODE_ENV=test jest --coverage",
-    "init_test": "jest --init",
     "compile_jobs": "tsc --isolatedModules --esModuleInterop --jsx react --outDir ./server/jobs/output/ server/jobs/email-digest.tsx",
     "cleanup:userauth": "ts-node -r tsconfig-paths/register --files server/scripts/cleanup-orphaned-userauth.ts"
   },

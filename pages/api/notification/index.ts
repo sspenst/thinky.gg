@@ -27,8 +27,7 @@ export default withAuth({
           $set: {
             read: read,
           },
-        },
-        { new: true }
+        }
       );
 
       if (update.modifiedCount === 0) {

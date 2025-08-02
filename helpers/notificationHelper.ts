@@ -267,7 +267,7 @@ export async function createNewLevelNotifications(gameId: GameId, userIdWhoCreat
 
   // TODO: can probably generate all the ids in the above map and then wrap in a Promise.all
   const [nm,] = await Promise.all([
-    await NotificationModel.create(createRecords, options),
+    await NotificationModel.create(createRecords, { ...options, ...(options?.session && { ordered: true }) }),
     ...ids.map(id => queuePushNotification(id)),
   ]);
 
@@ -297,7 +297,7 @@ export async function createNewRecordOnALevelYouSolvedNotifications(gameId: Game
   });
 
   const [nm, ] = await Promise.all([
-    NotificationModel.create(createRecords, options),
+    NotificationModel.create(createRecords, { ...options, ...(options?.session && { ordered: true }) }),
     ...ids.map(id => queuePushNotification(id)),
   ]);
 
