@@ -6,25 +6,50 @@ import { useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 
 export default function SettingsNotifications() {
-  const [emailDigest, setEmailDigest] = useState(EmailDigestSettingType.DAILY);
   const [isUserConfigLoading, setIsUserConfigLoading] = useState(false);
   const { mutateUser, user, userConfig } = useContext(AppContext);
+  
+  // Local state for tracking changes
+  const [localDisallowedEmail, setLocalDisallowedEmail] = useState<NotificationType[]>([]);
+  const [localDisallowedPush, setLocalDisallowedPush] = useState<NotificationType[]>([]);
+  const [localDisallowedInbox, setLocalDisallowedInbox] = useState<NotificationType[]>([]);
+  const [localEmailDigest, setLocalEmailDigest] = useState(EmailDigestSettingType.DAILY);
+  const [hasChanges, setHasChanges] = useState(false);
 
   useEffect(() => {
-    if (user?.emailDigest) {
-      setEmailDigest(user.emailDigest);
+    if (user) {
+      setLocalEmailDigest(user.emailDigest);
+      setLocalDisallowedEmail(user.disallowedEmailNotifications ?? []);
+      setLocalDisallowedPush(user.disallowedPushNotifications ?? []);
+      setLocalDisallowedInbox(user.disallowedInboxNotifications ?? []);
     }
   }, [user]);
 
-  function updateUserConfig(
-    body: string,
-    property: string,
-  ) {
+  // Check if there are unsaved changes
+  useEffect(() => {
+    if (!user) return;
+    
+    const emailChanged = JSON.stringify(localDisallowedEmail.sort()) !== JSON.stringify((user.disallowedEmailNotifications ?? []).sort());
+    const pushChanged = JSON.stringify(localDisallowedPush.sort()) !== JSON.stringify((user.disallowedPushNotifications ?? []).sort());
+    const inboxChanged = JSON.stringify(localDisallowedInbox.sort()) !== JSON.stringify((user.disallowedInboxNotifications ?? []).sort());
+    const digestChanged = localEmailDigest !== user.emailDigest;
+    
+    setHasChanges(emailChanged || pushChanged || inboxChanged || digestChanged);
+  }, [localDisallowedEmail, localDisallowedPush, localDisallowedInbox, localEmailDigest, user]);
+
+  function saveChanges() {
     setIsUserConfigLoading(true);
+
+    const body = {
+      disallowedEmailNotifications: localDisallowedEmail,
+      disallowedPushNotifications: localDisallowedPush,
+      disallowedInboxNotifications: localDisallowedInbox,
+      emailDigest: localEmailDigest,
+    };
 
     fetch('/api/user-config', {
       method: 'PUT',
-      body: body,
+      body: JSON.stringify(body),
       credentials: 'include',
       headers: {
         'Content-Type': 'application/json'
@@ -34,19 +59,30 @@ export default function SettingsNotifications() {
 
       if (!updated) {
         toast.dismiss();
-        toast.error(`Error updating ${property}`);
+        toast.error('Error updating notification settings');
       } else {
         toast.dismiss();
-        toast.success(`Updated ${property}`);
+        toast.success('Notification settings updated');
+        setHasChanges(false);
       }
     }).catch(err => {
       console.error(err);
       toast.dismiss();
-      toast.error(`Error updating ${property}`);
+      toast.error('Error updating notification settings');
     }).finally(() => {
       mutateUser();
       setIsUserConfigLoading(false);
     });
+  }
+
+  function cancelChanges() {
+    if (user) {
+      setLocalDisallowedEmail(user.disallowedEmailNotifications ?? []);
+      setLocalDisallowedPush(user.disallowedPushNotifications ?? []);
+      setLocalDisallowedInbox(user.disallowedInboxNotifications ?? []);
+      setLocalEmailDigest(user.emailDigest);
+      setHasChanges(false);
+    }
   }
 
   // Group notifications by category for better organization
@@ -122,31 +158,36 @@ export default function SettingsNotifications() {
     return null;
   }
 
-  const disallowedEmailNotifications = user.disallowedEmailNotifications ?? [];
-  const disallowedPushNotifications = user.disallowedPushNotifications ?? [];
-  const disallowedInboxNotifications = user.disallowedInboxNotifications ?? [];
-
-  // Create a formatted list of all notification types with checkboxes for email, push, and inbox notifications.
+  // Update local notification preferences
   const updateNotifs = (notif: NotificationType, type: 'email' | 'push' | 'inbox') => {
-    const notifList = type === 'email' ? disallowedEmailNotifications : 
-                     type === 'push' ? disallowedPushNotifications : 
-                     disallowedInboxNotifications;
-    const notifIndex = notifList.indexOf(notif);
-
-    if (notifIndex === -1) {
-      notifList.push(notif);
+    if (type === 'email') {
+      const newList = [...localDisallowedEmail];
+      const index = newList.indexOf(notif);
+      if (index === -1) {
+        newList.push(notif);
+      } else {
+        newList.splice(index, 1);
+      }
+      setLocalDisallowedEmail(newList);
+    } else if (type === 'push') {
+      const newList = [...localDisallowedPush];
+      const index = newList.indexOf(notif);
+      if (index === -1) {
+        newList.push(notif);
+      } else {
+        newList.splice(index, 1);
+      }
+      setLocalDisallowedPush(newList);
     } else {
-      notifList.splice(notifIndex, 1);
+      const newList = [...localDisallowedInbox];
+      const index = newList.indexOf(notif);
+      if (index === -1) {
+        newList.push(notif);
+      } else {
+        newList.splice(index, 1);
+      }
+      setLocalDisallowedInbox(newList);
     }
-
-    updateUserConfig(
-      JSON.stringify({
-        disallowedEmailNotifications: disallowedEmailNotifications,
-        disallowedPushNotifications: disallowedPushNotifications,
-        disallowedInboxNotifications: disallowedInboxNotifications,
-      }),
-      'notification settings',
-    );
   };
 
   const guest = isGuest(user);
@@ -157,9 +198,9 @@ export default function SettingsNotifications() {
         type='checkbox'
         className='sr-only peer'
         checked={
-          type === 'email' ? !disallowedEmailNotifications.includes(notif) :
-          type === 'push' ? !disallowedPushNotifications.includes(notif) :
-          !disallowedInboxNotifications.includes(notif)
+          type === 'email' ? !localDisallowedEmail.includes(notif) :
+          type === 'push' ? !localDisallowedPush.includes(notif) :
+          !localDisallowedInbox.includes(notif)
         }
         disabled={isUserConfigLoading}
         onChange={() => updateNotifs(notif, type)}
@@ -169,9 +210,9 @@ export default function SettingsNotifications() {
   );
 
   const GlobalToggle = ({ type }: { type: 'email' | 'push' | 'inbox' }) => {
-    const isAllEnabled = type === 'email' ? disallowedEmailNotifications.length === 0 :
-                        type === 'push' ? disallowedPushNotifications.length === 0 :
-                        disallowedInboxNotifications.length === 0;
+    const isAllEnabled = type === 'email' ? localDisallowedEmail.length === 0 :
+                        type === 'push' ? localDisallowedPush.length === 0 :
+                        localDisallowedInbox.length === 0;
 
     return (
       <label className='relative inline-flex items-center cursor-pointer'>
@@ -182,32 +223,11 @@ export default function SettingsNotifications() {
           disabled={isUserConfigLoading}
           onChange={() => {
             if (type === 'email') {
-              updateUserConfig(
-                JSON.stringify({
-                  disallowedEmailNotifications: isAllEnabled ? allNotifs : [],
-                  disallowedPushNotifications: disallowedPushNotifications,
-                  disallowedInboxNotifications: disallowedInboxNotifications,
-                }),
-                'notification settings',
-              );
+              setLocalDisallowedEmail(isAllEnabled ? allNotifs : []);
             } else if (type === 'push') {
-              updateUserConfig(
-                JSON.stringify({
-                  disallowedEmailNotifications: disallowedEmailNotifications,
-                  disallowedPushNotifications: isAllEnabled ? allNotifs : [],
-                  disallowedInboxNotifications: disallowedInboxNotifications,
-                }),
-                'notification settings',
-              );
+              setLocalDisallowedPush(isAllEnabled ? allNotifs : []);
             } else {
-              updateUserConfig(
-                JSON.stringify({
-                  disallowedEmailNotifications: disallowedEmailNotifications,
-                  disallowedPushNotifications: disallowedPushNotifications,
-                  disallowedInboxNotifications: isAllEnabled ? allNotifs : [],
-                }),
-                'notification settings',
-              );
+              setLocalDisallowedInbox(isAllEnabled ? allNotifs : []);
             }
           }}
         />
@@ -217,7 +237,7 @@ export default function SettingsNotifications() {
   };
 
   return (
-    <div className='flex flex-col gap-8 max-w-4xl mx-auto p-6'>
+    <div className={`flex flex-col gap-8 max-w-4xl mx-auto p-6 ${hasChanges ? 'pb-24' : ''}`}>
       {/* Header with global toggles */}
       <div className='text-center'>
         <h2 className='text-2xl font-bold mb-4'>Notification Preferences</h2>
@@ -301,14 +321,10 @@ export default function SettingsNotifications() {
               <input
                 type='radio'
                 name='emailDigest'
-                checked={emailDigest === EmailDigestSettingType.DAILY}
+                checked={localEmailDigest === EmailDigestSettingType.DAILY}
                 disabled={isUserConfigLoading}
                 onChange={() => {
-                  updateUserConfig(
-                    JSON.stringify({ emailDigest: EmailDigestSettingType.DAILY }),
-                    'email digest settings'
-                  );
-                  setEmailDigest(EmailDigestSettingType.DAILY);
+                  setLocalEmailDigest(EmailDigestSettingType.DAILY);
                 }}
                 className='text-blue-600'
               />
@@ -319,19 +335,47 @@ export default function SettingsNotifications() {
               <input
                 type='radio'
                 name='emailDigest'
-                checked={emailDigest === EmailDigestSettingType.NONE}
+                checked={localEmailDigest === EmailDigestSettingType.NONE}
                 disabled={isUserConfigLoading}
                 onChange={() => {
-                  updateUserConfig(
-                    JSON.stringify({ emailDigest: EmailDigestSettingType.NONE }),
-                    'email digest settings'
-                  );
-                  setEmailDigest(EmailDigestSettingType.NONE);
+                  setLocalEmailDigest(EmailDigestSettingType.NONE);
                 }}
                 className='text-blue-600'
               />
               <span className='text-sm'>No digest emails</span>
             </label>
+          </div>
+        </div>
+      )}
+      
+      {/* Fixed save button */}
+      {hasChanges && (
+        <div className='fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 p-4 shadow-lg z-10'>
+          <div className='max-w-4xl mx-auto flex justify-end gap-4'>
+            <button
+              onClick={cancelChanges}
+              disabled={isUserConfigLoading}
+              className='px-6 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors disabled:opacity-50'
+            >
+              Cancel
+            </button>
+            <button
+              onClick={saveChanges}
+              disabled={isUserConfigLoading}
+              className='px-6 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center gap-2'
+            >
+              {isUserConfigLoading ? (
+                <>
+                  <svg className='animate-spin h-4 w-4' viewBox='0 0 24 24'>
+                    <circle className='opacity-25' cx='12' cy='12' r='10' stroke='currentColor' strokeWidth='4' fill='none' />
+                    <path className='opacity-75' fill='currentColor' d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z' />
+                  </svg>
+                  Saving...
+                </>
+              ) : (
+                'Save Changes'
+              )}
+            </button>
           </div>
         </div>
       )}
