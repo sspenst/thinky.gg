@@ -140,6 +140,7 @@ export function NotificationMessage({ notification, onMarkAsRead }: Notification
       />
     </>);
   case NotificationType.NEW_LEVEL_ADDED_TO_COLLECTION:
+
     return (<>
       <FormattedLevelLink
         gameId={game.id}
@@ -148,7 +149,7 @@ export function NotificationMessage({ notification, onMarkAsRead }: Notification
         onClick={onMarkAsRead}
       />
       {' was added to the collection '}
-      <FormattedCollectionLink collection={notification.target as Collection} onClick={onMarkAsRead} />
+      <FormattedCollectionLink gameId={game.id} collection={notification.target as Collection} onClick={onMarkAsRead} />
     </>);
 
   case NotificationType.NEW_ACHIEVEMENT:
