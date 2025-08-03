@@ -25,6 +25,7 @@ export default function FormattedLevelLink({ gameId, id, level, onClick }: Enric
   const getUrl = useUrl();
 
   const href = getUrl(level.gameId || gameId || game.id, `/level/${level.slug}`);
+
   const isSolved = level.userMoves === level.leastMoves;
   const tooltipId = `formatted-level-link-${level._id.toString()}-${id}`;
   const showGameLabel = game.id === GameId.THINKY;
