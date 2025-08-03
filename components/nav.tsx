@@ -1,4 +1,3 @@
-import { Menu, MenuButton, MenuItem, MenuItems, Transition } from '@headlessui/react';
 import GameLogo from '@root/components/gameLogo';
 import { Game, Games } from '@root/constants/Games';
 import { AppContext } from '@root/contexts/appContext';
@@ -9,7 +8,7 @@ import classNames from 'classnames';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import React, { Fragment, useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import GameLogoAndLabel from './gameLogoAndLabel';
 
@@ -21,9 +20,10 @@ function NavDivider() {
 
 interface NavGameMenuItemProps {
   game: Game;
+  onGameChange?: () => void;
 }
 
-function NavGameMenuItem({ game }: NavGameMenuItemProps) {
+function NavGameMenuItem({ game, onGameChange }: NavGameMenuItemProps) {
   const { game: currentGame } = useContext(AppContext);
   const getUrl = useUrl();
   const isCurrentGame = game.id === currentGame.id;
@@ -31,53 +31,72 @@ function NavGameMenuItem({ game }: NavGameMenuItemProps) {
   const path = isCurrentGame ? '/' : undefined;
 
   return (
-    <MenuItem>
-      <a href={getUrl(game.id, path)} suppressHydrationWarning>
-        <div className={classNames(
-          'flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-5',
-          isCurrentGame ? 'bg-2 hover-bg-4' : 'bg-1 hover-bg-3',
-        )}>
-          <GameLogo gameId={game.id} id={game.id + 'menu_item'} size={20} />
-          <span>{game.displayName}</span>
-        </div>
-      </a>
-    </MenuItem>
+    <a href={getUrl(game.id, path)} suppressHydrationWarning onClick={onGameChange}>
+      <div className={classNames(
+        'flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-5',
+        isCurrentGame ? 'bg-2 hover-bg-4' : 'bg-1 hover-bg-3',
+      )}>
+        <GameLogo gameId={game.id} id={game.id + 'menu_item'} size={20} />
+        <span>{game.displayName}</span>
+      </div>
+    </a>
   );
 }
 
-function NavGameMenu() {
+interface NavGameMenuProps {
+  onGameChange?: () => void;
+}
+
+function NavGameMenu({ onGameChange }: NavGameMenuProps) {
   const { game: currentGame } = useContext(AppContext);
+  const [isOpen, setIsOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent | TouchEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('touchstart', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, [isOpen]);
 
   return (
-    // NB: need this relative outer div for the absolute menu to have the right width
-    <div className='w-full relative'>
-      <Menu>
-        <MenuButton className='w-full'>
-          <div className='flex w-full items-center rounded-md cursor-pointer px-3 py-2 justify-between hover-bg-3'>
-            <div className='flex items-center gap-5'>
-              <GameLogoAndLabel gameId={currentGame.id} id={currentGame.id} size={20} />
-            </div>
-            <svg className='h-5 w-5' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor' aria-hidden='true'>
-              <path fillRule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z' clipRule='evenodd' />
-            </svg>
-          </div>
-        </MenuButton>
-        <Transition
-          as={Fragment}
-          enter='transition ease-out duration-100'
-          enterFrom='transform opacity-0 scale-95'
-          enterTo='transform opacity-100 scale-100'
-          leave='transition ease-in duration-75'
-          leaveFrom='transform opacity-100 scale-100'
-          leaveTo='transform opacity-0 scale-95'
-        >
-          <MenuItems className='absolute w-full origin-top mt-1 p-1 rounded-[10px] shadow-lg border overflow-y-auto flex flex-col gap-1 bg-1 border-color-3'>
-            {Object.values(Games).filter(game => game.id !== currentGame.id).map((game) => (
-              <NavGameMenuItem game={game} key={game.id} />
-            ))}
-          </MenuItems>
-        </Transition>
-      </Menu>
+    <div className='w-full relative' ref={menuRef}>
+      <div
+        className='flex w-full items-center rounded-md cursor-pointer px-3 py-2 justify-between hover-bg-3'
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        <div className='flex items-center gap-5'>
+          <GameLogoAndLabel gameId={currentGame.id} id={currentGame.id} size={20} />
+        </div>
+        <svg className='h-5 w-5' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor' aria-hidden='true'>
+          <path fillRule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z' clipRule='evenodd' />
+        </svg>
+      </div>
+      {isOpen && (
+        <div className='absolute w-full origin-top mt-1 p-1 rounded-[10px] shadow-lg border overflow-y-auto flex flex-col gap-1 bg-1 border-color-3 z-[60]'>
+          {Object.values(Games).filter(game => game.id !== currentGame.id).map((game) => (
+            <NavGameMenuItem 
+              game={game} 
+              key={game.id} 
+              onGameChange={() => {
+                setIsOpen(false);
+                onGameChange?.();
+              }} 
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -146,9 +165,10 @@ function ExternalNavLink({ href, icon, label }: ExternalNavLinkProps) {
 
 interface NavProps {
   isDropdown?: boolean;
+  onGameChange?: () => void;
 }
 
-export default function Nav({ isDropdown }: NavProps) {
+export default function Nav({ isDropdown, onGameChange }: NavProps) {
   const { game, multiplayerSocket, playLater, user } = useContext(AppContext);
   const { connectedPlayersCount, matches, socket } = multiplayerSocket;
 
@@ -383,7 +403,7 @@ export default function Nav({ isDropdown }: NavProps) {
       </>}
       {levelSearchNavLink}
       <NavDivider />
-      <NavGameMenu />
+      <NavGameMenu onGameChange={onGameChange} />
       <NavDivider />
       {!game.isNotAGame && <>
         {usersNavLink}
