@@ -7,6 +7,7 @@ import FollowerModal from '@root/components/modal/followerModal';
 import FollowingModal from '@root/components/modal/followingModal';
 import LoadingSpinner from '@root/components/page/loadingSpinner';
 import RoleIcons from '@root/components/page/roleIcons';
+import SpaceBackground from '@root/components/page/SpaceBackground';
 import StyledTooltip from '@root/components/page/styledTooltip';
 import LevelsSolvedByDifficultyList from '@root/components/profile/levelsSolvedByDifficultyList';
 import PlayerRank from '@root/components/profile/playerRank';
@@ -14,7 +15,7 @@ import { ProfileAchievments } from '@root/components/profile/profileAchievements
 import ProfileMultiplayer from '@root/components/profile/profileMultiplayer';
 import AchievementType from '@root/constants/achievements/achievementType';
 import { GameId } from '@root/constants/GameId';
-import { GameType } from '@root/constants/Games';
+import { Games, GameType } from '@root/constants/Games';
 import StatFilter from '@root/constants/statFilter';
 import { AppContext } from '@root/contexts/appContext';
 import { blueButton } from '@root/helpers/className';
@@ -558,129 +559,298 @@ export default function ProfilePage({
 
   // create an array of objects with the id, trigger element (eg. button), and the content element
   const tabsContent = {
-    [ProfileTab.Profile]:
-      <div className='flex flex-col gap-12 mt-4'>
-        <div className='flex flex-col sm:flex-row gap-8 justify-center items-center max-w-full'>
-          <div className='flex items-center justify-center'>
-            <ProfileAvatar size={Dimensions.AvatarSizeLarge} user={user} />
-          </div>
-          <div className='flex flex-col items-center text-center sm:text-left sm:items-start gap-2 max-w-sm w-full sm:w-fit'>
-            <div className='flex gap-2 items-center max-w-full'>
-              <h2 className='text-3xl font-bold truncate'>{user.name}</h2>
-              <RoleIcons id='profile' size={24} user={user} />
+    [ProfileTab.Profile]: (
+      <SpaceBackground 
+        starCount={60}
+        constellationPattern='default'
+        showGeometricShapes={true}
+        className='min-h-0 mx-2 sm:mx-0 rounded-xl'
+      >
+        <div className='flex flex-col items-center min-h-screen px-4 py-8'>
+          {/* Profile Hero Section */}
+          <div className='text-center mb-8 animate-fadeInDown' style={{ animationDelay: '0.3s' }}>
+            {/* Simple centered avatar */}
+            <div className='mb-6 flex justify-center'>
+              <ProfileAvatar size={Dimensions.AvatarSizeLarge} user={user} />
             </div>
-            {!game.isNotAGame && <div className='flex gap-1'>
-              {levelsSolvedByDifficulty ? <PlayerRank levelsSolvedByDifficulty={levelsSolvedByDifficulty} tooltip='Highest unlocked skill achievement' user={user} /> : <LoadingSpinner size={24} />}
-            </div>}
-            <div className='flex gap-4 flex-wrap justify-center py-1'>
-              {reqUser && reqUser._id.toString() !== user._id.toString() && (
+            
+            {/* User name and role */}
+            <div className='flex items-center justify-center gap-3 mb-4'>
+              <h1 className='text-4xl sm:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400'>
+                {user.name}
+              </h1>
+              <RoleIcons id='profile' size={32} user={user} />
+            </div>
+            
+            {/* Player rank */}
+            {!game.isNotAGame && (
+              <div className='flex justify-center mb-4'>
+                {levelsSolvedByDifficulty ? (
+                  <PlayerRank levelsSolvedByDifficulty={levelsSolvedByDifficulty} tooltip='Highest unlocked skill achievement' user={user} />
+                ) : (
+                  <LoadingSpinner size={24} />
+                )}
+              </div>
+            )}
+            
+            {/* Bio */}
+            {user.bio && !reqUserHasBlocked && (
+              <p className='text-gray-300 text-lg max-w-2xl mx-auto mb-6 italic'>
+                {user.bio}
+              </p>
+            )}
+            
+            {/* Social actions */}
+            <div className='flex flex-wrap gap-4 justify-center items-center mb-6'>
+              {reqUser && reqUser._id.toString() !== user._id.toString() && !reqUserHasBlocked && (
                 <>
-                  {!reqUserHasBlocked && (
-                    <>
-                      <FollowButton
-                        isFollowing={reqUserIsFollowing}
-                        key={user._id.toString()}
-                        user={user}
-                      />
-                      <button
-                        className={classNames('px-3 py-1 rounded-md bg-button')}
-                        onClick={toggleBlockUser}
-                      >
-                        Block
-                      </button>
-                    </>
-                  )}
+                  <FollowButton
+                    isFollowing={reqUserIsFollowing}
+                    key={user._id.toString()}
+                    user={user}
+                  />
+                  <button
+                    className='group relative overflow-hidden bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold py-3 px-6 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-300'
+                    onClick={toggleBlockUser}
+                  >
+                    <div className='absolute inset-0 bg-gradient-to-r from-white to-transparent opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-transform duration-700' />
+                    <div className='relative flex items-center gap-2'>
+                      <span>🚫</span>
+                      <span>Block</span>
+                    </div>
+                  </button>
                 </>
               )}
-              <div className='flex gap-4 whitespace-nowrap'>
+              
+              {/* Follower counts */}
+              <div className='flex gap-6'>
                 <button
+                  className='text-white hover:text-cyan-400 transition-colors'
                   onClick={() => {
                     if (followers.length !== 0) {
                       setIsFollowerOpen(true);
                     }
                   }}
                 >
-                  <span className='font-bold'>{followers.length}</span> follower{followers.length === 1 ? '' : 's'}
+                  <span className='font-bold text-xl'>{followers.length}</span>
+                  <br />
+                  <span className='text-sm opacity-70'>Follower{followers.length === 1 ? '' : 's'}</span>
                 </button>
                 <button
+                  className='text-white hover:text-cyan-400 transition-colors'
                   onClick={() => {
                     if (following.length !== 0) {
                       setIsFollowingOpen(true);
                     }
                   }}
                 >
-                  <span className='font-bold'>{following.length}</span> following
+                  <span className='font-bold text-xl'>{following.length}</span>
+                  <br />
+                  <span className='text-sm opacity-70'>Following</span>
                 </button>
               </div>
             </div>
-            {user.bio && !reqUserHasBlocked && <p className='italic text-sm break-words max-w-full'>{user.bio}</p>}
           </div>
-        </div>
-        {reqUserHasBlocked ? (
-          <div className='text-center p-4 bg-red-100 dark:bg-red-900 rounded-lg'>
-            <p className='font-bold mb-2'>You have blocked {user.name}</p>
-            <p className='mb-4'>
-              Their user generated content is hidden and they cannot view your content.
-              <br />
-              If you believe this person is violating our terms of service, or for more help, visit our <a href='https://discord.gg/j6RxRdqq4A' target='_blank' rel='noopener noreferrer'>Discord server</a>.
-            </p>
-            <button
-              className='px-3 py-1 rounded-md bg-green-500 hover:bg-green-600'
-              onClick={toggleBlockUser}
-            >
-              Unblock User
-            </button>
-          </div>
-        ) : (
-          <>
-            <div className='flex flex-wrap justify-center text-left gap-x-20 gap-y-12'>
-              <div className='flex flex-col gap-6 max-w-sm w-fit'>
-                <div>
-                  {!game.isNotAGame && !game.disableRanked && <div><span className='font-bold'>Ranked Solves:</span> {user.config?.calcRankedSolves ?? 0} 🏅</div>}
-                  {!game.isNotAGame && (user.config?.calcCurrentStreak || 0) > 0 && (
-                    <div>
-                      <span className='font-bold'>Current Streak:</span> {user.config?.calcCurrentStreak ?? 0} - <span data-tooltip-content={streakRank.title} data-tooltip-id='streak-tooltip'>{streakRank.emoji}</span>
-                      <StyledTooltip id='streak-tooltip' />
-                    </div>
-                  )}
-                  {!game.isNotAGame && <div><span className='font-bold'>Levels Solved:</span> {user.config?.calcLevelsSolvedCount ?? 0}</div>}
-                  {!game.isNotAGame && <div><span className='font-bold'>Levels Completed:</span> {user.config?.calcLevelsCompletedCount ?? 0}</div>}
-                  {user.hideStatus || !user.ts ? null : isOnline(user) ?
-                    <div className='flex flex-wrap gap-1 items-center'>
-                      <span className='font-bold'>Currently Playing:</span>
-                      <GameLogoAndLabel gameId={user.lastGame ?? GameId.THINKY} id={'profile'} size={20} />
-                    </div>
-                    :
-                    <div><span className='font-bold'>Last Seen:</span> <FormattedDate style={{ color: 'var(--color)', fontSize: '1rem' }} ts={user.last_visited_at ? user.last_visited_at : user.ts} /></div>
-                  }
-                  <div><span className='font-bold'>Registered:</span> {user.ts ? <FormattedDate style={{ color: 'var(--color)', fontSize: '1rem' }} ts={user.ts} /> : 'Not registered'}</div>
-                </div>
-                {!game.isNotAGame &&
-                  <div>
-                    <div><span className='font-bold'>Levels {difficultyType} by Difficulty:</span></div>
-                    {levelsSolvedByDifficulty ?
-                      <LevelsSolvedByDifficultyList levelsSolvedByDifficulty={levelsSolvedByDifficulty} />
-                      :
-                      <div className='p-2'><LoadingSpinner /></div>
-                    }
-                  </div>
-                }
-              </div>
-              <CommentWall userId={user._id} />
+          
+          {/* Blocked user message */}
+          {reqUserHasBlocked ? (
+            <div className='bg-red-900/50 backdrop-blur-sm border border-red-500/30 rounded-xl p-6 text-center max-w-md mx-auto animate-fadeInUp' style={{ animationDelay: '0.5s' }}>
+              <h3 className='font-bold text-xl text-red-400 mb-4'>You have blocked {user.name}</h3>
+              <p className='text-red-200 mb-4'>
+                Their user generated content is hidden and they cannot view your content.
+                <br />
+                If you believe this person is violating our terms of service, or for more help, visit our <a href='https://discord.gg/j6RxRdqq4A' target='_blank' rel='noopener noreferrer' className='text-blue-400 underline'>Discord server</a>.
+              </p>
+              <button
+                className='px-6 py-3 rounded-lg bg-green-600 hover:bg-green-700 text-white font-bold transition-all duration-300'
+                onClick={toggleBlockUser}
+              >
+                Unblock User
+              </button>
             </div>
-            <FollowerModal
-              closeModal={() => setIsFollowerOpen(false)}
-              followers={followers}
-              isOpen={isFollowerOpen}
-            />
-            <FollowingModal
-              closeModal={() => setIsFollowingOpen(false)}
-              following={following}
-              isOpen={isFollowingOpen}
-            />
-          </>
-        )}
-      </div>,
+          ) : (
+            <>
+              {/* Content Sections */}
+              <div className='w-full max-w-6xl space-y-8'>
+                {/* Two Column Layout: Stats and Difficulty */}
+                <div className='grid grid-cols-1 lg:grid-cols-2 gap-8 animate-fadeInUp' style={{ animationDelay: '0.7s' }}>
+                  {/* Left Column - Game Statistics or Game Profiles */}
+                  <div className='bg-black/20 backdrop-blur-sm border border-white/20 rounded-xl p-6'>
+                    <h3 className='text-2xl font-bold text-white mb-6 flex items-center gap-3'>
+                      <span>{game.id === GameId.THINKY ? '🎮' : '📊'}</span>
+                      {game.id === GameId.THINKY ? 'View Game Profiles' : 'Game Statistics'}
+                    </h3>
+                    
+                    {game.id === GameId.THINKY ? (
+                      /* Game Profiles for THINKY */
+                      <div className='space-y-3'>
+                        <p className='text-gray-300 text-sm mb-4'>View this user&apos;s profile on different games:</p>
+                        {Object.values(Games).filter(g => !g.isNotAGame).map((gameOption) => (
+                          <Link
+                            key={gameOption.id}
+                            href={`${gameOption.baseUrl}/profile/${user.name}`}
+                            className='group flex items-center gap-4 p-4 bg-white/5 hover:bg-white/10 rounded-lg transition-all duration-200 border border-white/10 hover:border-white/20'
+                          >
+                            <img src={gameOption.logo} alt={gameOption.displayName} className='w-8 h-8' />
+                            <div className='flex-1'>
+                              <div className='font-bold text-white group-hover:text-cyan-400 transition-colors'>
+                                {gameOption.displayName}
+                              </div>
+                              <div className='text-sm text-gray-400'>
+                                {gameOption.shortDescription || gameOption.subtitle}
+                              </div>
+                            </div>
+                            <div className='text-gray-400 group-hover:text-white transition-colors'>
+                              →
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+                    ) : (
+                      /* Regular Game Statistics */
+                      <>
+                        <div className='grid grid-cols-2 gap-4 mb-6'>
+                          {!game.disableRanked && (
+                            <Link
+                              href='/ranked'
+                              className='group text-center p-4 bg-white/5 hover:bg-white/10 rounded-lg transition-all duration-200 cursor-pointer'
+                            >
+                              <div className='text-2xl font-bold text-yellow-400 group-hover:text-yellow-300 transition-colors'>
+                                {user.config?.calcRankedSolves ?? 0}
+                              </div>
+                              <div className='text-sm text-gray-300 group-hover:text-white transition-colors'>
+                                Ranked Solves 🏅
+                              </div>
+                            </Link>
+                          )}
+                          {(user.config?.calcCurrentStreak || 0) > 0 && (
+                            <div className='text-center p-4 bg-white/5 rounded-lg'>
+                              <div className='text-2xl font-bold text-orange-400 flex items-center justify-center gap-2'>
+                                {user.config?.calcCurrentStreak ?? 0}
+                                <span data-tooltip-content={streakRank.title} data-tooltip-id='streak-tooltip'>
+                                  {streakRank.emoji}
+                                </span>
+                                <StyledTooltip id='streak-tooltip' />
+                              </div>
+                              <div className='text-sm text-gray-300'>Current Streak</div>
+                            </div>
+                          )}
+                          <div className='text-center p-4 bg-white/5 rounded-lg'>
+                            <div className='text-2xl font-bold text-green-400'>{user.config?.calcLevelsSolvedCount ?? 0}</div>
+                            <div className='text-sm text-gray-300'>Levels Solved</div>
+                          </div>
+                          <div className='text-center p-4 bg-white/5 rounded-lg'>
+                            <div className='text-2xl font-bold text-blue-400'>{user.config?.calcLevelsCompletedCount ?? 0}</div>
+                            <div className='text-sm text-gray-300'>Levels Completed</div>
+                          </div>
+                        </div>
+                        
+                        {/* Additional info for games */}
+                        <div className='pt-4 border-t border-white/10 space-y-3'>
+                          {user.hideStatus || !user.ts ? null : isOnline(user) ? (
+                            <div className='flex items-center justify-between'>
+                              <span className='text-gray-300'>Currently Playing</span>
+                              <GameLogoAndLabel gameId={user.lastGame ?? GameId.THINKY} id={'profile'} size={20} />
+                            </div>
+                          ) : (
+                            <div className='flex items-center justify-between'>
+                              <span className='text-gray-300'>Last Seen</span>
+                              <FormattedDate 
+                                style={{ color: 'rgb(156 163 175)', fontSize: '1rem' }} 
+                                ts={user.last_visited_at ? user.last_visited_at : user.ts} 
+                              />
+                            </div>
+                          )}
+                          <div className='flex items-center justify-between'>
+                            <span className='text-gray-300'>Registered</span>
+                            <span className='text-gray-400'>
+                              {user.ts ? <FormattedDate 
+                                style={{ color: 'rgb(156 163 175)', fontSize: '1rem' }} 
+                                ts={user.ts} 
+                              /> : 'Not registered'}
+                            </span>
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                  
+                  {/* Right Column - User Info for THINKY or Difficulty Breakdown for Games */}
+                  <div className='bg-black/20 backdrop-blur-sm border border-white/20 rounded-xl p-6'>
+                    {game.id === GameId.THINKY ? (
+                      /* User Activity Info for THINKY */
+                      <>
+                        <h3 className='text-2xl font-bold text-white mb-6 flex items-center gap-3'>
+                          <span>👤</span>
+                          User Information
+                        </h3>
+                        <div className='space-y-4'>
+                          {user.hideStatus || !user.ts ? null : isOnline(user) ? (
+                            <div className='flex items-center justify-between py-3 px-4 bg-white/5 rounded-lg'>
+                              <span className='text-gray-300 font-medium'>Currently Playing</span>
+                              <GameLogoAndLabel gameId={user.lastGame ?? GameId.THINKY} id={'profile'} size={20} />
+                            </div>
+                          ) : (
+                            <div className='flex items-center justify-between py-3 px-4 bg-white/5 rounded-lg'>
+                              <span className='text-gray-300 font-medium'>Last Seen</span>
+                              <FormattedDate 
+                                style={{ color: 'rgb(156 163 175)', fontSize: '1rem' }} 
+                                ts={user.last_visited_at ? user.last_visited_at : user.ts} 
+                              />
+                            </div>
+                          )}
+                          <div className='flex items-center justify-between py-3 px-4 bg-white/5 rounded-lg'>
+                            <span className='text-gray-300 font-medium'>Registered</span>
+                            <span className='text-gray-400'>
+                              {user.ts ? <FormattedDate 
+                                style={{ color: 'rgb(156 163 175)', fontSize: '1rem' }} 
+                                ts={user.ts} 
+                              /> : 'Not registered'}
+                            </span>
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      /* Difficulty Breakdown for Games */
+                      <>
+                        <h3 className='text-2xl font-bold text-white mb-6 flex items-center gap-3'>
+                          <span>🎯</span>
+                          Levels {difficultyType} by Difficulty
+                        </h3>
+                        {levelsSolvedByDifficulty ? (
+                          <LevelsSolvedByDifficultyList levelsSolvedByDifficulty={levelsSolvedByDifficulty} />
+                        ) : (
+                          <div className='flex justify-center p-4'>
+                            <LoadingSpinner />
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </div>
+                
+                {/* Comment Wall - Full Width */}
+                <div className='animate-fadeInUp' style={{ animationDelay: '0.9s' }}>
+                  <CommentWall userId={user._id} />
+                </div>
+              </div>
+              
+              {/* Modals */}
+              <FollowerModal
+                closeModal={() => setIsFollowerOpen(false)}
+                followers={followers}
+                isOpen={isFollowerOpen}
+              />
+              <FollowingModal
+                closeModal={() => setIsFollowingOpen(false)}
+                following={following}
+                isOpen={isFollowingOpen}
+              />
+            </>
+          )}
+        </div>
+      </SpaceBackground>
+    ),
     [ProfileTab.Insights]: <ProfileInsights reqUser={reqUser} user={user} />,
     [ProfileTab.Multiplayer]: <div className='flex flex-col gap-2 justify-center items-center'>
       <h1 className='font-bold text-3xl'>{user.name}&apos;s {game.displayName} Multiplayer History</h1>
