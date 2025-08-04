@@ -73,11 +73,20 @@ jobs:
         with:
           context: .
           load: false
+          target: runner
           cache-from: |
-            type=gha
+            type=gha,scope=build-deps
+            type=gha,scope=builder
+            type=gha,scope=runner
+            type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/pathology:buildcache-build-deps
+            type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/pathology:buildcache-builder
             type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/pathology:buildcache
           cache-to: |
-            type=gha,mode=max
+            type=gha,mode=max,scope=build-deps
+            type=gha,mode=max,scope=builder
+            type=gha,mode=max,scope=runner
+            type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/pathology:buildcache-build-deps,mode=max
+            type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/pathology:buildcache-builder,mode=max
             type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/pathology:buildcache,mode=max
           build-args: |
             NEXT_PUBLIC_APP_DOMAIN=${{ secrets.NEXT_PUBLIC_APP_DOMAIN }}

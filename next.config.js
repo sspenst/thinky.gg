@@ -1,6 +1,14 @@
 module.exports = {
   productionBrowserSourceMaps: true,
 
+  // Optimize output for faster builds
+  output: 'standalone',
+  
+  // Reduce build traces collection time
+  outputFileTracingIncludes: {
+    '/': ['./constants/**/*', './lib/**/*', './models/**/*', './helpers/**/*'],
+  },
+
   // Enable experimental features for better performance
   experimental: {
     // Optimize CSS loading
