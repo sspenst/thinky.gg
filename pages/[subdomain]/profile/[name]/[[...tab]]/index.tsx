@@ -18,7 +18,6 @@ import { GameId } from '@root/constants/GameId';
 import { Games, GameType } from '@root/constants/Games';
 import StatFilter from '@root/constants/statFilter';
 import { AppContext } from '@root/contexts/appContext';
-import { blueButton } from '@root/helpers/className';
 import { countUsersWhoCompletedOneLevel } from '@root/helpers/countUsersWhoCompletedOneLevel';
 import { getEnrichUserConfigPipelineStage } from '@root/helpers/enrich';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
@@ -33,10 +32,10 @@ import classNames from 'classnames';
 import debounce from 'debounce';
 import { Types } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
+import { NextSeo, ProfilePageJsonLd } from 'next-seo';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { NextSeo, ProfilePageJsonLd } from 'next-seo';
 import { ParsedUrlQuery } from 'querystring';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import FollowButton from '../../../../../components/buttons/followButton';
@@ -962,10 +961,10 @@ export default function ProfilePage({
         <div className='flex flex-col items-center min-h-screen px-4 py-8'>
           <div className='text-center mb-8 animate-fadeInDown' style={{ animationDelay: '0.3s' }}>
             <h1 className='text-4xl sm:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-green-400 to-blue-400 mb-4'>
-              🎨 Creator Studio
+              🎨 Created Levels
             </h1>
             <p className='text-gray-300 text-lg max-w-2xl mx-auto mb-4'>
-              Explore the puzzle masterpieces crafted by {user.name}
+              Explore the levels crafted by {user.name}
             </p>
             {reqUser && (
               <div className='bg-black/20 backdrop-blur-sm border border-white/20 rounded-xl px-6 py-3 inline-block'>
@@ -1340,7 +1339,7 @@ export default function ProfilePage({
                 <div className='absolute inset-0 bg-gradient-to-r from-white to-transparent opacity-0 group-hover:opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-all duration-700' />
                 <div className='relative flex flex-row items-center gap-2'>
                   <span>🎨</span>
-                  <span>{user.name}&apos;s Created Levels ({levelsCount})</span>
+                  <span>Levels ({levelsCount})</span>
                 </div>
               </Link>
               <Link
