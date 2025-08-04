@@ -14,6 +14,21 @@ on:
   workflow_dispatch:
 
 jobs:
+  # Config job runs in parallel with docker build
+  config:
+    name: Config
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    outputs:
+      get-server-ip-list: ${{ steps.get-server-ip-list.outputs.get-server-ip-list }}
+    steps:
+      - id: get-server-ip-list
+        name: Get Server IP List
+        run: echo "get-server-ip-list=$(dig +short app-servers.thinky.gg TXT | jq -cr 'split(",")')" >> $GITHUB_OUTPUT
+      - name: print output
+        run: |
+          echo "${{ steps.get-server-ip-list.outputs.get-server-ip-list }}"
+
   build-and-push-docker-image:
     name: Build Docker image and push to repositories
     runs-on: ubuntu-latest
@@ -29,6 +44,14 @@ jobs:
         run: |
           echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
           echo "commit_msg=$(git log -1 --pretty=format:\"%s\")" >> $GITHUB_OUTPUT
+
+      - name: Cache node modules
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
 
       - name: Set up Docker Buildx
         id: buildx
@@ -69,20 +92,6 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME }}/pathology-socket:latest 
             ${{ secrets.DOCKERHUB_USERNAME }}/pathology-socket:${{ steps.vars.outputs.sha_short }}
           push: ${{ github.ref == 'refs/heads/main' }}
-
-  config:
-    name: Config
-    if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    outputs:
-      get-server-ip-list: ${{ steps.get-server-ip-list.outputs.get-server-ip-list }}
-    steps:
-      - id: get-server-ip-list
-        name: Get Server IP List
-        run: echo "get-server-ip-list=$(dig +short app-servers.thinky.gg TXT | jq -cr 'split(",")')" >> $GITHUB_OUTPUT
-      - name: print output
-        run: |
-          echo "${{ steps.get-server-ip-list.outputs.get-server-ip-list }}"
 
   deploy-to-staging:
     name: Deploy to Staging
