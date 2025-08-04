@@ -1,9 +1,6 @@
 import UpsellFullAccount from '@root/components/home/upsellFullAccount';
-import PlayerRankProgress from '@root/components/progress/playerRankProgress';
 import AchievementCategory from '@root/constants/achievements/achievementCategory';
-import { skillRequirements } from '@root/constants/achievements/AchievementRulesSkill';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
-import { getDifficultyRollingSum } from '@root/helpers/playerRankHelper';
 import { refreshAchievements } from '@root/helpers/refreshAchievements';
 import useSWRHelper from '@root/hooks/useSWRHelper';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
@@ -12,6 +9,7 @@ import FormattedCampaign from '../../../../components/formatted/formattedCampaig
 import { difficultyList } from '../../../../components/formatted/formattedDifficulty';
 import LinkInfo from '../../../../components/formatted/linkInfo';
 import Page from '../../../../components/page/page';
+import SpaceBackground from '../../../../components/page/SpaceBackground';
 import getCampaignProps, { CampaignProps } from '../../../../helpers/getCampaignProps';
 import { getUserFromToken } from '../../../../lib/withAuth';
 import { EnrichedLevel } from '../../../../models/db/level';
@@ -248,6 +246,51 @@ export default function ChapterPage({ enrichedCollections, reqUser, solvedLevels
     return undefined;
   };
 
+  const getChapterConstellations = () => {
+    const constellations = [];
+
+    // Progress Constellation - represents completed levels
+    for (let i = 0; i < Math.min(solvedLevels, 12); i++) {
+      constellations.push({
+        left: `${15 + (i % 4) * 20}%`,
+        top: `${20 + Math.floor(i / 4) * 15}%`,
+        size: '4px',
+        color: '#22c55e', // green-500
+        delay: `${i * 0.2}s`,
+        duration: '2s',
+        glow: true,
+      });
+    }
+
+    // Achievement Constellation - special bright stars for major milestones
+    if (chapterNumber === 1 && (reqUser.config?.calcLevelsSolvedCount ?? 0) >= 5) {
+      constellations.push({
+        left: '85%',
+        top: '25%',
+        size: '6px',
+        color: '#facc15', // yellow-400
+        delay: '0s',
+        duration: '1.5s',
+        glow: true,
+      });
+    }
+
+    // Chapter completion constellation
+    if (solvedLevels === totalLevels) {
+      constellations.push({
+        left: '80%',
+        top: '15%',
+        size: '8px',
+        color: '#a855f7', // purple-500
+        delay: '0s',
+        duration: '2s',
+        glow: true,
+      });
+    }
+
+    return constellations;
+  };
+
   const getSolvedElement = () => {
     const nextChapter = chapterNumber + 1;
     const hasNextChapter = nextChapter <= 3;
@@ -275,148 +318,66 @@ export default function ChapterPage({ enrichedCollections, reqUser, solvedLevels
     <Page folders={[new LinkInfo('Play', '/play')]} title={config.title}>
       <UpsellFullAccount user={reqUser} />
       
-      {/* Game World Map Style Header */}
-      <div className='relative min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 overflow-hidden'>
-        {/* Animated Star Field Background with Progress Constellations */}
-        <div className='absolute inset-0 animate-fadeIn'>
-          {/* Regular stars */}
-          {[...Array(40)].map((_, i) => {
-            // Use deterministic values based on index to avoid hydration mismatch
-            const pseudoRandom = (seed: number, max: number) => ((seed * 9.869604401089358) % max);
-            const left = pseudoRandom(i * 2.3, 100);
-            const top = pseudoRandom(i * 3.7, 100);
-            const size = pseudoRandom(i * 1.3, 3) + 1;
-            const delay = pseudoRandom(i * 2.1, 3);
-            const duration = pseudoRandom(i * 1.7, 2) + 1;
-
-            return (
-              <div
-                key={i}
-                className='absolute bg-white rounded-full animate-pulse'
-                style={{
-                  left: `${left}%`,
-                  top: `${top}%`,
-                  width: `${size}px`,
-                  height: `${size}px`,
-                  animationDelay: `${delay}s`,
-                  animationDuration: `${duration}s`,
-                }}
-              />
-            );
-          })}
-          
-          {/* Progress Constellation - represents completed levels */}
-          {[...Array(Math.min(solvedLevels, 12))].map((_, i) => (
-            <div
-              key={`progress-star-${i}`}
-              className='absolute bg-green-400 rounded-full animate-pulse'
-              style={{
-                left: `${15 + (i % 4) * 20}%`,
-                top: `${20 + Math.floor(i / 4) * 15}%`,
-                width: '4px',
-                height: '4px',
-                animationDelay: `${i * 0.2}s`,
-                animationDuration: '2s',
-                boxShadow: '0 0 8px rgba(34, 197, 94, 0.6)',
-              }}
-            />
-          ))}
-          
-          {/* Achievement Constellation - special bright stars for major milestones */}
-          {chapterNumber === 1 && (reqUser.config?.calcLevelsSolvedCount ?? 0) >= 5 && (
-            <div
-              className='absolute bg-yellow-400 rounded-full animate-pulse'
-              style={{
-                left: '85%',
-                top: '25%',
-                width: '6px',
-                height: '6px',
-                animationDuration: '1.5s',
-                boxShadow: '0 0 12px rgba(250, 204, 21, 0.8)',
-              }}
-            />
-          )}
-          
-          {/* Chapter completion constellation */}
-          {solvedLevels === totalLevels && (
-            <div
-              className='absolute bg-purple-400 rounded-full animate-bounce'
-              style={{
-                left: '80%',
-                top: '15%',
-                width: '8px',
-                height: '8px',
-                animationDuration: '2s',
-                boxShadow: '0 0 16px rgba(168, 85, 247, 0.9)',
-              }}
-            />
-          )}
-          
-          {/* Floating Current Rank Display */}
-          <div className='absolute top-4 sm:top-6 left-1/2 transform -translate-x-1/2 z-20 animate-fadeInDown' style={{ animationDelay: '0.5s' }}>
-            <Link href='/achievements#category-LEVEL_COMPLETION' className='block hover:scale-105 transition-transform duration-300'>
-              <div className='bg-black/20 backdrop-blur-sm border border-white/20 rounded-xl px-4 py-3 sm:px-6 sm:py-4 text-white text-center cursor-pointer hover:bg-black/30 transition-colors duration-300'>
-                <div className='text-xs opacity-70 mb-2'>CURRENT RANK</div>
-                <div className='flex items-center justify-center gap-2 mb-1'>
-                  <span className='text-lg sm:text-2xl'>{currentRank.emoji}</span>
-                  <span className='text-lg sm:text-xl font-black bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent'>
-                    {currentRank.name}
-                  </span>
-                </div>
-                {rankData && (
-                  <div className='text-xs opacity-60'>
-                    {(() => {
-                      const achievedRanks = rankData.skillAchievements.filter(ach => ach.isUnlocked);
-                      const highestAchievedIndex = achievedRanks.length > 0 ?
-                        Math.max(...achievedRanks.map(ach => ach.difficultyIndex)) : 0;
-
-                      if (highestAchievedIndex === 0) {
-                        return 'Start solving to earn your first rank!';
-                      }
-
-                      const currentRankAch = rankData.skillAchievements.find(ach => ach.difficultyIndex === highestAchievedIndex);
-
-                      return currentRankAch ? `Top ${currentRankAch.percentile}% of players` : 'Ranked player';
-                    })()}
-                  </div>
-                )}
+      <SpaceBackground
+        starCount={60}
+        constellationPattern='chapter'
+        customConstellations={getChapterConstellations()}
+        showGeometricShapes={true}
+        className='min-h-screen'
+      >
+        {/* Floating Current Rank Display */}
+        <div className='w-full pt-4 justify-center flex items-center align-middle items-center z-20 animate-fadeInDown' style={{ animationDelay: '0.5s' }}>
+          <Link href='/achievements#category-LEVEL_COMPLETION' className='block hover:scale-105 transition-transform duration-300'>
+            <div className='bg-black/20 backdrop-blur-sm border border-white/20 rounded-xl px-4 py-3 sm:px-6 sm:py-4 text-white text-center cursor-pointer hover:bg-black/30 transition-colors duration-300'>
+              <div className='text-xs opacity-70 mb-2'>CURRENT RANK</div>
+              <div className='flex items-center justify-center gap-2 mb-1'>
+                <span className='text-lg sm:text-2xl'>{currentRank.emoji}</span>
+                <span className='text-lg sm:text-xl font-black bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent'>
+                  {currentRank.name}
+                </span>
               </div>
-            </Link>
+              {rankData && (
+                <div className='text-xs opacity-60'>
+                  {(() => {
+                    const achievedRanks = rankData.skillAchievements.filter(ach => ach.isUnlocked);
+                    const highestAchievedIndex = achievedRanks.length > 0 ?
+                      Math.max(...achievedRanks.map(ach => ach.difficultyIndex)) : 0;
+
+                    if (highestAchievedIndex === 0) {
+                      return 'Start solving to earn your first rank!';
+                    }
+
+                    const currentRankAch = rankData.skillAchievements.find(ach => ach.difficultyIndex === highestAchievedIndex);
+
+                    return currentRankAch ? `Top ${currentRankAch.percentile}% of players` : 'Ranked player';
+                  })()}
+                </div>
+              )}
+            </div>
+          </Link>
+        </div>
+        
+        {/* Floating Chapter Progress */}
+        <div className='absolute bottom-24 left-4 sm:bottom-32 sm:left-6 lg:bottom-40 lg:left-12 animate-fadeInLeft' style={{ animationDelay: '0.7s' }}>
+          <div className='bg-black/20 backdrop-blur-sm border border-white/20 rounded-xl px-3 py-2 sm:px-4 sm:py-3 text-white'>
+            <div className='text-xs opacity-70 mb-1'>CHAPTER {chapterNumber}</div>
+            <div className='text-sm sm:text-lg font-black bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent'>
+              {Math.round((solvedLevels / totalLevels) * 100)}% Complete
+            </div>
           </div>
-          
-          {/* Floating Chapter Progress */}
-          <div className='absolute bottom-24 left-4 sm:bottom-32 sm:left-6 lg:bottom-40 lg:left-12 animate-fadeInLeft' style={{ animationDelay: '0.7s' }}>
-            <div className='bg-black/20 backdrop-blur-sm border border-white/20 rounded-xl px-3 py-2 sm:px-4 sm:py-3 text-white'>
-              <div className='text-xs opacity-70 mb-1'>CHAPTER {chapterNumber}</div>
-              <div className='text-sm sm:text-lg font-black bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent'>
-                {Math.round((solvedLevels / totalLevels) * 100)}% Complete
+        </div>
+        
+        {/* Floating Next Chapter Info */}
+        {solvedLevels < totalLevels && (
+          <div className='absolute bottom-24 right-4 sm:bottom-32 sm:right-6 lg:bottom-40 lg:right-12 animate-fadeInRight' style={{ animationDelay: '0.9s' }}>
+            <div className='bg-black/20 backdrop-blur-sm border border-white/20 rounded-xl px-3 py-2 sm:px-4 sm:py-3 text-white text-right'>
+              <div className='text-xs opacity-70 mb-1'>TO NEXT CHAPTER</div>
+              <div className='text-sm sm:text-lg font-black bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent'>
+                {totalLevels - solvedLevels} levels
               </div>
             </div>
           </div>
-          
-          {/* Floating Next Chapter Info */}
-          {solvedLevels < totalLevels && (
-            <div className='absolute bottom-24 right-4 sm:bottom-32 sm:right-6 lg:bottom-40 lg:right-12 animate-fadeInRight' style={{ animationDelay: '0.9s' }}>
-              <div className='bg-black/20 backdrop-blur-sm border border-white/20 rounded-xl px-3 py-2 sm:px-4 sm:py-3 text-white text-right'>
-                <div className='text-xs opacity-70 mb-1'>TO NEXT CHAPTER</div>
-                <div className='text-sm sm:text-lg font-black bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent'>
-                  {totalLevels - solvedLevels} levels
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-        
-        {/* Floating Geometric Shapes */}
-        <div className='absolute inset-0 animate-fadeIn' style={{ animationDelay: '0.3s' }}>
-          <div className='absolute top-20 left-10 w-32 h-32 border-4 border-cyan-400 transform rotate-45 animate-spin opacity-10' style={{ animationDuration: '20s' }} />
-          <div className='absolute top-40 right-20 w-24 h-24 bg-gradient-to-r from-purple-500 to-pink-500 transform rotate-12 animate-bounce opacity-10' style={{ animationDelay: '1s' }} />
-          <div className='absolute bottom-32 left-1/4 w-16 h-16 border-4 border-yellow-400 rounded-full animate-pulse opacity-10' style={{ animationDelay: '2s' }} />
-          <div className='absolute bottom-20 right-1/3 w-20 h-20 bg-gradient-to-r from-blue-500 to-green-500 transform -rotate-12 animate-bounce opacity-10' style={{ animationDelay: '1.5s' }} />
-        </div>
-        
-        {/* Bottom Gradient Overlay for smooth transition */}
-        <div className='absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-indigo-900 via-purple-900/50 to-transparent z-5' />
+        )}
         <div className='relative z-10 flex flex-col items-center justify-center min-h-screen px-4 py-8'>
           {/* Chapter Title */}
           <div className='mb-8 sm:mb-10 animate-fadeInDown' style={{ animationDelay: '0.3s' }}>
@@ -505,7 +466,7 @@ export default function ChapterPage({ enrichedCollections, reqUser, solvedLevels
             </Link>
           </div>
         </div>
-      </div>
+      </SpaceBackground>
       
       <FormattedCampaign
         enrichedCollections={enrichedCollections}

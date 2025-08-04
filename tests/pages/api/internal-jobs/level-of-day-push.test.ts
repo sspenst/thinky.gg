@@ -1,6 +1,6 @@
 import { DEFAULT_GAME_ID, GameId } from '@root/constants/GameId';
-import TestId from '@root/constants/testId';
 import NotificationType from '@root/constants/notificationType';
+import TestId from '@root/constants/testId';
 import { NextApiRequestWrapper } from '@root/helpers/apiWrapper';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import MockDate from 'mockdate';
@@ -92,7 +92,7 @@ describe('Level of Day Push Notifications', () => {
     // Create test users if they don't exist
     await UserModel.findOneAndUpdate(
       { _id: TestId.USER },
-      { 
+      {
         _id: TestId.USER,
         name: 'TestUser',
         email: 'test@example.com',
@@ -105,7 +105,7 @@ describe('Level of Day Push Notifications', () => {
 
     await UserModel.findOneAndUpdate(
       { _id: TestId.USER_B },
-      { 
+      {
         _id: TestId.USER_B,
         name: 'TestUserB',
         email: 'testb@example.com',
@@ -118,7 +118,7 @@ describe('Level of Day Push Notifications', () => {
 
     await UserModel.findOneAndUpdate(
       { _id: TestId.USER_GUEST },
-      { 
+      {
         _id: TestId.USER_GUEST,
         name: 'GuestUser',
         email: 'guest@example.com',
@@ -469,6 +469,7 @@ describe('Level of Day Push Notifications', () => {
 
     // Mock the date to be a Tuesday at 10am UTC (before the optimal 3pm time)
     const mockedDate = new Date('2024-01-16T10:00:00.000Z'); // Tuesday, Jan 16, 2024, 10:00 UTC
+
     MockDate.set(mockedDate);
 
     const now = new Date();

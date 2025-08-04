@@ -4,12 +4,12 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useContext, useEffect, useMemo, useState } from 'react';
 import toast from 'react-hot-toast';
-import Modal from '.';
 import { AppContext } from '../../contexts/appContext';
 import Level from '../../models/db/level';
 import FormattedAuthorNote from '../formatted/formattedAuthorNote';
 import { TimeFilter } from '../profile/profileInsights';
 import isNotFullAccountToast from '../toasts/isNotFullAccountToast';
+import Modal from '.';
 
 interface SchedulePublishModalProps {
   closeModal: () => void;

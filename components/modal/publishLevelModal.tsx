@@ -2,11 +2,11 @@ import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { useContext, useState } from 'react';
 import toast from 'react-hot-toast';
-import Modal from '.';
 import { AppContext } from '../../contexts/appContext';
 import Level from '../../models/db/level';
 import FormattedAuthorNote from '../formatted/formattedAuthorNote';
 import isNotFullAccountToast from '../toasts/isNotFullAccountToast';
+import Modal from '.';
 import SchedulePublishModal from './schedulePublishModal';
 
 interface PublishLevelModalProps {

@@ -86,13 +86,13 @@ function NavGameMenu({ onGameChange }: NavGameMenuProps) {
       {isOpen && (
         <div className='absolute w-full origin-top mt-1 p-1 rounded-[10px] shadow-lg border overflow-y-auto flex flex-col gap-1 bg-1 border-color-3 z-[60]'>
           {Object.values(Games).filter(game => game.id !== currentGame.id).map((game) => (
-            <NavGameMenuItem 
-              game={game} 
-              key={game.id} 
+            <NavGameMenuItem
+              game={game}
+              key={game.id}
               onGameChange={() => {
                 setIsOpen(false);
                 onGameChange?.();
-              }} 
+              }}
             />
           ))}
         </div>

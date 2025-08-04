@@ -3,7 +3,6 @@ import React, { JSX, useCallback } from 'react';
 import { EnrichedCollection } from '../../models/db/collection';
 import { EnrichedLevel } from '../../models/db/level';
 import SelectOptionStats from '../../models/selectOptionStats';
-import FilterButton from '../buttons/filterButton';
 import ChapterLevelPortal from '../cards/chapterLevelPortal';
 
 function getCompleteIcon(complete: boolean) {
@@ -209,6 +208,7 @@ export default function FormattedCampaign({
                         </div>
                       </div>
                     )}
+                    
                     
                     {/* Level Grid as Mini Islands */}
                     <div className='grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6 sm:gap-8 justify-items-center'>

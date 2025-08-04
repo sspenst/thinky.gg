@@ -70,22 +70,25 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       { $skip: (page - 1) * levelsPerPage },
       { $limit: levelsPerPage }
     ]);
-    
+
     // Find which levels have scheduled messages and get those messages in a separate query
     const scheduledLevelIds = levels
       .filter(level => level.scheduledQueueMessageId)
       .map(level => level.scheduledQueueMessageId);
-    
+
     let queueMessages: any[] = [];
+
     if (scheduledLevelIds.length > 0) {
       const { QueueMessageModel } = await import('../../../models/mongoose');
+
       queueMessages = await QueueMessageModel.find({
         _id: { $in: scheduledLevelIds }
       }).lean();
     }
-    
+
     // Attach queue messages to levels
     const queueMessageMap = new Map(queueMessages.map(msg => [msg._id.toString(), msg]));
+
     levels.forEach(level => {
       if (level.scheduledQueueMessageId) {
         (level as any).scheduledQueueMessage = queueMessageMap.get(level.scheduledQueueMessageId.toString());
@@ -108,22 +111,25 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       { $limit: levelsPerPage },
       { $unset: 'sortDate' }
     ]);
-    
+
     // Find which levels have scheduled messages and get those messages in a separate query
     const scheduledLevelIds = levels
       .filter(level => level.scheduledQueueMessageId)
       .map(level => level.scheduledQueueMessageId);
-    
+
     let queueMessages: any[] = [];
+
     if (scheduledLevelIds.length > 0) {
       const { QueueMessageModel } = await import('../../../models/mongoose');
+
       queueMessages = await QueueMessageModel.find({
         _id: { $in: scheduledLevelIds }
       }).lean();
     }
-    
+
     // Attach queue messages to levels
     const queueMessageMap = new Map(queueMessages.map(msg => [msg._id.toString(), msg]));
+
     levels.forEach(level => {
       if (level.scheduledQueueMessageId) {
         (level as any).scheduledQueueMessage = queueMessageMap.get(level.scheduledQueueMessageId.toString());

@@ -22,7 +22,7 @@ export default function StyledTooltip({ id, style }: StyledTooltipProps) {
         lineHeight: '1rem',
         maxWidth: 'calc(100vw - 0.7rem)',
         padding: '0.25rem 0.35rem 0.25rem 0.35rem',
-        zIndex: 100,
+        zIndex: 9999,
         ...style,
       }}
     />
