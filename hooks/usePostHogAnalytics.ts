@@ -2,27 +2,26 @@ import { sendGTMEvent } from '@next/third-parties/google';
 import isPro from '@root/helpers/isPro';
 import { Router } from 'next/router';
 import posthog from 'posthog-js';
-import { useEffect } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import User from '../models/db/user';
 
 export function usePostHogAnalytics(user: User | null | undefined) {
-  // Initialize PostHog analytics
+  const [isInitialized, setIsInitialized] = useState(false);
+  const lastIdentifiedUser = useRef<string | null>(null);
+  const isLocalhost = typeof window !== 'undefined' && (window.location.hostname.includes('localhost') && window.location.port === '3000');
+
+  // Initialize PostHog once
   useEffect(() => {
-    // Don't initialize PostHog for localhost
-    if (window.location.hostname.includes('localhost') && window.location.port === '3000') {
-      return;
-    }
+    if (isLocalhost || isInitialized) return;
 
     posthog.init((process.env.NEXT_PUBLIC_POSTHOG_KEY as string) || 'phc_Am38672etY9vtglKkfMa86HVxREbLuh7ExC7Qj1qPBx', {
       api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST as string || '/api/ingest',
-      person_profiles: 'always', // or 'always' to create profiles for anonymous users as well
-      // Enable debug mode in development
-      loaded: (posthog) => {
-        //if (process.env.NODE_ENV === 'development') posthog.debug();
-        // Manually capture initial pageview to ensure it's tracked
-        posthog.capture('$pageview');
-      },
+      person_profiles: 'always',
+      capture_pageview: false,
     });
+
+    posthog.capture('$pageview');
+    setIsInitialized(true);
 
     const handleRouteChange = () => posthog?.capture('$pageview');
 
@@ -31,32 +30,39 @@ export function usePostHogAnalytics(user: User | null | undefined) {
     return () => {
       Router.events.off('routeChangeComplete', handleRouteChange);
     };
-  }, []);
+  }, [isLocalhost, isInitialized]);
 
-  // Handle user identification and tracking
+  // Handle user identification with stability checks
   useEffect(() => {
-    if (user?._id) {
+    if (!isInitialized || isLocalhost) return;
+
+    const currentUserId = user?._id?.toString();
+
+    // Only act if user ID actually changed
+    if (lastIdentifiedUser.current === currentUserId) return;
+
+    if (currentUserId) {
       sendGTMEvent({
         'event': 'userId_set',
-        'user_id': user?._id.toString()
+        'user_id': currentUserId
       });
 
-      // Identify user with PostHog
-      posthog.identify(user._id.toString(), {
+      // Identify user with PostHog - only include stable properties
+      posthog.identify(currentUserId, {
         name: user?.name,
         email: user?.email || '',
         roles: user?.roles,
         created_at: user?.ts ? new Date(user.ts * 1000).toISOString() : undefined,
-        last_game: user?.lastGame,
-        utm_source: user.utm_source,
         has_pro: isPro(user),
-        email_confirmed: user.emailConfirmed,
-        // Add other relevant user properties (be careful not to include sensitive data)
-        // Don't include the entire user object for privacy reasons
+        email_confirmed: user?.emailConfirmed,
       });
-    } else {
-      // Reset PostHog identity when user logs out
+      lastIdentifiedUser.current = currentUserId;
+    } else if (lastIdentifiedUser.current !== null) {
+      // Only reset if we were previously identified
       posthog.reset();
+      lastIdentifiedUser.current = null;
     }
-  }, [user, user?._id, user?.name, user?.email, user?.roles, user?.ts, user?.lastGame, user?.utm_source, user?.emailConfirmed]);
+  }, [isInitialized, user?._id, isLocalhost]); // Minimal deps - only ID matters
+
+  return { isInitialized };
 }
