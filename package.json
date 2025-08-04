@@ -20,6 +20,7 @@
     "cal-heatmap": "^4.2.4",
     "canvas-confetti": "^1.9.3",
     "cookie": "^1.0.2",
+    "critters": "^0.0.23",
     "dayjs": "^1.11.13",
     "debounce": "^2.2.0",
     "dotenv": "^16.4.7",
