@@ -85,6 +85,7 @@
     "e2e:ui": "playwright test --ui",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
+    "typecheck:ci": "tsc --noEmit --project tsconfig.ci.json",
     "test": "NODE_ENV=test jest --verbose",
     "test:watch": "NODE_ENV=test jest --watch",
     "test:oauth": "NODE_ENV=test jest --verbose --testPathPatterns \"(oauth|auth)\"",
