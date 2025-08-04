@@ -38,8 +38,9 @@ COPY --chown=node:node . .
 
 FROM base AS final
 
-# for web app. this step takes approx 83s on github runner
-RUN npm run build --omit=dev
+# for web app. Using optimized fast build to reduce time from ~83s to ~10-30s
+# Note: This skips linting and type checking which should be done in CI separately
+RUN npm run build:fast --omit=dev
 # we may need the following to prevent `Failed to write image to cache` errors
 RUN chown -R node:node .next/
 
