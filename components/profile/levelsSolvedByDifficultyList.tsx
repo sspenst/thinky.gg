@@ -31,7 +31,7 @@ export default function LevelsSolvedByDifficultyList({ levelsSolvedByDifficulty 
               <FormattedDifficulty difficulty={difficulty} id='level-solved-by-difficulty-list' />
             </div>
             
-            <span 
+            <span
               className='font-bold'
               style={{ color: levelsSolved > 0 ? getDifficultyColor(difficulty.value) : 'rgb(156 163 175)' }}
             >

@@ -37,45 +37,45 @@ export default function SpaceBackground({
     const timeSeed = Math.floor(Date.now() / 100000);
 
     switch (constellationPattern) {
-      case 'leaderboard':
-        return [...Array(8)].map((_, i) => {
-          // Add subtle random variations within a small range
-          const baseLeft = 20 + (i % 3) * 25;
-          const baseTop = 15 + Math.floor(i / 3) * 20;
-          const leftVariation = pseudoRandom(timeSeed + i * 7, 10) - 5; // -5 to +5
-          const topVariation = pseudoRandom(timeSeed + i * 11, 10) - 5; // -5 to +5
-          
-          return {
-            left: `${Math.max(10, Math.min(90, baseLeft + leftVariation))}%`,
-            top: `${Math.max(10, Math.min(80, baseTop + topVariation))}%`,
-            size: `${4 + pseudoRandom(timeSeed + i * 13, 3)}px`, // 4-6px
-            color: 'bg-yellow-400',
-            delay: `${i * 0.3 + pseudoRandom(timeSeed + i * 17, 10) / 20}s`, // Add 0-0.5s variation
-            duration: `${2.5 + pseudoRandom(timeSeed + i * 19, 10) / 10}s`, // 2.5-3.5s
-            glow: true,
-          };
-        });
-      
-      case 'chapter':
-        return [...Array(6)].map((_, i) => {
-          const baseLeft = 15 + (i % 3) * 30;
-          const baseTop = 20 + Math.floor(i / 3) * 25;
-          const leftVariation = pseudoRandom(timeSeed + i * 7, 10) - 5;
-          const topVariation = pseudoRandom(timeSeed + i * 11, 10) - 5;
-          
-          return {
-            left: `${Math.max(10, Math.min(90, baseLeft + leftVariation))}%`,
-            top: `${Math.max(10, Math.min(80, baseTop + topVariation))}%`,
-            size: `${5 + pseudoRandom(timeSeed + i * 13, 3)}px`, // 5-7px
-            color: 'bg-blue-400',
-            delay: `${i * 0.2 + pseudoRandom(timeSeed + i * 17, 10) / 20}s`,
-            duration: `${3 + pseudoRandom(timeSeed + i * 19, 10) / 10}s`, // 3-4s
-            glow: true,
-          };
-        });
-      
-      default:
-        return [];
+    case 'leaderboard':
+      return [...Array(8)].map((_, i) => {
+        // Add subtle random variations within a small range
+        const baseLeft = 20 + (i % 3) * 25;
+        const baseTop = 15 + Math.floor(i / 3) * 20;
+        const leftVariation = pseudoRandom(timeSeed + i * 7, 10) - 5; // -5 to +5
+        const topVariation = pseudoRandom(timeSeed + i * 11, 10) - 5; // -5 to +5
+
+        return {
+          left: `${Math.max(10, Math.min(90, baseLeft + leftVariation))}%`,
+          top: `${Math.max(10, Math.min(80, baseTop + topVariation))}%`,
+          size: `${4 + pseudoRandom(timeSeed + i * 13, 3)}px`, // 4-6px
+          color: 'bg-yellow-400',
+          delay: `${i * 0.3 + pseudoRandom(timeSeed + i * 17, 10) / 20}s`, // Add 0-0.5s variation
+          duration: `${2.5 + pseudoRandom(timeSeed + i * 19, 10) / 10}s`, // 2.5-3.5s
+          glow: true,
+        };
+      });
+
+    case 'chapter':
+      return [...Array(6)].map((_, i) => {
+        const baseLeft = 15 + (i % 3) * 30;
+        const baseTop = 20 + Math.floor(i / 3) * 25;
+        const leftVariation = pseudoRandom(timeSeed + i * 7, 10) - 5;
+        const topVariation = pseudoRandom(timeSeed + i * 11, 10) - 5;
+
+        return {
+          left: `${Math.max(10, Math.min(90, baseLeft + leftVariation))}%`,
+          top: `${Math.max(10, Math.min(80, baseTop + topVariation))}%`,
+          size: `${5 + pseudoRandom(timeSeed + i * 13, 3)}px`, // 5-7px
+          color: 'bg-blue-400',
+          delay: `${i * 0.2 + pseudoRandom(timeSeed + i * 17, 10) / 20}s`,
+          duration: `${3 + pseudoRandom(timeSeed + i * 19, 10) / 10}s`, // 3-4s
+          glow: true,
+        };
+      });
+
+    default:
+      return [];
     }
   };
 
@@ -91,11 +91,11 @@ export default function SpaceBackground({
           const timeSeed = Math.floor(Date.now() / 100000);
           const leftBase = pseudoRandom(i * 2.3, 100);
           const topBase = pseudoRandom(i * 3.7, 100);
-          
+
           // Add very subtle drift based on time
           const leftDrift = pseudoRandom(timeSeed + i * 3, 4) - 2; // -2 to +2
           const topDrift = pseudoRandom(timeSeed + i * 5, 4) - 2; // -2 to +2
-          
+
           const left = Math.max(0, Math.min(100, leftBase + leftDrift));
           const top = Math.max(0, Math.min(100, topBase + topDrift));
           const size = pseudoRandom(i * 1.3, 3) + 1;
@@ -132,11 +132,11 @@ export default function SpaceBackground({
               animationDelay: star.delay || '0s',
               animationDuration: star.duration || '2s',
               ...(star.glow ? {
-                boxShadow: star.color?.includes('yellow') 
+                boxShadow: star.color?.includes('yellow')
                   ? '0 0 10px rgba(250, 204, 21, 0.7)'
                   : star.color?.includes('blue')
-                  ? '0 0 10px rgba(96, 165, 250, 0.7)'
-                  : '0 0 10px rgba(255, 255, 255, 0.5)'
+                    ? '0 0 10px rgba(96, 165, 250, 0.7)'
+                    : '0 0 10px rgba(255, 255, 255, 0.5)'
               } : {}),
             }}
           />

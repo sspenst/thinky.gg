@@ -205,11 +205,11 @@ export default function Leaderboards({ gmLeaderboard, rankedLeaderboard, reqUser
             <div className='text-6xl sm:text-7xl mb-4'>🌟</div>
             <h3 className='text-xl sm:text-2xl font-bold text-white mb-2'>No Champions Yet</h3>
             <p className='text-gray-400 text-base sm:text-lg'>
-              {leaderboard === 'ranked' 
+              {leaderboard === 'ranked'
                 ? 'Be the first to conquer the ranked ladder!'
                 : leaderboard === 'gm'
-                ? 'Be the first to achieve Grandmaster status by solving 7+ Grandmaster levels!'
-                : 'Be the first to achieve Super Grandmaster status by solving 7+ Super Grandmaster levels!'}
+                  ? 'Be the first to achieve Grandmaster status by solving 7+ Grandmaster levels!'
+                  : 'Be the first to achieve Super Grandmaster status by solving 7+ Super Grandmaster levels!'}
             </p>
           </div>
         </div>
@@ -237,33 +237,33 @@ export default function Leaderboards({ gmLeaderboard, rankedLeaderboard, reqUser
                 }`}
               >
                 <div className='relative flex items-center justify-between'>
-                <div className='flex items-center gap-3 sm:gap-4 flex-1 min-w-0'>
-                  {/* Rank with modern styling */}
-                  <div className={`flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full font-black text-lg sm:text-xl flex-shrink-0 ${
-                    i === 0 ? 'bg-gradient-to-br from-yellow-400 to-orange-500 text-black' :
-                      i === 1 ? 'bg-gradient-to-br from-gray-300 to-gray-500 text-black' :
-                        i === 2 ? 'bg-gradient-to-br from-orange-400 to-red-500 text-black' :
-                          'bg-gradient-to-br from-purple-500 to-blue-500 text-white'
-                  }`}>
-                    {i + 1}
-                  </div>
+                  <div className='flex items-center gap-3 sm:gap-4 flex-1 min-w-0'>
+                    {/* Rank with modern styling */}
+                    <div className={`flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full font-black text-lg sm:text-xl flex-shrink-0 ${
+                      i === 0 ? 'bg-gradient-to-br from-yellow-400 to-orange-500 text-black' :
+                        i === 1 ? 'bg-gradient-to-br from-gray-300 to-gray-500 text-black' :
+                          i === 2 ? 'bg-gradient-to-br from-orange-400 to-red-500 text-black' :
+                            'bg-gradient-to-br from-purple-500 to-blue-500 text-white'
+                    }`}>
+                      {i + 1}
+                    </div>
                   
                   {/* User info */}
-                  <div className='flex items-center text-base sm:text-lg gap-2 sm:gap-3 flex-1 min-w-0'>
-                    <FormattedUser id='leaderboard' size={32} user={user} />
+                    <div className='flex items-center text-base sm:text-lg gap-2 sm:gap-3 flex-1 min-w-0'>
+                      <FormattedUser id='leaderboard' size={32} user={user} />
+                    </div>
                   </div>
-                </div>
                 
                 {/* Score with glass morphism effect */}
-                <div className={`bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg px-3 sm:px-4 py-2 font-bold text-base sm:text-lg flex-shrink-0 ${
-                  isYou ? 'text-yellow-400 bg-yellow-400/20 border-yellow-400/40' : 'text-white'
-                }`}>
-                  <span className='text-sm font-normal opacity-80'>
-                    {leaderboard === 'ranked' ? '' : 'Solved: '}
-                  </span>
-                  {values[i]}
-                  {leaderboard === 'ranked' ? ' 🏅' : ''}
-                </div>
+                  <div className={`bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg px-3 sm:px-4 py-2 font-bold text-base sm:text-lg flex-shrink-0 ${
+                    isYou ? 'text-yellow-400 bg-yellow-400/20 border-yellow-400/40' : 'text-white'
+                  }`}>
+                    <span className='text-sm font-normal opacity-80'>
+                      {leaderboard === 'ranked' ? '' : 'Solved: '}
+                    </span>
+                    {values[i]}
+                    {leaderboard === 'ranked' ? ' 🏅' : ''}
+                  </div>
                 </div>
               </div>
             </div>
@@ -348,10 +348,10 @@ export default function Leaderboards({ gmLeaderboard, rankedLeaderboard, reqUser
                   onClick={() => setLeaderboard(leaderboardKey)}
                   className={`
                     relative overflow-hidden px-3 sm:px-6 py-2 sm:py-3.5 rounded-xl font-bold text-sm sm:text-lg transition-all duration-300 whitespace-nowrap
-                    ${leaderboard === leaderboardKey 
-                      ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-xl transform scale-105' 
-                      : 'text-gray-300 hover:text-white hover:bg-white/10'
-                    }
+                    ${leaderboard === leaderboardKey
+                  ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-xl transform scale-105'
+                  : 'text-gray-300 hover:text-white hover:bg-white/10'
+                }
                   `}
                 >
                   {leaderboard === leaderboardKey && (

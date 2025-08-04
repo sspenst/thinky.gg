@@ -61,16 +61,18 @@ describe('api/admin/impersonate', () => {
 
           // Check that the cookie was set with impersonation data
           const setCookieHeader = res.headers.get('set-cookie');
+
           expect(setCookieHeader).toBeDefined();
-          
+
           // Extract token from cookie
           const tokenMatch = setCookieHeader?.match(/token=([^;]+)/);
+
           expect(tokenMatch).toBeDefined();
-          
+
           if (tokenMatch) {
             const token = tokenMatch[1];
             const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as any;
-            
+
             expect(decoded.userId).toBe(TestId.USER);
             expect(decoded.adminId).toBe(TestId.USER_ADMIN);
             expect(decoded.isImpersonating).toBe(true);
@@ -222,16 +224,18 @@ describe('api/admin/impersonate', () => {
 
           // Check that the cookie was set with admin data
           const setCookieHeader = res.headers.get('set-cookie');
+
           expect(setCookieHeader).toBeDefined();
-          
+
           // Extract token from cookie
           const tokenMatch = setCookieHeader?.match(/token=([^;]+)/);
+
           expect(tokenMatch).toBeDefined();
-          
+
           if (tokenMatch) {
             const token = tokenMatch[1];
             const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as any;
-            
+
             expect(decoded.userId).toBe(TestId.USER_ADMIN);
             expect(decoded.adminId).toBeUndefined();
             expect(decoded.isImpersonating).toBeUndefined();
@@ -287,7 +291,6 @@ describe('api/admin/impersonate', () => {
         },
       });
     });
-
   });
 
   describe('Invalid Methods', () => {

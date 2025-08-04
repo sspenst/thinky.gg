@@ -86,14 +86,15 @@ export default function RankedPage({ levelsByDifficulty, rankedSolvesByDifficult
   const totalSolved = Object.values(rankedSolvesByDifficulty).reduce((a, b) => a + b, 0);
   const totalLevels = Object.values(levelsByDifficulty).reduce((a, b) => a + b, 0);
   const completionPercentage = totalLevels > 0 ? Math.round((totalSolved / totalLevels) * 100) : 0;
-  
+
   // Calculate the highest difficulty achieved
   let highestDifficultyAchieved = null;
+
   for (let i = difficultyList.length - 1; i >= 0; i--) {
     const difficulty = difficultyList[i];
     const solved = difficulty.value in rankedSolvesByDifficulty ? rankedSolvesByDifficulty[difficulty.value] : 0;
     const total = difficulty.value in levelsByDifficulty ? levelsByDifficulty[difficulty.value] : 0;
-    
+
     if (solved > 0 && total > 0 && difficulty.name !== 'Pending') {
       highestDifficultyAchieved = difficulty;
       break;
@@ -102,7 +103,7 @@ export default function RankedPage({ levelsByDifficulty, rankedSolvesByDifficult
 
   return (
     <Page title='Ranked'>
-      <SpaceBackground 
+      <SpaceBackground
         starCount={80}
         constellationPattern='leaderboard'
         showGeometricShapes={true}
@@ -123,8 +124,8 @@ export default function RankedPage({ levelsByDifficulty, rankedSolvesByDifficult
           {/* Description */}
           <div className='max-w-2xl mx-auto text-center mb-8 sm:mb-12 animate-fadeInUp' style={{ animationDelay: '0.7s' }}>
             <p className='text-gray-300 text-lg sm:text-xl mb-4'>
-              Elite puzzles handpicked by the community. Master these challenges to climb the 
-              <Link href='/leaderboards' className='font-bold text-yellow-400 hover:text-yellow-300 transition mx-1'>leaderboards</Link> 
+              Elite puzzles handpicked by the community. Master these challenges to climb the
+              <Link href='/leaderboards' className='font-bold text-yellow-400 hover:text-yellow-300 transition mx-1'>leaderboards</Link>
               and prove your skills against the best players!
             </p>
             <p className='text-gray-400 text-sm sm:text-base'>
@@ -245,7 +246,7 @@ export default function RankedPage({ levelsByDifficulty, rankedSolvesByDifficult
                 >
                   {/* Progress bar background */}
                   <div className='absolute inset-0 opacity-30'>
-                    <div 
+                    <div
                       className='h-full transition-all duration-500'
                       style={{
                         width: `${progressPercent}%`,

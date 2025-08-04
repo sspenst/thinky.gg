@@ -560,7 +560,7 @@ export default function ProfilePage({
   // create an array of objects with the id, trigger element (eg. button), and the content element
   const tabsContent = {
     [ProfileTab.Profile]: (
-      <SpaceBackground 
+      <SpaceBackground
         starCount={60}
         constellationPattern='default'
         showGeometricShapes={true}
@@ -755,18 +755,18 @@ export default function ProfilePage({
                           ) : (
                             <div className='flex items-center justify-between'>
                               <span className='text-gray-300'>Last Seen</span>
-                              <FormattedDate 
-                                style={{ color: 'rgb(156 163 175)', fontSize: '1rem' }} 
-                                ts={user.last_visited_at ? user.last_visited_at : user.ts} 
+                              <FormattedDate
+                                style={{ color: 'rgb(156 163 175)', fontSize: '1rem' }}
+                                ts={user.last_visited_at ? user.last_visited_at : user.ts}
                               />
                             </div>
                           )}
                           <div className='flex items-center justify-between'>
                             <span className='text-gray-300'>Registered</span>
                             <span className='text-gray-400'>
-                              {user.ts ? <FormattedDate 
-                                style={{ color: 'rgb(156 163 175)', fontSize: '1rem' }} 
-                                ts={user.ts} 
+                              {user.ts ? <FormattedDate
+                                style={{ color: 'rgb(156 163 175)', fontSize: '1rem' }}
+                                ts={user.ts}
                               /> : 'Not registered'}
                             </span>
                           </div>
@@ -793,18 +793,18 @@ export default function ProfilePage({
                           ) : (
                             <div className='flex items-center justify-between py-3 px-4 bg-white/5 rounded-lg'>
                               <span className='text-gray-300 font-medium'>Last Seen</span>
-                              <FormattedDate 
-                                style={{ color: 'rgb(156 163 175)', fontSize: '1rem' }} 
-                                ts={user.last_visited_at ? user.last_visited_at : user.ts} 
+                              <FormattedDate
+                                style={{ color: 'rgb(156 163 175)', fontSize: '1rem' }}
+                                ts={user.last_visited_at ? user.last_visited_at : user.ts}
                               />
                             </div>
                           )}
                           <div className='flex items-center justify-between py-3 px-4 bg-white/5 rounded-lg'>
                             <span className='text-gray-300 font-medium'>Registered</span>
                             <span className='text-gray-400'>
-                              {user.ts ? <FormattedDate 
-                                style={{ color: 'rgb(156 163 175)', fontSize: '1rem' }} 
-                                ts={user.ts} 
+                              {user.ts ? <FormattedDate
+                                style={{ color: 'rgb(156 163 175)', fontSize: '1rem' }}
+                                ts={user.ts}
                               /> : 'Not registered'}
                             </span>
                           </div>
@@ -852,7 +852,7 @@ export default function ProfilePage({
       </SpaceBackground>
     ),
     [ProfileTab.Insights]: (
-      <SpaceBackground 
+      <SpaceBackground
         starCount={60}
         constellationPattern='default'
         showGeometricShapes={true}
@@ -875,7 +875,7 @@ export default function ProfilePage({
       </SpaceBackground>
     ),
     [ProfileTab.Multiplayer]: (
-      <SpaceBackground 
+      <SpaceBackground
         starCount={60}
         constellationPattern='default'
         showGeometricShapes={true}
@@ -898,7 +898,7 @@ export default function ProfilePage({
       </SpaceBackground>
     ),
     [ProfileTab.Collections]: (
-      <SpaceBackground 
+      <SpaceBackground
         starCount={60}
         constellationPattern='default'
         showGeometricShapes={true}
@@ -953,7 +953,7 @@ export default function ProfilePage({
       </SpaceBackground>
     ),
     [ProfileTab.Levels]: (
-      <SpaceBackground 
+      <SpaceBackground
         starCount={60}
         constellationPattern='default'
         showGeometricShapes={true}
@@ -969,7 +969,7 @@ export default function ProfilePage({
             </p>
             {reqUser && (
               <div className='bg-black/20 backdrop-blur-sm border border-white/20 rounded-xl px-6 py-3 inline-block'>
-                <div 
+                <div
                   className='font-bold text-xl flex items-center gap-2'
                   style={{
                     color: levelsSolved === levelsCount ? 'var(--color-complete)' : 'white',
@@ -1059,7 +1059,7 @@ export default function ProfilePage({
       </SpaceBackground>
     ),
     [ProfileTab.ReviewsWritten]: [
-      <SpaceBackground 
+      <SpaceBackground
         key='reviews-written-bg'
         starCount={60}
         constellationPattern='default'
@@ -1133,7 +1133,7 @@ export default function ProfilePage({
       </SpaceBackground>,
     ],
     [ProfileTab.ReviewsReceived]: (
-      <SpaceBackground 
+      <SpaceBackground
         starCount={60}
         constellationPattern='default'
         showGeometricShapes={true}
@@ -1206,7 +1206,7 @@ export default function ProfilePage({
       </SpaceBackground>
     ),
     [ProfileTab.Achievements]: (
-      <SpaceBackground 
+      <SpaceBackground
         starCount={60}
         constellationPattern='leaderboard'
         showGeometricShapes={true}
@@ -1232,8 +1232,11 @@ export default function ProfilePage({
 
   const getTabClassNames = useCallback((tabId: ProfileTab) => {
     return classNames(
-      'inline-block p-2 rounded-lg',
-      tab == tabId ? 'tab-active font-bold' : 'tab',
+      'group relative overflow-hidden transition-all duration-300 transform hover:scale-105',
+      'inline-block px-4 py-3 rounded-xl font-medium',
+      tab == tabId
+        ? 'bg-gradient-to-r from-cyan-600/80 to-purple-600/80 backdrop-blur-sm border border-cyan-400/30 text-white shadow-lg shadow-cyan-500/25'
+        : 'bg-black/20 backdrop-blur-sm border border-white/20 text-gray-300 hover:bg-black/30 hover:border-white/30 hover:text-white'
     );
   }, [tab]);
 
@@ -1298,7 +1301,8 @@ export default function ProfilePage({
             className={getTabClassNames(ProfileTab.Profile)}
             href={`/profile/${user.name}`}
           >
-            <div className='flex flex-row items-center gap-2'>
+            <div className='absolute inset-0 bg-gradient-to-r from-white to-transparent opacity-0 group-hover:opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-all duration-700' />
+            <div className='relative flex flex-row items-center gap-2'>
               <ProfileAvatar size={24} user={user} />
               <span>Profile</span>
             </div>
@@ -1309,9 +1313,10 @@ export default function ProfilePage({
                 className={getTabClassNames(ProfileTab.Insights)}
                 href={`/profile/${user.name}/${ProfileTab.Insights}`}
               >
-                <div className='flex flex-row items-center gap-2'>
-                  <span>📈</span>
-                  <span>Analytics Hub</span>
+                <div className='absolute inset-0 bg-gradient-to-r from-white to-transparent opacity-0 group-hover:opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-all duration-700' />
+                <div className='relative flex flex-row items-center gap-2'>
+                  <Image alt='pro' src='/pro.svg' width='16' height='16' />
+                  <span>Insights</span>
                 </div>
               </Link>
             </>
@@ -1320,9 +1325,10 @@ export default function ProfilePage({
             className={getTabClassNames(ProfileTab.Achievements)}
             href={`/profile/${user.name}/${ProfileTab.Achievements}`}
           >
-            <div className='flex flex-row items-center gap-2'>
+            <div className='absolute inset-0 bg-gradient-to-r from-white to-transparent opacity-0 group-hover:opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-all duration-700' />
+            <div className='relative flex flex-row items-center gap-2'>
               <span>🏆</span>
-              <span>Trophy Hall ({achievementsCount})</span>
+              <span>Achievements ({achievementsCount})</span>
             </div>
           </Link>
           {!reqUserHasBlocked &&
@@ -1331,45 +1337,50 @@ export default function ProfilePage({
                 className={getTabClassNames(ProfileTab.Levels)}
                 href={`/profile/${user.name}/${ProfileTab.Levels}`}
               >
-                <div className='flex flex-row items-center gap-2'>
+                <div className='absolute inset-0 bg-gradient-to-r from-white to-transparent opacity-0 group-hover:opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-all duration-700' />
+                <div className='relative flex flex-row items-center gap-2'>
                   <span>🎨</span>
-                  <span>Creator Studio ({levelsCount})</span>
+                  <span>{user.name}&apos;s Created Levels ({levelsCount})</span>
                 </div>
               </Link>
               <Link
                 className={getTabClassNames(ProfileTab.Collections)}
                 href={`/profile/${user.name}/${ProfileTab.Collections}`}
               >
-                <div className='flex flex-row items-center gap-2'>
+                <div className='absolute inset-0 bg-gradient-to-r from-white to-transparent opacity-0 group-hover:opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-all duration-700' />
+                <div className='relative flex flex-row items-center gap-2'>
                   <span>📚</span>
-                  <span>Collections Vault ({collectionsCount})</span>
+                  <span>Collections ({collectionsCount})</span>
                 </div>
               </Link>
               <Link
                 className={getTabClassNames(ProfileTab.Multiplayer)}
                 href={`/profile/${user.name}/${ProfileTab.Multiplayer}`}
               >
-                <div className='flex flex-row items-center gap-2'>
+                <div className='absolute inset-0 bg-gradient-to-r from-white to-transparent opacity-0 group-hover:opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-all duration-700' />
+                <div className='relative flex flex-row items-center gap-2'>
                   <span>⚔️</span>
-                  <span>Battle Arena ({multiplayerCount})</span>
+                  <span>Multiplayer ({multiplayerCount})</span>
                 </div>
               </Link>
               <Link
                 className={getTabClassNames(ProfileTab.ReviewsWritten)}
                 href={`/profile/${user.name}/${ProfileTab.ReviewsWritten}`}
               >
-                <div className='flex flex-row items-center gap-2'>
+                <div className='absolute inset-0 bg-gradient-to-r from-white to-transparent opacity-0 group-hover:opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-all duration-700' />
+                <div className='relative flex flex-row items-center gap-2'>
                   <span>✍️</span>
-                  <span>Review Chronicles ({reviewsWrittenCount})</span>
+                  <span>Reviews Written ({reviewsWrittenCount})</span>
                 </div>
               </Link>
               <Link
                 className={getTabClassNames(ProfileTab.ReviewsReceived)}
                 href={`/profile/${user.name}/${ProfileTab.ReviewsReceived}`}
               >
-                <div className='flex flex-row items-center gap-2'>
+                <div className='absolute inset-0 bg-gradient-to-r from-white to-transparent opacity-0 group-hover:opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-all duration-700' />
+                <div className='relative flex flex-row items-center gap-2'>
                   <span>💌</span>
-                  <span>Feedback Gallery ({reviewsReceivedCount})</span>
+                  <span>Reviews Received ({reviewsReceivedCount})</span>
                 </div>
               </Link>
             </>

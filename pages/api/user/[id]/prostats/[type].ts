@@ -143,7 +143,7 @@ async function getDifficultyDataComparisons(gameId: GameId, userId: string, time
     {
       $lookup: {
         from: PlayAttemptModel.collection.name,
-        let: { 
+        let: {
           levelId: '$level._id',
           currentUserId: new mongoose.Types.ObjectId(userId)
         },
@@ -168,7 +168,7 @@ async function getDifficultyDataComparisons(gameId: GameId, userId: string, time
           {
             $lookup: {
               from: PlayAttemptModel.collection.name,
-              let: { 
+              let: {
                 levelId: '$$levelId',
                 uniqueUsers: '$uniqueUsers'
               },
@@ -215,7 +215,7 @@ async function getDifficultyDataComparisons(gameId: GameId, userId: string, time
             },
             in: {
               $cond: {
-                if: { 
+                if: {
                   $and: [
                     { $ne: ['$$data', null] },
                     { $gt: ['$$data.userCount', 0] },
@@ -238,7 +238,7 @@ async function getDifficultyDataComparisons(gameId: GameId, userId: string, time
         // Keep the original count for display (but subtract 1 if current user has solved it)
         calc_playattempts_just_beaten_count_display: {
           $cond: {
-            if: { 
+            if: {
               $and: [
                 { $gt: ['$myplayattempts.sumDuration', 0] },
                 { $gt: ['$level.calc_playattempts_just_beaten_count', 0] }

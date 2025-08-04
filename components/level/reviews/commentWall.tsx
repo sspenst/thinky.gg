@@ -145,7 +145,7 @@ export default function CommentWall({ userId }: CommentWallProps) {
       <div className='space-y-4'>
         {!comments ? (
           <div className='text-center py-8'>
-            <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-400 mx-auto mb-4'></div>
+            <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-400 mx-auto mb-4' />
             <span className='text-gray-400'>Loading comments...</span>
           </div>
         ) : comments.length === 0 ? (
@@ -155,8 +155,8 @@ export default function CommentWall({ userId }: CommentWallProps) {
           </div>
         ) : (
           comments.map((comment, index) => (
-            <div 
-              className='animate-fadeInUp' 
+            <div
+              className='animate-fadeInUp'
               key={`comment-${comment._id.toString()}`}
               style={{ animationDelay: `${index * 0.1}s` }}
             >

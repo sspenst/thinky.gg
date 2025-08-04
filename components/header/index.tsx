@@ -1,21 +1,21 @@
 import { GameType } from '@root/constants/Games';
+import Role from '@root/constants/role';
 import { ScreenSize } from '@root/hooks/useDeviceCheck';
+import User from '@root/models/db/user';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useContext, useEffect, useState } from 'react';
+import { toast } from 'react-hot-toast';
 import Dimensions from '../../constants/dimensions';
 import { AppContext } from '../../contexts/appContext';
 import LinkInfo from '../formatted/linkInfo';
 import Nav from '../nav';
 import LoadingSpinner from '../page/loadingSpinner';
+import MultiSelectUser from '../page/multiSelectUser';
 import StyledTooltip from '../page/styledTooltip';
 import Directory from './directory';
 import Dropdown from './dropdown';
 import HeaderControls from './headerControls';
-import Role from '@root/constants/role';
-import MultiSelectUser from '../page/multiSelectUser';
-import User from '@root/models/db/user';
-import { toast } from 'react-hot-toast';
 
 interface HeaderProps {
   folders?: LinkInfo[];
@@ -51,17 +51,21 @@ export default function Header({
         if ((user as any).impersonatingAdminId) {
           setIsImpersonating(true);
           setImpersonatingUser(user);
+
           return;
         }
-        
+
         // Otherwise check the token client-side
         const token = document.cookie.match(/token=([^;]+)/)?.[1];
+
         if (token) {
           try {
             // Decode token without verification (just to check structure)
             const parts = token.split('.');
+
             if (parts.length === 3) {
               const payload = JSON.parse(atob(parts[1]));
+
               if (payload.isImpersonating && payload.adminId) {
                 setIsImpersonating(true);
                 // The current user is the impersonated user
@@ -74,7 +78,7 @@ export default function Header({
         }
       }
     };
-    
+
     checkImpersonation();
   }, [user]);
 
@@ -91,7 +95,7 @@ export default function Header({
         {game.isNotAGame ? null :
           isNavDropdown ?
             <>
-              <button 
+              <button
                 className='w-full'
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               >
@@ -101,8 +105,8 @@ export default function Header({
               </button>
               {isMobileMenuOpen && (
                 <>
-                  <div 
-                    className='fixed inset-0 z-40' 
+                  <div
+                    className='fixed inset-0 z-40'
                     onClick={() => setIsMobileMenuOpen(false)}
                   />
                   <div
@@ -156,7 +160,7 @@ export default function Header({
                       const res = await fetch('/api/admin/impersonate', {
                         method: 'DELETE',
                       });
-                      
+
                       if (res.ok) {
                         toast.success('Stopped impersonating');
                         setImpersonatingUser(null);
@@ -178,47 +182,49 @@ export default function Header({
               ) : (
                 <MultiSelectUser
                   className='w-48'
-                  controlStyles={{ 
-                    minHeight: '36px', 
+                  controlStyles={{
+                    minHeight: '36px',
                     height: '36px'
                   }}
                   placeholder='Impersonate user...'
                   onSelect={async (selectedUser: User | null) => {
-                  if (!selectedUser) {
+                    if (!selectedUser) {
                     // Stop impersonating
-                    const res = await fetch('/api/admin/impersonate', {
-                      method: 'DELETE',
-                    });
-                    
-                    if (res.ok) {
-                      toast.success('Stopped impersonating');
-                      setImpersonatingUser(null);
-                      setIsImpersonating(false);
-                      mutateUser();
-                      window.location.reload();
+                      const res = await fetch('/api/admin/impersonate', {
+                        method: 'DELETE',
+                      });
+
+                      if (res.ok) {
+                        toast.success('Stopped impersonating');
+                        setImpersonatingUser(null);
+                        setIsImpersonating(false);
+                        mutateUser();
+                        window.location.reload();
+                      } else {
+                        toast.error('Failed to stop impersonating');
+                      }
                     } else {
-                      toast.error('Failed to stop impersonating');
-                    }
-                  } else {
                     // Start impersonating
-                    const res = await fetch('/api/admin/impersonate', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ userId: selectedUser._id }),
-                    });
-                    
-                    if (res.ok) {
-                      const data = await res.json();
-                      toast.success(`Now impersonating ${data.targetUser.name}`);
-                      setImpersonatingUser(selectedUser);
-                      setIsImpersonating(true);
-                      mutateUser();
-                      window.location.reload();
-                    } else {
-                      const error = await res.json();
-                      toast.error(error.error || 'Failed to impersonate user');
+                      const res = await fetch('/api/admin/impersonate', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ userId: selectedUser._id }),
+                      });
+
+                      if (res.ok) {
+                        const data = await res.json();
+
+                        toast.success(`Now impersonating ${data.targetUser.name}`);
+                        setImpersonatingUser(selectedUser);
+                        setIsImpersonating(true);
+                        mutateUser();
+                        window.location.reload();
+                      } else {
+                        const error = await res.json();
+
+                        toast.error(error.error || 'Failed to impersonate user');
+                      }
                     }
-                  }
                   }}
                 />
               )}
