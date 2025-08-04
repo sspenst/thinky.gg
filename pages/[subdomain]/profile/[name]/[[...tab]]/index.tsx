@@ -851,221 +851,382 @@ export default function ProfilePage({
         </div>
       </SpaceBackground>
     ),
-    [ProfileTab.Insights]: <ProfileInsights reqUser={reqUser} user={user} />,
-    [ProfileTab.Multiplayer]: <div className='flex flex-col gap-2 justify-center items-center'>
-      <h1 className='font-bold text-3xl'>{user.name}&apos;s {game.displayName} Multiplayer History</h1>
-      <ProfileMultiplayer user={user} />
-    </div>,
+    [ProfileTab.Insights]: (
+      <SpaceBackground 
+        starCount={60}
+        constellationPattern='default'
+        showGeometricShapes={true}
+        className='min-h-0 mx-2 sm:mx-0 rounded-xl'
+      >
+        <div className='flex flex-col items-center min-h-screen px-4 py-8'>
+          <div className='text-center mb-8 animate-fadeInDown' style={{ animationDelay: '0.3s' }}>
+            <h1 className='text-4xl sm:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-green-400 via-blue-400 to-purple-400 mb-4'>
+              📈 Analytics Hub
+            </h1>
+            <p className='text-gray-300 text-lg max-w-2xl mx-auto'>
+              Deep insights into {user.name}&apos;s puzzle-solving journey and performance metrics
+            </p>
+          </div>
+          
+          <div className='w-full max-w-6xl animate-fadeInUp' style={{ animationDelay: '0.5s' }}>
+            <ProfileInsights reqUser={reqUser} user={user} />
+          </div>
+        </div>
+      </SpaceBackground>
+    ),
+    [ProfileTab.Multiplayer]: (
+      <SpaceBackground 
+        starCount={60}
+        constellationPattern='default'
+        showGeometricShapes={true}
+        className='min-h-0 mx-2 sm:mx-0 rounded-xl'
+      >
+        <div className='flex flex-col items-center min-h-screen px-4 py-8'>
+          <div className='text-center mb-8 animate-fadeInDown' style={{ animationDelay: '0.3s' }}>
+            <h1 className='text-4xl sm:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-orange-400 to-yellow-400 mb-4'>
+              ⚔️ Battle Arena
+            </h1>
+            <p className='text-gray-300 text-lg max-w-2xl mx-auto'>
+              {user.name}&apos;s competitive multiplayer matches and head-to-head battle history
+            </p>
+          </div>
+          
+          <div className='w-full max-w-6xl animate-fadeInUp' style={{ animationDelay: '0.5s' }}>
+            <ProfileMultiplayer user={user} />
+          </div>
+        </div>
+      </SpaceBackground>
+    ),
     [ProfileTab.Collections]: (
-      <div className='flex flex-col gap-2 justify-center items-center'>
-        <h1 className='font-bold text-3xl'>{user.name}&apos;s {game.displayName} Collections</h1>
-        {reqUser?._id === user._id &&
-          <div className='text-center'>
-            <button
-              className={blueButton}
-              onClick={() => {
-                setIsAddCollectionOpen(true);
+      <SpaceBackground 
+        starCount={60}
+        constellationPattern='default'
+        showGeometricShapes={true}
+        className='min-h-0 mx-2 sm:mx-0 rounded-xl'
+      >
+        <div className='flex flex-col items-center min-h-screen px-4 py-8'>
+          <div className='text-center mb-8 animate-fadeInDown' style={{ animationDelay: '0.3s' }}>
+            <h1 className='text-4xl sm:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-red-400 mb-4'>
+              📚 Collections Vault
+            </h1>
+            <p className='text-gray-300 text-lg max-w-2xl mx-auto'>
+              Curated puzzle collections and handpicked level sets by {user.name}
+            </p>
+          </div>
+          
+          <div className='w-full max-w-4xl animate-fadeInUp' style={{ animationDelay: '0.5s' }}>
+            {reqUser?._id === user._id && (
+              <div className='text-center mb-6'>
+                <button
+                  className='group relative overflow-hidden bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-300'
+                  onClick={() => {
+                    setIsAddCollectionOpen(true);
+                  }}
+                >
+                  <div className='absolute inset-0 bg-gradient-to-r from-white to-transparent opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-transform duration-700' />
+                  <div className='relative flex items-center gap-2'>
+                    <span>➕</span>
+                    <span>Create Collection</span>
+                  </div>
+                </button>
+              </div>
+            )}
+            <AddCollectionModal
+              closeModal={() => {
+                setIsAddCollectionOpen(false);
               }}
-            >
-              New Collection
-            </button>
+              isOpen={isAddCollectionOpen}
+            />
+            {collectionsAsOptions.length === 0 ? (
+              <div className='text-center py-12 animate-fadeInUp' style={{ animationDelay: '0.7s' }}>
+                <div className='text-6xl mb-4'>📦</div>
+                <div className='text-xl text-gray-300'>No collections yet!</div>
+                <div className='text-gray-400 mt-2'>Create your first collection to get started</div>
+              </div>
+            ) : (
+              <div className='animate-fadeInUp' style={{ animationDelay: '0.7s' }}>
+                <Select options={collectionsAsOptions} />
+              </div>
+            )}
           </div>
-        }
-        <AddCollectionModal
-          closeModal={() => {
-            setIsAddCollectionOpen(false);
-          }}
-          isOpen={isAddCollectionOpen}
-        />
-        {collectionsAsOptions.length === 0 ?
-          <div className='p-3 justify-center flex'>
-            No collections!
-          </div>
-          :
-          <Select options={collectionsAsOptions} />
-        }
-      </div>
+        </div>
+      </SpaceBackground>
     ),
     [ProfileTab.Levels]: (
-      <div className='flex flex-col gap-2 items-center'>
-        <h1 className='font-bold text-3xl'>{user.name}&apos;s {game.displayName} Levels</h1>
-        {reqUser &&
-          <h2
-            className='font-bold text-xl flex items-center'
-            style={{
-              color: levelsSolved === levelsCount ? 'var(--color-complete)' : undefined,
-            }}
-          >
-            <span>{levelsSolved} / {levelsCount}</span>
-            {levelsSolved === levelsCount && <Solved className='w-8 h-8' />}
-          </h2>
-        }
-        <SelectFilter
-          filter={showLevelFilter}
-          onFilterClick={onFilterLevelClick}
-          placeholder={`Search ${totalRows} level${totalRows !== 1 ? 's' : ''}...`}
-          searchText={searchLevelText}
-          setSearchText={searchText => {
-            setSearchLevelText(searchText);
-            setSearchLevelTextDebounce(searchText);
-          }}
-        />
-        {reqUser?._id === user._id &&
-          <Link
-            className={classNames('flex items-center gap-2', blueButton)}
-            href='/create'
-          >
-            <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='2 2 20 20' strokeWidth={1.5} stroke='currentColor' className='w-5 h-5'>
-              <path strokeLinecap='round' strokeLinejoin='round' d='M12 4.5v15m7.5-7.5h-15' />
-            </svg>
-            <span>Create Level</span>
-          </Link>
-        }
-        <Link
-          className='underline'
-          href={'/search?timeRange=All&searchAuthor=' + user.name}
-        >
-          Advanced search
-        </Link>
-        <div className='flex flex-wrap justify-center gap-4'>
-          {enrichedLevels?.map((level) => {
-            return (
-              <LevelCard
-                id='profile'
-                key={level._id.toString()}
-                level={level}
-              />
-            );
-          })}
-        </div>
-        {totalRows !== undefined && totalRows > 20 &&
-          <div className='flex justify-center flex-row'>
-            {page > 1 && (
-              <Link
-                className='ml-2 underline'
-                href={`/profile/${user.name}/${ProfileTab.Levels}?page=${page - 1}&search=${searchLevelText}&statFilter=${showLevelFilter}`}
-              >
-                Previous
-              </Link>
-            )}
-            <div id='page-number' className='ml-2'>{page} of {Math.ceil(totalRows / 20)}</div>
-            {totalRows > (page * 20) && (
-              <Link
-                className='ml-2 underline'
-                href={`/profile/${user.name}/${ProfileTab.Levels}?page=${page + 1}&search=${searchLevelText}&statFilter=${showLevelFilter}`}
-              >
-                Next
-              </Link>
+      <SpaceBackground 
+        starCount={60}
+        constellationPattern='default'
+        showGeometricShapes={true}
+        className='min-h-0 mx-2 sm:mx-0 rounded-xl'
+      >
+        <div className='flex flex-col items-center min-h-screen px-4 py-8'>
+          <div className='text-center mb-8 animate-fadeInDown' style={{ animationDelay: '0.3s' }}>
+            <h1 className='text-4xl sm:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-green-400 to-blue-400 mb-4'>
+              🎨 Creator Studio
+            </h1>
+            <p className='text-gray-300 text-lg max-w-2xl mx-auto mb-4'>
+              Explore the puzzle masterpieces crafted by {user.name}
+            </p>
+            {reqUser && (
+              <div className='bg-black/20 backdrop-blur-sm border border-white/20 rounded-xl px-6 py-3 inline-block'>
+                <div 
+                  className='font-bold text-xl flex items-center gap-2'
+                  style={{
+                    color: levelsSolved === levelsCount ? 'var(--color-complete)' : 'white',
+                  }}
+                >
+                  <span>{levelsSolved} / {levelsCount}</span>
+                  {levelsSolved === levelsCount && <Solved className='w-8 h-8' />}
+                </div>
+              </div>
             )}
           </div>
-        }
-      </div>
+          
+          <div className='w-full max-w-6xl space-y-6 animate-fadeInUp' style={{ animationDelay: '0.5s' }}>
+            <div className='bg-black/20 backdrop-blur-sm border border-white/20 rounded-xl p-6'>
+              <SelectFilter
+                filter={showLevelFilter}
+                onFilterClick={onFilterLevelClick}
+                placeholder={`Search ${totalRows} level${totalRows !== 1 ? 's' : ''}...`}
+                searchText={searchLevelText}
+                setSearchText={searchText => {
+                  setSearchLevelText(searchText);
+                  setSearchLevelTextDebounce(searchText);
+                }}
+              />
+            </div>
+            
+            <div className='flex flex-wrap justify-center gap-4 mb-6'>
+              {reqUser?._id === user._id && (
+                <Link
+                  className='group relative overflow-hidden bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-300 flex items-center gap-2'
+                  href='/create'
+                >
+                  <div className='absolute inset-0 bg-gradient-to-r from-white to-transparent opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-transform duration-700' />
+                  <div className='relative flex items-center gap-2'>
+                    <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='2 2 20 20' strokeWidth={1.5} stroke='currentColor' className='w-5 h-5'>
+                      <path strokeLinecap='round' strokeLinejoin='round' d='M12 4.5v15m7.5-7.5h-15' />
+                    </svg>
+                    <span>Create Level</span>
+                  </div>
+                </Link>
+              )}
+              <Link
+                className='bg-white/10 hover:bg-white/20 text-white font-medium py-3 px-6 rounded-xl transition-all duration-300'
+                href={'/search?timeRange=All&searchAuthor=' + user.name}
+              >
+                🔍 Advanced Search
+              </Link>
+            </div>
+            
+            <div className='flex flex-wrap justify-center gap-4 animate-fadeInUp' style={{ animationDelay: '0.7s' }}>
+              {enrichedLevels?.map((level) => {
+                return (
+                  <LevelCard
+                    id='profile'
+                    key={level._id.toString()}
+                    level={level}
+                  />
+                );
+              })}
+            </div>
+            
+            {totalRows !== undefined && totalRows > 20 && (
+              <div className='flex justify-center gap-4 mt-8 animate-fadeInUp' style={{ animationDelay: '0.9s' }}>
+                {page > 1 && (
+                  <Link
+                    className='bg-white/10 hover:bg-white/20 text-white font-medium py-2 px-4 rounded-lg transition-all duration-300'
+                    href={`/profile/${user.name}/${ProfileTab.Levels}?page=${page - 1}&search=${searchLevelText}&statFilter=${showLevelFilter}`}
+                  >
+                    ← Previous
+                  </Link>
+                )}
+                <div className='bg-black/20 backdrop-blur-sm border border-white/20 rounded-lg px-4 py-2 text-white font-medium'>
+                  {page} of {Math.ceil(totalRows / 20)}
+                </div>
+                {totalRows > (page * 20) && (
+                  <Link
+                    className='bg-white/10 hover:bg-white/20 text-white font-medium py-2 px-4 rounded-lg transition-all duration-300'
+                    href={`/profile/${user.name}/${ProfileTab.Levels}?page=${page + 1}&search=${searchLevelText}&statFilter=${showLevelFilter}`}
+                  >
+                    Next →
+                  </Link>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </SpaceBackground>
     ),
     [ProfileTab.ReviewsWritten]: [
-      <div className='flex flex-col items-center gap-4' key='reviews-written'>
-        <h1 className='font-bold text-3xl'>{user.name}&apos;s {game.displayName} Reviews Written</h1>
-        {reqUserHasBlocked ? (
-          <div className='text-center p-4 bg-red-100 dark:bg-red-900 rounded-lg'>
-            <p className='font-bold'>Reviews hidden</p>
-            <p>You have blocked this user, so their reviews are hidden.</p>
+      <SpaceBackground 
+        key='reviews-written-bg'
+        starCount={60}
+        constellationPattern='default'
+        showGeometricShapes={true}
+        className='min-h-0 mx-2 sm:mx-0 rounded-xl'
+      >
+        <div className='flex flex-col items-center min-h-screen px-4 py-8'>
+          <div className='text-center mb-8 animate-fadeInDown' style={{ animationDelay: '0.3s' }}>
+            <h1 className='text-4xl sm:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-blue-400 to-cyan-400 mb-4'>
+              ✍️ Review Chronicles
+            </h1>
+            <p className='text-gray-300 text-lg max-w-2xl mx-auto'>
+              Reviews and feedback shared by {user.name} with the puzzle community
+            </p>
           </div>
-        ) : reviewsWritten?.map(review => {
-          return (
-            <div
-              className='max-w-3xl w-full'
-              key={`review-${review._id}`}
-            >
-              <FormattedReview
-                level={review.levelId}
-                review={review}
-                user={user}
-              />
-            </div>
-          );
-        })}
-      </div>,
-      reviewsWrittenCount > 10 && !reqUserHasBlocked &&
-        <div key='pagination_btns' className='flex justify-center flex-row'>
-          {page > 1 && (
-            <Link
-              className='ml-2 underline'
-              href={`/profile/${user.name}/${ProfileTab.ReviewsWritten}${page !== 2 ? `?page=${page - 1}` : ''}`}
-            >
-              Previous
-            </Link>
-          )}
-          <div id='page-number' className='ml-2'>{page} of {Math.ceil(reviewsWrittenCount / 10)}</div>
-          {reviewsWrittenCount > (page * 10) && (
-            <Link
-              className='ml-2 underline'
-              href={`/profile/${user.name}/${ProfileTab.ReviewsWritten}?page=${page + 1}`}
-            >
-              Next
-            </Link>
-          )}
-        </div>
-      ,
-      reviewsWrittenCount === 0 && !reqUserHasBlocked &&
-        <div className='text-center'>
-          No reviews written!
-        </div>
-      ,
-    ],
-    [ProfileTab.ReviewsReceived]: [
-      <div className='flex flex-col items-center gap-4' key='reviews-received'>
-        <h1 className='font-bold text-3xl'>{user.name}&apos;s {game.displayName} Reviews Received</h1>
-        {reqUserHasBlocked ? (
-          <div className='text-center p-4 bg-red-100 dark:bg-red-900 rounded-lg'>
-            <p className='font-bold'>Reviews hidden</p>
-            <p>You have blocked this user, so their reviews are hidden.</p>
+          
+          <div className='w-full max-w-4xl space-y-6 animate-fadeInUp' style={{ animationDelay: '0.5s' }}>
+            {reqUserHasBlocked ? (
+              <div className='bg-red-900/50 backdrop-blur-sm border border-red-500/30 rounded-xl p-6 text-center'>
+                <p className='font-bold text-xl text-red-400 mb-2'>Reviews Hidden</p>
+                <p className='text-red-200'>You have blocked this user, so their reviews are hidden.</p>
+              </div>
+            ) : reviewsWrittenCount === 0 ? (
+              <div className='text-center py-12'>
+                <div className='text-6xl mb-4'>📝</div>
+                <div className='text-xl text-gray-300'>No reviews written yet!</div>
+                <div className='text-gray-400 mt-2'>Be the first to share your thoughts on levels</div>
+              </div>
+            ) : (
+              reviewsWritten?.map((review, index) => (
+                <div
+                  className='animate-fadeInUp'
+                  key={`review-${review._id}`}
+                  style={{ animationDelay: `${0.7 + index * 0.1}s` }}
+                >
+                  <FormattedReview
+                    level={review.levelId}
+                    review={review}
+                    user={user}
+                  />
+                </div>
+              ))
+            )}
+            
+            {/* Pagination */}
+            {reviewsWrittenCount > 10 && !reqUserHasBlocked && (
+              <div className='flex justify-center gap-4 mt-8 animate-fadeInUp' style={{ animationDelay: '0.9s' }}>
+                {page > 1 && (
+                  <Link
+                    className='bg-white/10 hover:bg-white/20 text-white font-medium py-2 px-4 rounded-lg transition-all duration-300'
+                    href={`/profile/${user.name}/${ProfileTab.ReviewsWritten}${page !== 2 ? `?page=${page - 1}` : ''}`}
+                  >
+                    ← Previous
+                  </Link>
+                )}
+                <div className='bg-black/20 backdrop-blur-sm border border-white/20 rounded-lg px-4 py-2 text-white font-medium'>
+                  {page} of {Math.ceil(reviewsWrittenCount / 10)}
+                </div>
+                {reviewsWrittenCount > (page * 10) && (
+                  <Link
+                    className='bg-white/10 hover:bg-white/20 text-white font-medium py-2 px-4 rounded-lg transition-all duration-300'
+                    href={`/profile/${user.name}/${ProfileTab.ReviewsWritten}?page=${page + 1}`}
+                  >
+                    Next →
+                  </Link>
+                )}
+              </div>
+            )}
           </div>
-        ) : reviewsReceived?.map(review => {
-          return (
-            <div
-              className='max-w-3xl w-full'
-              key={`review-${review._id}`}
-            >
-              <FormattedReview
-                level={review.levelId}
-                review={review}
-                user={review.userId}
-              />
-            </div>
-          );
-        })}
-      </div>,
-      reviewsReceivedCount > 10 && !reqUserHasBlocked &&
-        <div key='pagination_btns' className='flex justify-center flex-row'>
-          {page > 1 && (
-            <Link
-              className='ml-2 underline'
-              href={`/profile/${user.name}/${ProfileTab.ReviewsReceived}${page !== 2 ? `?page=${page - 1}` : ''}`}
-            >
-              Previous
-            </Link>
-          )}
-          <div id='page-number' className='ml-2'>{page} of {Math.ceil(reviewsReceivedCount / 10)}</div>
-          {reviewsReceivedCount > (page * 10) && (
-            <Link
-              className='ml-2 underline'
-              href={`/profile/${user.name}/${ProfileTab.ReviewsReceived}?page=${page + 1}`}
-            >
-              Next
-            </Link>
-          )}
         </div>
-      ,
-      reviewsReceivedCount === 0 && !reqUserHasBlocked &&
-        <div>
-          No reviews received!
-        </div>
-      ,
+      </SpaceBackground>,
     ],
+    [ProfileTab.ReviewsReceived]: (
+      <SpaceBackground 
+        starCount={60}
+        constellationPattern='default'
+        showGeometricShapes={true}
+        className='min-h-0 mx-2 sm:mx-0 rounded-xl'
+      >
+        <div className='flex flex-col items-center min-h-screen px-4 py-8'>
+          <div className='text-center mb-8 animate-fadeInDown' style={{ animationDelay: '0.3s' }}>
+            <h1 className='text-4xl sm:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-green-400 via-teal-400 to-blue-400 mb-4'>
+              💌 Feedback Gallery
+            </h1>
+            <p className='text-gray-300 text-lg max-w-2xl mx-auto'>
+              Reviews and feedback that {user.name} has received from the puzzle community
+            </p>
+          </div>
+          
+          <div className='w-full max-w-4xl space-y-6 animate-fadeInUp' style={{ animationDelay: '0.5s' }}>
+            {reqUserHasBlocked ? (
+              <div className='bg-red-900/50 backdrop-blur-sm border border-red-500/30 rounded-xl p-6 text-center'>
+                <p className='font-bold text-xl text-red-400 mb-2'>Reviews Hidden</p>
+                <p className='text-red-200'>You have blocked this user, so their reviews are hidden.</p>
+              </div>
+            ) : reviewsReceivedCount === 0 ? (
+              <div className='text-center py-12'>
+                <div className='text-6xl mb-4'>📭</div>
+                <div className='text-xl text-gray-300'>No reviews received yet!</div>
+                <div className='text-gray-400 mt-2'>Create some levels to start receiving feedback</div>
+              </div>
+            ) : (
+              reviewsReceived?.map((review, index) => (
+                <div
+                  className='animate-fadeInUp'
+                  key={`review-${review._id}`}
+                  style={{ animationDelay: `${0.7 + index * 0.1}s` }}
+                >
+                  <FormattedReview
+                    level={review.levelId}
+                    review={review}
+                    user={review.userId}
+                  />
+                </div>
+              ))
+            )}
+            
+            {/* Pagination */}
+            {reviewsReceivedCount > 10 && !reqUserHasBlocked && (
+              <div className='flex justify-center gap-4 mt-8 animate-fadeInUp' style={{ animationDelay: '0.9s' }}>
+                {page > 1 && (
+                  <Link
+                    className='bg-white/10 hover:bg-white/20 text-white font-medium py-2 px-4 rounded-lg transition-all duration-300'
+                    href={`/profile/${user.name}/${ProfileTab.ReviewsReceived}${page !== 2 ? `?page=${page - 1}` : ''}`}
+                  >
+                    ← Previous
+                  </Link>
+                )}
+                <div className='bg-black/20 backdrop-blur-sm border border-white/20 rounded-lg px-4 py-2 text-white font-medium'>
+                  {page} of {Math.ceil(reviewsReceivedCount / 10)}
+                </div>
+                {reviewsReceivedCount > (page * 10) && (
+                  <Link
+                    className='bg-white/10 hover:bg-white/20 text-white font-medium py-2 px-4 rounded-lg transition-all duration-300'
+                    href={`/profile/${user.name}/${ProfileTab.ReviewsReceived}?page=${page + 1}`}
+                  >
+                    Next →
+                  </Link>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </SpaceBackground>
+    ),
     [ProfileTab.Achievements]: (
-      <div className='flex flex-col gap-2 justify-center items-center'>
-        <h1 className='font-bold text-3xl'>{user.name}&apos;s {game.displayName} Achievements</h1>
-        <ProfileAchievments achievements={achievements} achievementStats={achievementStats} totalActiveUsers={totalActiveUsers} reqUser={reqUser} />
-      </div>
+      <SpaceBackground 
+        starCount={60}
+        constellationPattern='leaderboard'
+        showGeometricShapes={true}
+        className='min-h-0 mx-2 sm:mx-0 rounded-xl'
+      >
+        <div className='flex flex-col items-center min-h-screen px-4 py-8'>
+          <div className='text-center mb-8 animate-fadeInDown' style={{ animationDelay: '0.3s' }}>
+            <h1 className='text-4xl sm:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 mb-4'>
+              🏆 Trophy Hall
+            </h1>
+            <p className='text-gray-300 text-lg max-w-2xl mx-auto'>
+              Celebrate {user.name}&apos;s accomplishments and milestones achieved on their puzzle journey
+            </p>
+          </div>
+          
+          <div className='w-full max-w-6xl animate-fadeInUp' style={{ animationDelay: '0.5s' }}>
+            <ProfileAchievments achievements={achievements} achievementStats={achievementStats} totalActiveUsers={totalActiveUsers} reqUser={reqUser} />
+          </div>
+        </div>
+      </SpaceBackground>
     ),
   } as { [key: string]: React.ReactNode | null };
 
@@ -1149,8 +1310,8 @@ export default function ProfilePage({
                 href={`/profile/${user.name}/${ProfileTab.Insights}`}
               >
                 <div className='flex flex-row items-center gap-2'>
-                  <Image alt='pro' src='/pro.svg' width='16' height='16' />
-                  <span>Insights</span>
+                  <span>📈</span>
+                  <span>Analytics Hub</span>
                 </div>
               </Link>
             </>
@@ -1161,7 +1322,7 @@ export default function ProfilePage({
           >
             <div className='flex flex-row items-center gap-2'>
               <span>🏆</span>
-              <span>Achievements ({achievementsCount})</span>
+              <span>Trophy Hall ({achievementsCount})</span>
             </div>
           </Link>
           {!reqUserHasBlocked &&
@@ -1171,8 +1332,8 @@ export default function ProfilePage({
                 href={`/profile/${user.name}/${ProfileTab.Levels}`}
               >
                 <div className='flex flex-row items-center gap-2'>
-                  <span>🏗</span>
-                  <span>Levels ({levelsCount})</span>
+                  <span>🎨</span>
+                  <span>Creator Studio ({levelsCount})</span>
                 </div>
               </Link>
               <Link
@@ -1181,7 +1342,7 @@ export default function ProfilePage({
               >
                 <div className='flex flex-row items-center gap-2'>
                   <span>📚</span>
-                  <span>Collections ({collectionsCount})</span>
+                  <span>Collections Vault ({collectionsCount})</span>
                 </div>
               </Link>
               <Link
@@ -1189,8 +1350,8 @@ export default function ProfilePage({
                 href={`/profile/${user.name}/${ProfileTab.Multiplayer}`}
               >
                 <div className='flex flex-row items-center gap-2'>
-                  <span>🎮</span>
-                  <span>Multiplayer ({multiplayerCount})</span>
+                  <span>⚔️</span>
+                  <span>Battle Arena ({multiplayerCount})</span>
                 </div>
               </Link>
               <Link
@@ -1198,8 +1359,8 @@ export default function ProfilePage({
                 href={`/profile/${user.name}/${ProfileTab.ReviewsWritten}`}
               >
                 <div className='flex flex-row items-center gap-2'>
-                  <span>✍</span>
-                  <span>Reviews Written ({reviewsWrittenCount})</span>
+                  <span>✍️</span>
+                  <span>Review Chronicles ({reviewsWrittenCount})</span>
                 </div>
               </Link>
               <Link
@@ -1207,8 +1368,8 @@ export default function ProfilePage({
                 href={`/profile/${user.name}/${ProfileTab.ReviewsReceived}`}
               >
                 <div className='flex flex-row items-center gap-2'>
-                  <span>📝</span>
-                  <span>Reviews Received ({reviewsReceivedCount})</span>
+                  <span>💌</span>
+                  <span>Feedback Gallery ({reviewsReceivedCount})</span>
                 </div>
               </Link>
             </>

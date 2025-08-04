@@ -1,9 +1,6 @@
 import UpsellFullAccount from '@root/components/home/upsellFullAccount';
-import PlayerRankProgress from '@root/components/progress/playerRankProgress';
 import AchievementCategory from '@root/constants/achievements/achievementCategory';
-import { skillRequirements } from '@root/constants/achievements/AchievementRulesSkill';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
-import { getDifficultyRollingSum } from '@root/helpers/playerRankHelper';
 import { refreshAchievements } from '@root/helpers/refreshAchievements';
 import useSWRHelper from '@root/hooks/useSWRHelper';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
@@ -353,7 +350,7 @@ export default function ChapterPage({ enrichedCollections, reqUser, solvedLevels
           )}
           
           {/* Floating Current Rank Display */}
-          <div className='absolute top-4 sm:top-6 left-1/2 transform -translate-x-1/2 z-20 animate-fadeInDown' style={{ animationDelay: '0.5s' }}>
+          <div className='w-full pt-4 justify-center flex items-center align-middle items-center z-20 animate-fadeInDown' style={{ animationDelay: '0.5s' }}>
             <Link href='/achievements#category-LEVEL_COMPLETION' className='block hover:scale-105 transition-transform duration-300'>
               <div className='bg-black/20 backdrop-blur-sm border border-white/20 rounded-xl px-4 py-3 sm:px-6 sm:py-4 text-white text-center cursor-pointer hover:bg-black/30 transition-colors duration-300'>
                 <div className='text-xs opacity-70 mb-2'>CURRENT RANK</div>
