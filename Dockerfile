@@ -91,7 +91,7 @@ RUN npm run build
 
 # Socket server builder stage  
 FROM builder-base AS socket-builder
-RUN npx tsc -p tsconfig-socket.json
+RUN ./node_modules/.bin/tsc -p tsconfig-socket.json
 
 # Final production stage
 FROM base AS final
