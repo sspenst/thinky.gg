@@ -1,7 +1,7 @@
-import { Menu, MenuButton, MenuItem, MenuItems, Transition } from '@headlessui/react';
 import { DIFFICULTY_INDEX, getDifficultyColor, getDifficultyRangeByIndex } from '@root/components/formatted/formattedDifficulty';
 import FormattedUser from '@root/components/formatted/formattedUser';
 import Page from '@root/components/page/page';
+import SpaceBackground from '@root/components/page/SpaceBackground';
 import { GameId } from '@root/constants/GameId';
 import { GameType } from '@root/constants/Games';
 import { AppContext } from '@root/contexts/appContext';
@@ -15,7 +15,7 @@ import User from '@root/models/db/user';
 import { LevelModel, StatModel, UserModel } from '@root/models/mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Link from 'next/link';
-import React, { Fragment, useContext, useState } from 'react';
+import { useContext, useState } from 'react';
 
 async function getDifficultyLeaderboard(gameId: GameId, index: DIFFICULTY_INDEX) {
   const difficultyRange = getDifficultyRangeByIndex(index);
@@ -179,47 +179,94 @@ interface LeaderboardsProps {
 
 export default function Leaderboards({ gmLeaderboard, rankedLeaderboard, reqUser, sgmLeaderboard }: LeaderboardsProps) {
   const { game } = useContext(AppContext);
-  const [leaderboard, setLeaderboard] = useState(!game.disableRanked ? 'ranked' : 'sgm');
+  const [leaderboard, setLeaderboard] = useState(!game.disableRanked ? 'ranked' : 'gm');
   const gmRange = getDifficultyRangeByIndex(DIFFICULTY_INDEX.GRANDMASTER);
   const sgmRange = getDifficultyRangeByIndex(DIFFICULTY_INDEX.SUPER_GRANDMASTER);
   const gmColor = getDifficultyColor(gmRange[0]);
   const sgmColor = getDifficultyColor(sgmRange[0]);
 
   const leaderboardStrings = {
-    ...(!game.disableRanked ? { 'ranked': 'Ranked 🏅' } : {}),
-    'sgm': 'Super Grandmasters 🧠',
-    'gm': 'Grandmasters 📜',
+    ...(!game.disableRanked ? { 'ranked': 'Ranked\u00A0🏅' } : {}),
+    'gm': 'Grandmasters\u00A0📜',
+    'sgm': 'Super\u00A0Grandmasters\u00A0🧠',
+  } as { [key: string]: string };
+
+  const leaderboardStringsMobile = {
+    ...(!game.disableRanked ? { 'ranked': 'Ranked\u00A0🏅' } : {}),
+    'gm': 'GM\u00A0📜',
+    'sgm': 'Super\u00A0GM\u00A0🧠',
   } as { [key: string]: string };
 
   function getLeaderboardTable(users: User[], values: number[]) {
+    if (users.length === 0) {
+      return (
+        <div className='max-w-4xl mx-auto w-full'>
+          <div className='bg-black/20 backdrop-blur-sm border border-white/20 rounded-xl p-8 sm:p-12 text-center'>
+            <div className='text-6xl sm:text-7xl mb-4'>🌟</div>
+            <h3 className='text-xl sm:text-2xl font-bold text-white mb-2'>No Champions Yet</h3>
+            <p className='text-gray-400 text-base sm:text-lg'>
+              {leaderboard === 'ranked'
+                ? 'Be the first to conquer the ranked ladder!'
+                : leaderboard === 'gm'
+                  ? 'Be the first to achieve Grandmaster status by solving 7+ Grandmaster levels!'
+                  : 'Be the first to achieve Super Grandmaster status by solving 7+ Super Grandmaster levels!'}
+            </p>
+          </div>
+        </div>
+      );
+    }
+
     return (
-      <div className='grid gap-2 items-center' style={{
-        gridTemplateColumns: 'min-content 1fr min-content',
-      }}>
+      <div className='space-y-4 max-w-4xl mx-auto w-full'>
         {users.map((user, i) => {
           const isYou = reqUser && user._id === reqUser._id;
-          // Memoize the highlight style
-          const highlightStyle = isYou ? {
-            boxShadow: '0 0 10px 2px rgba(255, 100, 0, 0.6), 0 0 20px 2px rgba(255, 150, 0, 0.7), 0 0 32px 4px rgba(255, 200, 0, 0.8)',
-            paddingLeft: '4px',
-            paddingRight: '4px',
-          } : undefined;
 
           return (
-            <React.Fragment key={user._id.toString()}>
-              <div className='font-bold text-xl'>
-                {i + 1}.
-              </div>
-              <div className='flex items-center text-lg gap-3 rounded-lg truncate'>
-                <FormattedUser id='ranked' size={32} user={user} />
-              </div>
+            <div key={user._id.toString()} className='relative group'>
+              {/* Shine effect container with overflow hidden */}
+              {isYou && (
+                <div className='absolute inset-0 rounded-xl overflow-hidden pointer-events-none'>
+                  <div className='absolute inset-0 bg-gradient-to-r from-transparent via-yellow-400/20 to-transparent transform -skew-x-12 translate-x-full group-hover:-translate-x-full transition-transform duration-1000' />
+                </div>
+              )}
+              
+              {/* Main content container */}
               <div
-                className='ml-2 font-medium text-lg rounded-md'
-                style={highlightStyle}
+                className={`relative bg-black/20 backdrop-blur-sm border border-white/20 rounded-xl p-3 sm:p-4 hover:bg-black/30 transition-all duration-300 ${
+                  isYou ? 'ring-2 ring-yellow-400 shadow-2xl shadow-yellow-400/20' : ''
+                }`}
               >
-                {values[i]}
+                <div className='relative flex items-center justify-between'>
+                  <div className='flex items-center gap-3 sm:gap-4 flex-1 min-w-0'>
+                    {/* Rank with modern styling */}
+                    <div className={`flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full font-black text-lg sm:text-xl flex-shrink-0 ${
+                      i === 0 ? 'bg-gradient-to-br from-yellow-400 to-orange-500 text-black' :
+                        i === 1 ? 'bg-gradient-to-br from-gray-300 to-gray-500 text-black' :
+                          i === 2 ? 'bg-gradient-to-br from-orange-400 to-red-500 text-black' :
+                            'bg-gradient-to-br from-purple-500 to-blue-500 text-white'
+                    }`}>
+                      {i + 1}
+                    </div>
+                  
+                  {/* User info */}
+                    <div className='flex items-center text-base sm:text-lg gap-2 sm:gap-3 flex-1 min-w-0'>
+                      <FormattedUser id='leaderboard' size={32} user={user} />
+                    </div>
+                  </div>
+                
+                {/* Score with glass morphism effect */}
+                  <div className={`bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg px-3 sm:px-4 py-2 font-bold text-base sm:text-lg flex-shrink-0 ${
+                    isYou ? 'text-yellow-400 bg-yellow-400/20 border-yellow-400/40' : 'text-white'
+                  }`}>
+                    <span className='text-sm font-normal opacity-80'>
+                      {leaderboard === 'ranked' ? '' : 'Solved: '}
+                    </span>
+                    {values[i]}
+                    {leaderboard === 'ranked' ? ' 🏅' : ''}
+                  </div>
+                </div>
               </div>
-            </React.Fragment>
+            </div>
           );
         })}
       </div>
@@ -233,26 +280,43 @@ export default function Leaderboards({ gmLeaderboard, rankedLeaderboard, reqUser
       }
 
       return (
-        <div className='flex flex-col text-center gap-6'>
-          <div className='flex justify-center'>
-            <Link className='font-bold text-2xl hover:underline w-fit' href='/ranked'>Ranked Solves 🏅</Link>
+        <div className='flex flex-col text-center gap-6 sm:gap-8 max-w-4xl mx-auto px-4'>
+          <div className='flex flex-col items-center gap-3 sm:gap-4'>
+            <Link className='group' href='/ranked'>
+              <h2 className='font-black text-2xl sm:text-3xl md:text-4xl bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent hover:from-yellow-300 hover:to-orange-400 transition-all duration-300 transform group-hover:scale-105'>
+                Ranked Solves 🏅
+              </h2>
+            </Link>
+            <div className='text-gray-300 text-base sm:text-lg'>The elite players who dominate the ranked ladder</div>
           </div>
           {getLeaderboardTable(rankedLeaderboard, rankedLeaderboard.map(user => user.config?.calcRankedSolves || 0))}
         </div>
       );
     } else if (leaderboard === 'sgm') {
       return (
-        <div className='flex flex-col items-center text-center gap-4'>
-          <span className='font-bold italic text-lg' style={{ color: sgmColor }}>{game.displayName} Super Grandmasters</span>
-          <span className='text-sm'>Super Grandmasters have solved at minimum 7 Super Grandmaster levels</span>
+        <div className='flex flex-col items-center text-center gap-6 sm:gap-8 max-w-4xl mx-auto px-4'>
+          <div className='flex flex-col items-center gap-3 sm:gap-4'>
+            <h2 className='font-black text-2xl sm:text-3xl md:text-4xl bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent' style={{ color: sgmColor }}>
+              {game.displayName} Super Grandmasters 🧠
+            </h2>
+            <div className='text-gray-300 text-sm sm:text-base md:text-lg bg-black/20 backdrop-blur-sm border border-white/20 rounded-lg px-4 sm:px-6 py-2 sm:py-3'>
+              Masters who have conquered at least 7 Super Grandmaster levels
+            </div>
+          </div>
           {getLeaderboardTable(sgmLeaderboard.map(userAndSum => userAndSum.user), sgmLeaderboard.map(userAndSum => userAndSum.sum))}
         </div>
       );
     } else if (leaderboard === 'gm') {
       return (
-        <div className='flex flex-col items-center text-center gap-4'>
-          <span className='font-bold italic text-lg' style={{ color: gmColor }}>{game.displayName} Grandmasters</span>
-          <span className='text-sm'>Grandmasters have solved at minimum 7 Grandmaster (or harder) levels</span>
+        <div className='flex flex-col items-center text-center gap-6 sm:gap-8 max-w-4xl mx-auto px-4'>
+          <div className='flex flex-col items-center gap-3 sm:gap-4'>
+            <h2 className='font-black text-2xl sm:text-3xl md:text-4xl bg-gradient-to-r from-emerald-400 to-cyan-500 bg-clip-text text-transparent' style={{ color: gmColor }}>
+              {game.displayName} Grandmasters 📜
+            </h2>
+            <div className='text-gray-300 text-sm sm:text-base md:text-lg bg-black/20 backdrop-blur-sm border border-white/20 rounded-lg px-4 sm:px-6 py-2 sm:py-3'>
+              Legends who have solved at least 7 Grandmaster (or harder) levels
+            </div>
+          </div>
           {getLeaderboardTable(gmLeaderboard.map(userAndSum => userAndSum.user), gmLeaderboard.map(userAndSum => userAndSum.sum))}
         </div>
       );
@@ -263,53 +327,51 @@ export default function Leaderboards({ gmLeaderboard, rankedLeaderboard, reqUser
 
   return (
     <Page title={game.displayName + ' Leaderboards'}>
-      <div className='p-6 flex flex-col items-center gap-6'>
-        <h2 className='text-3xl font-bold text-center'>{game.displayName} Leaderboards</h2>
-        <Menu as='div' className='relative inline-block text-left w-fit'>
-          <MenuButton
-            aria-expanded='true'
-            aria-haspopup='true'
-            className='flex items-center w-full justify-center rounded-md bg-white pl-2 pr-1 py-1 text-xl font-medium text-black gap-1 shadow-md border'
-            id='menu-button'
-            style={{
-              borderColor: 'var(--bg-color-3)',
-            }}
-          >
-            {leaderboardStrings[leaderboard]}
-            <svg className='h-5 w-5' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor' aria-hidden='true'>
-              <path fillRule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z' clipRule='evenodd' />
-            </svg>
-          </MenuButton>
-          <Transition
-            as={Fragment}
-            enter='transition ease-out duration-100'
-            enterFrom='transform opacity-0 scale-95'
-            enterTo='transform opacity-100 scale-100'
-            leave='transition ease-in duration-75'
-            leaveFrom='transform opacity-100 scale-100'
-            leaveTo='transform opacity-0 scale-95'
-          >
-            <MenuItems className='absolute right-0 z-10 mt-1 rounded-md overflow-hidden border bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none border-color-1'>
-              <div>
-                {Object.keys(leaderboardStrings).map(leaderboardKey => {
-                  return (
-                    <MenuItem key={`leaderboard-${leaderboardKey}`}>
-                      <button
-                        className='text-black p-1 text-xl font-medium w-64 flex items-center gap-1 justify-center data-[active]:bg-neutral-300'
-                        onClick={() => setLeaderboard(leaderboardKey)}
-                        role='menuitem'
-                      >
-                        {leaderboardStrings[leaderboardKey]}
-                      </button>
-                    </MenuItem>
-                  );
-                })}
-              </div>
-            </MenuItems>
-          </Transition>
-        </Menu>
-        {getLeaderboard()}
-      </div>
+      <SpaceBackground constellationPattern='leaderboard'>
+        <div className='flex flex-col items-center justify-center min-h-screen px-4 py-8'>
+          {/* Epic Title Section */}
+          <div className='mb-8 sm:mb-12 text-center animate-fadeInDown px-4' style={{ animationDelay: '0.3s' }}>
+            <h1 className='text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 mb-4 sm:mb-6 leading-tight'>
+              LEADERBOARDS
+            </h1>
+            <div className='text-lg sm:text-xl md:text-2xl text-gray-300 font-bold bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent'>
+              {game.displayName} Hall of Fame
+            </div>
+          </div>
+          
+          {/* Tab Navigation */}
+          <div className='mb-8 sm:mb-12 animate-fadeInScale px-4' style={{ animationDelay: '0.5s' }}>
+            <div className='flex gap-2 sm:gap-4 bg-black/20 backdrop-blur-sm p-1.5 rounded-2xl border border-white/20'>
+              {Object.keys(leaderboardStrings).map((leaderboardKey) => (
+                <button
+                  key={`tab-${leaderboardKey}`}
+                  onClick={() => setLeaderboard(leaderboardKey)}
+                  className={`
+                    relative overflow-hidden px-3 sm:px-6 py-2 sm:py-3.5 rounded-xl font-bold text-sm sm:text-lg transition-all duration-300 whitespace-nowrap
+                    ${leaderboard === leaderboardKey
+                  ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-xl transform scale-105'
+                  : 'text-gray-300 hover:text-white hover:bg-white/10'
+                }
+                  `}
+                >
+                  {leaderboard === leaderboardKey && (
+                    <div className='absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-30' />
+                  )}
+                  <span className='relative'>
+                    <span className='sm:hidden'>{leaderboardStringsMobile[leaderboardKey]}</span>
+                    <span className='hidden sm:inline'>{leaderboardStrings[leaderboardKey]}</span>
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+          
+          {/* Leaderboard Content */}
+          <div className='w-full animate-fadeInUp' style={{ animationDelay: '0.7s' }}>
+            {getLeaderboard()}
+          </div>
+        </div>
+      </SpaceBackground>
     </Page>
   );
 }

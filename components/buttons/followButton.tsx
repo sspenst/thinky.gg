@@ -60,13 +60,19 @@ export default function FollowButton({ isFollowing, onResponse, user }: FollowBu
   return (
     <button
       className={classNames(
-        'font-bold py-1 px-3 rounded-md focus:outline-none focus:shadow-outline disabled:opacity-50',
-        _isFollowing ? 'bg-button' : 'bg-blue-500 hover:bg-blue-700 text-white',
+        'group relative overflow-hidden font-bold py-3 px-6 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-300 focus:outline-none focus:shadow-outline disabled:opacity-50',
+        _isFollowing
+          ? 'bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white'
+          : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white',
       )}
       disabled={disabled}
       onClick={onFollowButtonPress}
     >
-      {!_isFollowing ? 'Follow' : 'Unfollow'}
+      <div className='absolute inset-0 bg-gradient-to-r from-white to-transparent opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-transform duration-700' />
+      <div className='relative flex items-center gap-2'>
+        <span>{_isFollowing ? '👥' : '➕'}</span>
+        <span>{!_isFollowing ? 'Follow' : 'Unfollow'}</span>
+      </div>
     </button>
   );
 }

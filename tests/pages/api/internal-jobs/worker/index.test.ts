@@ -27,6 +27,7 @@ afterAll(async () => {
 
 afterEach(async () => {
   jest.restoreAllMocks();
+
   // Clean up any test queue messages
   try {
     await QueueMessageModel.deleteMany({ dedupeKey: { $regex: /^test-/ } });
@@ -34,6 +35,7 @@ afterEach(async () => {
   } catch (e) {
     // Ignore errors during cleanup
   }
+
   (global.fetch as jest.Mock).mockClear();
 });
 
