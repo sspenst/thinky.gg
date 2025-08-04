@@ -172,4 +172,4 @@ jobs:
           SSH_KEY: ${{ secrets.SERVER_SSH_KEY }}
 
       - name: Update Environments with New Containers
-        run: ssh ${{ matrix.server }} 'bash /opt/pathology/scripts/update-Environments.sh -e stage -v ${{ needs.build-docker-image.outputs.sha_version }}'
+        run: ssh ${{ matrix.server }} 'bash /opt/pathology/scripts/update-Environments.sh -e stage -v ${{ needs.build-and-push-docker-image.outputs.sha_version }}'
