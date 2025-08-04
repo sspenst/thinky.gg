@@ -57,9 +57,10 @@ RUN addgroup --system --gid 1001 nodejs && \
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Copy the standalone build output (includes all dependencies)
-COPY --from=builder --chown=nextjs:nodejs /thinky_app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /thinky_app/.next/static ./.next/static
+# Copy package.json and node_modules for production
+COPY --from=builder --chown=nextjs:nodejs /thinky_app/package*.json ./
+COPY --from=builder --chown=nextjs:nodejs /thinky_app/node_modules ./node_modules
+COPY --from=builder --chown=nextjs:nodejs /thinky_app/.next ./.next
 COPY --from=builder --chown=nextjs:nodejs /thinky_app/public ./public
 
 # Copy socket server build
