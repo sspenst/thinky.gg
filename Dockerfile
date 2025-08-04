@@ -1,16 +1,17 @@
-# Stage 1: Build dependencies (includes dev dependencies)
-FROM node:22-alpine AS build-deps
+# Dependencies stage - cache npm packages separately
+FROM node:22-alpine AS deps
 WORKDIR /thinky_app
 
 # Copy package files
 COPY --chown=node:node package*.json ./
-
-# Install all dependencies including dev dependencies for building
 RUN npm config set fund false && \
-    npm ci --platform=linux --arch=x64 && \
+    npm ci --only=production --platform=linux --arch=x64 && \
     npm install --platform=linux --arch=x64 sharp && \
-    npm install --platform=linuxmusl && \
-    npm install -g ts-node typescript module-alias
+    npm install --platform=linuxmusl
+
+# Base stage with environment and source code
+FROM node:22-alpine AS base
+WORKDIR /thinky_app
 
 # Stage 2: Build the application
 FROM build-deps AS builder
@@ -37,21 +38,29 @@ ENV NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY=$NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY
 ENV NEXT_PUBLIC_POSTHOG_KEY=$NEXT_PUBLIC_POSTHOG_KEY
 ENV NEXT_PUBLIC_POSTHOG_HOST=$NEXT_PUBLIC_POSTHOG_HOST
 
+# Copy node_modules from deps stage
+COPY --from=deps --chown=node:node /thinky_app/node_modules ./node_modules
+
+# Install only module-alias globally (needed for production socket server)
+RUN npm config set fund false && npm install -g module-alias
+
 # Copy source code
 COPY --chown=node:node . .
 
-# Build the web app and socket server in parallel
-RUN npm run build:fast && \
-    tsc -p tsconfig-socket.json && \
-    chown -R node:node .next/
+# Web app builder stage
+FROM base AS web-builder
+RUN npm run build
 
-# Stage 3: Production runtime
-FROM node:22-alpine AS runner
-WORKDIR /thinky_app
+# Socket server builder stage  
+FROM base AS socket-builder
+RUN npx tsc -p tsconfig-socket.json
 
-# Create non-root user
-RUN addgroup --system --gid 1001 nodejs && \
-    adduser --system --uid 1001 nextjs
+# Final production stage
+FROM base AS final
+# Copy built web app from web-builder stage
+COPY --from=web-builder --chown=node:node /thinky_app/.next ./.next
+# Copy compiled socket server from socket-builder stage
+COPY --from=socket-builder --chown=node:node /thinky_app/dist ./dist
 
 # Set production environment
 ENV NODE_ENV=production
