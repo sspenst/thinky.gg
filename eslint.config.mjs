@@ -61,7 +61,8 @@ const eslintConfig = [...compat.extends(
     'import/first': 'warn',
     'import/newline-after-import': 'warn',
     'import/no-duplicates': 'warn',
-    indent: ['warn', 2],
+    // Temporarily disabled due to stack overflow in achievementsBrowser.tsx
+    // indent: ['warn', 2],
     'jsx-quotes': ['warn', 'prefer-single'],
     'key-spacing': ['warn', {
       beforeColon: false,

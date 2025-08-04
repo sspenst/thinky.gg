@@ -15,4 +15,5 @@ newrelic_agent.log
 
 public/sounds/music/
 tsconfig.tsbuildinfo
+.tsbuildinfo
 dist/

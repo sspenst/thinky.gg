@@ -1,3 +1,4 @@
+import TimeRange from '@root/constants/timeRange';
 import Link from 'next/link';
 import FormattedDifficulty, { difficultyList, getDifficultyColor } from '../formatted/formattedDifficulty';
 
@@ -23,6 +24,7 @@ export default function LevelsSolvedByDifficultyList({ levelsSolvedByDifficulty 
               pathname: '/search',
               query: {
                 difficultyFilter: difficulty.name,
+                timeRange: TimeRange[TimeRange.All],
               },
             }}
             key={`${difficulty.name}-levels-solved`}

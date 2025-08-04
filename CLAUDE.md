@@ -6,7 +6,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Development & Building
 - `npm run dev` - Start development server (runs on localhost:3000)
-- `npm run build` - Build the Next.js application for production
+- `npm run build` - Build the Next.js application for production (with linting and type checking)
+- `npm run build:fast` - Fast production build (skips linting and type checking)
+- `npm run build:parallel` - Run type checking, linting, and building in parallel
+- `npm run build:prod` - Sequential production build (typecheck → lint → build)
 - `npm start` - Start production server
 
 ### Testing & Quality
@@ -15,6 +18,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `npm run test:coverage` - Run tests with coverage report
 - `npm run test:oauth` - Run OAuth/auth specific tests
 - `npm run lint` - Run Next.js linting
+- `npm run typecheck` - Run TypeScript type checking
 
 ### Database & Scripts
 - `npm run cleanup:userauth` - Clean up orphaned user authentication records

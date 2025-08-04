@@ -1,0 +1,39 @@
+name: Lint and Type Check
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lint-and-typecheck:
+    name: Lint and Type Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Run TypeScript type checking (production code only)
+        run: npm run typecheck:ci
+        
+      - name: Run ESLint
+        run: npm run lint
+        
+      - name: Check for formatting issues
+        run: |
+          if [ -n "$(git diff --name-only)" ]; then
+            echo "Formatting issues found in the following files:"
+            git diff --name-only
+            exit 1
+          fi

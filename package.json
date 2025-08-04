@@ -72,16 +72,20 @@
     "swr": "^2.3.0",
     "three": "^0.176.0",
     "throttle-debounce": "^5.0.2",
-    "tsc": "^2.0.4",
     "winston": "^3.17.0"
   },
   "scripts": {
     "start": "NODE_OPTIONS='-r newrelic' next start",
     "build": "next build",
+    "build:fast": "SKIP_LINT=true SKIP_TYPE_CHECK=true next build",
+    "build:prod": "npm run typecheck && npm run lint && npm run build",
+    "build:parallel": "npm-run-all --parallel typecheck lint build:fast",
     "dev": "next dev",
     "e2e": "playwright test",
     "e2e:ui": "playwright test --ui",
     "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "typecheck:ci": "tsc --noEmit --project tsconfig.ci.json",
     "test": "NODE_ENV=test jest --verbose",
     "test:watch": "NODE_ENV=test jest --watch",
     "test:oauth": "NODE_ENV=test jest --verbose --testPathPatterns \"(oauth|auth)\"",
@@ -153,12 +157,13 @@
     "leaked-handles": "^5.2.0",
     "mockdate": "^3.0.5",
     "next-test-api-route-handler": "^4.0.14",
+    "npm-run-all": "^4.1.5",
     "postcss": "^8.5.1",
     "react-test-renderer": "^19.0.0",
     "tailwindcss": "^3.4.17",
     "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.7.3"
+    "typescript": "^5.9.2"
   }
 }
