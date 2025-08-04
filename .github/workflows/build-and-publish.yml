@@ -14,8 +14,38 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-push-docker-image:
-    name: Build Docker image and push to repositories
+  lint-and-typecheck:
+    name: Lint and Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Cache node_modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node_modules-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node_modules-
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Run TypeScript type checking (production code only)
+        run: npm run typecheck:ci
+        
+      - name: Run ESLint
+        run: npm run lint
+
+  build-docker-image:
+    name: Build Docker image
     runs-on: ubuntu-latest
     outputs:
       sha_version: ${{ steps.vars.outputs.sha_short }}
@@ -51,11 +81,20 @@ jobs:
         with:
           context: .
           load: false
+          target: runner
           cache-from: |
-            type=gha
+            type=gha,scope=build-deps
+            type=gha,scope=builder
+            type=gha,scope=runner
+            type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/pathology:buildcache-build-deps
+            type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/pathology:buildcache-builder
             type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/pathology:buildcache
           cache-to: |
-            type=gha,mode=max
+            type=gha,mode=max,scope=build-deps
+            type=gha,mode=max,scope=builder
+            type=gha,mode=max,scope=runner
+            type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/pathology:buildcache-build-deps,mode=max
+            type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/pathology:buildcache-builder,mode=max
             type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/pathology:buildcache,mode=max
           build-args: |
             NEXT_PUBLIC_APP_DOMAIN=${{ secrets.NEXT_PUBLIC_APP_DOMAIN }}
@@ -70,10 +109,31 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME }}/pathology-socket:${{ steps.vars.outputs.sha_short }}
           push: ${{ github.ref == 'refs/heads/main' }}
 
+  validate-and-deploy:
+    name: Validate and Deploy
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    needs: [lint-and-typecheck, build-docker-image]
+    steps:
+      - name: Deployment Check
+        run: |
+          echo "Lint and type check status: ${{ needs.lint-and-typecheck.result }}"
+          echo "Build status: ${{ needs.build-docker-image.result }}"
+          if [ "${{ needs.lint-and-typecheck.result }}" != "success" ]; then
+            echo "❌ Lint and type check failed - blocking deployment"
+            exit 1
+          fi
+          if [ "${{ needs.build-docker-image.result }}" != "success" ]; then
+            echo "❌ Build failed - blocking deployment"
+            exit 1
+          fi
+          echo "✅ All checks passed - proceeding with deployment"
+
   config:
     name: Config
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    needs: validate-and-deploy
     outputs:
       get-server-ip-list: ${{ steps.get-server-ip-list.outputs.get-server-ip-list }}
     steps:
@@ -88,7 +148,7 @@ jobs:
     name: Deploy to Staging
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    needs: [build-and-push-docker-image, config]
+    needs: [build-docker-image, config]
     strategy:
       matrix:
         server: ${{ fromJson(needs.config.outputs.get-server-ip-list) }}
@@ -109,4 +169,4 @@ jobs:
           SSH_KEY: ${{ secrets.SERVER_SSH_KEY }}
 
       - name: Update Environments with New Containers
-        run: ssh ${{ matrix.server }} 'bash /opt/pathology/scripts/update-Environments.sh -e stage -v ${{ needs.build-and-push-docker-image.outputs.sha_version }}'
+        run: ssh ${{ matrix.server }} 'bash /opt/pathology/scripts/update-Environments.sh -e stage -v ${{ needs.build-docker-image.outputs.sha_version }}'
