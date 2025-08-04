@@ -2,7 +2,7 @@ module.exports = {
   productionBrowserSourceMaps: true,
 
   // Optimize output for faster builds
-  output: 'standalone',
+  // output: 'standalone',
   
   // Reduce build traces collection time
   outputFileTracingIncludes: {
