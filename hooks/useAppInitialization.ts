@@ -180,6 +180,15 @@ export function useAppInitialization(user: User | null | undefined, initGame: Ga
       const loggedIn = user !== undefined;
 
       window.ReactNativeWebView.postMessage(JSON.stringify({ loggedIn: loggedIn }));
+
+      // Send badge count if user has notifications
+      if (user && user.notifications) {
+        const unreadCount = user.notifications.filter(n => !n.read).length;
+        window.ReactNativeWebView.postMessage(JSON.stringify({
+          action: 'update_badge_count',
+          count: unreadCount
+        }));
+      }
     }
   }, [user]);
 
