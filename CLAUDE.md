@@ -97,3 +97,8 @@ REVALIDATE_SECRET=whatever
 - **SWR**: Client-side caching for API calls
 - **Sharp**: Image optimization
 - **WebGL**: Optional high-performance game rendering
+
+
+### MCPs available
+- Playwright for browser based testing and being able to visually see changes
+- Context7 for getting up to date documentation
