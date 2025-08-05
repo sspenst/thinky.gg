@@ -258,7 +258,6 @@ export default function RankedPage({ levelsByDifficulty, rankedSolvesByDifficult
                   <div className='relative flex items-center justify-between'>
                     <div className='flex items-center gap-4'>
                       <FormattedDifficulty difficulty={difficulty} id='ranked' />
-                      <span className='text-xl font-bold text-white'>{difficulty.name}</span>
                     </div>
                     <div className='flex items-center gap-3'>
                       <span className='text-lg font-bold' style={{
