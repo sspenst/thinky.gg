@@ -2,7 +2,7 @@ import { sendGTMEvent } from '@next/third-parties/google';
 import isPro from '@root/helpers/isPro';
 import { Router } from 'next/router';
 import posthog from 'posthog-js';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import User from '../models/db/user';
 
 export function usePostHogAnalytics(user: User | null | undefined) {

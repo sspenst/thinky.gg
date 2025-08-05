@@ -1,8 +1,7 @@
 import StatFilter from '@root/constants/statFilter';
 import TourPath from '@root/constants/tourPath';
 import getProfileSlug from '@root/helpers/getProfileSlug';
-import classNames from 'classnames';
-import { ChevronsDown, ChevronsUp } from 'lucide-react';
+import { Activity, ArrowRight, ChevronsDown, ChevronsUp, Search, Sparkles, Target, Trophy } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -18,9 +17,11 @@ import ChapterSelectCard from '../cards/chapterSelectCard';
 import LevelCard from '../cards/levelCard';
 import LevelCardWithTitle from '../cards/levelCardWithTitle';
 import LoadingCard from '../cards/loadingCard';
+import GameLogo from '../gameLogo';
 import FormattedReview from '../level/reviews/formattedReview';
 import LoadingSpinner from '../page/loadingSpinner';
 import MultiSelectUser from '../page/multiSelectUser';
+import SpaceBackground from '../page/SpaceBackground';
 import QuickActionButton from '../quickActionButton';
 import StreakSection from '../streak/streakSection';
 import UpsellFullAccount from './upsellFullAccount';
@@ -47,6 +48,7 @@ export default function Home({
   const { deviceInfo, game, userConfig, multiplayerSocket } = useContext(AppContext);
   const router = useRouter();
   const [search, setSearch] = useState('');
+  const [levelSearch, setLevelSearch] = useState('');
   const tour = useTour(TourPath.HOME);
   const [showScrollTop, setShowScrollTop] = useState(false);
 
@@ -90,12 +92,17 @@ export default function Home({
     );
   }
 
-  const buttonClassNames = 'px-3 py-2.5 inline-flex justify-center items-center gap-2 rounded-lg border font-medium align-middle focus:z-10 focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all text-sm whitespace-nowrap bg-green-100 dark:bg-gray-800 hover:bg-gray-50 hover:dark:bg-slate-600 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300';
+  const buttonClassNames = 'px-4 py-3 inline-flex justify-center items-center gap-2 rounded-xl font-medium align-middle focus:z-10 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all text-sm whitespace-nowrap bg-white/10 backdrop-blur-sm hover:bg-white/20 border border-white/20 text-white hover:scale-105 transform';
   const { connectedPlayersCount, matches, socket } = multiplayerSocket;
 
   const buttonsSection = user && (
-    <div className='flex flex-col gap-4 w-full'>
-      <div className='grid grid-cols-2 md:grid-cols-4 gap-2'>
+    <div className='animate-fadeInUp flex flex-col gap-4 w-full' style={{ animationDelay: '1s' }}>
+      <h2 className='text-2xl font-bold text-center mb-4'>
+        <span className='bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent'>
+          Quick Actions
+        </span>
+      </h2>
+      <div className='grid grid-cols-2 md:grid-cols-4 gap-3'>
         <QuickActionButton
           href='/search'
           icon='🔍'
@@ -142,27 +149,32 @@ export default function Home({
     </div>
   );
 
-  const latestLevelsSection = <div className='lg:w-8/12 h-min flex flex-col gap-4 max-w-full'>
-    <div className='rounded-xl overflow-hidden transition-all duration-300'>
-      <div className='bg-gradient-to-r from-purple-600 to-blue-600 p-2 text-white'>
-        <div id='latest-levels' className='flex justify-center'>
-          <Link
-            className='font-bold text-xl text-center hover:underline'
-            href={{
-              pathname: '/search',
-              query: {
-                sortBy: 'ts',
-                statFilter: StatFilter.HideSolved,
-                timeRange: TimeRange[TimeRange.All],
-              },
-            }}
-          >
-            Latest Unsolved Levels
-          </Link>
+  const latestLevelsSection = <div className='lg:w-8/12 h-min flex flex-col gap-4 max-w-full animate-fadeInUp' style={{ animationDelay: '0.4s' }}>
+    <div className='relative'>
+      {/* Floating Island Effect */}
+      <div className='absolute inset-0 bg-gradient-to-r from-purple-600/20 to-blue-600/20 blur-xl' />
+      <div className='relative rounded-2xl overflow-hidden border border-white/20 backdrop-blur-sm bg-white/5'>
+        <div className='bg-gradient-to-r from-purple-600/80 to-blue-600/80 p-4 backdrop-blur-md'>
+          <div id='latest-levels' className='flex justify-center items-center gap-3'>
+            <Sparkles className='w-6 h-6 text-yellow-300' />
+            <Link
+              className='font-bold text-2xl text-center text-white hover:text-yellow-300 transition-colors'
+              href={{
+                pathname: '/search',
+                query: {
+                  sortBy: 'ts',
+                  statFilter: StatFilter.HideSolved,
+                  timeRange: TimeRange[TimeRange.All],
+                },
+              }}
+            >
+              Latest Unsolved Levels
+            </Link>
+            <Sparkles className='w-6 h-6 text-yellow-300' />
+          </div>
         </div>
-      </div>
-      <div className='bg-white dark:bg-gray-800 p-4'>
-        <div className='flex flex-wrap justify-center gap-4'>
+        <div className='p-6'>
+          <div className='flex flex-wrap justify-center gap-4'>
           {latestLevels ?
             latestLevels.length === 0 ?
               <div className='text-center italic p-3'>No levels found</div>
@@ -195,31 +207,38 @@ export default function Home({
               <LoadingCard />
             </>
           }
+          </div>
         </div>
       </div>
     </div>
   </div>;
 
   const topLevelsThisMonthSection =
-    <div className='rounded-xl overflow-hidden transition-all duration-300 flex flex-col gap-4 w-full px-0'>
-      <div className='bg-gradient-to-r from-purple-600 to-blue-600 p-2 text-white'>
-        <div id='top-levels-of-month' className='flex justify-center'>
-          <Link
-            className='font-bold text-xl text-center hover:underline'
-            href={{
-              pathname: '/search',
-              query: {
-                sortBy: 'reviewScore',
-                timeRange: TimeRange[TimeRange.Month],
-              },
-            }}
-          >
-            Top Levels this Month
-          </Link>
-        </div>
-      </div>
-      <div className='bg-white dark:bg-gray-800 p-4'>
-        <div className='flex flex-col justify-center gap-4 items-center'>
+    <div className='animate-fadeInRight flex flex-col gap-4 w-full px-0' style={{ animationDelay: '0.6s' }}>
+      <div className='relative'>
+        {/* Floating Island Effect */}
+        <div className='absolute inset-0 bg-gradient-to-r from-yellow-600/20 to-orange-600/20 blur-xl' />
+        <div className='relative rounded-2xl overflow-hidden border border-white/20 backdrop-blur-sm bg-white/5'>
+          <div className='bg-gradient-to-r from-yellow-600/80 to-orange-600/80 p-4 backdrop-blur-md'>
+            <div id='top-levels-of-month' className='flex justify-center items-center gap-3'>
+              <Trophy className='w-6 h-6 text-white' />
+              <Link
+                className='font-bold text-2xl text-center text-white hover:text-yellow-300 transition-colors'
+                href={{
+                  pathname: '/search',
+                  query: {
+                    sortBy: 'reviewScore',
+                    timeRange: TimeRange[TimeRange.Month],
+                  },
+                }}
+              >
+                Top Levels this Month
+              </Link>
+              <Trophy className='w-6 h-6 text-white' />
+            </div>
+          </div>
+          <div className='p-6'>
+            <div className='flex flex-col justify-center gap-4 items-center'>
           {topLevelsThisMonth ?
             topLevelsThisMonth.length === 0 ?
               <div className='text-center italic p-3'>No levels found</div>
@@ -242,19 +261,26 @@ export default function Home({
               <LoadingCard />
             </>
           }
+            </div>
+          </div>
         </div>
       </div>
     </div>;
 
-  const latestReviewSection = <div id='latest-reviews' className='flex flex-col gap-4 w-full px-0'>
-    <div className='rounded-xl overflow-hidden transition-all duration-300'>
-      <div className='bg-gradient-to-r from-purple-600 to-blue-600 p-2 text-white'>
-        <h2 className='font-bold text-xl text-center'>
-          Latest Reviews
-        </h2>
-      </div>
-      <div className='bg-white dark:bg-gray-800 p-4'>
-        <div className='w-full text-center flex flex-col gap-4'>
+  const latestReviewSection = <div id='latest-reviews' className='animate-fadeInUp flex flex-col gap-4 w-full px-0' style={{ animationDelay: '0.8s' }}>
+    <div className='relative'>
+      {/* Floating Island Effect */}
+      <div className='absolute inset-0 bg-gradient-to-r from-cyan-600/20 to-blue-600/20 blur-xl' />
+      <div className='relative rounded-2xl overflow-hidden border border-white/20 backdrop-blur-sm bg-white/5'>
+        <div className='bg-gradient-to-r from-cyan-600/80 to-blue-600/80 p-4 backdrop-blur-md'>
+          <h2 className='font-bold text-2xl text-center text-white flex items-center justify-center gap-3'>
+            <Activity className='w-6 h-6' />
+            Latest Reviews
+            <Activity className='w-6 h-6' />
+          </h2>
+        </div>
+        <div className='p-6'>
+          <div className='w-full text-center flex flex-col gap-4'>
           {latestReviews === undefined ?
             <div className='flex justify-center p-4'>
               <LoadingSpinner />
@@ -275,55 +301,73 @@ export default function Home({
                 );
               })
           }
+          </div>
         </div>
       </div>
     </div>
   </div>;
 
-  const searchSection = <div className='flex flex-col w-full'>
-    <div>
-      <div className='flex items-center'>
-        <form className='w-full' action='/search'>
-          <input type='hidden' name='timeRange' value='All' />
-          <input onChange={e => setSearch(e.target.value)} id='search' type='search' name='search' className='rounded-r-none rounded-b-none w-full' placeholder='Search levels...' aria-label='Search' />
+  const searchSection = <div className='relative h-full z-50'>
+    {/* Glassmorphism search container with MultiSelectUser */}
+    <div className='bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-4 h-full flex flex-col'>
+      <div className='flex items-center gap-3 mb-3'>
+        <div className='p-2 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg'>
+          <Search className='w-5 h-5 text-white' />
+        </div>
+        <h3 className='text-lg font-bold text-white'>Search</h3>
+      </div>
+      <div className='flex-1 flex flex-col gap-3 justify-center'>
+        <div className='w-full relative z-50'>
+          <MultiSelectUser
+            placeholder='🔍 Search for users...'
+            onSelect={(selectedItem: User) => {
+              if (selectedItem) {
+                router.push(
+                  {
+                    pathname: getProfileSlug(selectedItem),
+                  }
+                );
+              }
+            }}
+          />
+        </div>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            router.push({
+              pathname: '/search',
+              query: {
+                search: levelSearch,
+                timeRange: TimeRange[TimeRange.All],
+              }
+            });
+          }}
+          className='w-full'
+        >
+          <div className='relative'>
+            <input
+              type='text'
+              value={levelSearch}
+              onChange={(e) => setLevelSearch(e.target.value)}
+              placeholder='🎯 Search levels...'
+              className='w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:border-purple-400/50 transition-all duration-200'
+            />
+            <button
+              type='submit'
+              className='absolute right-2 top-1/2 transform -translate-y-1/2 p-2 bg-gradient-to-r from-purple-600/80 to-pink-600/80 hover:from-purple-700/80 hover:to-pink-700/80 rounded-lg transition-all duration-200 hover:scale-105'
+            >
+              <ArrowRight className='w-4 h-4 text-white' />
+            </button>
+          </div>
         </form>
       </div>
-      <div>
-        <MultiSelectUser
-          controlStyles={{
-            borderBottomLeftRadius: '0.25rem',
-            borderBottomRightRadius: '0rem',
-            borderTopLeftRadius: '0rem',
-            borderTopRightRadius: '0rem',
-          }}
-          onSelect={(selectedItem: User) => {
-            router.push(
-              {
-                pathname: getProfileSlug(selectedItem),
-              }
-            );
-          }}
-        />
-      </div>
     </div>
-    <Link
-      className={classNames(buttonClassNames, 'py-1.5 h-full mr-0 rounded-l-none cursor-pointer')}
-      href={{
-        pathname: '/search',
-        query: {
-          ...(search ? { search: search } : {})
-        },
-      }}
-      passHref
-    >
-      <svg xmlns='http://www.w3.org/2000/svg' className='w-5 h-5' fill='none' viewBox='0 0 24 24'
-        stroke='currentColor'>
-        <path strokeLinecap='round' strokeLinejoin='round' strokeWidth='2'
-          d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z' />
-      </svg>
-    </Link>
   </div>;
-  const streakSection = userConfig && <div className='flex flex-col w-100 max-w-full justify-center items-center mx-auto'><StreakSection hideHeader gameId={game.id} userConfig={userConfig} compact /></div>;
+  const streakSection = userConfig && (
+    <div className='animate-fadeInUp flex flex-col w-100 max-w-full justify-center items-center mx-auto mb-8' style={{ animationDelay: '0.7s' }}>
+      <StreakSection hideHeader gameId={game.id} userConfig={userConfig} compact />
+    </div>
+  );
   const scrollToSectionButtons = deviceInfo.isMobile && <div className='flex gap-2'>
     <button
       onClick={() => {
@@ -359,11 +403,11 @@ export default function Home({
 
   const scrollToTopButton = deviceInfo.isMobile && showScrollTop && (
     <button
-      className='fixed bottom-6 right-6 z-50 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-full p-3 shadow-lg lg:hidden transition hover:bg-gray-100 dark:hover:bg-gray-700'
+      className='fixed bottom-6 right-6 z-50 bg-white/10 backdrop-blur-md border border-white/20 rounded-full p-3 shadow-lg lg:hidden transition hover:bg-white/20 hover:scale-110 transform'
       onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
       aria-label='Scroll to top'
     >
-      <ChevronsUp className='w-6 h-6 text-gray-700 dark:text-gray-200' />
+      <ChevronsUp className='w-6 h-6 text-white' />
     </button>
   );
 
@@ -371,16 +415,39 @@ export default function Home({
     {tour}
     <UpsellFullAccount user={user} />
     {scrollToTopButton}
-    <div className='flex justify-center m-6 text-center'>
-      <div className='flex flex-col items-center gap-8 w-full max-w-screen-2xl'>
+    <SpaceBackground
+      constellationPattern='custom'
+      customConstellations={[
+        { left: '10%', top: '15%', size: '6px', color: 'bg-cyan-400', delay: '0s', duration: '3s', glow: true },
+        { left: '25%', top: '20%', size: '5px', color: 'bg-purple-400', delay: '0.5s', duration: '2.5s', glow: true },
+        { left: '40%', top: '10%', size: '7px', color: 'bg-pink-400', delay: '1s', duration: '3.5s', glow: true },
+        { left: '70%', top: '25%', size: '6px', color: 'bg-yellow-400', delay: '1.5s', duration: '2.8s', glow: true },
+        { left: '85%', top: '15%', size: '5px', color: 'bg-green-400', delay: '2s', duration: '3.2s', glow: true },
+        { left: '55%', top: '30%', size: '6px', color: 'bg-blue-400', delay: '0.3s', duration: '2.9s', glow: true },
+      ]}
+      showGeometricShapes={true}
+    >
+      <div className='flex justify-center px-4 sm:px-6 py-12 text-center'>
+        <div className='flex flex-col items-center gap-8 w-full max-w-screen-2xl'>
+        {/* Hero Section */}
+        <div className='animate-fadeInDown relative z-20 mb-12'>
+          <h1 className='text-4xl sm:text-5xl lg:text-7xl font-black mb-4'>
+            <span className='bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent'>
+              Welcome to {game.displayName}
+            </span>
+          </h1>
+          <p className='text-lg sm:text-xl text-gray-200 max-w-2xl mx-auto'>
+            {game.shortDescription}
+          </p>
+        </div>
+        
         <div className='flex flex-wrap justify-center gap-8 items-center max-w-full'>
           {getSuggestedAction()}
         </div>
         <div className='flex flex-wrap justify-center gap-4 items-center max-w-full'>
           {scrollToSectionButtons}
         </div>
-        {streakSection}
-        <div className='flex flex-wrap justify-center gap-6 max-w-full'>
+        <div className='animate-fadeInUp flex flex-wrap justify-center gap-6 max-w-full' style={{ animationDelay: '0.5s' }}>
           <LevelCardWithTitle
             id='level-of-day'
             level={levelOfDay}
@@ -409,8 +476,28 @@ export default function Home({
             tooltip='Resume your last play. Click to see your play history.'
           />}
         </div>
-        <div className='flex items-center w-80 flex-col justify-center gap-2'>
-          {searchSection}
+        <div className='animate-fadeInUp flex flex-col md:flex-row items-stretch w-full justify-center gap-6 max-w-4xl mx-auto relative z-50' style={{ animationDelay: '0.9s' }}>
+          {userConfig && (
+            <div className='flex-1 max-w-md'>
+              <div className='bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-4 h-full'>
+                <div className='flex items-center justify-between mb-3'>
+                  <div className='flex items-center gap-3'>
+                    <div className='p-2 bg-gradient-to-r from-cyan-600 to-blue-600 rounded-lg'>
+                      <GameLogo gameId={game.id} id={game.id + '-streak-home'} size={20} />
+                    </div>
+                    <h3 className='text-lg font-bold text-white'>{game.displayName} Streak</h3>
+                  </div>
+                  <div className='bg-white/20 px-3 py-1 rounded-full text-sm font-medium text-white'>
+                    {userConfig ? userConfig.calcCurrentStreak || 0 : 0} day{(userConfig?.calcCurrentStreak || 0) === 1 ? '' : 's'}
+                  </div>
+                </div>
+                <StreakSection hideHeader gameId={game.id} userConfig={userConfig} compact />
+              </div>
+            </div>
+          )}
+          <div className='flex-1 max-w-md h-full'>
+            {searchSection}
+          </div>
         </div>
         <div className='w-full flex flex-col lg:flex-row gap-8 items-start'>
           {latestLevelsSection}
@@ -420,7 +507,8 @@ export default function Home({
         </div>
         {latestReviewSection}
         {buttonsSection}
+        </div>
       </div>
-    </div>
+    </SpaceBackground>
   </>);
 }

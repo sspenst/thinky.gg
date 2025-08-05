@@ -63,6 +63,7 @@ export function useNotifications({ notifications, setNotifications }: UseNotific
       // Update badge count in React Native app
       if (window.ReactNativeWebView && notifications) {
         const unreadCount = notifications.filter(n => n._id.toString() === notificationId ? read : !n.read).length;
+
         window.ReactNativeWebView.postMessage(JSON.stringify({
           action: 'update_badge_count',
           count: unreadCount
@@ -90,6 +91,7 @@ export function useNotifications({ notifications, setNotifications }: UseNotific
       if (window.ReactNativeWebView && notifications) {
         const idSet = new Set(notificationIds);
         const unreadCount = notifications.filter(n => idSet.has(n._id.toString()) ? !read : !n.read).length;
+
         window.ReactNativeWebView.postMessage(JSON.stringify({
           action: 'update_badge_count',
           count: unreadCount
@@ -164,6 +166,7 @@ export function useNotifications({ notifications, setNotifications }: UseNotific
     // Update badge count in React Native app
     if (window.ReactNativeWebView) {
       const unreadCount = socketNotifications.filter(n => !n.read).length;
+
       window.ReactNativeWebView.postMessage(JSON.stringify({
         action: 'update_badge_count',
         count: unreadCount

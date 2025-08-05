@@ -120,7 +120,7 @@ export default function PlayerRankProgress({ className = '', customCta }: Player
   uniqueRanks.sort((a, b) => b - a);
 
   // Build rank positions from skill achievements
-  const equalSpacing = 160; // Increased spacing for better readability
+  const equalSpacing = 140; // Reduced spacing for mobile compatibility
   let allRankPositions = [];
 
   // Sort ranks from hardest to easiest for proper positioning (easiest at bottom = highest position)
@@ -200,244 +200,176 @@ export default function PlayerRankProgress({ className = '', customCta }: Player
   };
 
   return (
-    <div className={`bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl p-6 border border-slate-700 shadow-2xl ${className}`}>
-      {/* Header */}
-      <div className='text-center mb-4'>
-        <h3 className='text-xl font-bold text-white mb-2'>
-          Rank Progression
-        </h3>
-      </div>
+    <div className={`relative overflow-hidden ${className}`}>
+      {/* Floating Island Effect */}
+      <div className='absolute -inset-4 bg-gradient-to-r from-purple-600/30 via-cyan-500/30 to-pink-500/30 blur-xl opacity-60' />
+      
       {/* Vertical rank progression */}
       <div className='relative'>
         {/* Scrollable viewport container - matched to chapter cards height */}
         <div
           ref={scrollContainerRef}
-          className='relative overflow-y-auto bg-slate-950/30 rounded-lg border border-slate-700/50 scroll-smooth'
+          className='relative overflow-y-auto bg-white/10 backdrop-blur-md rounded-lg border border-white/30 scroll-smooth'
           style={{ scrollbarWidth: 'thin', height: '500px' }}
         >
-
-          {/* Content container */}
-          <div
-            className='relative px-4 py-8'
-            style={{
-              height: `${(allRankPositions.length - 1) * 160 + 120}px` // Dynamic height with less padding below last card
-            }}
-          >
-
-            {/* Connecting line */}
-            <div className='absolute left-8 top-[40px] w-0.5 bg-slate-600' style={{ height: `${(allRankPositions.length - 1) * 160 + 80}px` }} />
-              
-              {/* Rank nodes and progression rates */}
+          <div className='p-6 space-y-4'>
             {allRankPositions.map((rankPos, index) => (
-              <React.Fragment key={rankPos.isNewb ? 'newb' : rankPos.rank.emoji}>
-                {/* Progression rate display - shown between ranks */}
-                {index > 0 && (() => {
-                  const higherRank = rankPos; // Current rank in array (harder)
-                  const lowerRank = allRankPositions[index - 1]; // Previous rank in array (easier, since we sorted hardest-first)
-
-                  // Calculate progression rate from easier rank to harder rank
-                  if (!higherRank.isNewb && !lowerRank.isNewb) {
-                    const higherAch = rankData.skillAchievements.find(ach => ach.difficultyIndex === higherRank.difficultyIndex);
-                    const lowerAch = rankData.skillAchievements.find(ach => ach.difficultyIndex === lowerRank.difficultyIndex);
-
-                    // What % of people who achieved the easier rank also achieved the harder rank
-                    // From debug: easier ranks have MORE people, harder ranks have FEWER people
-                    // So progression rate should be: harder_count / easier_count
-                    // Determine which is easier vs harder based on difficultyIndex
-                    const easierRank = lowerRank.difficultyIndex < higherRank.difficultyIndex ? lowerRank : higherRank;
-                    const harderRank = lowerRank.difficultyIndex > higherRank.difficultyIndex ? lowerRank : higherRank;
-                    const easierAch = rankData.skillAchievements.find(ach => ach.difficultyIndex === easierRank.difficultyIndex);
-                    const harderAch = rankData.skillAchievements.find(ach => ach.difficultyIndex === harderRank.difficultyIndex);
-
-                    if (easierAch && harderAch && easierAch.count > 0) {
-                      const progressionRate = (harderAch.count / easierAch.count) * 100;
-                      const midPoint = (lowerRank.position + higherRank.position) / 2;
-
-                      return (
-                        <div
-                          className='absolute left-12 flex items-center'
-                          style={{
-                            top: `${midPoint + 40}px`,
-                            transform: 'translateY(-50%)'
-                          }}
-                        >
-                          <div className='text-xs text-slate-500 italic'>
-                            {progressionRate.toFixed(1)}% of {easierRank.rank.name} players advance to {harderRank.rank.name}
-                          </div>
-                        </div>
-                      );
-                    }
-                  }
-
-                  return null;
-                })()}
+              <div key={rankPos.isNewb ? 'newb' : rankPos.rank.emoji} className='flex items-center gap-4'>
+                {/* Connection dot */}
+                <div
+                  className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                    rankPos.isCurrent
+                      ? 'bg-purple-500/80 border-purple-400/80 shadow-lg shadow-purple-500/50'
+                      : rankPos.isAchieved
+                        ? 'bg-emerald-500/80 border-emerald-400/80'
+                        : rankPos.isNext
+                          ? 'bg-cyan-500/40 border-cyan-400/40 animate-pulse'
+                          : 'bg-white/10 border-white/20 opacity-40'
+                  }`}
+                >
+                  {(rankPos.isCurrent || rankPos.isAchieved) && (
+                    <div className='w-2 h-2 bg-white rounded-full' />
+                  )}
+                </div>
+                
                 {/* Rank card */}
                 <div
-                  className='absolute left-0 right-4 flex items-center gap-4'
-                  style={{
-                    top: `${rankPos.position + 40}px`, // Offset for padding
-                    transform: 'translateY(-50%)'
-                  }}
+                  className={`flex flex-col gap-3 p-4 rounded-2xl border w-full transition-all duration-300 backdrop-blur-md ${
+                    rankPos.isCurrent
+                      ? 'bg-gradient-to-br from-purple-900/60 to-purple-800/40 border-purple-400/50 shadow-lg shadow-purple-500/20'
+                      : rankPos.isAchieved
+                        ? 'bg-gradient-to-br from-emerald-900/50 to-emerald-800/30 border-emerald-400/40 shadow-md shadow-emerald-500/15'
+                        : rankPos.isNext
+                          ? 'bg-gradient-to-br from-cyan-900/30 to-blue-900/20 border-cyan-400/20 shadow-sm shadow-cyan-400/10'
+                          : 'bg-gradient-to-br from-gray-900/30 to-gray-800/20 border-white/15 opacity-60'
+                  }`}
                 >
-                  {/* Connection dot */}
-                  <div
-                    className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${
-                      rankPos.isCurrent
-                        ? 'bg-blue-500 border-blue-400 shadow-lg shadow-blue-500/50'
-                        : rankPos.isAchieved
-                          ? 'bg-emerald-500 border-emerald-400'
-                          : rankPos.isNext
-                            ? 'bg-slate-700 border-slate-600'
-                            : 'bg-slate-800 border-slate-700 opacity-40'
-                    }`}
-                  >
-                    {(rankPos.isCurrent || rankPos.isAchieved) && (
-                      <div className='w-2 h-2 bg-white rounded-full' />
-                    )}
-                  </div>
-                  {/* Rank card */}
-                  <div
-                    className={`flex items-center gap-3 p-3 rounded-lg border w-full transition-all duration-300 ${
-                      rankPos.isCurrent
-                        ? 'bg-blue-900/40 border-blue-500/60 shadow-lg'
-                        : rankPos.isAchieved
-                          ? 'bg-emerald-900/20 border-emerald-500/40'
-                          : rankPos.isNext
-                            ? 'bg-slate-800/40 border-slate-600/40'
-                            : 'bg-slate-800/20 border-slate-700/20 opacity-40'
-                    }`}
-                  >
+                  {/* Top row: rank info and status */}
+                  <div className='flex items-center gap-3'>
                     <div className={`text-2xl ${rankPos.isCurrent ? 'scale-110' : ''}`}>
                       {rankPos.rank.emoji}
                     </div>
                     <div className='flex-1'>
                       <Link href='/achievements#category-LEVEL_COMPLETION' className='block hover:opacity-80 transition-opacity'>
-                        <div className={`font-semibold text-sm ${
+                        <div className={`font-semibold text-base ${
                           rankPos.isCurrent
-                            ? 'text-blue-200'
+                            ? 'text-white'
                             : rankPos.isAchieved
-                              ? 'text-emerald-200'
+                              ? 'text-white'
                               : rankPos.isNext
-                                ? 'text-slate-300'
-                                : 'text-slate-500'
+                                ? 'text-white'
+                                : 'text-white/70'
                         }`}>
                           {rankPos.rank.name}
                         </div>
-                        <div className='text-xs text-slate-500'>
+                        <div className='text-sm text-white/90'>
                           {rankPos.rank.description}
                         </div>
                         {rankPos.percentile > 0 && (
-                          <div className='text-xs text-slate-400 mt-1'>
+                          <div className='text-sm text-white/80 mt-1'>
                               Only {rankPos.percentile.toFixed(1)}% of players have achieved this rank
                           </div>
                         )}
                       </Link>
                     </div>
                     
-                    {/* Action button for current rank */}
-                    {rankPos.isCurrent && (() => {
-                      // Use custom CTA if provided, otherwise use default logic
-                      if (customCta) {
-                        return (
-                          <div className='flex flex-col items-end gap-2'>
-                            <div className='px-2 py-1 bg-blue-500 text-white text-xs rounded-full font-semibold'>
-                              Current
-                            </div>
-                            {customCta}
+                    {/* Status for all ranks */}
+                    <div className='text-right'>
+                      {rankPos.isCurrent ? (
+                        <div className='px-3 py-1 bg-gradient-to-r from-purple-600/90 to-pink-600/90 backdrop-blur-sm text-white text-sm rounded-full font-semibold border border-white/30'>
+                          Current
+                        </div>
+                      ) : rankPos.isAchieved ? (
+                        <div className='text-white text-sm font-semibold'>
+                          <span className='hidden sm:inline'>✓ Achieved</span>
+                          <span className='sm:hidden'>✓</span>
+                        </div>
+                      ) : rankPos.isNext ? (
+                        <div className='flex flex-col items-end gap-1'>
+                          <div className='px-3 py-1 bg-gradient-to-r from-cyan-800/80 to-blue-800/80 backdrop-blur-sm text-white text-sm rounded-full font-semibold border border-cyan-400/30 animate-pulse'>
+                              Next Goal
                           </div>
-                        );
+                          {rankPos.requirement && (
+                            <Link
+                              href={`/profile/${user?.name}`}
+                              className='text-sm text-white cursor-pointer border-b border-dotted border-white/60 hover:text-white/80 transition-colors'
+                              data-tooltip-id={`progress-tooltip-${rankPos.difficultyIndex}`}
+                              data-tooltip-content={`Counts levels at ${rankPos.rank.name} difficulty or harder`}
+                            >
+                                Progress: {rankPos.userProgress || 0}/{rankPos.requirement} {rankPos.rank.name} Solved
+                            </Link>
+                          )}
+                        </div>
+                      ) : (
+                        <div className='w-4 h-4 border border-white/30 rounded-full opacity-30' />
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* Bottom row: CTA button for current rank */}
+                  {rankPos.isCurrent && (() => {
+                    // Use custom CTA if provided, otherwise use default logic
+                    if (customCta) {
+                      return customCta;
+                    }
+
+                    // Default CTA logic
+                    const getDefaultCtaInfo = () => {
+                      // Get user's chapter progress from context
+                      const chapterUnlocked = user?.config?.chapterUnlocked || 1;
+                      const currentPath = router.asPath;
+
+                      // For new players (Newb), start with chapter 1
+                      if (rankPos.isNewb) {
+                        return {
+                          href: currentPath.startsWith('/chapter/1') ? '/chapter/1?continue=true' : '/chapter/1',
+                          text: currentPath.startsWith('/chapter/1') ? 'Up Next' : 'Start Chapter 1'
+                        };
                       }
 
-                      // Default CTA logic
-                      const getDefaultCtaInfo = () => {
-                        // Get user's chapter progress from context
-                        const chapterUnlocked = user?.config?.chapterUnlocked || 1;
-                        const currentPath = router.asPath;
-
-                        // For new players (Newb), start with chapter 1
-                        if (rankPos.isNewb) {
-                          return {
-                            href: currentPath.startsWith('/chapter/1') ? '/chapter/1?continue=true' : '/chapter/1',
-                            text: currentPath.startsWith('/chapter/1') ? 'Up Next' : 'Start Chapter 1'
-                          };
-                        }
-
-                        // For advanced players, check if they've completed all chapters
-                        if (chapterUnlocked > 3) {
-                          return {
-                            href: '/ranked',
-                            text: 'Play Ranked'
-                          };
-                        }
-
-                        // For players in progress, direct to their current chapter
-                        // The chapter page will handle finding and navigating to the first unsolved level
-                        const isContinuePlaying = currentPath.startsWith(`/chapter/${chapterUnlocked}`);
-
+                      // For advanced players, check if they've completed all chapters
+                      if (chapterUnlocked > 3) {
                         return {
-                          href: isContinuePlaying ? `/chapter/${chapterUnlocked}?continue=true` : `/chapter/${chapterUnlocked}`,
-                          text: isContinuePlaying ? 'Up Next' : `Continue Chapter ${chapterUnlocked}`
+                          href: '/ranked',
+                          text: 'Play Ranked'
                         };
+                      }
+
+                      // For players in progress, direct to their current chapter
+                      // The chapter page will handle finding and navigating to the first unsolved level
+                      const isContinuePlaying = currentPath.startsWith(`/chapter/${chapterUnlocked}`);
+
+                      return {
+                        href: isContinuePlaying ? `/chapter/${chapterUnlocked}?continue=true` : `/chapter/${chapterUnlocked}`,
+                        text: isContinuePlaying ? 'Up Next' : `Continue Chapter ${chapterUnlocked}`
                       };
+                    };
 
-                      const ctaInfo = getDefaultCtaInfo();
+                    const ctaInfo = getDefaultCtaInfo();
 
-                      return (
-                        <div className='flex flex-col items-end gap-2'>
-                          <div className='px-2 py-1 bg-blue-500 text-white text-xs rounded-full font-semibold'>
-                            Current
-                          </div>
-                          <Link
-                            href={ctaInfo.href}
-                            className='group relative px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white text-sm font-bold rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 border border-blue-400/30'
-                          >
-                            <span className='relative z-10 flex items-center gap-1'>
-                              {ctaInfo.text}
-                              <svg className='w-4 h-4 transition-transform group-hover:translate-x-1' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                                <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M13 7l5 5m0 0l-5 5m5-5H6' />
-                              </svg>
-                            </span>
-                            <div className='absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-lg' />
-                          </Link>
-                        </div>
-                      );
-                    })()}
-                    
-                    {/* Status for non-current ranks */}
-                    {!rankPos.isCurrent && (
-                      <div className='text-right'>
-                        {rankPos.isAchieved ? (
-                          <div className='text-emerald-400 text-xs'>✓ Achieved</div>
-                        ) : rankPos.isNext ? (
-                          <div className='flex flex-col items-end gap-1'>
-                            <div className='px-2 py-1 bg-slate-700 text-slate-300 text-xs rounded font-semibold'>
-                                Next Goal
-                            </div>
-                            {rankPos.requirement && (
-                              <Link
-                                href={`/profile/${user?.name}`}
-                                className='text-xs text-emerald-400 cursor-pointer border-b border-dotted border-emerald-400 hover:text-emerald-300 transition-colors'
-                                data-tooltip-id={`progress-tooltip-${rankPos.difficultyIndex}`}
-                                data-tooltip-content={`Counts levels at ${rankPos.rank.name} difficulty or harder`}
-                              >
-                                  Progress: {rankPos.userProgress || 0}/{rankPos.requirement} {rankPos.rank.name} Solved
-                              </Link>
-                            )}
-                          </div>
-                        ) : (
-                          <div className='w-4 h-4 border border-slate-700 rounded-full opacity-30' />
-                        )}
-                      </div>
-                    )}
-                  </div>
+                    return (
+                      <Link
+                        href={ctaInfo.href}
+                        className='group relative w-full px-4 py-3 bg-gradient-to-r from-purple-800/80 to-pink-800/80 backdrop-blur-md hover:bg-gradient-to-r hover:from-purple-700/80 hover:to-pink-700/80 text-white text-base font-bold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 border border-purple-400/30 text-center'
+                      >
+                        <span className='relative z-10 flex items-center justify-center gap-2'>
+                          {ctaInfo.text}
+                          <svg className='w-5 h-5 transition-transform group-hover:translate-x-1' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                            <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M13 7l5 5m0 0l-5 5m5-5H6' />
+                          </svg>
+                        </span>
+                        <div className='absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-xl' />
+                      </Link>
+                    );
+                  })()}
                 </div>
-              </React.Fragment>
+              </div>
             ))}
           </div>
         </div>
         {/* Progress summary */}
-        <div className='mt-4 text-center'>
-          <p className='text-slate-300 text-sm'>
+        <div className='mt-6 text-center'>
+          <p className='text-white/80 text-base'>
             {highestAchievedIndex >= 8 ? (
               <>🔥 Elite level achieved! You&apos;re among the puzzle masters!</>
             ) : highestAchievedIndex >= 5 ? (
@@ -449,17 +381,18 @@ export default function PlayerRankProgress({ className = '', customCta }: Player
             )}
           </p>
         </div>
-      </div>
-      
-      {/* Tooltips for progress indicators */}
-      {allRankPositions.map((rankPos) => (
-        rankPos.requirement && (
-          <StyledTooltip
-            key={`tooltip-${rankPos.difficultyIndex}`}
-            id={`progress-tooltip-${rankPos.difficultyIndex}`}
-          />
-        )
-      ))}
+        </div>
+        
+        {/* Tooltips for progress indicators */}
+        {allRankPositions.map((rankPos) => (
+          rankPos.requirement && (
+            <StyledTooltip
+              key={`tooltip-${rankPos.difficultyIndex}`}
+              id={`progress-tooltip-${rankPos.difficultyIndex}`}
+            />
+          )
+        ))}
+
     </div>
   );
 }
