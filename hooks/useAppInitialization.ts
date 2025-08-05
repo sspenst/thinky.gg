@@ -8,9 +8,9 @@ import { useRouter } from 'next/router';
 import nProgress from 'nprogress';
 import React, { useCallback, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import User from '../models/db/user';
+import { ReqUser } from '../models/db/user';
 
-export function useAppInitialization(user: User | null | undefined, initGame: Game) {
+export function useAppInitialization(user: ReqUser | null | undefined, initGame: Game) {
   const router = useRouter();
   const [host, setHost] = useState<string>('thinky.gg');
   const [playLater, setPlayLater] = useState<{ [key: string]: boolean }>();
