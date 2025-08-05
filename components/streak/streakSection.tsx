@@ -56,36 +56,65 @@ export default function StreakSection({ gameId, userConfig, hideHeader, compact 
         : 'hover:shadow-md hover:scale-[1.01]'}
           `}
         >
-          <div className='bg-gradient-to-r from-purple-600 to-blue-600 p-2 text-white'>
-            <div className='flex items-center justify-between'>
-              <div className='flex items-center gap-2'>
-                <GameLogo gameId={gameId} id={gameId + '-streak'} size={16} />
-                <span className='font-medium text-sm'>{game.displayName} Streak</span>
-              </div>
-              <div className='bg-white/20 px-2 py-0.5 rounded-full text-sm font-medium'>
-                {streak} day{streak === 1 ? '' : 's'}
-              </div>
-            </div>
-          </div>
-          <div className='bg-white dark:bg-gray-800 p-2'>
-            {streak === 0 ? (
-              <div className='flex items-center justify-between text-sm'>
-                <span>Start your streak today!</span>
-                <span>🎯</span>
-              </div>
-            ) : (
+          {!hideHeader && (
+            <div className='bg-gradient-to-r from-purple-600 to-blue-600 p-2 text-white'>
               <div className='flex items-center justify-between'>
                 <div className='flex items-center gap-2'>
-                  <span className='text-lg'>{streakRank.emoji}</span>
-                  <span className='text-sm font-medium'>{streakRank.title}</span>
+                  <GameLogo gameId={gameId} id={gameId + '-streak'} size={16} />
+                  <span className='font-medium text-sm'>{game.displayName} Streak</span>
                 </div>
-                <div className={`text-xs font-medium ${!hasPlayedToday && streak > 0 && timeToKeepStreak > 0 ? 'text-yellow-600 dark:text-yellow-400' : 'text-green-600 dark:text-green-400'}`}>
-                  {!hasPlayedToday && streak > 0 && timeToKeepStreak > 0
-                    ? `Play within ${Math.ceil(timeToKeepStreak / (1000 * 60 * 60))}h`
-                    : hasPlayedToday
-                      ? 'Played today! 🌟'
-                      : 'Start streak!'}
+                <div className='bg-white/20 px-2 py-0.5 rounded-full text-sm font-medium'>
+                  {streak} day{streak === 1 ? '' : 's'}
                 </div>
+              </div>
+            </div>
+          )}
+          <div className={hideHeader ? 'p-0' : 'bg-white dark:bg-gray-800 p-2'}>
+            {streak === 0 ? (
+              <div className={hideHeader ? 'flex flex-col items-center text-center text-white/80' : 'flex items-center justify-between text-sm'}>
+                <span className={hideHeader ? 'text-base mb-2' : ''}>Start your streak today!</span>
+                <span className={hideHeader ? 'text-2xl' : ''}>🎯</span>
+              </div>
+            ) : (
+              <div className={hideHeader ? 'flex flex-col gap-3' : 'flex items-center justify-between'}>
+                <div className={hideHeader ? 'flex items-center justify-between' : 'flex items-center gap-2'}>
+                  <div className='flex items-center gap-2'>
+                    <span className={hideHeader ? 'text-2xl' : 'text-lg'}>{streakRank.emoji}</span>
+                    <span className={hideHeader ? 'text-base font-semibold text-white' : 'text-sm font-medium'}>{streakRank.title}</span>
+                  </div>
+                  {hideHeader && (
+                    <div className={`text-sm font-medium ${!hasPlayedToday && streak > 0 && timeToKeepStreak > 0 ? 'text-yellow-300' : 'text-green-300'}`}>
+                      {!hasPlayedToday && streak > 0 && timeToKeepStreak > 0
+                        ? `Play within ${Math.ceil(timeToKeepStreak / (1000 * 60 * 60))}h`
+                        : hasPlayedToday
+                          ? 'Played today! 🌟'
+                          : 'Start streak!'}
+                    </div>
+                  )}
+                </div>
+                {hideHeader && nextRank && (
+                  <div className='space-y-2'>
+                    <div className='flex items-center justify-between text-sm'>
+                      <span className='text-white/80'>Next: {nextRank.title}</span>
+                      <span className='text-white/70'>{nextRank.min - streak} days to go</span>
+                    </div>
+                    <div className='w-full bg-white/20 rounded-full h-2'>
+                      <div
+                        className='bg-gradient-to-r from-cyan-400 to-blue-400 h-2 rounded-full transition-all duration-300'
+                        style={{ width: `${progressPercent}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
+                {!hideHeader && (
+                  <div className={`text-xs font-medium ${!hasPlayedToday && streak > 0 && timeToKeepStreak > 0 ? 'text-yellow-600 dark:text-yellow-400' : 'text-green-600 dark:text-green-400'}`}>
+                    {!hasPlayedToday && streak > 0 && timeToKeepStreak > 0
+                      ? `Play within ${Math.ceil(timeToKeepStreak / (1000 * 60 * 60))}h`
+                      : hasPlayedToday
+                        ? 'Played today! 🌟'
+                        : 'Start streak!'}
+                  </div>
+                )}
               </div>
             )}
           </div>

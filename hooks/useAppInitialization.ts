@@ -184,6 +184,7 @@ export function useAppInitialization(user: ReqUser | null | undefined, initGame:
       // Send badge count if user has notifications
       if (user && user.notifications) {
         const unreadCount = user.notifications.filter(n => !n.read).length;
+
         window.ReactNativeWebView.postMessage(JSON.stringify({
           action: 'update_badge_count',
           count: unreadCount
