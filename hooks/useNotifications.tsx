@@ -59,6 +59,15 @@ export function useNotifications({ notifications, setNotifications }: UseNotific
 
       // Update the backend
       await putNotification([notificationId], read);
+
+      // Update badge count in React Native app
+      if (window.ReactNativeWebView && notifications) {
+        const unreadCount = notifications.filter(n => n._id.toString() === notificationId ? read : !n.read).length;
+        window.ReactNativeWebView.postMessage(JSON.stringify({
+          action: 'update_badge_count',
+          count: unreadCount
+        }));
+      }
     } catch (err) {
       console.error(err);
       toast.dismiss();
@@ -67,7 +76,7 @@ export function useNotifications({ notifications, setNotifications }: UseNotific
       // Revert the optimistic update on error
       updateNotificationState(notificationId, !read);
     }
-  }, [putNotification, updateNotificationState]);
+  }, [putNotification, updateNotificationState, notifications]);
 
   const markMultipleAsRead = useCallback(async (notificationIds: string[], read: boolean): Promise<void> => {
     try {
@@ -76,6 +85,16 @@ export function useNotifications({ notifications, setNotifications }: UseNotific
 
       // Update the backend
       await putNotification(notificationIds, read);
+
+      // Update badge count in React Native app
+      if (window.ReactNativeWebView && notifications) {
+        const idSet = new Set(notificationIds);
+        const unreadCount = notifications.filter(n => idSet.has(n._id.toString()) ? !read : !n.read).length;
+        window.ReactNativeWebView.postMessage(JSON.stringify({
+          action: 'update_badge_count',
+          count: unreadCount
+        }));
+      }
     } catch (err) {
       console.error(err);
       toast.dismiss();
@@ -84,7 +103,7 @@ export function useNotifications({ notifications, setNotifications }: UseNotific
       // Revert the optimistic update on error
       notificationIds.forEach(id => updateNotificationState(id, !read));
     }
-  }, [putNotification, updateNotificationState]);
+  }, [putNotification, updateNotificationState, notifications]);
 
   const showNotificationToast = useCallback((notification: Notification) => {
     // Create a toast-specific markAsRead that also dismisses the toast
@@ -141,6 +160,15 @@ export function useNotifications({ notifications, setNotifications }: UseNotific
 
     // Update the notifications list
     setNotifications(socketNotifications);
+
+    // Update badge count in React Native app
+    if (window.ReactNativeWebView) {
+      const unreadCount = socketNotifications.filter(n => !n.read).length;
+      window.ReactNativeWebView.postMessage(JSON.stringify({
+        action: 'update_badge_count',
+        count: unreadCount
+      }));
+    }
   }, [showNotificationToast, setNotifications]);
 
   return useMemo(() => ({

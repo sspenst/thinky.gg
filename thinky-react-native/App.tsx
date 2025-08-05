@@ -137,6 +137,11 @@ async function onRemoteMessage(message: FirebaseMessagingTypes.RemoteMessage) {
       } })
     },
   });
+
+  // Update badge count
+  if (mobileNotification.badgeCount !== undefined) {
+    await notifee.setBadgeCount(mobileNotification.badgeCount);
+  }
 }
 
 function App() {
@@ -160,7 +165,31 @@ function App() {
   useEffect(() => {
     const change = AppState.addEventListener('change', (appStateStatus) => {
       if (appStateStatus === 'active') {
-        notifee.setBadgeCount(0);
+        // Request badge count update from web app when app becomes active
+        if (webViewRef.current) {
+          webViewRef.current.injectJavaScript(`
+            (function() {
+              // Check if user is logged in and send unread notification count
+              const updateBadgeCount = async () => {
+                try {
+                  const response = await fetch('/api/user');
+                  if (response.ok) {
+                    const userData = await response.json();
+                    const unreadCount = userData.notifications ? userData.notifications.filter(n => !n.read).length : 0;
+                    window.ReactNativeWebView.postMessage(JSON.stringify({
+                      action: 'update_badge_count',
+                      count: unreadCount
+                    }));
+                  }
+                } catch (error) {
+                  console.error('Failed to update badge count:', error);
+                }
+              };
+              updateBadgeCount();
+            })();
+            true;
+          `);
+        }
       }
     });
 
@@ -331,7 +360,7 @@ function App() {
             webViewRef.current.reload();
           }
         }}
-        onMessage={(event) => {
+        onMessage={async (event) => {
           const data = JSON.parse(event.nativeEvent.data);
 
           console.log('onMessage', data);
@@ -345,6 +374,11 @@ function App() {
           // Handle Google OAuth request
           if (data.action === 'google_oauth') {
             handleGoogleSignIn();
+          }
+
+          // Handle notification badge count
+          if (data.action === 'update_badge_count' && typeof data.count === 'number') {
+            await notifee.setBadgeCount(data.count);
           }
         }}
         onNavigationStateChange={(navState) => {
