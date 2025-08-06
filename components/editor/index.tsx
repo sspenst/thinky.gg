@@ -599,7 +599,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, originalL
         </div>
         <GameRefactored
           disablePlayAttempts={true}
-          disableCheckpoints={true}
+          disableCheckpoints={isUnsaved} // Only disable checkpoints for unsaved levels
           disableStats={true} // Always disable automatic stats - we'll handle it manually
           level={testLevel}
           onSolve={() => {
