@@ -1,7 +1,7 @@
 import StatFilter from '@root/constants/statFilter';
 import TourPath from '@root/constants/tourPath';
 import getProfileSlug from '@root/helpers/getProfileSlug';
-import { Activity, ArrowRight, ChevronsDown, ChevronsUp, Search, Sparkles, Target, Trophy } from 'lucide-react';
+import { Activity, ArrowRight, ChevronsDown, ChevronsUp, Search, Sparkles, Trophy } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';

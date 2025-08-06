@@ -261,13 +261,7 @@ export function ChapterSelectCardBase({
                 </div>
               )}
               
-              {/* Progress indicator for non-disabled cards */}
-              {!disabled && !complete && (
-                <div className='flex items-center gap-2 px-6 py-4 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20'>
-                  <span className='text-sm text-purple-200 font-bold tracking-wide uppercase'>{subtitle || 'Begin'}</span>
-                  <ArrowRight className='w-5 h-5 text-purple-200 animate-pulse' />
-                </div>
-              )}
+            
             </div>
           </Link>
         </div>
