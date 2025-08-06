@@ -63,7 +63,7 @@
     "socket.io-client": "^4.8.1",
     "stripe": "^17.6.0",
     "swr": "^2.3.0",
-    "three": "^0.176.0",
+    "three": "^0.178.0",
     "throttle-debounce": "^5.0.2",
     "winston": "^3.17.0"
   },
