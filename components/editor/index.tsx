@@ -29,12 +29,14 @@ interface EditorProps {
   setIsDirty: (isDirty: boolean) => void;
   setLevel: React.Dispatch<React.SetStateAction<Level>>;
   originalLevel?: Level;
+  setAllowNavigation?: (allow: boolean) => void;
 }
 
-export default function Editor({ isDirty, level, setIsDirty, setLevel, originalLevel }: EditorProps) {
+export default function Editor({ isDirty, level, setIsDirty, setLevel, originalLevel, setAllowNavigation }: EditorProps) {
   const { game, deviceInfo } = useContext(AppContext);
   const [isTestMode, setIsTestMode] = useState(false);
   const [bestSolution, setBestSolution] = useState<Direction[] | null>(null);
+  const bestSolutionRef = useRef<Direction[] | null>(null); // Use ref for immediate access
   const history = useRef<Level[]>([level]);
   const historyIndex = useRef<number>(0);
   const [isCreateLevelOpen, setIsCreateLevelOpen] = useState(false);
@@ -60,6 +62,9 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, originalL
     leastMoves: (originalLevel || level).leastMoves,
   });
   
+  // For unsaved levels, track the level state when a solution was found
+  const [solutionLevelData, setSolutionLevelData] = useState<{data: string, width: number, height: number} | null>(null);
+  
   // Check if current level data differs from server
   const hasLevelDataChanged = useCallback(() => {
     return (
@@ -69,9 +74,16 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, originalL
     );
   }, [serverLevelData, level.data, level.width, level.height]);
   
+  // Helper to clear best solution from both state and ref
+  const clearBestSolution = useCallback(() => {
+    setBestSolution(null);
+    bestSolutionRef.current = null;
+  }, []);
+  
   // Update dirty state and leastMoves when level data changes
   useEffect(() => {
-    if (id) { // Only for saved levels
+    if (id) { 
+      // For saved levels, compare against server state
       const hasChanged = hasLevelDataChanged();
       
       if (hasChanged !== isDirty) {
@@ -91,8 +103,26 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, originalL
         
         return prevLevel;
       });
+    } else if (!id && solutionLevelData) {
+      // For unsaved levels, check if level changed after a solution was found
+      const levelChangedSinceSolution = (
+        solutionLevelData.data !== level.data ||
+        solutionLevelData.width !== level.width ||
+        solutionLevelData.height !== level.height
+      );
+      
+      if (levelChangedSinceSolution && level.leastMoves > 0) {
+        // Reset leastMoves to 0 when level is modified after finding a solution
+        setLevel(prevLevel => ({
+          ...prevLevel,
+          leastMoves: 0
+        }));
+        // Clear the solution data and best solution since the level changed
+        setSolutionLevelData(null);
+        clearBestSolution();
+      }
     }
-  }, [level.data, level.width, level.height, hasLevelDataChanged, isDirty, setIsDirty, id, serverLevelData.leastMoves]);
+  }, [level.data, level.width, level.height, hasLevelDataChanged, isDirty, setIsDirty, id, serverLevelData.leastMoves, solutionLevelData, clearBestSolution]);
   const [savedLevelId, setSavedLevelId] = useState<string | null>(id ? String(id) : null);
 
   const undo = useCallback(() => {
@@ -270,6 +300,35 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, originalL
     };
   }, [isPublishDropdownOpen]);
 
+  // Handle browser back button during test mode
+  useEffect(() => {
+    if (isTestMode) {
+      // Push a new history state when entering test mode
+      window.history.pushState({ testMode: true }, '', window.location.href);
+      
+      const handlePopState = (e: PopStateEvent) => {
+        // When back button is pressed, exit test mode instead of navigating away
+        e.preventDefault();
+        setIsTestMode(false);
+        
+        // Only clear best solution for truly unsaved levels
+        const isUnsaved = !id && !savedLevelId;
+        if (isUnsaved) {
+          clearBestSolution();
+        }
+        
+        // Push the state back to prevent actual navigation
+        window.history.pushState(null, '', window.location.href);
+      };
+
+      window.addEventListener('popstate', handlePopState);
+
+      return () => {
+        window.removeEventListener('popstate', handlePopState);
+      };
+    }
+  }, [isTestMode, id, savedLevelId, clearBestSolution]);
+
   function historyPush(level: Level) {
     if (level.data !== history.current[history.current.length - 1].data) {
       historyIndex.current++;
@@ -398,7 +457,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, originalL
           const validateSolution = game.validateSolution;
           if (validateSolution && !validateSolution(bestSolution, level)) {
             toast.error('Your solution is no longer valid due to level changes.');
-            setBestSolution(null);
+            clearBestSolution();
           } else {
             submitBestSolution(id, bestSolution);
           }
@@ -430,18 +489,17 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, originalL
         toast.success(`Your best solution (${moves.length} moves) has been submitted!`, {
           duration: 3000,
         });
-        // Clear the best solution after successful submission
-        setBestSolution(null);
+        clearBestSolution();
       } else {
         const error = await res.text();
         console.error('Stats submission failed:', error);
         toast.error('Failed to submit solution.');
-        setBestSolution(null);
+        clearBestSolution();
       }
     }).catch(err => {
       console.error('Failed to submit solution:', err);
       toast.error('Failed to submit solution.');
-      setBestSolution(null);
+      clearBestSolution();
     });
   }
 
@@ -483,13 +541,10 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, originalL
 
   if (isTestMode) {
     const isUnsaved = !id && !savedLevelId;
-    const testLevel = isUnsaved ? {
+    const testLevel = {
       ...level,
-      _id: level._id || ('temp_' + Date.now()), // Temp ID for unsaved levels
-    } : {
-      ...level,
-      _id: savedLevelId || level._id,
-    } as Level; // Use actual level for saved levels
+      _id: isUnsaved ? (level._id || ('temp_' + Date.now())) : (savedLevelId || level._id || id),
+    } as Level;
 
     // Show the game in test mode
     return (
@@ -504,11 +559,11 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, originalL
                 <button
                   className='px-4 py-2 bg-green-500 hover:bg-green-600 rounded flex items-center gap-2'
                   onClick={() => {
-                    setIsTestMode(false);
                     if (isUnsaved) {
+                      setIsTestMode(false);
                       setIsCreateLevelOpen(true);
                     } else {
-                      // For dirty saved levels, just save the changes
+                      // For dirty saved levels, just save the changes without exiting test mode
                       save();
                     }
                   }}
@@ -523,7 +578,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, originalL
                   setIsTestMode(false);
                   // Clear the best solution when exiting test mode without saving
                   if (isUnsaved) {
-                    setBestSolution(null);
+                    clearBestSolution();
                   }
                 }}
               >
@@ -568,44 +623,55 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, originalL
               // Store the complete solution path as Direction array
               const moves = gameState.moves.map(move => move.direction);
               
-              if (isUnsaved) {
-                // For truly unsaved levels, track the best solution locally for later submission
-                if (!bestSolution || moves.length < bestSolution.length) {
-                  setBestSolution(moves);
-                  // Update the level's leastMoves for display
-                  setLevel(prevLevel => ({
-                    ...prevLevel,
-                    leastMoves: moves.length
-                  }));
-                  toast.success(`New best solution: ${moves.length} moves!`);
+              // Defer state updates to avoid the React warning
+              setTimeout(() => {
+                if (isUnsaved) {
+                  // For truly unsaved levels, track the best solution locally for later submission
+                  if (!bestSolution || moves.length < bestSolution.length) {
+                    bestSolutionRef.current = moves; // Set ref immediately for synchronous access
+                    setBestSolution(moves);
+                    // Update the level's leastMoves for display
+                    setLevel(prevLevel => ({
+                      ...prevLevel,
+                      leastMoves: moves.length
+                    }));
+                    // Track the level state when this solution was found
+                    setSolutionLevelData({
+                      data: level.data,
+                      width: level.width,
+                      height: level.height
+                    });
+                    toast.success(`New best solution: ${moves.length} moves!`);
+                  }
+                  // Don't show anything if it's not an improvement
+                } else if (isDirty) {
+                  // For saved but modified levels (leastMoves should already be 0 from useEffect)
+                  if (!bestSolution || moves.length < bestSolution.length) {
+                    bestSolutionRef.current = moves; // Set ref immediately for synchronous access
+                    setBestSolution(moves);
+                    // Update leastMoves only if it's better than 0 (which is the expected value for modified levels)
+                    setLevel(prevLevel => ({
+                      ...prevLevel,
+                      leastMoves: moves.length
+                    }));
+                    toast.success(`New best solution: ${moves.length} moves!`);
+                  }
+                } else {
+                  // For saved unmodified levels, check if this is a new record
+                  const isNewRecord = moves.length < level.leastMoves || level.leastMoves === 0;
+                  
+                  if (isNewRecord) {
+                    // Update the level's leastMoves for display
+                    setLevel(prevLevel => ({
+                      ...prevLevel,
+                      leastMoves: moves.length
+                    }));
+                    // Submit immediately for new records
+                    submitBestSolution(String(id || savedLevelId), moves);
+                  }
+                  // For non-records on saved unmodified levels, stay silent and don't submit
                 }
-                // Don't show anything if it's not an improvement
-              } else if (isDirty) {
-                // For saved but modified levels (leastMoves should already be 0 from useEffect)
-                if (!bestSolution || moves.length < bestSolution.length) {
-                  setBestSolution(moves);
-                  // Update leastMoves only if it's better than 0 (which is the expected value for modified levels)
-                  setLevel(prevLevel => ({
-                    ...prevLevel,
-                    leastMoves: moves.length
-                  }));
-                  toast.success(`New best solution: ${moves.length} moves!`);
-                }
-              } else {
-                // For saved unmodified levels, check if this is a new record
-                const isNewRecord = moves.length < level.leastMoves || level.leastMoves === 0;
-                
-                if (isNewRecord) {
-                  // Update the level's leastMoves for display
-                  setLevel(prevLevel => ({
-                    ...prevLevel,
-                    leastMoves: moves.length
-                  }));
-                  // Submit immediately for new records
-                  submitBestSolution(String(id || savedLevelId), moves);
-                }
-                // For non-records on saved unmodified levels, stay silent and don't submit
-              }
+              }, 0);
             }
           }}
           onStatsSuccess={() => {
@@ -780,17 +846,22 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, originalL
       isOpen={isCreateLevelOpen}
       level={level}
       onLevelCreated={(levelId: string) => {
+        // Allow navigation since we're successfully saving
+        if (setAllowNavigation) {
+          setAllowNavigation(true);
+        }
         // Update the saved level ID so we know it's no longer unsaved
         setSavedLevelId(levelId);
-        // If we have a best solution, submit it now
-        if (bestSolution && bestSolution.length > 0) {
+        // If we have a best solution, submit it now (use ref for immediate access)
+        const solutionToSubmit = bestSolutionRef.current;
+        if (solutionToSubmit && solutionToSubmit.length > 0) {
           // Validate the solution against the current level data first
           const validateSolution = game.validateSolution;
-          if (validateSolution && !validateSolution(bestSolution, level)) {
+          if (validateSolution && !validateSolution(solutionToSubmit, level)) {
             toast.error('Your solution is no longer valid due to level changes.');
-            setBestSolution(null);
+            clearBestSolution();
           } else {
-            submitBestSolution(levelId, bestSolution);
+            submitBestSolution(levelId, solutionToSubmit);
           }
         }
       }}
