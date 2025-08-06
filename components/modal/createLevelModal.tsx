@@ -8,9 +8,10 @@ interface CreateLevelModalProps {
   closeModal: () => void;
   isOpen: boolean;
   level: Level;
+  onLevelCreated?: (levelId: string) => void;
 }
 
-export default function CreateLevelModal({ closeModal, isOpen, level }: CreateLevelModalProps) {
+export default function CreateLevelModal({ closeModal, isOpen, level, onLevelCreated }: CreateLevelModalProps) {
   const [authorNote, setAuthorNote] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [name, setName] = useState<string>('');
@@ -54,10 +55,15 @@ export default function CreateLevelModal({ closeModal, isOpen, level }: CreateLe
       if (res.status === 200) {
         toast.dismiss();
         toast.success('Created');
-        closeModal();
-
+        
         const { _id } = await res.json();
-
+        
+        // Call the callback if provided (for pending solutions)
+        if (onLevelCreated) {
+          onLevelCreated(_id);
+        }
+        
+        closeModal();
         router.push(`/edit/${_id}`);
       } else {
         throw res.text();

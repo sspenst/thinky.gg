@@ -1,3 +1,4 @@
+import Direction from '@root/constants/direction';
 import { ValidateLevelResponse } from '@root/constants/Games';
 import { AppContext } from '@root/contexts/appContext';
 import TileTypeHelper from '@root/helpers/tileTypeHelper';
@@ -12,6 +13,7 @@ import Control from '../../models/control';
 import Level from '../../models/db/level';
 import { ICON_REDO, ICON_RESIZE, ICON_UNDO } from '../icons/gameIcons';
 import BasicLayout from '../level/basicLayout';
+import GameRefactored from '../level/game-refactored';
 import CreateLevelModal from '../modal/createLevelModal';
 import DataModal from '../modal/dataModal';
 import EditLevelModal from '../modal/editLevelModal';
@@ -26,10 +28,13 @@ interface EditorProps {
   level: Level;
   setIsDirty: (isDirty: boolean) => void;
   setLevel: React.Dispatch<React.SetStateAction<Level>>;
+  originalLevel?: Level;
 }
 
-export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorProps) {
-  const { game, deviceInfo, user } = useContext(AppContext);
+export default function Editor({ isDirty, level, setIsDirty, setLevel, originalLevel }: EditorProps) {
+  const { game, deviceInfo } = useContext(AppContext);
+  const [isTestMode, setIsTestMode] = useState(false);
+  const [bestSolution, setBestSolution] = useState<Direction[] | null>(null);
   const history = useRef<Level[]>([level]);
   const historyIndex = useRef<number>(0);
   const [isCreateLevelOpen, setIsCreateLevelOpen] = useState(false);
@@ -46,6 +51,49 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
   const [validateLevelResponse, setValidateLevelResponse] = useState<ValidateLevelResponse>();
   const { id } = router.query;
   const publishDropdownRef = useRef<HTMLDivElement>(null);
+  
+  // Track the server level data (what's actually saved on the server)
+  const [serverLevelData, setServerLevelData] = useState({
+    data: (originalLevel || level).data,
+    width: (originalLevel || level).width,
+    height: (originalLevel || level).height,
+    leastMoves: (originalLevel || level).leastMoves,
+  });
+  
+  // Check if current level data differs from server
+  const hasLevelDataChanged = useCallback(() => {
+    return (
+      serverLevelData.data !== level.data ||
+      serverLevelData.width !== level.width ||
+      serverLevelData.height !== level.height
+    );
+  }, [serverLevelData, level.data, level.width, level.height]);
+  
+  // Update dirty state and leastMoves when level data changes
+  useEffect(() => {
+    if (id) { // Only for saved levels
+      const hasChanged = hasLevelDataChanged();
+      
+      if (hasChanged !== isDirty) {
+        setIsDirty(hasChanged);
+      }
+      
+      // Update leastMoves based on whether level matches server version
+      setLevel(prevLevel => {
+        const newLeastMoves = hasChanged ? 0 : serverLevelData.leastMoves;
+        
+        if (prevLevel.leastMoves !== newLeastMoves) {
+          return {
+            ...prevLevel,
+            leastMoves: newLeastMoves
+          };
+        }
+        
+        return prevLevel;
+      });
+    }
+  }, [level.data, level.width, level.height, hasLevelDataChanged, isDirty, setIsDirty, id, serverLevelData.leastMoves]);
+  const [savedLevelId, setSavedLevelId] = useState<string | null>(id ? String(id) : null);
 
   const undo = useCallback(() => {
     if (historyIndex.current === 0) {
@@ -331,14 +379,30 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
             return prevLevel;
           }
 
-          const level = JSON.parse(JSON.stringify(prevLevel)) as Level;
+          // Update the server level state to match what was just saved
+          setServerLevelData({
+            data: prevLevel.data,
+            width: prevLevel.width,
+            height: prevLevel.height,
+            leastMoves: prevLevel.leastMoves,
+          });
 
-          level.leastMoves = 0;
-
-          return level;
+          return { ...prevLevel };
         });
         toast.dismiss();
         toast.success('Saved');
+
+        // If we have a best solution, submit it now
+        if (bestSolution && bestSolution.length > 0 && typeof id === 'string') {
+          // Validate the solution against the current level data first
+          const validateSolution = game.validateSolution;
+          if (validateSolution && !validateSolution(bestSolution, level)) {
+            toast.error('Your solution is no longer valid due to level changes.');
+            setBestSolution(null);
+          } else {
+            submitBestSolution(id, bestSolution);
+          }
+        }
       } else {
         throw res.text();
       }
@@ -346,6 +410,38 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
       console.error(err);
       toast.dismiss();
       toast.error('Error fetching level');
+    });
+  }
+
+  function submitBestSolution(levelId: string, moves: Direction[]) {
+    // Submit the best solution found during testing
+    fetch('/api/stats', {
+      method: 'PUT',
+      body: JSON.stringify({
+        levelId: levelId,
+        directions: moves,
+      }),
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    }).then(async res => {
+      if (res.status === 200) {
+        toast.success(`Your best solution (${moves.length} moves) has been submitted!`, {
+          duration: 3000,
+        });
+        // Clear the best solution after successful submission
+        setBestSolution(null);
+      } else {
+        const error = await res.text();
+        console.error('Stats submission failed:', error);
+        toast.error('Failed to submit solution.');
+        setBestSolution(null);
+      }
+    }).catch(err => {
+      console.error('Failed to submit solution:', err);
+      toast.error('Failed to submit solution.');
+      setBestSolution(null);
     });
   }
 
@@ -366,7 +462,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
 
   const isValid = !validateLevelResponse || validateLevelResponse.valid;
   const btnTestTooltip = !isValid ?
-    validateLevelResponse.reasons.join('\n') : isDirty ? 'Save before testing' : null;
+    validateLevelResponse.reasons.join('\n') : null;
 
   const isMobile = deviceInfo.isMobile;
 
@@ -384,6 +480,143 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
 
   const modifyEdit = isMobile ? <LucidePencil /> : <div className='flex gap-1'><LucidePencil /><span>Edit</span></div>;
   const modifyPlay = isMobile ? <LucidePlay /> : <div className='flex gap-1'><LucidePlay /><span>Test</span></div>;
+
+  if (isTestMode) {
+    const isUnsaved = !id && !savedLevelId;
+    const testLevel = isUnsaved ? {
+      ...level,
+      _id: level._id || ('temp_' + Date.now()), // Temp ID for unsaved levels
+    } : {
+      ...level,
+      _id: savedLevelId || level._id,
+    } as Level; // Use actual level for saved levels
+
+    // Show the game in test mode
+    return (
+      <div className='flex flex-col h-full'>
+        <div className='flex flex-col gap-2 p-2 bg-gray-800'>
+          <div className='flex justify-between items-center'>
+            <h2 className='font-bold'>
+              Testing: {level.name || 'Untitled Level'}
+            </h2>
+            <div className='flex gap-2'>
+              {(isUnsaved || isDirty) && (
+                <button
+                  className='px-4 py-2 bg-green-500 hover:bg-green-600 rounded flex items-center gap-2'
+                  onClick={() => {
+                    setIsTestMode(false);
+                    if (isUnsaved) {
+                      setIsCreateLevelOpen(true);
+                    } else {
+                      // For dirty saved levels, just save the changes
+                      save();
+                    }
+                  }}
+                >
+                  <LucideSave size={16} />
+                  {isUnsaved ? 'Save Level' : 'Save Changes'}
+                </button>
+              )}
+              <button
+                className='px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded'
+                onClick={() => {
+                  setIsTestMode(false);
+                  // Clear the best solution when exiting test mode without saving
+                  if (isUnsaved) {
+                    setBestSolution(null);
+                  }
+                }}
+              >
+                Back to Editor
+              </button>
+            </div>
+          </div>
+          {isUnsaved && (
+            <div className='bg-yellow-600/20 border border-yellow-500/50 rounded px-3 py-2 text-sm text-yellow-200'>
+              ⚠️ This level is not saved. Progress will not be recorded until you save the level.
+            </div>
+          )}
+          {!isUnsaved && isDirty && (
+            <div className='bg-yellow-600/20 border border-yellow-500/50 rounded px-3 py-2 text-sm text-yellow-200'>
+              ⚠️ This level has unsaved changes. Stats will not be submitted until you save your changes.
+            </div>
+          )}
+        </div>
+        <GameRefactored
+          disablePlayAttempts={true}
+          disableCheckpoints={true}
+          disableStats={true} // Always disable automatic stats - we'll handle it manually
+          level={testLevel}
+          onSolve={() => {
+            if (isUnsaved) {
+              // Truly unsaved levels
+              toast('Solution completed! Save the level to submit your solution.', {
+                icon: '💾',
+                duration: 4000,
+              });
+            } else if (isDirty) {
+              // Saved but modified levels
+              toast('Solution completed! Save your changes first to submit stats.', {
+                icon: '⚠️',
+                duration: 4000,
+              });
+            }
+            // For saved unmodified levels, onMove handles everything (submission and silence)
+          }}
+          onMove={(gameState) => {
+            if (game.isComplete(gameState)) {
+              // Store the complete solution path as Direction array
+              const moves = gameState.moves.map(move => move.direction);
+              
+              if (isUnsaved) {
+                // For truly unsaved levels, track the best solution locally for later submission
+                if (!bestSolution || moves.length < bestSolution.length) {
+                  setBestSolution(moves);
+                  // Update the level's leastMoves for display
+                  setLevel(prevLevel => ({
+                    ...prevLevel,
+                    leastMoves: moves.length
+                  }));
+                  toast.success(`New best solution: ${moves.length} moves!`);
+                }
+                // Don't show anything if it's not an improvement
+              } else if (isDirty) {
+                // For saved but modified levels (leastMoves should already be 0 from useEffect)
+                if (!bestSolution || moves.length < bestSolution.length) {
+                  setBestSolution(moves);
+                  // Update leastMoves only if it's better than 0 (which is the expected value for modified levels)
+                  setLevel(prevLevel => ({
+                    ...prevLevel,
+                    leastMoves: moves.length
+                  }));
+                  toast.success(`New best solution: ${moves.length} moves!`);
+                }
+              } else {
+                // For saved unmodified levels, check if this is a new record
+                const isNewRecord = moves.length < level.leastMoves || level.leastMoves === 0;
+                
+                if (isNewRecord) {
+                  // Update the level's leastMoves for display
+                  setLevel(prevLevel => ({
+                    ...prevLevel,
+                    leastMoves: moves.length
+                  }));
+                  // Submit immediately for new records
+                  submitBestSolution(String(id || savedLevelId), moves);
+                }
+                // For non-records on saved unmodified levels, stay silent and don't submit
+              }
+            }
+          }}
+          onStatsSuccess={() => {
+            // This will be called when we manually submit stats
+            // Don't exit test mode - user might want to continue testing
+            toast.success('New record submitted!');
+          }}
+        />
+      </div>
+    );
+  }
 
   return (<>
     <div className='flex flex-col h-full'>
@@ -416,21 +649,24 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
             } else {
               setIsCreateLevelOpen(true);
             }
-          }, modifySave),
+          }, modifySave, id ? !hasLevelDataChanged() : false), // Disable save if no changes for existing levels
+          new Control(
+            'btn-test',
+            () => {
+              // Simply switch to test mode
+              setIsTestMode(true);
+            },
+            <div className='flex flex-row'>
+              <div data-tooltip-id='btn-test-tooltip' data-tooltip-content={btnTestTooltip}>
+                {!isValid && '⚠️ '}
+              </div>
+              {modifyPlay}
+              <StyledTooltip id='btn-test-tooltip' />
+            </div>,
+            !isValid,
+          ),
           ...(!id ? [] : [
             new Control('btn-edit', () => setIsEditLevelOpen(true), modifyEdit, isDirty),
-            new Control(
-              'btn-test',
-              () => router.push(`/test/${id}`),
-              <div className='flex flex-row'>
-                <div data-tooltip-id='btn-test-tooltip' data-tooltip-content={btnTestTooltip}>
-                  {!isValid && '⚠️ '}
-                </div>
-                {modifyPlay}
-                <StyledTooltip id='btn-test-tooltip' />
-              </div>,
-              isDirty || !isValid,
-            ),
             new Control(
               'btn-publish-main',
               () => setIsPublishLevelOpen(true),
@@ -543,11 +779,36 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
       }}
       isOpen={isCreateLevelOpen}
       level={level}
+      onLevelCreated={(levelId: string) => {
+        // Update the saved level ID so we know it's no longer unsaved
+        setSavedLevelId(levelId);
+        // If we have a best solution, submit it now
+        if (bestSolution && bestSolution.length > 0) {
+          // Validate the solution against the current level data first
+          const validateSolution = game.validateSolution;
+          if (validateSolution && !validateSolution(bestSolution, level)) {
+            toast.error('Your solution is no longer valid due to level changes.');
+            setBestSolution(null);
+          } else {
+            submitBestSolution(levelId, bestSolution);
+          }
+        }
+      }}
     />
     <EditLevelModal
       closeModal={() => setIsEditLevelOpen(false)}
       isOpen={isEditLevelModalOpen}
       level={level}
+      onLevelUpdated={(updatedLevel) => {
+        // Update the level locally, preserving current leastMoves logic
+        setLevel(prevLevel => ({
+          ...updatedLevel,
+          leastMoves: prevLevel.leastMoves, // Keep current leastMoves (might be 0 if modified, or server value if not)
+        }));
+        
+        // Server state for level data doesn't change during metadata updates
+        // Only the metadata changes, level data (width, height, data, leastMoves) stays the same
+      }}
     />
     <PublishLevelModal
       closeModal={() => setIsPublishLevelOpen(false)}

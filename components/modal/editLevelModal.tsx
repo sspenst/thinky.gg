@@ -8,9 +8,10 @@ interface EditLevelModalProps {
   closeModal: () => void;
   isOpen: boolean;
   level: Level;
+  onLevelUpdated?: (updatedLevel: Level) => void;
 }
 
-export default function EditLevelModal({ closeModal, isOpen, level }: EditLevelModalProps) {
+export default function EditLevelModal({ closeModal, isOpen, level, onLevelUpdated }: EditLevelModalProps) {
   const [authorNote, setAuthorNote] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [name, setName] = useState<string>('');
@@ -63,11 +64,15 @@ export default function EditLevelModal({ closeModal, isOpen, level }: EditLevelM
         const newLevel = await res.json();
 
         if (newLevel) {
+          // Instead of reloading, update the level locally to preserve leastMoves
+          if (onLevelUpdated) {
+            onLevelUpdated(newLevel);
+          }
+          
           if (!newLevel.isDraft) {
             router.replace(`/level/${newLevel.slug}`);
-          } else {
-            router.reload();
           }
+          // Don't reload for draft levels - local update is sufficient
         }
       } else {
         throw res.text();
