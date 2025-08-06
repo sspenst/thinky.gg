@@ -51,9 +51,7 @@ export default function StreakSection({ gameId, userConfig, hideHeader, compact 
           }}
           className={`
             cursor-pointer w-full rounded-lg overflow-hidden transition-all duration-300
-            ${!hasPlayedToday && streak > 0
-        ? 'ring-2 ring-yellow-400 shadow-lg shadow-yellow-200/50 hover:shadow-xl hover:scale-[1.02]'
-        : 'hover:shadow-md hover:scale-[1.01]'}
+            hover:shadow-md hover:scale-[1.01]
           `}
         >
           {!hideHeader && (
