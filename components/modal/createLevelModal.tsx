@@ -58,13 +58,18 @@ export default function CreateLevelModal({ closeModal, isOpen, level, onLevelCre
         
         const { _id } = await res.json();
         
+        // Call closeModal first to set isDirty to false
+        closeModal();
+        
         // Call the callback if provided (for pending solutions)
         if (onLevelCreated) {
           onLevelCreated(_id);
         }
         
-        closeModal();
-        router.push(`/edit/${_id}`);
+        // Small delay to ensure state updates complete before navigation
+        setTimeout(() => {
+          router.replace(`/edit/${_id}`);
+        }, 0);
       } else {
         throw res.text();
       }

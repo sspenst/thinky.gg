@@ -39,6 +39,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 export default function New() {
   const { game } = useContext(AppContext);
   const [isDirty, setIsDirty] = useState(false);
+  const [allowNavigation, setAllowNavigation] = useState(false);
 
   const data = game.newLevelData ?? '';
   const dataSplit = data.split('\n');
@@ -52,7 +53,7 @@ export default function New() {
     width: width,
   } as Level);
 
-  useNavigatePrompt(isDirty);
+  useNavigatePrompt(isDirty && !allowNavigation);
 
   return (
     <Page
@@ -67,6 +68,7 @@ export default function New() {
         level={level}
         setIsDirty={setIsDirty}
         setLevel={setLevel}
+        setAllowNavigation={setAllowNavigation}
       />
     </Page>
   );
