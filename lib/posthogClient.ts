@@ -18,11 +18,8 @@ export function initializePostHog() {
     return;
   }
 
-  const apiKey = process.env.NEXT_PUBLIC_POSTHOG_KEY;
-  if (!apiKey) {
-    console.warn('PostHog API key not found');
-    return;
-  }
+  // Use environment variable if available, otherwise use hardcoded key
+  const apiKey = process.env.NEXT_PUBLIC_POSTHOG_KEY || 'phc_Am38672etY9vtglKkfMa86HVxREbLuh7ExC7Qj1qPBx';
 
   posthog.init(apiKey, {
     api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST || '/api/ingest',
