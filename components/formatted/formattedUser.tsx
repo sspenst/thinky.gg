@@ -120,7 +120,7 @@ export default function FormattedUser({ className, hideAvatar, id, noLinks, noTo
   }, []);
   const userConfig = user?.config;
   const streak = userExtendedData?.user.config?.calcCurrentStreak;
-  const streakRank = STREAK_RANK_GROUPS[getStreakRankIndex(streak)];
+  const streakRank = streak && streak > 0 && STREAK_RANK_GROUPS[getStreakRankIndex(streak)];
   const tooltipContent = useMemo(() => {
     if (!userExtendedData || !user) return renderToStaticMarkup(<LoadingSpinner />);
 
@@ -142,7 +142,9 @@ export default function FormattedUser({ className, hideAvatar, id, noLinks, noTo
         {streak && streak > 0 &&
         <div className='flex gap-1'>
           <span className='font-medium'>{game.displayName} Streak</span>
-          <span className='gray'>{streak} days {streakRank.emoji}</span>
+          <span className='gray'>
+            {streak} days {streakRank ? streakRank.emoji : ''}
+          </span>
         </div>
         }
         {!game.isNotAGame &&
