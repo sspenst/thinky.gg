@@ -10,7 +10,7 @@ import { ReqUser } from '@root/models/db/user';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { NextSeo, SoftwareAppJsonLd } from 'next-seo';
 import { useFeatureFlagVariantKey } from 'posthog-js/react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   await dbConnect();
@@ -33,7 +33,26 @@ export default function ThinkyHomeRouter({ user }: ThinkyHomeRouterProps) {
   // Feature flag for homepage A/B test
   // PostHog handles persistence automatically via cookies/localStorage
   const variant = useFeatureFlagVariantKey('new-home-page-experiment-v2');
-  const featureFlagStillLoading = variant === undefined;
+  const [timedOut, setTimedOut] = useState(false);
+  
+  // After 2 seconds, fall back to test variant if PostHog hasn't loaded
+  // This ensures users see content quickly even if PostHog is slow/blocked
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (variant === undefined) {
+        setTimedOut(true);
+        console.log('PostHog experiment timed out, showing test variant');
+      }
+    }, 2000);
+    
+    return () => clearTimeout(timeout);
+  }, [variant]);
+  
+  // Show test variant if: 
+  // 1. PostHog explicitly returns 'test'
+  // 2. PostHog times out (fallback to test)
+  const shouldShowTest = variant === 'test' || (timedOut && variant === undefined);
+  const featureFlagStillLoading = variant === undefined && !timedOut;
 
   useEffect(() => {
     if (!user) {
@@ -87,14 +106,14 @@ export default function ThinkyHomeRouter({ user }: ThinkyHomeRouterProps) {
             </div>
           ) : (
             // A/B test: render variant or original based on feature flag
-            // if featureFlagStillLoading, show a loading spinner
+            // Show loading spinner only for first 2 seconds, then fallback to test
             featureFlagStillLoading ? (
               <div className='flex justify-center items-center h-32'>
                 <svg className='animate-spin h-8 w-8 text-gray-400' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'>
                   <circle cx='12' cy='12' r='10' stroke='currentColor' strokeWidth='4' strokeLinecap='round' strokeDasharray='60' strokeDashoffset='20' />
                 </svg>
               </div>
-            ) : variant === 'test' ? <ThinkyHomePageNotLoggedInVariant /> : <ThinkyHomePageNotLoggedIn />
+            ) : shouldShowTest ? <ThinkyHomePageNotLoggedInVariant /> : <ThinkyHomePageNotLoggedIn />
           )}
         </div>
       </Page>
