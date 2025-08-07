@@ -3,6 +3,7 @@ import { GameId } from '@root/constants/GameId';
 import { ProfileQueryType, UserExtendedData } from '@root/constants/profileQueryType';
 import { AppContext } from '@root/contexts/appContext';
 import isOnline from '@root/helpers/isOnline';
+import { getStreak } from '@root/lib/cleanUser';
 import classNames from 'classnames';
 import Link from 'next/link';
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
@@ -117,7 +118,8 @@ export default function FormattedUser({ className, hideAvatar, id, noLinks, noTo
       setShowTooltip(true);
     }, 200);
   }, []);
-
+  const userConfig = user?.config;
+  const { streak, timeToKeepStreak } = userConfig ? getStreak(userConfig) : { streak: 0, timeToKeepStreak: 0 };
   const tooltipContent = useMemo(() => {
     if (!userExtendedData || !user) return renderToStaticMarkup(<LoadingSpinner />);
 
@@ -135,11 +137,11 @@ export default function FormattedUser({ className, hideAvatar, id, noLinks, noTo
           <span className='gray'>{userExtendedData.user.config?.calcRankedSolves ?? 0} 🏅</span>
         </div>
         }
-        { userExtendedData.user.config?.calcCurrentStreak && userExtendedData.user.config?.calcCurrentStreak > 0 &&
+        {streak && streak > 0 ?
         <div className='flex gap-1'>
           <span className='font-medium'>{game.displayName} Streak</span>
-          <span className='gray'>{userExtendedData.user.config?.calcCurrentStreak ?? 0} days</span>
-        </div>
+          <span className='gray'>{streak ?? 0} days</span>
+        </div> : null
         }
         {!game.isNotAGame &&
         <div className='flex gap-1'>
