@@ -63,8 +63,8 @@ COPY --from=builder --chown=nextjs:nodejs /thinky_app/node_modules ./node_module
 COPY --from=builder --chown=nextjs:nodejs /thinky_app/.next ./.next
 COPY --from=builder --chown=nextjs:nodejs /thinky_app/public ./public
 
-# Copy socket server build
-COPY --from=builder --chown=nextjs:nodejs /thinky_app/server ./server
+# Copy socket server build (compiled JavaScript from dist/)
+COPY --from=builder --chown=nextjs:nodejs /thinky_app/dist ./dist
 
 USER nextjs
 
