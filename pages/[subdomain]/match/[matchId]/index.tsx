@@ -3,6 +3,7 @@ import GameRefactored from '@root/components/level/game-refactored';
 import Grid from '@root/components/level/grid';
 import HeadToHeadDisplay from '@root/components/multiplayer/headToHeadDisplay';
 import MatchResults from '@root/components/multiplayer/matchResults';
+import SpaceBackground from '@root/components/page/SpaceBackground';
 import { MatchGameState } from '@root/helpers/gameStateHelpers';
 import useSWRHelper from '@root/hooks/useSWRHelper';
 import MultiplayerProfile from '@root/models/db/multiplayerProfile';
@@ -349,14 +350,41 @@ export default function Match({ initialMatch }: MatchProps) {
   if (!match) {
     return (
       <Page title='Loading Match...'>
-        <div className='flex flex-col items-center justify-center min-h-[400px] gap-4'>
-          <div className='text-xl'>Loading match data...</div>
-          {initialMatch ? (
-            <div className='text-sm text-gray-500'>Connecting to live updates...</div>
-          ) : (
-            <div className='text-sm text-gray-500'>Fetching match details...</div>
-          )}
-        </div>
+        <SpaceBackground
+          constellationPattern='custom'
+          customConstellations={[
+            { left: '20%', top: '15%', size: '6px', color: 'bg-blue-400', delay: '0s', duration: '3s', glow: true },
+            { left: '40%', top: '20%', size: '5px', color: 'bg-green-400', delay: '0.5s', duration: '2.5s', glow: true },
+            { left: '60%', top: '18%', size: '7px', color: 'bg-purple-400', delay: '1s', duration: '3.5s', glow: true },
+            { left: '80%', top: '25%', size: '6px', color: 'bg-pink-400', delay: '1.5s', duration: '2.8s', glow: true },
+          ]}
+          showGeometricShapes={true}
+        >
+          <div className='relative max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12'>
+            <div className='flex flex-col items-center justify-center min-h-[400px] gap-4 animate-fadeInDown'>
+              <div className='relative'>
+                <div className='absolute -inset-2 bg-gradient-to-r from-blue-600/20 to-purple-600/20 blur-lg opacity-50' />
+                <div className='relative bg-white/8 backdrop-blur-xl rounded-xl p-8 shadow-lg border border-white/20'>
+                  <div className='text-center'>
+                    <div className='w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-4'>
+                      <span className='text-3xl text-white'>⚔️</span>
+                    </div>
+                    <h1 className='text-2xl font-bold mb-2'>
+                      <span className='bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent'>
+                        Loading Match
+                      </span>
+                    </h1>
+                    {initialMatch ? (
+                      <div className='text-sm text-white/70'>Connecting to live updates...</div>
+                    ) : (
+                      <div className='text-sm text-white/70'>Fetching match details...</div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </SpaceBackground>
       </Page>
     );
   }
@@ -478,131 +506,271 @@ export default function Match({ initialMatch }: MatchProps) {
       isFullScreen={match.state === MultiplayerMatchState.ACTIVE && iAmPlaying}
       title='Multiplayer Match'
     >
-      <>
-        <h1 className={classNames('text-3xl font-bold text-center p-3', { 'hidden': matchInProgress })}>
-          {
-            prettyMatchState
-          }
-        </h1>
-        {/* if you are in the game and the game is about to start then say Your Record */}
-        {!matchInProgress && !loadingHeadToHead && match.players.length === 2 && headToHead && (
-          <HeadToHeadDisplay
-            player1Name={match.players[0].name}
-            player2Name={match.players[1]?.name || ''}
-            wins={headToHead.totalWins}
-            losses={headToHead.totalLosses}
-            ties={headToHead.totalTies}
-            className='max-w-md mx-auto mt-4'
-          />
-        )}
-        { match.state === MultiplayerMatchState.ABORTED &&
-          <h2>
-            {playersNotMarkedReady.map(player => (
-              <div key={player._id.toString()} className='text-center text-xs italic'>
-                {player.name} did not mark ready
-              </div>
-            ))}
-          </h2>
-        }
-        {connectedPlayersInRoom && connectedPlayersInRoom.count > 2 &&
-          <div className='absolute py-1 px-1.5 text-xs text-red-500'>
-            {connectedPlayersInRoom.count - 2} spectating
+      <SpaceBackground
+        constellationPattern='custom'
+        customConstellations={[
+          { left: '15%', top: '12%', size: '6px', color: 'bg-red-400', delay: '0s', duration: '3s', glow: true },
+          { left: '35%', top: '18%', size: '5px', color: 'bg-orange-400', delay: '0.8s', duration: '2.5s', glow: true },
+          { left: '55%', top: '15%', size: '7px', color: 'bg-yellow-400', delay: '1.2s', duration: '3.5s', glow: true },
+          { left: '75%', top: '20%', size: '6px', color: 'bg-green-400', delay: '1.8s', duration: '2.8s', glow: true },
+          { left: '85%', top: '25%', size: '5px', color: 'bg-blue-400', delay: '2.2s', duration: '3.2s', glow: true },
+          { left: '25%', top: '30%', size: '6px', color: 'bg-purple-400', delay: '0.5s', duration: '2.9s', glow: true },
+        ]}
+        showGeometricShapes={true}
+      >
+        <div className='relative max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12'>
+          {/* Header Section - Hidden during active match */}
+          <div className={classNames('text-center mb-8 animate-fadeInDown', { 'hidden': matchInProgress })}>
+            <h1 className='font-bold text-3xl sm:text-4xl lg:text-5xl mb-4'>
+              <span className='bg-gradient-to-r from-red-400 via-orange-400 to-yellow-400 bg-clip-text text-transparent'>
+                {prettyMatchState}
+              </span>
+            </h1>
           </div>
-        }
-        {match.state === MultiplayerMatchState.FINISHED || match.state === MultiplayerMatchState.ABORTED || isSpectating ? (
-          <div className='flex flex-col items-center justify-center p-3 gap-6'>
-            <Link
-              className='px-4 py-2 text-lg font-bold text-white bg-blue-500 rounded-md hover:bg-blue-600'
-              href='/multiplayer'
-            >
-              Back
-            </Link>
-            <MatchResults match={match} recap={match.matchLog?.find(log => log.type === MatchAction.GAME_RECAP)?.data as MatchLogDataGameRecap} showViewLink={false} />
-            {match.state !== MultiplayerMatchState.FINISHED && match.state !== MultiplayerMatchState.ABORTED &&
-              <div className='flex gap-2 w-full'>
-                {match.players.map(player => {
-                  const playerId = player._id.toString();
-                  const matchGameState = matchGameStateMap[playerId];
-                  const levelIndex = getLevelIndexByPlayerId(playerId);
-
-                  if (levelIndex === -1) {
-                    return null;
-                  }
-
-                  const level = match.levels[levelIndex] as Level;
-
-                  return (
-                    <div className='flex flex-col items-center w-full gap-1 truncate' key={`match-game-state-${player._id.toString()}-${level._id.toString()}`}>
-                      <div className='max-w-full'>
-                        <FormattedUser id='match-recap' size={Dimensions.AvatarSizeSmall} user={player} />
-                      </div>
-                      <div className='flex flex-col justify-center text-center w-full' style={{
-                        height: '50vh',
-                      }}>
-                        {matchGameState ?
-                          <Grid
-                            gameState={matchGameState}
-                            id={level._id.toString()}
-                            leastMoves={matchGameState.leastMoves || 0}
-                            optimizeDom
-                          />
-                          :
-                          <span className='italic'>Waiting for move</span>
-                        }
-                      </div>
-                      <Link className='font-medium underline truncate max-w-full' href={ `/level/${level.slug}`}>
-                        {level.name}
-                      </Link>
+          {/* Head to Head Display */}
+          {!matchInProgress && !loadingHeadToHead && match.players.length === 2 && headToHead && (
+            <div className='flex justify-center mb-6 animate-fadeInUp' style={{ animationDelay: '0.2s' }}>
+              <div className='relative'>
+                <div className='absolute -inset-2 bg-gradient-to-r from-blue-600/15 to-purple-600/15 blur-lg opacity-40' />
+                <div className='relative bg-white/8 backdrop-blur-xl rounded-xl p-6 shadow-lg border border-white/20'>
+                  <HeadToHeadDisplay
+                    player1Name={match.players[0].name}
+                    player2Name={match.players[1]?.name || ''}
+                    wins={headToHead.totalWins}
+                    losses={headToHead.totalLosses}
+                    ties={headToHead.totalTies}
+                    className='max-w-md'
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+          {/* Aborted Match Info */}
+          {match.state === MultiplayerMatchState.ABORTED && (
+            <div className='flex justify-center mb-6 animate-fadeInUp' style={{ animationDelay: '0.3s' }}>
+              <div className='relative'>
+                <div className='absolute -inset-2 bg-gradient-to-r from-red-600/15 to-pink-600/15 blur-lg opacity-40' />
+                <div className='relative bg-white/8 backdrop-blur-xl rounded-xl p-6 shadow-lg border border-white/20'>
+                  <div className='text-center'>
+                    <div className='w-12 h-12 bg-gradient-to-br from-red-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-3'>
+                      <span className='text-2xl text-white'>❌</span>
                     </div>
-                  );
-                })}
+                    <h3 className='text-lg font-bold mb-2'>
+                      <span className='bg-gradient-to-r from-red-400 to-pink-400 bg-clip-text text-transparent'>
+                        Match Aborted
+                      </span>
+                    </h3>
+                    <div className='space-y-1'>
+                      {playersNotMarkedReady.map(player => (
+                        <div key={player._id.toString()} className='text-sm text-white/70'>
+                          {player.name} did not mark ready
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </div>
-            }
-            <div className='w-full max-w-screen-lg h-96'>
-              <MatchChart match={match} />
             </div>
-            <div className='flex flex-col justify-center gap-8 max-w-full'>
-              {levelResults.reverse()}
-            </div>
-          </div>
-        ) : (
-          <div className='flex flex-col items-center justify-center h-full gap-0.5 mb-4'>
-            {countDown > 0 && <h1 className='text-xl italic'>Starting in {timeUntilEndCleanStr} seconds</h1>}
-            {match.state === MultiplayerMatchState.ACTIVE && match.timeUntilStart > 0 && (
-              <div className='flex flex-col items-center justify-center gap-2'>
-                {match.markedReady.length == 2 && <div>Both players ready!</div>}
-                {match.markedReady.length === 0 && user && !(match.markedReady as Types.ObjectId[]).includes(user._id) && <div>Not ready</div>}
-                {match.markedReady.length === 1 && user && !(match.markedReady as Types.ObjectId[]).includes(user._id) && <div>Other player is ready!</div>}
-                {match.markedReady.length !== 2 && user && (match.markedReady as Types.ObjectId[]).includes(user._id) && <div>Waiting on other player</div>}
-              </div>
-            )}
-            {match.state === MultiplayerMatchState.ACTIVE && match.timeUntilStart > 0 && user && !(match.markedReady as Types.ObjectId[]).includes(user._id) && (
-              <div className='flex flex-col gap-1 justify-center items-center mt-4'>
-                <svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='currentColor' className='animate-bounce bi bi-arrow-down-circle-fill' viewBox='0 0 16 16'>
-                  <path d='M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.5 4.5a.5.5 0 0 0-1 0v5.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V4.5z' />
-                </svg>
-                <button className='animate-pulse px-4 py-2 text-lg font-bold text-white bg-green-500 rounded-md hover:bg-green-600' onClick={(e: React.MouseEvent) => {
-                  // gray out this button and prevent click
-                  const targetButton = e.currentTarget as HTMLButtonElement;
+          )}
 
-                  targetButton.disabled = true;
-                  targetButton.classList.add('opacity-50');
-                  // change the text to marking
-                  targetButton.innerText = 'Marking...';
-
-                  fetchMarkReady();
-                }}>Mark Ready</button>
+          {/* Spectator Count */}
+          {connectedPlayersInRoom && connectedPlayersInRoom.count > 2 && (
+            <div className='absolute top-4 right-4 animate-fadeInRight'>
+              <div className='bg-white/10 backdrop-blur-sm rounded-lg px-3 py-1 border border-white/20'>
+                <span className='text-sm text-white/80'>
+                  👁️ {connectedPlayersInRoom.count - 2} spectating
+                </span>
               </div>
-            )}
-            <div className='pt-1 px-1 max-w-full'>
-              <MatchStatus
-                isMatchPage={true}
-                match={match}
-                onLeaveClick={() => {
-                  router.reload();
-                }}
-              />
             </div>
+          )}
+          {/* Finished/Spectating Match View */}
+          {match.state === MultiplayerMatchState.FINISHED || match.state === MultiplayerMatchState.ABORTED || isSpectating ? (
+            <div className='flex flex-col items-center justify-center gap-8 animate-fadeInUp' style={{ animationDelay: '0.4s' }}>
+              {/* Back Button */}
+              <div className='text-center'>
+                <Link
+                  className='group relative inline-flex items-center justify-center gap-2 overflow-hidden bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-300'
+                  href='/multiplayer'
+                >
+                  <div className='absolute inset-0 bg-gradient-to-r from-white to-transparent opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-transform duration-700' />
+                  <span className='relative'>←</span>
+                  <span className='relative'>Back to Multiplayer</span>
+                </Link>
+              </div>
+            <MatchResults match={match} recap={match.matchLog?.find(log => log.type === MatchAction.GAME_RECAP)?.data as MatchLogDataGameRecap} showViewLink={false} />
+              {/* Live Spectator Grids */}
+              {match.state !== MultiplayerMatchState.FINISHED && match.state !== MultiplayerMatchState.ABORTED && (
+                <div className='w-full max-w-6xl'>
+                  <h2 className='text-2xl font-bold text-center mb-6'>
+                    <span className='bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent'>
+                      Live Match View
+                    </span>
+                  </h2>
+                  <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+                    {match.players.map(player => {
+                      const playerId = player._id.toString();
+                      const matchGameState = matchGameStateMap[playerId];
+                      const levelIndex = getLevelIndexByPlayerId(playerId);
+
+                      if (levelIndex === -1) {
+                        return null;
+                      }
+
+                      const level = match.levels[levelIndex] as Level;
+
+                      return (
+                        <div className='relative' key={`match-game-state-${player._id.toString()}-${level._id.toString()}`}>
+                          <div className='absolute -inset-2 bg-gradient-to-r from-green-600/15 to-blue-600/15 blur-lg opacity-40' />
+                          <div className='relative bg-white/8 backdrop-blur-xl rounded-xl p-4 shadow-lg border border-white/20'>
+                            <div className='flex flex-col items-center gap-3'>
+                              <div className='flex items-center gap-2'>
+                                <span className='text-lg'>🎮</span>
+                                <FormattedUser id='match-recap' size={Dimensions.AvatarSizeSmall} user={player} />
+                              </div>
+                              <div className='flex flex-col justify-center text-center w-full bg-white/5 rounded-lg p-4' style={{
+                                height: '50vh',
+                              }}>
+                                {matchGameState ?
+                                  <Grid
+                                    gameState={matchGameState}
+                                    id={level._id.toString()}
+                                    leastMoves={matchGameState.leastMoves || 0}
+                                    optimizeDom
+                                  />
+                                  :
+                                  <span className='italic text-white/60'>Waiting for move...</span>
+                                }
+                              </div>
+                              <Link className='font-medium text-blue-400 hover:text-blue-300 underline truncate max-w-full transition-colors duration-200' href={`/level/${level.slug}`}>
+                                {level.name}
+                              </Link>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+              {/* Match Chart */}
+              <div className='w-full max-w-screen-lg'>
+                <div className='relative'>
+                  <div className='absolute -inset-2 bg-gradient-to-r from-cyan-600/15 to-blue-600/15 blur-lg opacity-40' />
+                  <div className='relative bg-white/8 backdrop-blur-xl rounded-xl p-6 shadow-lg border border-white/20'>
+                    <h2 className='text-xl font-bold text-center mb-4'>
+                      <span className='bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent'>
+                        Match Progress
+                      </span>
+                    </h2>
+                    <div className='h-96'>
+                      <MatchChart match={match} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Level Results */}
+              <div className='w-full max-w-4xl'>
+                <h2 className='text-2xl font-bold text-center mb-6'>
+                  <span className='bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent'>
+                    Level Breakdown
+                  </span>
+                </h2>
+                <div className='flex flex-col gap-6'>
+                  {levelResults.reverse().map((result, index) => (
+                    <div key={index} className='relative animate-fadeInUp' style={{ animationDelay: `${index * 0.1}s` }}>
+                      <div className='absolute -inset-2 bg-gradient-to-r from-purple-600/15 to-pink-600/15 blur-lg opacity-40' />
+                      <div className='relative bg-white/8 backdrop-blur-xl rounded-xl p-6 shadow-lg border border-white/20'>
+                        {result}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className='flex flex-col items-center justify-center h-full gap-6 mb-4'>
+              {/* Countdown Display */}
+              {countDown > 0 && (
+                <div className='relative animate-pulse'>
+                  <div className='absolute -inset-2 bg-gradient-to-r from-red-600/20 to-orange-600/20 blur-lg opacity-50' />
+                  <div className='relative bg-white/10 backdrop-blur-xl rounded-xl p-6 shadow-lg border border-white/20'>
+                    <h1 className='text-2xl font-bold text-center'>
+                      <span className='bg-gradient-to-r from-red-400 to-orange-400 bg-clip-text text-transparent'>
+                        Starting in {timeUntilEndCleanStr}
+                      </span>
+                    </h1>
+                  </div>
+                </div>
+              )}
+
+              {/* Ready Status */}
+              {match.state === MultiplayerMatchState.ACTIVE && match.timeUntilStart > 0 && (
+                <div className='relative animate-fadeInUp' style={{ animationDelay: '0.2s' }}>
+                  <div className='absolute -inset-2 bg-gradient-to-r from-green-600/15 to-blue-600/15 blur-lg opacity-40' />
+                  <div className='relative bg-white/8 backdrop-blur-xl rounded-xl p-6 shadow-lg border border-white/20'>
+                    <div className='text-center'>
+                      <div className='w-12 h-12 bg-gradient-to-br from-green-500 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-3'>
+                        {match.markedReady.length == 2 ? (
+                          <span className='text-2xl text-white'>✅</span>
+                        ) : (
+                          <span className='text-2xl text-white'>⏳</span>
+                        )}
+                      </div>
+                      {match.markedReady.length == 2 && (
+                        <div className='text-green-400 font-semibold'>Both players ready!</div>
+                      )}
+                      {match.markedReady.length === 0 && user && !(match.markedReady as Types.ObjectId[]).includes(user._id) && (
+                        <div className='text-yellow-400'>Not ready</div>
+                      )}
+                      {match.markedReady.length === 1 && user && !(match.markedReady as Types.ObjectId[]).includes(user._id) && (
+                        <div className='text-blue-400'>Other player is ready!</div>
+                      )}
+                      {match.markedReady.length !== 2 && user && (match.markedReady as Types.ObjectId[]).includes(user._id) && (
+                        <div className='text-purple-400'>Waiting on other player...</div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+              {/* Mark Ready Button */}
+              {match.state === MultiplayerMatchState.ACTIVE && match.timeUntilStart > 0 && user && !(match.markedReady as Types.ObjectId[]).includes(user._id) && (
+                <div className='relative animate-fadeInUp' style={{ animationDelay: '0.4s' }}>
+                  <div className='flex flex-col gap-4 justify-center items-center'>
+                    <svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='currentColor' className='animate-bounce text-green-400' viewBox='0 0 16 16'>
+                      <path d='M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.5 4.5a.5.5 0 0 0-1 0v5.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V4.5z' />
+                    </svg>
+                    <button 
+                      className='group relative overflow-hidden bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-300 animate-pulse'
+                      onClick={(e: React.MouseEvent) => {
+                        const targetButton = e.currentTarget as HTMLButtonElement;
+                        targetButton.disabled = true;
+                        targetButton.classList.add('opacity-50');
+                        targetButton.classList.remove('animate-pulse');
+                        targetButton.innerText = 'Marking...';
+                        fetchMarkReady();
+                      }}
+                    >
+                      <div className='absolute inset-0 bg-gradient-to-r from-white to-transparent opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-transform duration-700' />
+                      <div className='relative flex items-center gap-2'>
+                        <span>✓</span>
+                        <span>Mark Ready</span>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Match Status */}
+              <div className='w-full max-w-4xl animate-fadeInUp' style={{ animationDelay: '0.6s' }}>
+                <MatchStatus
+                  isMatchPage={true}
+                  match={match}
+                  onLeaveClick={() => {
+                    router.reload();
+                  }}
+                />
+              </div>
             {activeLevel && (
               <div className='grow h-full w-full' key={'div-' + activeLevel._id.toString()}>
                 <GameRefactored
@@ -622,10 +790,11 @@ export default function Match({ initialMatch }: MatchProps) {
                   }}
                 />
               </div>
-            )}
-          </div>
-        )}
-      </>
+              )}
+            </div>
+          )}
+        </div>
+      </SpaceBackground>
     </Page>
   );
 }
