@@ -67,6 +67,7 @@ export default function StreakSection({ gameId, userConfig, hideHeader, compact 
               </div>
             </div>
           )}
+          
           <div className={hideHeader ? 'p-0' : 'bg-white dark:bg-gray-800 p-2'}>
             {streak === 0 ? (
               <div className={hideHeader ? 'flex flex-col items-center text-center text-white/80' : 'flex items-center justify-between text-sm'}>

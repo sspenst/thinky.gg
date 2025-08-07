@@ -1,6 +1,7 @@
 import StatFilter from '@root/constants/statFilter';
 import TourPath from '@root/constants/tourPath';
 import getProfileSlug from '@root/helpers/getProfileSlug';
+import { getStreak } from '@root/lib/cleanUser';
 import { Activity, ArrowRight, ChevronsDown, ChevronsUp, Search, Sparkles, Trophy } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -410,7 +411,7 @@ export default function Home({
       <ChevronsUp className='w-6 h-6 text-white' />
     </button>
   );
-
+  const { streak, timeToKeepStreak } = userConfig ? getStreak(userConfig) : { streak: 0, timeToKeepStreak: 0 };
   return (<>
     {tour}
     <UpsellFullAccount user={user} />
@@ -488,7 +489,7 @@ export default function Home({
                     <h3 className='text-lg font-bold text-white'>{game.displayName} Streak</h3>
                   </div>
                   <div className='bg-white/20 px-3 py-1 rounded-full text-sm font-medium text-white'>
-                    {userConfig ? userConfig.calcCurrentStreak || 0 : 0} day{(userConfig?.calcCurrentStreak || 0) === 1 ? '' : 's'}
+                      {streak} day{streak === 1 ? '' : 's'}
                   </div>
                 </div>
                 <StreakSection hideHeader gameId={game.id} userConfig={userConfig} compact />
