@@ -31,8 +31,8 @@ interface ThinkyHomeRouterProps {
 
 export default function ThinkyHomeRouter({ user }: ThinkyHomeRouterProps) {
   // Feature flag for homepage A/B test
+  // PostHog handles persistence automatically via cookies/localStorage
   const variant = useFeatureFlagVariantKey('new-home-page-experiment-v2');
-
   const featureFlagStillLoading = variant === undefined;
 
   useEffect(() => {
