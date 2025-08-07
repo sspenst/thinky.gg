@@ -80,16 +80,43 @@ export async function sendPushNotification(gameId: GameId, notification: Notific
 ]
      */
     // We should loop through the responses and check if the error code is "messaging/registration-token-not-registered", if so, we should update the device state to INACTIVE for the device that has the error
-    let index = 0;
-
-    for (const response of res.responses) {
+    // Collect device IDs to update in bulk
+    const inactiveDeviceIds: typeof devices[0]['_id'][] = [];
+    const activeDeviceIds: typeof devices[0]['_id'][] = [];
+    res.responses.forEach((response, idx) => {
+      const device = devices[idx];
       if (response.error?.code === 'messaging/registration-token-not-registered') {
-        // device will match the index of the response
-        const device = devices[index];
-
-        await DeviceModel.updateOne({ _id: device._id }, { $set: { state: DeviceState.INACTIVE } });
-        index++;
+        if (device?._id) {
+          inactiveDeviceIds.push(device._id);
+        }
+      } else if (response.success && device?._id) {
+        activeDeviceIds.push(device._id);
       }
+    });
+
+
+    const updatePromises = [];
+
+    if (inactiveDeviceIds.length > 0) {
+      updatePromises.push(
+        DeviceModel.updateMany(
+          { _id: { $in: inactiveDeviceIds } },
+          { $set: { state: DeviceState.INACTIVE } }
+        )
+      );
+    }
+
+    if (activeDeviceIds.length > 0) {
+      updatePromises.push(
+        DeviceModel.updateMany(
+          { _id: { $in: activeDeviceIds } },
+          { $set: { state: DeviceState.ACTIVE } }
+        )
+      );
+    }
+
+    if (updatePromises.length > 0) {
+      await Promise.all(updatePromises);
     }
 
     const responseJSON = JSON.stringify(res);
