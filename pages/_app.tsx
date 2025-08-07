@@ -20,12 +20,17 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { DefaultSeo } from 'next-seo';
 import { ThemeProvider } from 'next-themes';
-import posthog from 'posthog-js';
 import { PostHogProvider } from 'posthog-js/react';
 import { useState } from 'react';
 import Theme from '../constants/theme';
 import { AppContext } from '../contexts/appContext';
 import useUser from '../hooks/useUser';
+import posthog, { initializePostHog } from '@root/lib/posthogClient';
+
+// Initialize PostHog once at app startup
+if (typeof window !== 'undefined') {
+  initializePostHog();
+}
 
 MyApp.getInitialProps = async ({ ctx }: { ctx: NextPageContext }) => {
   let userAgent;
