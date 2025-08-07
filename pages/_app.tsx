@@ -25,12 +25,7 @@ import { useState } from 'react';
 import Theme from '../constants/theme';
 import { AppContext } from '../contexts/appContext';
 import useUser from '../hooks/useUser';
-import posthog, { initializePostHog } from '@root/lib/posthogClient';
-
-// Initialize PostHog once at app startup
-if (typeof window !== 'undefined') {
-  initializePostHog();
-}
+import posthog from 'posthog-js';
 
 MyApp.getInitialProps = async ({ ctx }: { ctx: NextPageContext }) => {
   let userAgent;
