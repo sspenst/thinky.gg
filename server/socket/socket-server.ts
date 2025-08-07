@@ -14,6 +14,7 @@ import { MultiplayerMatchState } from '../../models/constants/multiplayer';
 import { MultiplayerMatchModel } from '../../models/mongoose';
 import { enrichMultiplayerMatch } from '../../models/schemas/multiplayerMatchSchema';
 import { broadcastConnectedPlayers, broadcastCountOfUsersInRoom, broadcastMatches, broadcastMatchGameState, broadcastNotifications, broadcastPrivateAndInvitedMatches, scheduleBroadcastMatch } from './socketFunctions';
+import { isRateLimited } from './rateLimiter';
 
 'use strict';
 
@@ -54,6 +55,15 @@ let GlobalSocketIO: Server;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function authenticateSocket(socket: any, next: (err?: Error) => void) {
+  // Rate limit based on IP address
+  const clientIp = socket.handshake.address || socket.request.connection.remoteAddress;
+  const identifier = clientIp;
+
+  if (isRateLimited(identifier)) {
+    logger.warn(`Blocking connection from ${identifier} due to rate limiting`);
+    return next(new Error('Rate limit exceeded. Please wait before reconnecting.'));
+  }
+
   const cookies = socket.handshake.headers.cookie;
 
   if (!cookies) {
