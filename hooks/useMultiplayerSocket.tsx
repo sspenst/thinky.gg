@@ -35,6 +35,14 @@ export function useMultiplayerSocket(
     socket: undefined,
   });
 
+  // Use ref to store notification handler to avoid socket reconnections
+  const notificationHandlerRef = useRef(notificationActions.handleSocketNotifications);
+  
+  // Update ref when handler changes but don't recreate socket
+  useEffect(() => {
+    notificationHandlerRef.current = notificationActions.handleSocketNotifications;
+  }, [notificationActions.handleSocketNotifications]);
+
   // Socket connection management
   useEffect(() => {
     if (!user?._id) {
@@ -96,7 +104,9 @@ export function useMultiplayerSocket(
       }
     });
 
-    socketConn.on('notifications', notificationActions.handleSocketNotifications);
+    socketConn.on('notifications', (notifications: Notification[]) => {
+      notificationHandlerRef.current(notifications);
+    });
     socketConn.on('reloadPage', () => {
       toast.dismiss();
       toast.loading('There is a new version of the site! Reloading page in 15 seconds...', {
@@ -173,7 +183,7 @@ export function useMultiplayerSocket(
       socketConn.off('killSocket');
       socketConn.disconnect();
     };
-  }, [selectedGame.id, user?._id, user?.disableStreakPopup, notificationActions.handleSocketNotifications]);
+  }, [selectedGame.id, user?._id, user?.disableStreakPopup]);
 
   // Handle match redirects
   useEffect(() => {

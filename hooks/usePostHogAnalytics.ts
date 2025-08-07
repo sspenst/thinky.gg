@@ -1,54 +1,53 @@
 import { sendGTMEvent } from '@next/third-parties/google';
 import isPro from '@root/helpers/isPro';
-import posthog from '@root/lib/posthogClient';
 import { Router } from 'next/router';
-import { useEffect, useRef } from 'react';
+import posthog from 'posthog-js';
+import { useEffect, useRef, useState } from 'react';
 import User from '../models/db/user';
 
-/**
- * Hook to handle PostHog analytics: pageview tracking and user identification
- */
 export function usePostHogAnalytics(user: User | null | undefined) {
+  const [isInitialized, setIsInitialized] = useState(false);
   const lastIdentifiedUser = useRef<string | null>(null);
-  
-  // Skip everything on localhost
-  const isLocalhost = typeof window !== 'undefined' && 
-    window.location.hostname === 'localhost' && 
-    window.location.port === '3000';
+  const isLocalhost = typeof window !== 'undefined' && (window.location.hostname.includes('localhost') && window.location.port === '3000');
 
-  // Handle pageview tracking
+  // Initialize PostHog once
   useEffect(() => {
-    if (isLocalhost) return;
+    if (isLocalhost || isInitialized) return;
 
-    // Initial pageview
+    posthog.init((process.env.NEXT_PUBLIC_POSTHOG_KEY as string) || 'phc_Am38672etY9vtglKkfMa86HVxREbLuh7ExC7Qj1qPBx', {
+      api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST as string || '/api/ingest',
+      person_profiles: 'always',
+      capture_pageview: false,
+    });
+
     posthog.capture('$pageview');
+    setIsInitialized(true);
 
-    // Track route changes
-    const handleRouteChange = () => posthog.capture('$pageview');
+    const handleRouteChange = () => posthog?.capture('$pageview');
+
     Router.events.on('routeChangeComplete', handleRouteChange);
 
     return () => {
       Router.events.off('routeChangeComplete', handleRouteChange);
     };
-  }, [isLocalhost]);
+  }, [isLocalhost, isInitialized]);
 
-  // Handle user identification
+  // Handle user identification with stability checks
   useEffect(() => {
-    if (isLocalhost) return;
+    if (!isInitialized || isLocalhost) return;
 
     const currentUserId = user?._id?.toString();
 
-    // Only update if user ID actually changed
+    // Only act if user ID actually changed
     if (lastIdentifiedUser.current === currentUserId) return;
 
     if (currentUserId) {
-      // Send to GTM
       sendGTMEvent({
         'event': 'userId_set',
         'user_id': currentUserId
       });
 
-      // Identify in PostHog
+      // Identify user with PostHog - only include stable properties
       posthog.identify(currentUserId, {
         name: user?.name,
         email: user?.email || '',
@@ -57,12 +56,13 @@ export function usePostHogAnalytics(user: User | null | undefined) {
         has_pro: isPro(user),
         email_confirmed: user?.emailConfirmed,
       });
-      
       lastIdentifiedUser.current = currentUserId;
     } else if (lastIdentifiedUser.current !== null) {
-      // User logged out - reset PostHog
+      // Only reset if we were previously identified
       posthog.reset();
       lastIdentifiedUser.current = null;
     }
-  }, [user?._id, isLocalhost]);
+  }, [isInitialized, user?._id, isLocalhost]); // Minimal deps - only ID matters
+
+  return { isInitialized };
 }
