@@ -49,71 +49,98 @@ export default function MatchResults({ match, recap, showViewLink }: MatchResult
   const timeUntilEndCleanStr = `${Math.floor(countDown / 60)}:${((countDown % 60) >> 0).toString().padStart(2, '0')}`;
 
   return (
-    <div
-      className='flex flex-col flex-wrap gap-4 py-3 px-4 border rounded-md shadow-lg  w-full max-w-full relative'
-      style={{
-        backgroundColor: 'var(--bg-color-2)',
-        borderColor: 'var(--bg-color-3)',
-      }}
-    >
+    <div className='relative'>
+      <div className='absolute -inset-1 bg-gradient-to-r from-cyan-600/20 to-blue-600/20 blur-sm opacity-50' />
+      <div className='relative flex flex-col gap-4 py-4 px-4 sm:px-6 bg-white/8 backdrop-blur-xl rounded-xl shadow-lg border border-white/20 w-full'>
 
-      <div className='flex flex-row gap-2 items-center max-w-full'>
-        <div className='flex flex-col gap-1 items-center'>
-          {showGameLabel && <div className='' data-tooltip-content={match.gameId || game.id} data-tooltip-id={'game-label-tooltip-' + match._id.toString()}>
-            <GameLogo clickable gameId={match.gameId || game.id} id={'level'} size={24} />
-            <StyledTooltip id={'game-label-tooltip-' + match._id.toString()} />
-          </div>}
-          {showViewLink &&
-            <Link
-              className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-1 md:py-2 md:px-4 rounded m-1 md:mr-2'
-              href={`/match/${match.matchId}`}
-            >
-            View
-            </Link>
-          }
-        </div>
-        <div className='flex flex-col gap-1 items-center'>
-          <span className='font-bold whitespace-nowrap'>
-            {multiplayerMatchTypeToText(match.type)}
-          </span>
-          <div className='flex gap-1'>
-            <span className='italic text-xs'>
-              {match.private ? 'Private' : 'Public'}
-            </span>
-            {!match.rated ? (<>
-              <span className='italic text-xs' data-tooltip-id='unrated-match' data-tooltip-content='This match will not affect elo ratings'>Unrated</span>
-              <StyledTooltip id='unrated-match' />
-            </>) : <span className='italic text-xs'>Rated</span>}
+        {/* Header Row */}
+        <div className='flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3'>
+          <div className='flex items-center gap-3'>
+            {showGameLabel && (
+              <div data-tooltip-content={match.gameId || game.id} data-tooltip-id={'game-label-tooltip-' + match._id.toString()}>
+                <GameLogo clickable gameId={match.gameId || game.id} id={'level'} size={24} />
+                <StyledTooltip id={'game-label-tooltip-' + match._id.toString()} />
+              </div>
+            )}
+            
+            {/* Match Type and Status */}
+            <div className='flex flex-col gap-1'>
+              <div className='bg-gradient-to-r from-cyan-500/20 to-blue-500/20 backdrop-blur-sm rounded-lg px-3 py-1 border border-white/20 inline-flex'>
+                <span className='font-bold whitespace-nowrap text-white'>
+                  {multiplayerMatchTypeToText(match.type)}
+                </span>
+              </div>
+              <div className='flex gap-2'>
+                <span className='text-xs px-2 py-0.5 bg-white/10 rounded-full text-white/80'>
+                  {match.private ? 'Private' : 'Public'}
+                </span>
+                {!match.rated ? (<>
+                  <span className='text-xs px-2 py-0.5 bg-yellow-500/20 rounded-full text-yellow-300' data-tooltip-id='unrated-match' data-tooltip-content='This match will not affect elo ratings'>Unrated</span>
+                  <StyledTooltip id='unrated-match' />
+                </>) : <span className='text-xs px-2 py-0.5 bg-green-500/20 rounded-full text-green-300'>Rated</span>}
+              </div>
+            </div>
           </div>
-          { match.state !== MultiplayerMatchState.ACTIVE ? <FormattedDate date={match.endTime} /> : timeUntilEndCleanStr }
+          
+          {/* Time and Actions */}
+          <div className='flex items-center gap-3'>
+            <div className='text-sm text-white/60'>
+              {match.state !== MultiplayerMatchState.ACTIVE ? <FormattedDate date={match.endTime} /> : timeUntilEndCleanStr}
+            </div>
+            {showViewLink && (
+              <Link
+                className='bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transform hover:scale-105 transition-all duration-200'
+                href={`/match/${match.matchId}`}
+              >
+                View
+              </Link>
+            )}
+          </div>
         </div>
-        <div className='flex flex-col gap-1 truncate pr-0.5'>
-          {sortedPlayers.map((player) => (
+        {/* Players List */}
+        <div className='flex flex-col gap-2'>
+          {sortedPlayers.map((player, index) => (
             <div
-              className='flex gap-0 items-left'
+              className={`flex items-center gap-3 rounded-lg p-2 border ${
+                index === 0 && sortedPlayers.length > 1 
+                  ? 'bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border-yellow-500/30' 
+                  : 'bg-white/5 border-white/10'
+              }`}
               key={player._id.toString()}
             >
-              {player._id.toString() in match.scoreTable &&
-                <span className='font-bold text-2xl min-w-10 text-center'>
-                  {match.scoreTable[player._id.toString()]}
-                </span>
-              }
-              <FormattedUser size={Dimensions.AvatarSizeSmall} id='match-result' user={player} />
-              <MultiplayerRating hideType profile={player.multiplayerProfile} type={match.type} />
-              {recap?.winner?.userId.toString() === player._id.toString() &&
-                <span className='text-xs italic' style={{
-                  color: 'var(--color-gray)',
-                }}>
-                  {`(${Math.round(recap.eloChangeWinner) >= 0 ? '+' : ''}${Math.round(recap.eloChangeWinner)})`}
-                </span>
-              }
-              {recap?.loser?.userId.toString() === player._id.toString() &&
-                <span className='text-xs italic' style={{
-                  color: 'var(--color-gray)',
-                }}>
-                  {`(${Math.round(recap.eloChangeLoser) >= 0 ? '+' : ''}${Math.round(recap.eloChangeLoser)})`}
-                </span>
-              }
+              {/* Score */}
+              {player._id.toString() in match.scoreTable && (
+                <div className='bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-lg px-3 py-1 min-w-[3rem] text-center'>
+                  <span className='font-bold text-2xl text-cyan-300'>
+                    {match.scoreTable[player._id.toString()]}
+                  </span>
+                </div>
+              )}
+              
+              {/* Emoji Icon */}
+              <span className='text-lg'>
+                {index === 0 && sortedPlayers.length > 1 ? '🏆' : '🎮'}
+              </span>
+              
+              {/* Player Info */}
+              <div className='flex-1'>
+                <FormattedUser size={Dimensions.AvatarSizeSmall} id='match-result' user={player} />
+              </div>
+              
+              {/* Rating and Changes */}
+              <div className='flex items-center gap-2'>
+                <MultiplayerRating hideType profile={player.multiplayerProfile} type={match.type} />
+                {recap?.winner?.userId.toString() === player._id.toString() && (
+                  <span className='text-xs text-green-400 font-semibold'>
+                    {`(${Math.round(recap.eloChangeWinner) >= 0 ? '+' : ''}${Math.round(recap.eloChangeWinner)})`}
+                  </span>
+                )}
+                {recap?.loser?.userId.toString() === player._id.toString() && (
+                  <span className='text-xs text-red-400 font-semibold'>
+                    {`(${Math.round(recap.eloChangeLoser) >= 0 ? '+' : ''}${Math.round(recap.eloChangeLoser)})`}
+                  </span>
+                )}
+              </div>
             </div>
           ))}
         </div>

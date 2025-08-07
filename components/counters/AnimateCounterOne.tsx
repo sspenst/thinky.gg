@@ -31,7 +31,12 @@ export const STREAK_RANK_GROUPS = [
   { min: 550, max: 649, title: 'Endless Spiral', emoji: '🌪️' },
   { min: 650, max: 729, title: 'Thinky Lifer', emoji: '🌳' },
   { min: 730, max: Infinity, title: 'Never Enough', emoji: '♾️' },
-] as const;
+] as {
+  min: number;
+  max: number;
+  title: string;
+  emoji: string;
+}[];
 
 /** Helper to find the rank index based on the current streak. */
 export function getStreakRankIndex(value: number): number {
