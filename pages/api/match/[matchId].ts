@@ -58,7 +58,7 @@ export default withAuth(
 
       return res.status(200).json(match);
     } else if (req.method === 'PUT') {
-      const { action, levelId, message } = req.body;
+      const { action, message } = req.body;
 
       if (action === MatchAction.MARK_READY) {
         const match = await MultiplayerMatchModel.findOne({
@@ -76,7 +76,7 @@ export default withAuth(
           });
         }
 
-        const updatedMatch = await MultiplayerMatchModel.findOneAndUpdate(
+        let updatedMatch = await MultiplayerMatchModel.findOneAndUpdate(
           {
             matchId: matchId,
             players: req.user._id,
@@ -95,27 +95,103 @@ export default withAuth(
         ).populate('players winners levels createdBy').lean<MultiplayerMatch>();
 
         // Check if all players are ready
+
         if (updatedMatch && updatedMatch.markedReady.length === updatedMatch.players.length) {
           // All players ready, start the match in 3 seconds
           const newStartTime = new Date(Date.now() + 3000);
-          const newEndTime = new Date(newStartTime.getTime() + MultiplayerMatchTypeDurationMap[match.type as MultiplayerMatchType]);
-
-          await MultiplayerMatchModel.updateOne(
-            { matchId: matchId },
-            {
-              startTime: newStartTime,
-              endTime: newEndTime,
-              $push: {
-                chatMessages: createMatchEventMessage('Match starting in 3 seconds!')
-              }
-            }
+          const newEndTime = new Date(
+            newStartTime.getTime() + MultiplayerMatchTypeDurationMap[updatedMatch.type as MultiplayerMatchType]
           );
 
-          // Update the match object with new times for broadcasting
-          updatedMatch.startTime = newStartTime;
-          updatedMatch.endTime = newEndTime;
+          // If levels are not yet generated, generate them now that both players are ready
+            const level0s = generateLevels(
+              updatedMatch.gameId,
+              DIFFICULTY_INDEX.KINDERGARTEN,
+              DIFFICULTY_INDEX.ELEMENTARY,
+              {
+                minSteps: 6,
+                maxSteps: 25,
+                minLaplace: 0.5,
+              },
+              10
+            );
+            const level1s = generateLevels(
+              updatedMatch.gameId,
+              DIFFICULTY_INDEX.JUNIOR_HIGH,
+              DIFFICULTY_INDEX.HIGH_SCHOOL,
+              {},
+              20
+            );
+            const level2s = generateLevels(
+              updatedMatch.gameId,
+              DIFFICULTY_INDEX.BACHELORS,
+              DIFFICULTY_INDEX.PROFESSOR,
+              {},
+              5
+            );
+            const level3s = generateLevels(
+              updatedMatch.gameId,
+              DIFFICULTY_INDEX.PHD,
+              DIFFICULTY_INDEX.SUPER_GRANDMASTER,
+              {},
+              5
+            );
 
-          await requestScheduleBroadcastMatch(updatedMatch.gameId, matchId as string);
+            const [l0, l1, l2, l3] = await Promise.all([level0s, level1s, level2s, level3s]);
+
+            // Dedupe these level ids
+            const dedupedLevels = new Set([...l0, ...l1, ...l2, ...l3]);
+
+            if (dedupedLevels.size < 40) {
+              // Fallback to any levels to ensure we have enough
+              const level4s = await LevelModel.find<Level[]>(
+                {
+                  isDraft: { $ne: true },
+                  isDeleted: { $ne: true },
+                  gameId: updatedMatch.gameId,
+                },
+                { _id: 1 },
+                { limit: 40 - dedupedLevels.size }
+              ).lean<Level[]>();
+
+              level4s.forEach((level) => dedupedLevels.add(level));
+            }
+
+            // Update match with levels and initialize gameTable
+            const matchUrl = `${req.headers.origin}/match/${matchId}`;
+            const game = getGameFromId(updatedMatch.gameId);
+            const discordChannel = game.id === GameId.SOKOPATH ? DiscordChannel.SokopathMultiplayer : DiscordChannel.PathologyMultiplayer;
+            const discordMessage = `*${multiplayerMatchTypeToText(updatedMatch.type)}* match starting between ${updatedMatch.players
+              ?.map((p) => `**${(p as User).name}**`)
+              .join(' and ')}! [Spectate here](<${matchUrl}>)`;
+
+              console.log('generating with levels ', dedupedLevels, matchId);
+            const [updatedMatch2, ] = await Promise.all([
+              MultiplayerMatchModel.findOneAndUpdate(
+                { matchId: matchId },
+                {
+                  startTime: newStartTime,
+                  endTime: newEndTime,
+                  $push: {
+                    chatMessages: createMatchEventMessage('Match starting in 3 seconds!'),
+                  },
+                  levels: [...dedupedLevels].map((level: Level) => level._id),
+                  gameTable: {
+                    [updatedMatch.players[0]._id.toString()]: [],
+                    [updatedMatch.players[1]._id.toString()]: [],
+                  },
+                }, {
+                  new: true
+                }
+              ),
+              // Only announce if not private
+              updatedMatch.private && Promise.resolve(),
+              !updatedMatch.private && queueDiscordWebhook(discordChannel, discordMessage),
+            ]);
+
+          // Update the match object with new times for broadcasting
+          updatedMatch = updatedMatch2;
+          await requestScheduleBroadcastMatch(updatedMatch2.gameId, matchId as string);
         }
 
         // Clean and enrich the match before broadcasting
@@ -213,8 +289,8 @@ export default withAuth(
               chatMessages: createUserActionMessage('joined the match!', req.user._id.toString(), req.user.name),
             },
             // Set a far future start time as placeholder until all players ready
-            startTime: Date.now() + 3600000, // 1 hour in the future as placeholder
-            endTime: Date.now() + 3600000 + MultiplayerMatchTypeDurationMap[match.type as MultiplayerMatchType],
+            startTime: Date.now() + 600000, // 10 minutes in the future as placeholder
+            endTime: Date.now() + 600000 + MultiplayerMatchTypeDurationMap[match.type as MultiplayerMatchType],
             state: MultiplayerMatchState.ACTIVE,
           },
           { new: true }
@@ -280,81 +356,7 @@ export default withAuth(
 
         const populatedMatch = matchPopulated[0];
 
-        if (populatedMatch.players.length === 2) {
-          const level0s = generateLevels(
-            populatedMatch.gameId,
-            DIFFICULTY_INDEX.KINDERGARTEN,
-            DIFFICULTY_INDEX.ELEMENTARY,
-            {
-              minSteps: 6,
-              maxSteps: 25,
-              minLaplace: 0.5,
-            },
-            10
-          );
-          const level1s = generateLevels(
-            populatedMatch.gameId,
-            DIFFICULTY_INDEX.JUNIOR_HIGH,
-            DIFFICULTY_INDEX.HIGH_SCHOOL,
-            {},
-            20
-          );
-          const level2s = generateLevels(
-            populatedMatch.gameId,
-            DIFFICULTY_INDEX.BACHELORS,
-            DIFFICULTY_INDEX.PROFESSOR,
-            {},
-            5
-          );
-          const level3s = generateLevels(
-            populatedMatch.gameId,
-            DIFFICULTY_INDEX.PHD,
-            DIFFICULTY_INDEX.SUPER_GRANDMASTER,
-            {},
-            5
-          );
-
-          const [l0, l1, l2, l3] = await Promise.all([
-            level0s,
-            level1s,
-            level2s,
-            level3s,
-          ]);
-
-          // dedupe these level ids, just in case though it should be extremely rare
-          const dedupedLevels = new Set([...l0, ...l1, ...l2, ...l3]);
-
-          if (dedupedLevels.size < 40) {
-            // we don't have enough levels, so try and query any levels at all...
-            // @TODO: Remove this when games have enough levels
-            const level4s = await LevelModel.find<Level[]>({
-              isDraft: { $ne: true },
-              isDeleted: { $ne: true },
-              gameId: populatedMatch.gameId }, { _id: 1 }, { limit: 40 - dedupedLevels.size }).lean<Level[]>();
-
-            level4s.forEach(level => dedupedLevels.add(level));
-          }
-
-          // add levels to match
-          const matchUrl = `${req.headers.origin}/match/${matchId}`;
-          const game = getGameFromId(populatedMatch.gameId);
-          const discordChannel = game.id === GameId.SOKOPATH ? DiscordChannel.SokopathMultiplayer : DiscordChannel.PathologyMultiplayer;
-          const discordMessage = `*${multiplayerMatchTypeToText(match.type)}* match starting between ${populatedMatch.players?.map(p => `**${p.name}**`).join(' and ')}! [Spectate here](<${matchUrl}>)`;
-
-          Promise.all([
-            MultiplayerMatchModel.updateOne(
-              { matchId: matchId },
-              {
-                levels: [...dedupedLevels].map((level: Level) => level._id),
-                gameTable: {
-                  [populatedMatch.players[0]._id.toString()]: [],
-                  [populatedMatch.players[1]._id.toString()]: [],
-                },
-              }
-            ),
-            !match.private && queueDiscordWebhook(discordChannel, discordMessage),
-          ]);
-        }
+        // Defer level generation until both players are marked ready
 
         // cleanUser for players, winners
         populatedMatch.players.map(player => cleanUser(player as User));
@@ -380,11 +382,10 @@ export default withAuth(
 
         return res.status(200).json(updatedMatch);
       } else if (action === MatchAction.SKIP_LEVEL) {
-        // skipping level
+        // skipping level (always skips the current level)
         const result = await matchMarkSkipLevel(
           req.user._id,
-          matchId as string,
-          levelId,
+          matchId as string
         );
 
         if (!result) {

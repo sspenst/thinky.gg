@@ -3,7 +3,7 @@ import dayjs from 'dayjs';
 import { useState } from 'react';
 import { Bar, CartesianGrid, ComposedChart, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { NameType, Payload } from 'recharts/types/component/DefaultTooltipContent';
-import { MatchAction, MatchLogDataLevelComplete, MatchLogDataUserLeveId, MultiplayerMatchTypeDurationMap } from '../../models/constants/multiplayer';
+import { MatchAction, MatchLog, MatchLogDataLevelComplete, MatchLogDataUserLeveId, MultiplayerMatchTypeDurationMap } from '../../models/constants/multiplayer';
 import Level from '../../models/db/level';
 import MultiplayerMatch from '../../models/db/multiplayerMatch';
 import { UserWithMultiplayerProfile } from '../../models/db/user';
@@ -85,7 +85,7 @@ export default function MatchChart({ match }: MatchChartProps) {
   }
 
   for (let i = 0; i < match.matchLog.length; i++) {
-    const log = match.matchLog[i];
+    const log = match.matchLog[i] as MatchLog;
 
     if (![MatchAction.COMPLETE_LEVEL, MatchAction.SKIP_LEVEL].includes(log.type as MatchAction)) {
       continue;

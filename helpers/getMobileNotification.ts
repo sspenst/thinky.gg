@@ -1,6 +1,7 @@
 import { AchievementRulesCombined } from '@root/constants/achievements/achievementInfo';
 import { GameId } from '@root/constants/GameId';
 import { Games } from '@root/constants/Games';
+import Achievement from '@root/models/db/achievement';
 import Collection from '@root/models/db/collection';
 import NotificationType from '../constants/notificationType';
 import { EnrichedLevel } from '../models/db/level';
@@ -71,8 +72,10 @@ export default function getMobileNotification(gameId: GameId, notification: Noti
   }
 
   case NotificationType.NEW_ACHIEVEMENT: {
+    const source = notification.source as Achievement;
+
     mobileNotification.title = game.displayName + ' - New Achievement';
-    const meta = AchievementRulesCombined[notification.source.type];
+    const meta = AchievementRulesCombined[source.type];
 
     if (notification.source) {
       mobileNotification.body = `${meta?.emoji} Achievement unlocked! ${meta.getDescription(game)}`;
@@ -85,47 +88,64 @@ export default function getMobileNotification(gameId: GameId, notification: Noti
     return mobileNotification;
   }
 
-  case NotificationType.NEW_FOLLOWER:
+  case NotificationType.NEW_FOLLOWER: {
+    const source = notification.source as User;
+
     mobileNotification.title = game.displayName + ' - New Follower';
-    mobileNotification.body = `${notification.source.name} started following you`;
-    mobileNotification.imageUrl = `${host}/api/avatar/${notification.source._id}.png`;
-    mobileNotification.url = `${host}/profile/${notification.source.name}`;
+    mobileNotification.body = `${source.name} started following you`;
+    mobileNotification.imageUrl = `${host}/api/avatar/${source._id}.png`;
+    mobileNotification.url = `${host}/profile/${source.name}`;
 
     return mobileNotification;
+  }
 
-  case NotificationType.NEW_LEVEL:
+  case NotificationType.NEW_LEVEL: {
+    const source = notification.source as User;
+
     mobileNotification.title = game.displayName + ' - New Level';
-    mobileNotification.body = `${notification.source.name} published a new level: ${targetAsLevel.name}`;
+    mobileNotification.body = `${source.name} published a new level: ${targetAsLevel.name}`;
     mobileNotification.imageUrl = `${host}/api/level/image/${targetAsLevel._id}.png`;
     mobileNotification.url = `${host}/level/${targetAsLevel.slug}`;
 
     return mobileNotification;
+  }
 
-  case NotificationType.NEW_LEVEL_ADDED_TO_COLLECTION:
+  case NotificationType.NEW_LEVEL_ADDED_TO_COLLECTION: {
+    const source = notification.source as User;
+
     mobileNotification.title = game.displayName + ' - Your level added to a collection';
-    mobileNotification.body = `${notification.source?.name} was added to the collection: ${targetAsCollection.name}`;
+    mobileNotification.body = `${source?.name} was added to the collection: ${targetAsCollection.name}`;
     mobileNotification.imageUrl = `${host}/${game.logo}}`;
     mobileNotification.url = `${host}/collection/${targetAsCollection.slug}`;
 
     return mobileNotification;
+  }
 
-  case NotificationType.NEW_RECORD_ON_A_LEVEL_YOU_SOLVED:
+  case NotificationType.NEW_RECORD_ON_A_LEVEL_YOU_SOLVED:{
+    const source = notification.source as User;
+
     mobileNotification.title = game.displayName + ' - New Record';
-    mobileNotification.body = `${notification.source.name} set a new record: ${targetAsLevel.name} - ${notification.message} moves`;
+    mobileNotification.body = `${source.name} set a new record: ${targetAsLevel.name} - ${notification.message} moves`;
     mobileNotification.imageUrl = `${host}/api/level/image/${targetAsLevel._id}.png`;
     mobileNotification.url = `${host}/level/${targetAsLevel.slug}`;
 
     return mobileNotification;
+  }
 
-  case NotificationType.NEW_REVIEW_ON_YOUR_LEVEL:
+  case NotificationType.NEW_REVIEW_ON_YOUR_LEVEL:{
+    const source = notification.source as User;
+
     mobileNotification.title = game.displayName + ' - New Review';
-    mobileNotification.body = `${notification.source.name} ${getNewReviewOnYourLevelBody(notification.message)} on your level ${targetAsLevel.name}`;
+    mobileNotification.body = `${source.name} ${getNewReviewOnYourLevelBody(notification.message)} on your level ${targetAsLevel.name}`;
     mobileNotification.imageUrl = `${host}/api/level/image/${targetAsLevel._id}.png`;
     mobileNotification.url = `${host}/level/${targetAsLevel.slug}`;
 
     return mobileNotification;
+  }
 
   case NotificationType.NEW_WALL_POST: {
+    const source = notification.source as User;
+
     mobileNotification.title = game.displayName + ' - New Comment';
     const comment = notification.message
       ? JSON.parse(notification.message)
@@ -136,14 +156,16 @@ export default function getMobileNotification(gameId: GameId, notification: Noti
         : comment.text
       : '';
 
-    mobileNotification.body = `${notification.source.name} posted "${shortenedText}" on your profile.`;
-    mobileNotification.imageUrl = `${host}/api/avatar/${notification.source._id}.png`;
+    mobileNotification.body = `${source.name} posted "${shortenedText}" on your profile.`;
+    mobileNotification.imageUrl = `${host}/api/avatar/${source._id}.png`;
     mobileNotification.url = `${host}/profile/${user.name}`;
 
     return mobileNotification;
   }
 
   case NotificationType.NEW_WALL_REPLY: {
+    const source = notification.source as User;
+
     mobileNotification.title = game.displayName + ' - New Reply';
     const comment = notification.message
       ? JSON.parse(notification.message)
@@ -154,8 +176,8 @@ export default function getMobileNotification(gameId: GameId, notification: Noti
         : comment.text
       : '';
 
-    mobileNotification.body = `${notification.source.name} replied "${shortenedText}" to your message on ${targetAsUser.name}'s profile.`;
-    mobileNotification.imageUrl = `${host}/api/avatar/${notification.source._id}.png`;
+    mobileNotification.body = `${source.name} replied "${shortenedText}" to your message on ${targetAsUser.name}'s profile.`;
+    mobileNotification.imageUrl = `${host}/api/avatar/${source._id}.png`;
     mobileNotification.url = `${host}/profile/${targetAsUser.name}`;
 
     return mobileNotification;

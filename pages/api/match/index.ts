@@ -20,7 +20,7 @@ import { MatchAction, MultiplayerMatchState, MultiplayerMatchType } from '../../
 import MultiplayerMatch from '../../../models/db/multiplayerMatch';
 import User from '../../../models/db/user';
 import { LevelModel, MultiplayerMatchModel, MultiplayerProfileModel, UserModel } from '../../../models/mongoose';
-import { computeMatchScoreTable, createMatchEventMessage, createSystemChatMessage, createUserActionMessage, enrichMultiplayerMatch, generateMatchLog } from '../../../models/schemas/multiplayerMatchSchema';
+import { computeMatchScoreTable, createMatchEventMessage, createUserActionMessage, enrichMultiplayerMatch, generateMatchLog } from '../../../models/schemas/multiplayerMatchSchema';
 import { queueRefreshAchievements } from '../internal-jobs/worker/queueFunctions';
 
 export async function checkForFinishedMatches() {
@@ -314,7 +314,7 @@ export async function checkForFinishedMatch(matchId: string) {
 
   if (!finishedMatch) {
     // Additional logging to help debug
-    const anyMatch = await MultiplayerMatchModel.findOne({ matchId: matchId }).lean();
+    const anyMatch: MultiplayerMatch | null = await MultiplayerMatchModel.findOne({ matchId: matchId }).lean<MultiplayerMatch>();
 
     if (anyMatch) {
       logger.info(`Match ${matchId} exists but not ready to finish: state=${anyMatch.state}, endTime=${anyMatch.endTime}, currentTime=${new Date()}`);
