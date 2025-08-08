@@ -317,7 +317,7 @@ export default function ChapterPage({ enrichedCollections, reqUser, solvedLevels
   return (
     <Page folders={[new LinkInfo('Play', '/play')]} title={config.title}>
       <UpsellFullAccount user={reqUser} />
-      
+
       <SpaceBackground
         starCount={60}
         constellationPattern='chapter'
@@ -356,7 +356,7 @@ export default function ChapterPage({ enrichedCollections, reqUser, solvedLevels
             </div>
           </Link>
         </div>
-        
+
         {/* Floating Chapter Progress */}
         <div className='absolute bottom-24 left-4 sm:bottom-32 sm:left-6 lg:bottom-40 lg:left-12 animate-fadeInLeft' style={{ animationDelay: '0.7s' }}>
           <div className='bg-black/20 backdrop-blur-sm border border-white/20 rounded-xl px-3 py-2 sm:px-4 sm:py-3 text-white'>
@@ -366,7 +366,7 @@ export default function ChapterPage({ enrichedCollections, reqUser, solvedLevels
             </div>
           </div>
         </div>
-        
+
         {/* Floating Next Chapter Info */}
         {solvedLevels < totalLevels && (
           <div className='absolute bottom-24 right-4 sm:bottom-32 sm:right-6 lg:bottom-40 lg:right-12 animate-fadeInRight' style={{ animationDelay: '0.9s' }}>
@@ -385,12 +385,12 @@ export default function ChapterPage({ enrichedCollections, reqUser, solvedLevels
               {config.title}
             </div>
           </div>
-          
+
           {/* Dramatic Title */}
           <h1 className='text-4xl sm:text-6xl lg:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 mb-6 text-center leading-tight px-2 animate-fadeInScale' style={{ animationDelay: '0.5s' }}>
             {config.subtitle}
           </h1>
-          
+
           {/* Epic Progress Ring */}
           <div className='relative mb-8 sm:mb-12 animate-fadeInScale' style={{ animationDelay: '0.7s' }}>
             <svg className='w-48 h-48 sm:w-64 sm:h-64 transform -rotate-90' viewBox='0 0 256 256'>
@@ -424,7 +424,7 @@ export default function ChapterPage({ enrichedCollections, reqUser, solvedLevels
                 </linearGradient>
               </defs>
             </svg>
-            
+
             {/* Center content */}
             <div className='absolute inset-0 flex flex-col items-center justify-center'>
               <div className='text-3xl sm:text-5xl font-black text-white mb-2'>{Math.round((solvedLevels / totalLevels) * 100)}%</div>
@@ -432,7 +432,7 @@ export default function ChapterPage({ enrichedCollections, reqUser, solvedLevels
               <div className='text-xs sm:text-sm text-gray-400'>COMPLETE</div>
             </div>
           </div>
-          
+
           {/* Action Buttons */}
           <div className='flex flex-col sm:flex-row gap-4 sm:gap-6 mb-8 sm:mb-12 items-center justify-center animate-fadeInUp' style={{ animationDelay: '0.9s' }}>
             {solvedLevels < totalLevels && (
@@ -450,7 +450,7 @@ export default function ChapterPage({ enrichedCollections, reqUser, solvedLevels
                 </div>
               </Link>
             )}
-            
+
             <Link
               href={chapterUnlocked > 3 ? '/ranked' : '/play'}
               className='group relative overflow-hidden bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-black py-4 sm:py-6 px-8 sm:px-12 rounded-2xl shadow-2xl transform hover:scale-105 transition-all duration-300'
@@ -467,7 +467,7 @@ export default function ChapterPage({ enrichedCollections, reqUser, solvedLevels
           </div>
         </div>
       </SpaceBackground>
-      
+
       <FormattedCampaign
         enrichedCollections={enrichedCollections}
         levelHrefQuery={`chapter=${chapterNumber}`}

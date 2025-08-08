@@ -572,7 +572,7 @@ export default function ProfilePage({
             <div className='mb-6 flex justify-center'>
               <ProfileAvatar size={Dimensions.AvatarSizeLarge} user={user} />
             </div>
-            
+
             {/* User name and role */}
             <div className='flex items-center justify-center gap-3 mb-4'>
               <h1 className='text-4xl sm:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400'>
@@ -580,7 +580,7 @@ export default function ProfilePage({
               </h1>
               <RoleIcons id='profile' size={32} user={user} />
             </div>
-            
+
             {/* Player rank */}
             {!game.isNotAGame && (
               <div className='flex justify-center mb-4'>
@@ -591,14 +591,14 @@ export default function ProfilePage({
                 )}
               </div>
             )}
-            
+
             {/* Bio */}
             {user.bio && !reqUserHasBlocked && (
               <p className='text-gray-300 text-lg max-w-2xl mx-auto mb-6 italic'>
                 {user.bio}
               </p>
             )}
-            
+
             {/* Social actions */}
             <div className='flex flex-wrap gap-4 justify-center items-center mb-6'>
               {reqUser && reqUser._id.toString() !== user._id.toString() && !reqUserHasBlocked && (
@@ -620,7 +620,7 @@ export default function ProfilePage({
                   </button>
                 </>
               )}
-              
+
               {/* Follower counts */}
               <div className='flex gap-6'>
                 <button
@@ -650,7 +650,7 @@ export default function ProfilePage({
               </div>
             </div>
           </div>
-          
+
           {/* Blocked user message */}
           {reqUserHasBlocked ? (
             <div className='bg-red-900/50 backdrop-blur-sm border border-red-500/30 rounded-xl p-6 text-center max-w-md mx-auto animate-fadeInUp' style={{ animationDelay: '0.5s' }}>
@@ -679,7 +679,7 @@ export default function ProfilePage({
                       <span>{game.id === GameId.THINKY ? '🎮' : '📊'}</span>
                       {game.id === GameId.THINKY ? 'View Game Profiles' : 'Game Statistics'}
                     </h3>
-                    
+
                     {game.id === GameId.THINKY ? (
                       /* Game Profiles for THINKY */
                       <div className='space-y-3'>
@@ -743,7 +743,7 @@ export default function ProfilePage({
                             <div className='text-sm text-gray-300'>Levels Completed</div>
                           </div>
                         </div>
-                        
+
                         {/* Additional info for games */}
                         <div className='pt-4 border-t border-white/10 space-y-3'>
                           {user.hideStatus || !user.ts ? null : isOnline(user) ? (
@@ -773,7 +773,7 @@ export default function ProfilePage({
                       </>
                     )}
                   </div>
-                  
+
                   {/* Right Column - User Info for THINKY or Difficulty Breakdown for Games */}
                   <div className='bg-black/20 backdrop-blur-sm border border-white/20 rounded-xl p-6'>
                     {game.id === GameId.THINKY ? (
@@ -827,13 +827,13 @@ export default function ProfilePage({
                     )}
                   </div>
                 </div>
-                
+
                 {/* Comment Wall - Full Width */}
                 <div className='animate-fadeInUp' style={{ animationDelay: '0.9s' }}>
                   <CommentWall userId={user._id} />
                 </div>
               </div>
-              
+
               {/* Modals */}
               <FollowerModal
                 closeModal={() => setIsFollowerOpen(false)}
@@ -866,7 +866,7 @@ export default function ProfilePage({
               Deep insights into {user.name}&apos;s puzzle-solving journey and performance metrics
             </p>
           </div>
-          
+
           <div className='w-full max-w-6xl animate-fadeInUp' style={{ animationDelay: '0.5s' }}>
             <ProfileInsights reqUser={reqUser} user={user} />
           </div>
@@ -889,7 +889,7 @@ export default function ProfilePage({
               {user.name}&apos;s competitive multiplayer matches and head-to-head battle history
             </p>
           </div>
-          
+
           <div className='w-full max-w-6xl animate-fadeInUp' style={{ animationDelay: '0.5s' }}>
             <ProfileMultiplayer user={user} />
           </div>
@@ -912,7 +912,7 @@ export default function ProfilePage({
               Curated puzzle collections and handpicked level sets by {user.name}
             </p>
           </div>
-          
+
           <div className='w-full max-w-4xl animate-fadeInUp' style={{ animationDelay: '0.5s' }}>
             {reqUser?._id === user._id && (
               <div className='text-center mb-6'>
@@ -980,7 +980,7 @@ export default function ProfilePage({
               </div>
             )}
           </div>
-          
+
           <div className='w-full max-w-6xl space-y-6 animate-fadeInUp' style={{ animationDelay: '0.5s' }}>
             <div className='bg-black/20 backdrop-blur-sm border border-white/20 rounded-xl p-6'>
               <SelectFilter
@@ -994,7 +994,7 @@ export default function ProfilePage({
                 }}
               />
             </div>
-            
+
             <div className='flex flex-wrap justify-center gap-4 mb-6'>
               {reqUser?._id === user._id && (
                 <Link
@@ -1017,7 +1017,7 @@ export default function ProfilePage({
                 🔍 Advanced Search
               </Link>
             </div>
-            
+
             <div className='flex flex-wrap justify-center gap-4 animate-fadeInUp' style={{ animationDelay: '0.7s' }}>
               {enrichedLevels?.map((level) => {
                 return (
@@ -1029,7 +1029,7 @@ export default function ProfilePage({
                 );
               })}
             </div>
-            
+
             {totalRows !== undefined && totalRows > 20 && (
               <div className='flex justify-center gap-4 mt-8 animate-fadeInUp' style={{ animationDelay: '0.9s' }}>
                 {page > 1 && (
@@ -1074,7 +1074,7 @@ export default function ProfilePage({
               Reviews and feedback shared by {user.name} with the puzzle community
             </p>
           </div>
-          
+
           <div className='w-full max-w-4xl space-y-6 animate-fadeInUp' style={{ animationDelay: '0.5s' }}>
             {reqUserHasBlocked ? (
               <div className='bg-red-900/50 backdrop-blur-sm border border-red-500/30 rounded-xl p-6 text-center'>
@@ -1102,7 +1102,7 @@ export default function ProfilePage({
                 </div>
               ))
             )}
-            
+
             {/* Pagination */}
             {reviewsWrittenCount > 10 && !reqUserHasBlocked && (
               <div className='flex justify-center gap-4 mt-8 animate-fadeInUp' style={{ animationDelay: '0.9s' }}>
@@ -1147,7 +1147,7 @@ export default function ProfilePage({
               Reviews and feedback that {user.name} has received from the puzzle community
             </p>
           </div>
-          
+
           <div className='w-full max-w-4xl space-y-6 animate-fadeInUp' style={{ animationDelay: '0.5s' }}>
             {reqUserHasBlocked ? (
               <div className='bg-red-900/50 backdrop-blur-sm border border-red-500/30 rounded-xl p-6 text-center'>
@@ -1175,7 +1175,7 @@ export default function ProfilePage({
                 </div>
               ))
             )}
-            
+
             {/* Pagination */}
             {reviewsReceivedCount > 10 && !reqUserHasBlocked && (
               <div className='flex justify-center gap-4 mt-8 animate-fadeInUp' style={{ animationDelay: '0.9s' }}>
@@ -1220,7 +1220,7 @@ export default function ProfilePage({
               Celebrate {user.name}&apos;s accomplishments and milestones achieved on their puzzle journey
             </p>
           </div>
-          
+
           <div className='w-full max-w-6xl animate-fadeInUp' style={{ animationDelay: '0.5s' }}>
             <ProfileAchievments achievements={achievements} achievementStats={achievementStats} totalActiveUsers={totalActiveUsers} reqUser={reqUser} />
           </div>

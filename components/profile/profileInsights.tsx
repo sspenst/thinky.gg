@@ -197,7 +197,7 @@ export default function ProfileInsights({ reqUser, user }: ProfileInsightsProps)
           <p className='text-blue-100 mb-6 text-lg leading-relaxed'>
             Get detailed analytics, performance tracking, peer comparisons, and time insights for <strong>{user.name}</strong> with {game.displayName} Pro.
           </p>
-          
+
           <div className='flex flex-col sm:flex-row gap-4 justify-center items-center'>
             <Link
               href='/pro'
@@ -205,7 +205,7 @@ export default function ProfileInsights({ reqUser, user }: ProfileInsightsProps)
             >
               Get {game.displayName} Pro
             </Link>
-            
+
             <Link
               href={`/profile/${DEMO_USERNAME}/insights`}
               className='bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-800 transition-colors border border-blue-500'
@@ -213,7 +213,7 @@ export default function ProfileInsights({ reqUser, user }: ProfileInsightsProps)
               View Demo Profile
             </Link>
           </div>
-          
+
           <p className='text-blue-200 text-sm mt-4'>
             See what Pro insights look like with our demo profile
           </p>

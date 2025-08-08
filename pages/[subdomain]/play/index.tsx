@@ -94,7 +94,7 @@ export default function PlayPage({ reqUser }: PlayPageProps) {
                 {chapterUnlocked >= 3 && <ChapterSelectCard chapter={4} chapterUnlocked={chapterUnlocked} />}
               </div>
             </div>
-            
+
             {/* Progress Section - Show second on mobile */}
             <div className='order-2 lg:order-1 w-full'>
               <h2 className='text-2xl sm:text-3xl font-bold mb-4 text-center'>

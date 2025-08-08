@@ -69,7 +69,7 @@ export default function FormattedCampaign({
           {index < filteredLevels.length - 1 && (
             <div className='absolute top-12 left-12 w-full h-0.5 bg-gradient-to-r from-white/30 to-transparent z-0 transform rotate-12' />
           )}
-          
+
           {/* Level Portal */}
           <div className='relative z-10'>
             <ChapterLevelPortal
@@ -129,7 +129,7 @@ export default function FormattedCampaign({
                   <div className='absolute top-3 sm:top-6 right-6 sm:right-12 w-2 sm:w-3 h-2 sm:h-3 bg-pink-300 rotate-45 animate-spin' style={{ animationDelay: '1s', animationDuration: '4s' }} />
                   <div className='absolute bottom-2 sm:bottom-4 left-6 sm:left-12 w-4 sm:w-5 h-4 sm:h-5 bg-blue-300 rotate-45 animate-spin' style={{ animationDelay: '2s', animationDuration: '2s' }} />
                 </div>
-                
+
                 <div className='relative z-10'>
                   {/* Collection Title as Floating Banner */}
                   <div className='mb-4 sm:mb-6'>
@@ -139,7 +139,7 @@ export default function FormattedCampaign({
                       </div>
                     </div>
                   </div>
-                  
+
                   {/* Progress Crystal */}
                   {!lockedStr && (
                     <div className='mb-4 sm:mb-6'>
@@ -179,7 +179,7 @@ export default function FormattedCampaign({
                       </div>
                     </div>
                   )}
-                  
+
                   {/* Lock Indicator */}
                   {lockedStr && (
                     <div className='mb-4 sm:mb-6'>
@@ -189,7 +189,7 @@ export default function FormattedCampaign({
                   )}
                 </div>
               </div>
-              
+
               {/* Collection Content - Island Surface */}
               <div className='bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-sm p-4 sm:p-6 border-t border-white/20'>
                 {lockedStr ? (
@@ -208,8 +208,7 @@ export default function FormattedCampaign({
                         </div>
                       </div>
                     )}
-                    
-                    
+
                     {/* Level Grid as Mini Islands */}
                     <div className='grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6 sm:gap-8 justify-items-center'>
                       {levels.length > 0 ? levels : (
@@ -250,7 +249,7 @@ export default function FormattedCampaign({
         <div className='absolute top-32 right-20 w-32 h-16 bg-gradient-to-r from-pink-500 to-rose-500 rounded-full blur-xl animate-pulse' style={{ animationDelay: '1s' }} />
         <div className='absolute bottom-20 left-1/4 w-36 h-18 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full blur-xl animate-pulse' style={{ animationDelay: '2s' }} />
       </div>
-      
+
       {/* Chapter Overview */}
       <div className='relative z-10 text-center py-8 sm:py-16 px-4'>
         <div className='mb-6 sm:mb-8'>
@@ -258,7 +257,7 @@ export default function FormattedCampaign({
             LEVEL SELECT
           </div>
         </div>
-        
+
         {solvedLevels === totalLevels && (
           <div className='mb-8 sm:mb-12 p-6 sm:p-8 bg-gradient-to-r from-green-400/20 to-emerald-500/20 border border-green-400/50 rounded-3xl backdrop-blur-sm max-w-2xl mx-auto'>
             <div className='text-4xl sm:text-6xl mb-4'>🏆</div>
@@ -279,7 +278,7 @@ export default function FormattedCampaign({
             )}
           </div>
         )}
-        
+
         {/* Filter Toggle */}
         {solvedLevels > 0 && (
           <div className='mb-2 sm:mb-3'>
@@ -296,7 +295,7 @@ export default function FormattedCampaign({
           </div>
         )}
       </div>
-      
+
       {/* Level Collections as Game Islands */}
       <div className='relative z-10 pb-12 sm:pb-20'>
         <div className='max-w-7xl mx-auto px-4'>

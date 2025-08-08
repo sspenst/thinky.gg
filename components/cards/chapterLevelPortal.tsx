@@ -71,7 +71,7 @@ export default function ChapterLevelPortal({ href, id, level, onClick }: Chapter
               backgroundImage: backgroundImage ? 'url("' + backgroundImage + '")' : 'none',
             }}
           />
-          
+
           {/* Gradient Overlay */}
           <div className={`absolute inset-0 bg-gradient-to-br opacity-40 ${
             isComplete ? 'from-green-400/30 to-emerald-500/30' :
@@ -86,7 +86,7 @@ export default function ChapterLevelPortal({ href, id, level, onClick }: Chapter
               </div>
             </div>
           </div>
-          
+
           {/* Status Icons & Info */}
           <div className='relative z-10 h-full flex flex-col justify-between p-2 group-hover:opacity-0 transition-opacity duration-300'>
             {/* Top Row - Status Icon */}
@@ -100,19 +100,19 @@ export default function ChapterLevelPortal({ href, id, level, onClick }: Chapter
                   <span className='sm:hidden'>{isComplete ? '✓' : '◐'}</span>
                 </div>
               )}
-              
+
               {/* Completion Star */}
               {isComplete && (
                 <div className='text-sm sm:text-lg text-green-500'>⭐</div>
               )}
             </div>
-            
+
             {/* Bottom Row - Move Counter */}
             <div className='flex justify-between items-end'>
               <div className={'text-xs font-bold px-2 py-1 rounded bg-black/70 text-white'}>
                 {level.userMoves === undefined ? '?' : level.userMoves}/{level.leastMoves}
               </div>
-              
+
               {/* Progress Indicator */}
               {isAttempted && !isComplete && (
                 <div className='w-2 h-2 bg-yellow-400 rounded-full animate-ping' />

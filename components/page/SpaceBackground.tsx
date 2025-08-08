@@ -120,7 +120,7 @@ export default function SpaceBackground({
             />
           );
         })}
-        
+
         {/* Constellation stars */}
         {constellations.map((star, i) => (
           <div
@@ -143,7 +143,7 @@ export default function SpaceBackground({
             }}
           />
         ))}
-        
+
         {/* Special champion star for leaderboard */}
         {constellationPattern === 'leaderboard' && (
           <div
@@ -159,7 +159,7 @@ export default function SpaceBackground({
           />
         )}
       </div>
-      
+
       {/* Floating Geometric Shapes */}
       {showGeometricShapes && (
         <div className='absolute inset-0 animate-fadeIn' style={{ animationDelay: '0.3s' }}>
@@ -169,12 +169,12 @@ export default function SpaceBackground({
           <div className='absolute top-3/4 left-5 w-28 h-28 border-4 border-pink-400 transform rotate-12 animate-spin opacity-10' style={{ animationDuration: '30s' }} />
         </div>
       )}
-      
+
       {/* Bottom Gradient Overlay */}
       {showBottomGradient && (
         <div className='absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-indigo-900 via-purple-900/50 to-transparent z-5' />
       )}
-      
+
       {/* Content */}
       <div className={`relative z-10 ${useFullHeight ? 'h-full' : ''}`}>
         {children}

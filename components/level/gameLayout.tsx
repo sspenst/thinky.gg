@@ -104,7 +104,7 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, le
           optimizeDom
         />
       </div>
-      
+
       {/* Bottom controls */}
       <div
         className='bg-color border-color-3'

@@ -62,7 +62,7 @@ export default function MatchResults({ match, recap, showViewLink }: MatchResult
                 <StyledTooltip id={'game-label-tooltip-' + match._id.toString()} />
               </div>
             )}
-            
+
             {/* Match Type and Status */}
             <div className='flex flex-col gap-1'>
               <div className='bg-gradient-to-r from-cyan-500/20 to-blue-500/20 backdrop-blur-sm rounded-lg px-3 py-1 border border-white/20 inline-flex'>
@@ -81,7 +81,7 @@ export default function MatchResults({ match, recap, showViewLink }: MatchResult
               </div>
             </div>
           </div>
-          
+
           {/* Time and Actions */}
           <div className='flex items-center gap-3'>
             <div className='text-sm text-white/60'>
@@ -116,17 +116,17 @@ export default function MatchResults({ match, recap, showViewLink }: MatchResult
                   </span>
                 </div>
               )}
-              
+
               {/* Emoji Icon */}
               <span className='text-lg'>
                 {index === 0 && sortedPlayers.length > 1 ? '🏆' : '🎮'}
               </span>
-              
+
               {/* Player Info */}
               <div className='flex-1'>
                 <FormattedUser size={Dimensions.AvatarSizeSmall} id='match-result' user={player} />
               </div>
-              
+
               {/* Rating and Changes */}
               <div className='flex items-center gap-2'>
                 <MultiplayerRating hideType profile={player.multiplayerProfile} type={match.type} />
