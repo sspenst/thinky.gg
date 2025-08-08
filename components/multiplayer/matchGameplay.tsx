@@ -1,10 +1,10 @@
-import React, { useCallback } from 'react';
 import GameRefactored from '@root/components/level/game-refactored';
+import { GameState, MatchGameState } from '@root/helpers/gameStateHelpers';
+import { MatchAction } from '@root/models/constants/multiplayer';
 import Control from '@root/models/control';
 import Level from '@root/models/db/level';
-import { GameState, MatchGameState } from '@root/helpers/gameStateHelpers';
+import React, { useCallback } from 'react';
 import { toast } from 'react-hot-toast';
-import { MatchAction } from '@root/models/constants/multiplayer';
 
 interface MatchGameplayProps {
   activeLevel: Level;
@@ -80,6 +80,7 @@ export default function MatchGameplay({ activeLevel, matchId, usedSkip, onMove, 
         matchId={matchId}
         onMove={(gameState: GameState) => {
           const matchGameState: MatchGameState = { ...gameState, leastMoves: activeLevel.leastMoves };
+
           onMove(matchGameState);
         }}
       />

@@ -1,6 +1,6 @@
-import React from 'react';
-import MultiplayerMatch from '@root/models/db/multiplayerMatch';
 import { MultiplayerMatchState } from '@root/models/constants/multiplayer';
+import MultiplayerMatch from '@root/models/db/multiplayerMatch';
+import React from 'react';
 
 interface AbortedMatchInfoProps {
   match: MultiplayerMatch;

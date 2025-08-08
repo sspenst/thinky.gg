@@ -10,11 +10,13 @@ let initialized = false;
 export function initializePostHog() {
   // Skip if already initialized or on server
   if (initialized || typeof window === 'undefined') return;
-  
+
   // Skip on localhost development
   const isLocalhost = window.location.hostname === 'localhost' && window.location.port === '3000';
+
   if (isLocalhost) {
     console.log('PostHog disabled on localhost:3000');
+
     return;
   }
 

@@ -1,6 +1,6 @@
-import React from 'react';
-import { UserWithMultiplayerProfile } from '@root/models/db/user';
 import { MultiplayerMatchState } from '@root/models/constants/multiplayer';
+import { UserWithMultiplayerProfile } from '@root/models/db/user';
+import React from 'react';
 
 interface SpectatorCountProps {
   connectedPlayersInRoom?: {count: number, users: UserWithMultiplayerProfile[]};
@@ -13,12 +13,29 @@ export default function SpectatorCount({ connectedPlayersInRoom, matchState }: S
   }
 
   const isFinished = matchState === MultiplayerMatchState.FINISHED || matchState === MultiplayerMatchState.ABORTED;
-  
+  const isOpen = matchState === MultiplayerMatchState.OPEN;
+  const isActive = matchState === MultiplayerMatchState.ACTIVE;
+
   // For finished matches, show total viewers (don't subtract players)
+  // For open matches, show total viewers (don't subtract players since they might not be playing yet)
   // For active matches, show spectators (subtract 2 active players)
-  const count = isFinished ? connectedPlayersInRoom.count : connectedPlayersInRoom.count - 2;
-  const label = isFinished ? 'viewing' : 'spectating';
-  
+  let count: number;
+  let label: string;
+
+  if (isFinished) {
+    count = connectedPlayersInRoom.count;
+    label = 'viewing';
+  } else if (isOpen) {
+    count = connectedPlayersInRoom.count;
+    label = 'viewing';
+  } else if (isActive) {
+    count = connectedPlayersInRoom.count - 2;
+    label = 'spectating';
+  } else {
+    count = connectedPlayersInRoom.count;
+    label = 'viewing';
+  }
+
   if (count <= 0) {
     return null;
   }

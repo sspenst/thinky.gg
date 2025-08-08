@@ -412,6 +412,7 @@ export default function Home({
     </button>
   );
   const { streak, timeToKeepStreak } = userConfig ? getStreak(userConfig) : { streak: 0, timeToKeepStreak: 0 };
+
   return (<>
     {tour}
     <UpsellFullAccount user={user} />

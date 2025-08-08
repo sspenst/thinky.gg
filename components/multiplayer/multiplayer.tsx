@@ -50,9 +50,8 @@ export default function Multiplayer() {
       toast.success('Created Match');
       const createdMatch = await res.json() as MultiplayerMatch;
 
-      if (createdMatch.private) {
-        router.push(`/match/${createdMatch.matchId}`);
-      }
+      // Always redirect to the match page after creating a match
+      router.push(`/match/${createdMatch.matchId}`);
     }).catch(async err => {
       isCreatingMatch.current = false;
       toast.dismiss();
@@ -113,7 +112,6 @@ export default function Multiplayer() {
           Climb the rankings and prove your skills!
         </p>
       </div>
-
       {/* Online Players Indicator and Create Match Button */}
       <div className='flex flex-col sm:flex-row justify-center items-center gap-4 mb-8 animate-fadeInUp' style={{ animationDelay: '0.3s' }}>
         <OnlineUsers />
@@ -130,7 +128,6 @@ export default function Multiplayer() {
           </button>
         )}
       </div>
-
       {/* Main Content Grid */}
       <div className='grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 mb-8'>
         {/* Left Column - Your Stats */}
@@ -168,7 +165,6 @@ export default function Multiplayer() {
               </div>
             </div>
           </div>
-
           {/* How to Play */}
           <div className='relative mt-6'>
             <div className='absolute -inset-2 bg-gradient-to-r from-green-600/15 to-emerald-600/15 blur-lg opacity-40' />
@@ -199,7 +195,6 @@ export default function Multiplayer() {
               </ul>
             </div>
           </div>
-
           {/* Currently Online Players */}
           <div className='relative mt-6'>
             <div className='absolute -inset-2 bg-gradient-to-r from-purple-600/15 to-pink-600/15 blur-lg opacity-40' />
@@ -251,7 +246,6 @@ export default function Multiplayer() {
               </div>
             </div>
           )}
-
           {/* Active Matches */}
           {activeMatches.length > 0 && (
             <div className='mb-6'>
@@ -267,7 +261,6 @@ export default function Multiplayer() {
               </div>
             </div>
           )}
-
           {/* Recent Matches */}
           <div>
             <h2 className='text-xl font-bold mb-4'>

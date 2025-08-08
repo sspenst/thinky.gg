@@ -169,6 +169,25 @@ export default async function startSocketIOServer(server: Server) {
       }
     });
 
+    socket.on('disconnecting', async () => {
+      const userId = socket.data.userId as Types.ObjectId;
+
+      if (!userId) {
+        return;
+      }
+
+      // Get the rooms this socket was in (excluding personal room and socket.id)
+      // Use 'disconnecting' event so we can access rooms before they're cleared
+      const rooms = Array.from(socket.rooms).filter(room => 
+        room !== socket.id && room !== userId.toString() && !room.startsWith('LOBBY-')
+      );
+
+      logger.info(`User ${userId} disconnecting from rooms: ${rooms.join(', ')}`);
+
+      // Store rooms for later use in disconnect event
+      socket.data.roomsOnDisconnect = rooms;
+    });
+
     socket.on('disconnect', async () => {
       const userId = socket.data.userId as Types.ObjectId;
 
@@ -176,9 +195,17 @@ export default async function startSocketIOServer(server: Server) {
         return;
       }
 
+      // Use the rooms we stored during 'disconnecting' event
+      const rooms = socket.data.roomsOnDisconnect || [];
+
       await Promise.all([
         broadcastConnectedPlayers(gameId, adapted),
         broadcastMatches(gameId, mongoEmitter),
+        // Broadcast updated counts for any match rooms the user was in
+        ...rooms.map((matchId: string) => {
+          logger.info(`Broadcasting room count update for match: ${matchId}`);
+          return broadcastCountOfUsersInRoom(gameId, adapted, matchId);
+        })
       ]);
     });
 

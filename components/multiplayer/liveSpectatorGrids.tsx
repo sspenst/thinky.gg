@@ -1,12 +1,12 @@
-import React from 'react';
-import Link from 'next/link';
-import Grid from '@root/components/level/grid';
 import FormattedUser from '@root/components/formatted/formattedUser';
+import Grid from '@root/components/level/grid';
 import Dimensions from '@root/constants/dimensions';
 import { MatchGameState } from '@root/helpers/gameStateHelpers';
+import { MultiplayerMatchState } from '@root/models/constants/multiplayer';
 import Level from '@root/models/db/level';
 import MultiplayerMatch from '@root/models/db/multiplayerMatch';
-import { MultiplayerMatchState } from '@root/models/constants/multiplayer';
+import Link from 'next/link';
+import React from 'react';
 
 interface LiveSpectatorGridsProps {
   match: MultiplayerMatch;

@@ -218,6 +218,23 @@ export function NotificationMessage({ notification, onMarkAsRead }: Notification
     </>);
   }
 
+  case NotificationType.MULTIPLAYER_INVITE: {
+    const baseUrl = getGameFromId(notification.gameId as GameId).baseUrl;
+    // For multiplayer invites, the matchId is stored in the message field
+    const matchId = notification.message;
+
+    return (<>
+      {'invited you to a multiplayer match! '}
+      <Link
+        onClick={onMarkAsRead}
+        className='underline font-bold'
+        href={`${baseUrl}/match/${matchId}`}
+      >
+        Join match
+      </Link>
+    </>);
+  }
+
   default:
     return null;
   }

@@ -108,20 +108,40 @@ export default function MatchStatus({ isMatchPage, match, onJoinClick, onLeaveCl
         {/* Left Section - Actions */}
         <div className='flex flex-row sm:flex-col gap-2 items-center sm:items-start'>
           {match.players.some(player => user?._id.toString() !== player._id.toString()) && (match.state === MultiplayerMatchState.OPEN) &&
-            <button
-              className='bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transform hover:scale-105 transition-all duration-200'
-              onClick={joinMatch}
-            >
-              Join
-            </button>
+            <div className='flex gap-2'>
+              <button
+                className='bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transform hover:scale-105 transition-all duration-200'
+                onClick={joinMatch}
+              >
+                Join
+              </button>
+              {!isMatchPage && (
+                <Link
+                  className='bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transform hover:scale-105 transition-all duration-200 text-center'
+                  href={`/match/${match.matchId}`}
+                >
+                  View
+                </Link>
+              )}
+            </div>
           }
           {match.players.some(player => user?._id.toString() === player._id.toString()) && (match.state === MultiplayerMatchState.OPEN || match.state === MultiplayerMatchState.ACTIVE) &&
-            <button
-              className='bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transform hover:scale-105 transition-all duration-200'
-              onClick={leaveMatch}
-            >
-              Leave
-            </button>
+            <>
+              {!isMatchPage && (
+                <Link
+                  className='bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transform hover:scale-105 transition-all duration-200 text-center'
+                  href={`/match/${match.matchId}`}
+                >
+                  View
+                </Link>
+              )}
+              <button
+                className='bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transform hover:scale-105 transition-all duration-200'
+                onClick={leaveMatch}
+              >
+                Leave
+              </button>
+            </>
           }
           {!isMatchPage && !match.players.some(player => user?._id.toString() === player._id.toString()) && (match.state === MultiplayerMatchState.ACTIVE) &&
             <Link

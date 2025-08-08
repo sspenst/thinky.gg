@@ -71,4 +71,5 @@ export enum MatchAction {
   GAME_START = 'gameStart',
   GAME_END = 'gameEnd',
   GAME_RECAP = 'gameRecap',
+  INVITE_USER = 'inviteUser',
 }

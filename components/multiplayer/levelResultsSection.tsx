@@ -1,12 +1,12 @@
-import React from 'react';
 import LevelCard from '@root/components/cards/levelCard';
 import FormattedUser from '@root/components/formatted/formattedUser';
 import StyledTooltip from '@root/components/page/styledTooltip';
 import Dimensions from '@root/constants/dimensions';
+import { MatchAction, MatchLogDataLevelComplete } from '@root/models/constants/multiplayer';
 import Level from '@root/models/db/level';
 import MultiplayerMatch from '@root/models/db/multiplayerMatch';
-import { MatchAction, MatchLogDataLevelComplete } from '@root/models/constants/multiplayer';
 import dayjs from 'dayjs';
+import React from 'react';
 
 interface LevelResultsSectionProps {
   match: MultiplayerMatch;

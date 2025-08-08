@@ -53,7 +53,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, originalL
   const [validateLevelResponse, setValidateLevelResponse] = useState<ValidateLevelResponse>();
   const { id } = router.query;
   const publishDropdownRef = useRef<HTMLDivElement>(null);
-  
+
   // Track the server level data (what's actually saved on the server)
   const [serverLevelData, setServerLevelData] = useState({
     data: (originalLevel || level).data,
@@ -61,10 +61,10 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, originalL
     height: (originalLevel || level).height,
     leastMoves: (originalLevel || level).leastMoves,
   });
-  
+
   // For unsaved levels, track the level state when a solution was found
   const [solutionLevelData, setSolutionLevelData] = useState<{data: string, width: number, height: number} | null>(null);
-  
+
   // Check if current level data differs from server
   const hasLevelDataChanged = useCallback(() => {
     return (
@@ -73,34 +73,34 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, originalL
       serverLevelData.height !== level.height
     );
   }, [serverLevelData, level.data, level.width, level.height]);
-  
+
   // Helper to clear best solution from both state and ref
   const clearBestSolution = useCallback(() => {
     setBestSolution(null);
     bestSolutionRef.current = null;
   }, []);
-  
+
   // Update dirty state and leastMoves when level data changes
   useEffect(() => {
-    if (id) { 
+    if (id) {
       // For saved levels, compare against server state
       const hasChanged = hasLevelDataChanged();
-      
+
       if (hasChanged !== isDirty) {
         setIsDirty(hasChanged);
       }
-      
+
       // Update leastMoves based on whether level matches server version
       setLevel(prevLevel => {
         const newLeastMoves = hasChanged ? 0 : serverLevelData.leastMoves;
-        
+
         if (prevLevel.leastMoves !== newLeastMoves) {
           return {
             ...prevLevel,
             leastMoves: newLeastMoves
           };
         }
-        
+
         return prevLevel;
       });
     } else if (!id && solutionLevelData) {
@@ -110,7 +110,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, originalL
         solutionLevelData.width !== level.width ||
         solutionLevelData.height !== level.height
       );
-      
+
       if (levelChangedSinceSolution && level.leastMoves > 0) {
         // Reset leastMoves to 0 when level is modified after finding a solution
         setLevel(prevLevel => ({
@@ -305,18 +305,19 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, originalL
     if (isTestMode) {
       // Push a new history state when entering test mode
       window.history.pushState({ testMode: true }, '', window.location.href);
-      
+
       const handlePopState = (e: PopStateEvent) => {
         // When back button is pressed, exit test mode instead of navigating away
         e.preventDefault();
         setIsTestMode(false);
-        
+
         // Only clear best solution for truly unsaved levels
         const isUnsaved = !id && !savedLevelId;
+
         if (isUnsaved) {
           clearBestSolution();
         }
-        
+
         // Push the state back to prevent actual navigation
         window.history.pushState(null, '', window.location.href);
       };
@@ -455,6 +456,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, originalL
         if (bestSolution && bestSolution.length > 0 && typeof id === 'string') {
           // Validate the solution against the current level data first
           const validateSolution = game.validateSolution;
+
           if (validateSolution && !validateSolution(bestSolution, level)) {
             toast.error('Your solution is no longer valid due to level changes.');
             clearBestSolution();
@@ -492,6 +494,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, originalL
         clearBestSolution();
       } else {
         const error = await res.text();
+
         console.error('Stats submission failed:', error);
         toast.error('Failed to submit solution.');
         clearBestSolution();
@@ -576,6 +579,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, originalL
                 className='px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded'
                 onClick={() => {
                   setIsTestMode(false);
+
                   // Clear the best solution when exiting test mode without saving
                   if (isUnsaved) {
                     clearBestSolution();
@@ -622,7 +626,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, originalL
             if (game.isComplete(gameState)) {
               // Store the complete solution path as Direction array
               const moves = gameState.moves.map(move => move.direction);
-              
+
               // Defer state updates to avoid the React warning
               setTimeout(() => {
                 if (isUnsaved) {
@@ -659,7 +663,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, originalL
                 } else {
                   // For saved unmodified levels, check if this is a new record
                   const isNewRecord = moves.length < level.leastMoves || level.leastMoves === 0;
-                  
+
                   if (isNewRecord) {
                     // Update the level's leastMoves for display
                     setLevel(prevLevel => ({
@@ -850,13 +854,16 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, originalL
         if (setAllowNavigation) {
           setAllowNavigation(true);
         }
+
         // Update the saved level ID so we know it's no longer unsaved
         setSavedLevelId(levelId);
         // If we have a best solution, submit it now (use ref for immediate access)
         const solutionToSubmit = bestSolutionRef.current;
+
         if (solutionToSubmit && solutionToSubmit.length > 0) {
           // Validate the solution against the current level data first
           const validateSolution = game.validateSolution;
+
           if (validateSolution && !validateSolution(solutionToSubmit, level)) {
             toast.error('Your solution is no longer valid due to level changes.');
             clearBestSolution();
@@ -876,7 +883,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, originalL
           ...updatedLevel,
           leastMoves: prevLevel.leastMoves, // Keep current leastMoves (might be 0 if modified, or server value if not)
         }));
-        
+
         // Server state for level data doesn't change during metadata updates
         // Only the metadata changes, level data (width, height, data, leastMoves) stays the same
       }}

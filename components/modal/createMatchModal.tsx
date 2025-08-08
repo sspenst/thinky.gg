@@ -60,7 +60,7 @@ export default function CreateMatchModal({ closeModal, isOpen, onConfirm }: Crea
               <div className='absolute -inset-1 bg-gradient-to-r from-purple-600/20 to-pink-600/20 blur-sm opacity-50' />
               <div className='relative bg-white/5 backdrop-blur-sm rounded-lg p-4 border border-white/20'>
                 <div className='flex items-center gap-3'>
-                  <input 
+                  <input
                     id='chk_private'
                     checked={isPrivate}
                     className='w-4 h-4 text-purple-600 bg-gray-800 border-gray-600 rounded focus:ring-purple-500 focus:ring-2'
@@ -68,7 +68,7 @@ export default function CreateMatchModal({ closeModal, isOpen, onConfirm }: Crea
                     type='checkbox'
                     onChange={(checkbox: React.ChangeEvent<HTMLInputElement>) => {
                       setIsPrivate(checkbox.target.checked);
-                    }} 
+                    }}
                   />
                   <label className='text-white font-medium flex-1' htmlFor='chk_private'>
                     Private Match
@@ -78,21 +78,20 @@ export default function CreateMatchModal({ closeModal, isOpen, onConfirm }: Crea
                 </div>
               </div>
             </div>
-
             {/* Rated Match Toggle */}
             <div className='relative'>
               <div className='absolute -inset-1 bg-gradient-to-r from-green-600/20 to-emerald-600/20 blur-sm opacity-50' />
               <div className='relative bg-white/5 backdrop-blur-sm rounded-lg p-4 border border-white/20'>
                 <div className='flex items-center gap-3'>
-                  <input 
-                    id='chk_rated' 
-                    checked={isRated} 
+                  <input
+                    id='chk_rated'
+                    checked={isRated}
                     className='w-4 h-4 text-green-600 bg-gray-800 border-gray-600 rounded focus:ring-green-500 focus:ring-2'
-                    name='rated' 
-                    type='checkbox' 
+                    name='rated'
+                    type='checkbox'
                     onChange={(checkbox: React.ChangeEvent<HTMLInputElement>) => {
                       setIsRated(checkbox.target.checked);
-                    }} 
+                    }}
                   />
                   <label className='text-white font-medium flex-1' htmlFor='chk_rated'>
                     Rated Match
@@ -103,7 +102,6 @@ export default function CreateMatchModal({ closeModal, isOpen, onConfirm }: Crea
               </div>
             </div>
           </div>
-
           {/* Game Type Column */}
           <div className='space-y-4'>
             <h3 className='text-lg font-semibold text-white mb-3'>Game Type</h3>
@@ -120,8 +118,8 @@ export default function CreateMatchModal({ closeModal, isOpen, onConfirm }: Crea
                   styles={{
                     menuPortal: base => ({ ...base, zIndex: 9999, color: 'black' }) as CSSObjectWithLabel,
                     menu: base => ({ ...base, zIndex: 9999, backgroundColor: '#1f2937', border: '1px solid rgba(255,255,255,0.2)' }) as CSSObjectWithLabel,
-                    control: base => ({ 
-                      ...base, 
+                    control: base => ({
+                      ...base,
                       width: '100%',
                       backgroundColor: 'rgba(255,255,255,0.1)',
                       border: '1px solid rgba(255,255,255,0.3)',

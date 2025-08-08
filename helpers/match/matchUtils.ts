@@ -1,5 +1,5 @@
-import MultiplayerMatch from '@root/models/db/multiplayerMatch';
 import { MatchAction, MatchLogDataUserLeveId, MultiplayerMatchState } from '@root/models/constants/multiplayer';
+import MultiplayerMatch from '@root/models/db/multiplayerMatch';
 
 export function getLevelIndexByPlayerId(match: MultiplayerMatch | undefined | null, playerId: string): number {
   if (!match || !(playerId in match.scoreTable)) {

@@ -133,6 +133,13 @@ export default function SettingsNotifications() {
         description: 'When someone beats your record on a level'
       }
     ],
+    'Multiplayer': [
+      {
+        type: NotificationType.MULTIPLAYER_INVITE,
+        label: 'Match invitations',
+        description: 'When someone invites you to a multiplayer match'
+      }
+    ],
     'Achievements & Account': [
       {
         type: NotificationType.NEW_ACHIEVEMENT,

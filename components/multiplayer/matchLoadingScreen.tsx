@@ -1,6 +1,6 @@
-import React from 'react';
 import Page from '@root/components/page/page';
 import SpaceBackground from '@root/components/page/SpaceBackground';
+import React from 'react';
 
 interface MatchLoadingScreenProps {
   initialMatch?: boolean;

@@ -1,12 +1,12 @@
-import { useEffect, useState, useContext } from 'react';
-import { useRouter } from 'next/router';
-import { toast } from 'react-hot-toast';
-import { io } from 'socket.io-client';
 import { AppContext } from '@root/contexts/appContext';
 import { MatchGameState } from '@root/helpers/gameStateHelpers';
-import { UserWithMultiMultiplayerProfile, UserWithMultiplayerProfile } from '@root/models/db/user';
 import MultiplayerMatch from '@root/models/db/multiplayerMatch';
 import MultiplayerProfile from '@root/models/db/multiplayerProfile';
+import { UserWithMultiMultiplayerProfile, UserWithMultiplayerProfile } from '@root/models/db/user';
+import { useRouter } from 'next/router';
+import { useContext, useEffect, useState } from 'react';
+import { toast } from 'react-hot-toast';
+import { io } from 'socket.io-client';
 
 interface UseMatchSocketProps {
   matchId: string;
@@ -41,7 +41,9 @@ export function useMatchSocket({ matchId, isSpectating }: UseMatchSocketProps): 
 
         setMatchGameStateMap(prevMatchGameStateMap => {
           const newMatchGameStateMap = { ...prevMatchGameStateMap };
+
           newMatchGameStateMap[userId] = matchGameState;
+
           return newMatchGameStateMap;
         });
       });
@@ -83,6 +85,7 @@ export function useMatchSocket({ matchId, isSpectating }: UseMatchSocketProps): 
       socketConn.off('matchNotFound');
       socketConn.off('connectedPlayersInRoom');
       socketConn.off('userMatchGameState');
+      console.log('DISCONN');
       socketConn.disconnect();
     };
   }, [game, isSpectating, matchId, router]);

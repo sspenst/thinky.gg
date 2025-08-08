@@ -55,17 +55,17 @@ export default function CreateLevelModal({ closeModal, isOpen, level, onLevelCre
       if (res.status === 200) {
         toast.dismiss();
         toast.success('Created');
-        
+
         const { _id } = await res.json();
-        
+
         // Call closeModal first to set isDirty to false
         closeModal();
-        
+
         // Call the callback if provided (for pending solutions)
         if (onLevelCreated) {
           onLevelCreated(_id);
         }
-        
+
         // Small delay to ensure state updates complete before navigation
         setTimeout(() => {
           router.replace(`/edit/${_id}`);

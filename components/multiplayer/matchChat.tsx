@@ -1,9 +1,9 @@
+import Dimensions from '@root/constants/dimensions';
 import MultiplayerMatch, { ChatMessage } from '@root/models/db/multiplayerMatch';
 import User from '@root/models/db/user';
 import React, { useEffect, useRef, useState } from 'react';
-import FormattedUser from '../formatted/formattedUser';
 import FormattedLevelLink from '../formatted/formattedLevelLink';
-import Dimensions from '@root/constants/dimensions';
+import FormattedUser from '../formatted/formattedUser';
 
 interface MatchChatProps {
   match: MultiplayerMatch;
@@ -26,6 +26,7 @@ export default function MatchChat({ match, user, onSendMessage, showSpectatorNot
     // Only scroll if message count actually increased
     if (currentMessageCount > prevMessageCountRef.current) {
       const container = messagesContainerRef.current;
+
       if (container) {
         // If we just sent a message, scroll immediately
         if (justSentMessageRef.current) {
@@ -71,7 +72,7 @@ export default function MatchChat({ match, user, onSendMessage, showSpectatorNot
       const userName = chatMessage.systemData.userName;
       const action = chatMessage.systemData.action;
       const level = chatMessage.systemData.level;
-      
+
       // Create a minimal user object for FormattedUser
       const systemUser = {
         _id: userId,
@@ -97,7 +98,7 @@ export default function MatchChat({ match, user, onSendMessage, showSpectatorNot
       const userId = chatMessage.systemData.userId;
       const userName = chatMessage.systemData.userName;
       const action = chatMessage.systemData.action;
-      
+
       // Create a minimal user object for FormattedUser
       const systemUser = {
         _id: userId,
@@ -175,12 +176,12 @@ export default function MatchChat({ match, user, onSendMessage, showSpectatorNot
                       : 'bg-white/20 text-white'
                   }`}>
                     <div className='text-xs mb-1' style={{ color: isMe ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.7)' }}>
-                      <FormattedUser 
+                      <FormattedUser
                         id={`chat-message-user-${(chatMessage.userId as User)?._id || 'unknown'}-${index}`}
-                        user={chatMessage.userId as User} 
+                        user={chatMessage.userId as User}
                         size={Dimensions.AvatarSizeSmall}
                         hideAvatar={true}
-                        className={isMe ? "text-white/80 hover:text-white" : "text-white/70 hover:text-white"}
+                        className={isMe ? 'text-white/80 hover:text-white' : 'text-white/70 hover:text-white'}
                       />
                     </div>
                     <div className='text-sm'>{chatMessage.message}</div>
