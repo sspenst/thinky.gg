@@ -4,7 +4,7 @@ import Grid from '@root/components/level/grid';
 import HeadToHeadDisplay from '@root/components/multiplayer/headToHeadDisplay';
 import MatchResults from '@root/components/multiplayer/matchResults';
 import SpaceBackground from '@root/components/page/SpaceBackground';
-import { MatchGameState } from '@root/helpers/gameStateHelpers';
+import { initGameState, MatchGameState } from '@root/helpers/gameStateHelpers';
 import useSWRHelper from '@root/hooks/useSWRHelper';
 import MultiplayerProfile from '@root/models/db/multiplayerProfile';
 import { UserWithMultiMultiplayerProfile, UserWithMultiplayerProfile } from '@root/models/db/user';
@@ -99,6 +99,7 @@ export default function Match({ initialMatch }: MatchProps) {
 
   // map of userId to game state
   const [matchGameStateMap, setMatchGameStateMap] = useState<Record<string, MatchGameState>>({});
+  const latestMatchGameStateRef = useRef<MatchGameState | null>(null);
 
   const matchInProgress = match?.state === MultiplayerMatchState.ACTIVE && match?.timeUntilStart <= 0;
   const iAmPlaying = match?.players.some(player => player._id.toString() === user?._id.toString());
@@ -118,7 +119,7 @@ export default function Match({ initialMatch }: MatchProps) {
   };
 
   function getLevelIndexByPlayerId(playerId: string): number {
-    if (!match || !match.scoreTable[playerId]) {
+    if (!match || !(playerId in match.scoreTable)) {
       return -1;
     }
 
@@ -249,6 +250,17 @@ export default function Match({ initialMatch }: MatchProps) {
     disabled,
   ), [btnSkip]);
 
+  const emitMatchState = useCallback(async(gameState: MatchGameState) => {
+    if (activeLevel) {
+      const matchGameState: MatchGameState = { ...gameState, leastMoves: activeLevel.leastMoves };
+
+      multiplayerSocket.socket?.emit('matchGameState', {
+        matchId: matchId,
+        matchGameState: matchGameState,
+      });
+    }
+  }, [activeLevel, matchId, multiplayerSocket.socket]);
+
   useEffect(() => {
     // if no match or url is already multiplayer
     if (!match) {
@@ -256,9 +268,35 @@ export default function Match({ initialMatch }: MatchProps) {
     }
 
     if (match.levels.length > 0) {
+      // Set the initial match game state for the first level
+      const firstLevel = (match.levels as Level[])[0];
+
+      if (firstLevel) {
+        const baseState = initGameState(firstLevel.data);
+        const initialMatchGameState: MatchGameState = { ...baseState, leastMoves: firstLevel.leastMoves };
+
+        latestMatchGameStateRef.current = initialMatchGameState;
+        emitMatchState(initialMatchGameState);
+      }
+
       setActiveLevel((match.levels as Level[])[0]);
     }
-  }, [match, router]);
+  }, [match, router, emitMatchState]);
+
+  // Periodically emit the latest game state every 5 seconds while actively playing
+  useEffect(() => {
+    if (!matchInProgress || !iAmPlaying) {
+      return;
+    }
+
+    const intervalId = setInterval(() => {
+      if (latestMatchGameStateRef.current) {
+        emitMatchState(latestMatchGameStateRef.current);
+      }
+    }, 5000);
+
+    return () => clearInterval(intervalId);
+  }, [emitMatchState, iAmPlaying, matchInProgress]);
 
   const fetchMarkReady = useCallback(async() => {
     const res = await fetch(`/api/match/${matchId}`, {
@@ -517,8 +555,12 @@ export default function Match({ initialMatch }: MatchProps) {
           { left: '25%', top: '30%', size: '6px', color: 'bg-purple-400', delay: '0.5s', duration: '2.9s', glow: true },
         ]}
         showGeometricShapes={true}
+        useFullHeight={matchInProgress}
       >
-        <div className='relative max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12'>
+        <div className={classNames('relative max-w-7xl mx-auto px-4 sm:px-6', {
+          'py-8 sm:py-12': !matchInProgress,
+          'h-full flex flex-col': matchInProgress
+        })}>
           {/* Header Section - Hidden during active match */}
           <div className={classNames('text-center mb-8 animate-fadeInDown', { 'hidden': matchInProgress })}>
             <h1 className='font-bold text-3xl sm:text-4xl lg:text-5xl mb-4'>
@@ -572,7 +614,6 @@ export default function Match({ initialMatch }: MatchProps) {
               </div>
             </div>
           )}
-
           {/* Spectator Count */}
           {connectedPlayersInRoom && connectedPlayersInRoom.count > 2 && (
             <div className='absolute top-4 right-4 animate-fadeInRight'>
@@ -668,7 +709,6 @@ export default function Match({ initialMatch }: MatchProps) {
                   </div>
                 </div>
               </div>
-
               {/* Level Results */}
               <div className='w-full max-w-4xl'>
                 <h2 className='text-2xl font-bold text-center mb-6'>
@@ -689,7 +729,10 @@ export default function Match({ initialMatch }: MatchProps) {
               </div>
             </div>
           ) : (
-            <div className='flex flex-col items-center justify-center h-full gap-6 mb-4'>
+            <div className={classNames('flex flex-col items-center gap-6 mb-4', {
+              'min-h-screen justify-center': !matchInProgress,
+              'flex-1 justify-start': matchInProgress
+            })}>
               {/* Countdown Display */}
               {countDown > 0 && (
                 <div className='relative animate-pulse'>
@@ -703,7 +746,6 @@ export default function Match({ initialMatch }: MatchProps) {
                   </div>
                 </div>
               )}
-
               {/* Ready Status */}
               {match.state === MultiplayerMatchState.ACTIVE && match.timeUntilStart > 0 && (
                 <div className='relative animate-fadeInUp' style={{ animationDelay: '0.2s' }}>
@@ -740,10 +782,11 @@ export default function Match({ initialMatch }: MatchProps) {
                     <svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='currentColor' className='animate-bounce text-green-400' viewBox='0 0 16 16'>
                       <path d='M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.5 4.5a.5.5 0 0 0-1 0v5.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V4.5z' />
                     </svg>
-                    <button 
+                    <button
                       className='group relative overflow-hidden bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-300 animate-pulse'
                       onClick={(e: React.MouseEvent) => {
                         const targetButton = e.currentTarget as HTMLButtonElement;
+
                         targetButton.disabled = true;
                         targetButton.classList.add('opacity-50');
                         targetButton.classList.remove('animate-pulse');
@@ -760,7 +803,6 @@ export default function Match({ initialMatch }: MatchProps) {
                   </div>
                 </div>
               )}
-
               {/* Match Status */}
               <div className='w-full max-w-4xl animate-fadeInUp' style={{ animationDelay: '0.6s' }}>
                 <MatchStatus
@@ -783,10 +825,8 @@ export default function Match({ initialMatch }: MatchProps) {
                   onMove={(gameState) => {
                     const matchGameState: MatchGameState = { ...gameState, leastMoves: activeLevel.leastMoves };
 
-                    multiplayerSocket.socket?.emit('matchGameState', {
-                      matchId: matchId,
-                      matchGameState: matchGameState,
-                    });
+                    latestMatchGameStateRef.current = matchGameState;
+                    emitMatchState(matchGameState);
                   }}
                 />
               </div>
