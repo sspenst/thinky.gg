@@ -123,8 +123,8 @@ export default withAuth(
               players: req.user._id,
               matchLog: log,
             },
-            startTime: Date.now() + 15000 * 1000, // start 15 seconds into the future...
-            endTime: Date.now() + 15000 + MultiplayerMatchTypeDurationMap[match.type as MultiplayerMatchType], // end 3 minute after start
+            startTime: Date.now() + 30000, // Auto abort 30 seconds into the future...
+            endTime: Date.now() + 30000 + MultiplayerMatchTypeDurationMap[match.type as MultiplayerMatchType], // end 3 minute after start
             state: MultiplayerMatchState.ACTIVE,
           },
           { new: true }

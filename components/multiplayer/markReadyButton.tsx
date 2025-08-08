@@ -36,13 +36,12 @@ export default function MarkReadyButton({ match, user, onMarkReady }: MarkReadyB
             
             {/* Ready button with enhanced styling */}
             <button
-              className='group relative overflow-hidden bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-4 px-8 rounded-xl shadow-2xl transform hover:scale-105 transition-all duration-300 animate-pulse text-lg'
+              className='group relative overflow-hidden bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-4 px-8 rounded-xl shadow-2xl transform hover:scale-105 transition-all duration-300 text-lg'
               onClick={(e: React.MouseEvent) => {
                 const targetButton = e.currentTarget as HTMLButtonElement;
 
                 targetButton.disabled = true;
                 targetButton.classList.add('opacity-50');
-                targetButton.classList.remove('animate-pulse');
                 targetButton.innerText = 'Marking...';
                 onMarkReady();
               }}
