@@ -2,7 +2,7 @@ import { MultiplayerMatchState } from '@root/models/constants/multiplayer';
 import MultiplayerMatch from '@root/models/db/multiplayerMatch';
 import { UserWithMultiplayerProfile } from '@root/models/db/user';
 import { Types } from 'mongoose';
-import React, { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 interface MarkReadyButtonProps {
   match: MultiplayerMatch;

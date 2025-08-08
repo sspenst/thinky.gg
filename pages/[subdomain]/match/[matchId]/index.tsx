@@ -5,6 +5,7 @@ import LevelResultsSection from '@root/components/multiplayer/levelResultsSectio
 import LiveSpectatorGrids from '@root/components/multiplayer/liveSpectatorGrids';
 import MarkReadyButton from '@root/components/multiplayer/markReadyButton';
 import MatchChart from '@root/components/multiplayer/matchChart';
+import MatchChat from '@root/components/multiplayer/matchChat';
 import MatchGameplay from '@root/components/multiplayer/matchGameplay';
 import MatchHeader from '@root/components/multiplayer/matchHeader';
 import MatchLoadingScreen from '@root/components/multiplayer/matchLoadingScreen';
@@ -200,6 +201,23 @@ export default function Match({ initialMatch }: MatchProps) {
     }
   }, [matchId]);
 
+  const sendChatMessage = useCallback(async(message: string) => {
+    const res = await fetch(`/api/match/${matchId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        action: MatchAction.SEND_CHAT_MESSAGE,
+        message: message,
+      }),
+    });
+
+    if (!res.ok) {
+      console.error('Failed to send chat message');
+    }
+  }, [matchId]);
+
   useEffect(() => {
     if (!currentMatch) {
       return;
@@ -298,8 +316,8 @@ export default function Match({ initialMatch }: MatchProps) {
         showGeometricShapes={true}
         useFullHeight={matchInProgress && iAmPlaying}
       >
-        <div className={classNames('relative max-w-7xl mx-auto px-4 sm:px-6', {
-          'py-8 ': !(matchInProgress && iAmPlaying),
+        <div className={classNames('relative max-w-7xl mx-auto px-2 sm:px-4 lg:px-6', {
+          'py-4 sm:py-8': !(matchInProgress && iAmPlaying),
           'h-full flex flex-col': matchInProgress && iAmPlaying
         })} style={{ minHeight: matchInProgress && iAmPlaying ? '800px' : 'auto' }}>
 
@@ -325,13 +343,13 @@ export default function Match({ initialMatch }: MatchProps) {
           )}
           
           <AbortedMatchInfo match={currentMatch} />
-          <SpectatorCount connectedPlayersInRoom={connectedPlayersInRoom} />
+          <SpectatorCount connectedPlayersInRoom={connectedPlayersInRoom} matchState={currentMatch?.state} />
           
           {/* Finished/Spectating Match View */}
           {currentMatch.state === MultiplayerMatchState.FINISHED || currentMatch.state === MultiplayerMatchState.ABORTED || currentIsSpectating ? (
             <div className='flex flex-col items-center justify-center gap-8 animate-fadeInUp' style={{ animationDelay: '0.4s' }}>
 
-              <div className='text-center'>
+              <div className='text-center mt-4'>
                 <Link
                   className='group relative inline-flex items-center justify-center gap-2 overflow-hidden bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-300'
                   href='/multiplayer'
@@ -341,56 +359,97 @@ export default function Match({ initialMatch }: MatchProps) {
                   <span className='relative'>Back to Multiplayer</span>
                 </Link>
               </div>
-              
-              <MatchResults
-                match={currentMatch}
-                recap={currentMatch.matchLog?.find(log => log.type === MatchAction.GAME_RECAP)?.data as MatchLogDataGameRecap}
-                showViewLink={false}
-              />
-              
-              <LiveSpectatorGrids
-                match={currentMatch}
-                matchGameStateMap={matchGameStateMap}
-                getLevelIndexByPlayerId={(playerId: string) => getLevelIndexByPlayerId(currentMatch, playerId)}
-              />
-              
-              <div className='w-full max-w-screen-lg'>
-                <div className='relative'>
-                  <div className='absolute -inset-2 bg-gradient-to-r from-cyan-600/15 to-blue-600/15 blur-lg opacity-40' />
-                  <div className='relative bg-white/8 backdrop-blur-xl rounded-xl p-6 shadow-lg border border-white/20'>
-                    <h2 className='text-xl font-bold text-center mb-4'>
-                      <span className='bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent'>
-                        Match Progress
-                      </span>
-                    </h2>
-                    <div className='h-96'>
-                      <MatchChart match={currentMatch} />
-                    </div>
+              <div className='flex flex-col lg:flex-row items-center justify-center gap-8 w-full max-w-7xl'>
+                <div className='flex flex-col items-center gap-8 flex-1'>
+                  <div className='flex flex-col md:flex-row gap-8 items-center'>
+                  <MatchResults
+                    match={currentMatch}
+                    recap={currentMatch.matchLog?.find(log => log.type === MatchAction.GAME_RECAP)?.data as MatchLogDataGameRecap}
+                    showViewLink={false}
+                  />
+                   {/* Chat for post-game and spectators - everyone can see */}
+                   {user && (
+                      <MatchChat
+                        match={currentMatch}
+                        user={user}
+                        onSendMessage={sendChatMessage}
+                        showSpectatorNotice={matchInProgress && currentIsSpectating}
+                      />
+                    )}
                   </div>
+                  <LiveSpectatorGrids
+                    match={currentMatch}
+                    matchGameStateMap={matchGameStateMap}
+                    getLevelIndexByPlayerId={(playerId: string) => getLevelIndexByPlayerId(currentMatch, playerId)}
+                  />
+                  
+                  <div className='w-full max-w-screen-lg flex flex-col md:flex-row items-center md:items-center gap-8 mx-auto'>
+                    <div className='flex-1'>
+                      <div className='relative'>
+                        <div className='absolute -inset-2 bg-gradient-to-r from-cyan-600/15 to-blue-600/15 blur-lg opacity-40' />
+                        <div className='relative bg-white/8 backdrop-blur-xl rounded-xl p-6 shadow-lg border border-white/20'>
+                          <h2 className='text-xl font-bold text-center mb-4'>
+                            <span className='bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent'>
+                              Match Progress
+                            </span>
+                          </h2>
+                          <div className='h-96'>
+                            <MatchChart match={currentMatch} />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+                  
+                  <LevelResultsSection match={currentMatch} />
+                  {currentMatch.state === MultiplayerMatchState.ACTIVE && currentMatch.timeUntilStart > 0 && (
+                    <CountdownDisplay countDown={countDown} match={currentMatch} />
+                  )}
                 </div>
               </div>
-              
-              <LevelResultsSection match={currentMatch} />
 
             </div>
           ) : (
             <>
-              <div className={classNames('flex flex-col items-center gap-6 w-full', {
+              <div className={classNames('flex flex-col items-center gap-2 w-full', {
                 'py-8 mb-4': !(matchInProgress && iAmPlaying),
                 'justify-start mb-4': matchInProgress && iAmPlaying
               })}>
 
-                <ReadyStatus match={currentMatch} user={user} />
-                <MarkReadyButton match={currentMatch} user={user} onMarkReady={fetchMarkReady} onUnmarkReady={fetchUnmarkReady} />
-                <CountdownDisplay countDown={countDown} />
-                <div className='w-full max-w-4xl animate-fadeInUp' style={{ animationDelay: '0.6s' }}>
-                  <MatchStatus
-                    isMatchPage={true}
-                    match={currentMatch}
-                    onLeaveClick={() => {
-                      router.reload();
-                    }}
-                  />
+                  {/* Chat for lobby and spectators during match */}
+                  <div className='flex flex-col md:flex-row h-full items-center gap-4'>
+                  {user && (!matchInProgress || currentIsSpectating) && (
+                    <MatchChat
+                      match={currentMatch}
+                      user={user}
+                      onSendMessage={sendChatMessage}
+                      showSpectatorNotice={matchInProgress && currentIsSpectating}
+                    />
+                  )}
+                  <div className='flex flex-col gap-2 items-center'>
+                  <MarkReadyButton match={currentMatch} user={user} onMarkReady={fetchMarkReady} onUnmarkReady={fetchUnmarkReady} />
+                  <ReadyStatus match={currentMatch} user={user} />
+
+                  </div>
+                  </div>
+                <div className='flex flex-col xl:flex-row items-start justify-center gap-6 w-full max-w-6xl'>
+                  <div className='flex flex-col items-center gap-6 w-full xl:w-auto'>
+                    <div className='flex flex-col  h-full items-center gap-4'>
+<div className='flex flex-col gap-2' />
+                    </div>
+                    <div className='w-full max-w-4xl mx-auto animate-fadeInUp' style={{ animationDelay: '0.6s' }}>
+                      <MatchStatus
+                        isMatchPage={true}
+                        match={currentMatch}
+                        onLeaveClick={() => {
+                          router.reload();
+                        }}
+                      />
+                      <CountdownDisplay countDown={countDown} match={currentMatch} />
+                    </div>
+                  </div>
+
                 </div>
 
               </div>

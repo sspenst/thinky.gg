@@ -21,7 +21,7 @@ import { MatchAction, MultiplayerMatchState, MultiplayerMatchType, MultiplayerMa
 import Level from '../../../models/db/level';
 import MultiplayerMatch from '../../../models/db/multiplayerMatch';
 import { LevelModel, MultiplayerMatchModel, UserModel } from '../../../models/mongoose';
-import { enrichMultiplayerMatch, generateMatchLog } from '../../../models/schemas/multiplayerMatchSchema';
+import { enrichMultiplayerMatch, generateMatchLog, createSystemChatMessage, createUserActionMessage, createMatchEventMessage } from '../../../models/schemas/multiplayerMatchSchema';
 
 export default withAuth(
   {
@@ -34,6 +34,7 @@ export default withAuth(
           MatchAction.UNMARK_READY,
           MatchAction.QUIT,
           MatchAction.SKIP_LEVEL,
+          MatchAction.SEND_CHAT_MESSAGE,
         ]),
       },
     },
@@ -50,7 +51,7 @@ export default withAuth(
 
       return res.status(200).json(match);
     } else if (req.method === 'PUT') {
-      const { action, levelId } = req.body;
+      const { action, levelId, message } = req.body;
 
       if (action === MatchAction.MARK_READY) {
         const match = await MultiplayerMatchModel.findOne({
@@ -79,6 +80,9 @@ export default withAuth(
           },
           {
             $addToSet: { markedReady: req.user._id },
+            $push: { 
+              chatMessages: createUserActionMessage('is ready!', req.user._id.toString(), req.user.name) 
+            },
           },
           { new: true }
         ).populate('players winners levels createdBy').lean<MultiplayerMatch>();
@@ -94,6 +98,9 @@ export default withAuth(
             {
               startTime: newStartTime,
               endTime: newEndTime,
+              $push: {
+                chatMessages: createMatchEventMessage("Match starting in 3 seconds!")
+              }
             }
           );
 
@@ -110,9 +117,8 @@ export default withAuth(
           updatedMatch.winners.forEach(winner => cleanUser(winner as User));
           cleanUser(updatedMatch.createdBy as User);
           enrichMultiplayerMatch(updatedMatch, req.userId);
+          await requestBroadcastMatch(updatedMatch.gameId, matchId as string);
         }
-
-        await requestBroadcastMatch(updatedMatch.gameId, matchId as string);
 
         return res.status(200).json({ success: true });
       } else if (action === MatchAction.UNMARK_READY) {
@@ -127,6 +133,9 @@ export default withAuth(
           },
           {
             $pull: { markedReady: req.user._id },
+            $push: { 
+              chatMessages: createUserActionMessage('is no longer ready.', req.user._id.toString(), req.user.name) 
+            },
           },
           { new: true }
         ).populate('players winners levels createdBy').lean<MultiplayerMatch>();
@@ -194,6 +203,7 @@ export default withAuth(
             $push: {
               players: req.user._id,
               matchLog: log,
+              chatMessages: createUserActionMessage('joined the match!', req.user._id.toString(), req.user.name),
             },
             // Set a far future start time as placeholder until all players ready
             startTime: Date.now() + 3600000, // 1 hour in the future as placeholder
@@ -377,6 +387,41 @@ export default withAuth(
         // The match is already broadcast by matchMarkSkipLevel
         // Just need to ensure we return success
         return res.status(200).json({ success: true });
+      } else if (action === MatchAction.SEND_CHAT_MESSAGE) {
+        // Validate message
+        if (!message || typeof message !== 'string' || message.trim().length === 0) {
+          return res.status(400).json({ error: 'Message is required' });
+        }
+
+        if (message.length > 200) {
+          return res.status(400).json({ error: 'Message too long' });
+        }
+
+        // Add chat message to match (allow spectators too)
+        const updatedMatch = await MultiplayerMatchModel.findOneAndUpdate(
+          {
+            matchId: matchId,
+          },
+          {
+            $push: {
+              chatMessages: {
+                userId: req.user._id,
+                message: message.trim(),
+                createdAt: new Date(),
+              },
+            },
+          },
+          { new: true }
+        ).lean<MultiplayerMatch>();
+
+        if (!updatedMatch) {
+          return res.status(400).json({ error: 'Cannot send message to this match' });
+        }
+
+        // Broadcast the match update so players see the new message
+        await requestBroadcastMatch(updatedMatch.gameId, matchId as string);
+
+        return res.status(200).json({ success: true, messageCount: updatedMatch.chatMessages?.length });
       }
     }
   }

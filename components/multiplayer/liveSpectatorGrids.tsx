@@ -19,6 +19,11 @@ export default function LiveSpectatorGrids({ match, matchGameStateMap, getLevelI
     return null;
   }
 
+  // Don't render if no levels are available (e.g., before match starts)
+  if (!match.levels || match.levels.length === 0) {
+    return null;
+  }
+
   return (
     <div className='w-full max-w-6xl'>
       <h2 className='text-2xl font-bold text-center mb-6'>
@@ -37,6 +42,10 @@ export default function LiveSpectatorGrids({ match, matchGameStateMap, getLevelI
           }
 
           const level = match.levels[levelIndex] as Level;
+
+          if (!level) {
+            return null;
+          }
 
           return (
             <div className='relative' key={`match-game-state-${player._id.toString()}-${level._id.toString()}`}>
@@ -61,8 +70,8 @@ export default function LiveSpectatorGrids({ match, matchGameStateMap, getLevelI
                       <span className='italic text-white/60'>Waiting for move...</span>
                     }
                   </div>
-                  <Link className='font-medium text-blue-400 hover:text-blue-300 underline truncate max-w-full transition-colors duration-200' href={`/level/${level.slug}`}>
-                    {level.name}
+                  <Link className='font-medium text-blue-400 hover:text-blue-300 underline truncate max-w-full transition-colors duration-200' href={`/level/${level?.slug || '#'}`}>
+                    {level?.name || 'Unknown Level'}
                   </Link>
                 </div>
               </div>

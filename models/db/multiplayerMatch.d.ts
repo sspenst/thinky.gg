@@ -4,6 +4,13 @@ import { MatchLog, MultiplayerMatchState, MultiplayerMatchType } from '../consta
 import Level from './level';
 import User, { UserWithMultiplayerProfile } from './user';
 
+export interface ChatMessage {
+  userId: Types.ObjectId | User | null; // null for system messages
+  message: string;
+  createdAt: Date;
+  systemData?: any; // Optional structured data for system messages
+}
+
 interface MultiplayerMatch {
   _id: Types.ObjectId;
   createdAt: Date;
@@ -18,6 +25,7 @@ interface MultiplayerMatch {
   markedReady: Types.ObjectId[] | User[] | string[];
   matchId: string;
   matchLog?: MatchLog[];
+  chatMessages: ChatMessage[];
   players: UserWithMultiplayerProfile[];
   private: boolean;
   rated: boolean;
