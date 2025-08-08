@@ -1,4 +1,5 @@
 import Dimensions from '@root/constants/dimensions';
+import Level from '@root/models/db/level';
 import MultiplayerMatch, { ChatMessage } from '@root/models/db/multiplayerMatch';
 import User from '@root/models/db/user';
 import React, { useEffect, useRef, useState } from 'react';
@@ -71,7 +72,7 @@ export default function MatchChat({ match, user, onSendMessage, showSpectatorNot
       const userId = chatMessage.systemData.userId;
       const userName = chatMessage.systemData.userName;
       const action = chatMessage.systemData.action;
-      const level = match.levels.find(a => a._id === chatMessage.systemData.level);
+      const level = match.levels.find(a => a._id === chatMessage.systemData.level) as Level;
 
       // Create a minimal user object for FormattedUser
       const systemUser = {
