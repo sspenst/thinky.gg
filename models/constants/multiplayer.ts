@@ -67,6 +67,7 @@ export enum MatchAction {
   ABORTED = 'aborted',
   COMPLETE_LEVEL = 'completeLevel',
   SKIP_LEVEL = 'skipLevel',
+  SEND_CHAT_MESSAGE = 'sendChatMessage',
   GAME_START = 'gameStart',
   GAME_END = 'gameEnd',
   GAME_RECAP = 'gameRecap',

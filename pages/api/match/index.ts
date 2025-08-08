@@ -20,7 +20,7 @@ import { MatchAction, MultiplayerMatchState, MultiplayerMatchType } from '../../
 import MultiplayerMatch from '../../../models/db/multiplayerMatch';
 import User from '../../../models/db/user';
 import { LevelModel, MultiplayerMatchModel, MultiplayerProfileModel, UserModel } from '../../../models/mongoose';
-import { computeMatchScoreTable, enrichMultiplayerMatch, generateMatchLog } from '../../../models/schemas/multiplayerMatchSchema';
+import { computeMatchScoreTable, enrichMultiplayerMatch, generateMatchLog, createSystemChatMessage, createUserActionMessage, createMatchEventMessage } from '../../../models/schemas/multiplayerMatchSchema';
 import { queueRefreshAchievements } from '../internal-jobs/worker/queueFunctions';
 
 export async function checkForFinishedMatches() {
@@ -201,6 +201,19 @@ export async function finishMatch(finishedMatch: MultiplayerMatch, quitUserId?: 
         }
       } : {};
 
+      // Get user names for match end message
+      const winnerUser = await UserModel.findById(winnerId, 'name').session(session);
+      const loserUser = await UserModel.findById(loserId, 'name').session(session);
+      
+      let endMessage: any;
+      if (tie) {
+        endMessage = createMatchEventMessage('Match ended in a tie!');
+      } else if (quitUserId) {
+        endMessage = createUserActionMessage('wins by forfeit!', winnerId, winnerUser?.name || 'Winner');
+      } else {
+        endMessage = createUserActionMessage('wins the match!', winnerId, winnerUser?.name || 'Winner');
+      }
+
       [newFinishedMatch, ] = await Promise.all([
         MultiplayerMatchModel.findOneAndUpdate(
           {
@@ -221,7 +234,8 @@ export async function finishMatch(finishedMatch: MultiplayerMatch, quitUserId?: 
                 loserProvisional: loserProvisional,
                 winner: userWinner,
                 loser: userLoser, // even though it may be a tie, calling it loser just for clarity...
-              })
+              }),
+              chatMessages: endMessage
             }
           },
           {
@@ -239,8 +253,12 @@ export async function finishMatch(finishedMatch: MultiplayerMatch, quitUserId?: 
       }
     });
   } catch (e) {
-    logger.error(e);
+    logger.error(`Error finishing match ${finishedMatch.matchId}:`, e);
     session.endSession();
+  }
+
+  if (!newFinishedMatch) {
+    logger.error(`Match ${finishedMatch.matchId} was not successfully updated to FINISHED state`);
   }
 
   return newFinishedMatch as MultiplayerMatch | null;
@@ -266,11 +284,22 @@ export async function checkForUnreadyAboutToStartMatch(matchId: string) {
   if (finishedMatch.markedReady.length !== finishedMatch.players.length) {
     return await abortMatch(matchId, finishedMatch.createdBy._id);
   } else {
+    // All players ready, match is starting - add system message
+    await MultiplayerMatchModel.updateOne(
+      { matchId: matchId },
+      {
+        $push: {
+          chatMessages: createMatchEventMessage("Match has started! Good luck!")
+        }
+      }
+    );
     return null;
   }
 }
 
 export async function checkForFinishedMatch(matchId: string) {
+  logger.info(`Checking if match ${matchId} is finished`);
+  
   const finishedMatch = await MultiplayerMatchModel.findOne(
     {
       matchId: matchId,
@@ -282,10 +311,26 @@ export async function checkForFinishedMatch(matchId: string) {
   ).lean<MultiplayerMatch>();
 
   if (!finishedMatch) {
+    // Additional logging to help debug
+    const anyMatch = await MultiplayerMatchModel.findOne({ matchId: matchId }).lean();
+    if (anyMatch) {
+      logger.info(`Match ${matchId} exists but not ready to finish: state=${anyMatch.state}, endTime=${anyMatch.endTime}, currentTime=${new Date()}`);
+    } else {
+      logger.info(`Match ${matchId} does not exist at all`);
+    }
     return null;
   }
 
-  return await finishMatch(finishedMatch);
+  logger.info(`Match ${matchId} is finished, calling finishMatch`);
+  const result = await finishMatch(finishedMatch);
+  
+  if (result) {
+    logger.info(`Match ${matchId} successfully finished and transitioned to ${result.state}`);
+  } else {
+    logger.error(`Match ${matchId} failed to finish - finishMatch returned null`);
+  }
+  
+  return result;
 }
 
 async function createMatch(req: NextApiRequestWithAuth) {
@@ -332,6 +377,9 @@ async function createMatch(req: NextApiRequestWithAuth) {
           generateMatchLog(MatchAction.CREATE, {
             userId: reqUser._id,
           }),
+        ],
+        chatMessages: [
+          createUserActionMessage('created this match.', reqUser._id.toString(), reqUser.name)
         ],
         players: [reqUser._id],
         private: isPrivate,
@@ -453,6 +501,65 @@ export async function getAllMatches(gameId: GameId, reqUser?: User, matchFilters
       },
       {
         $unwind: '$createdBy',
+      },
+      {
+        $lookup: {
+          from: UserModel.collection.name,
+          localField: 'chatMessages.userId',
+          foreignField: '_id',
+          as: 'chatMessageUsers',
+          pipeline: [
+            {
+              $project: USER_DEFAULT_PROJECTION,
+            },
+          ],
+        }
+      },
+      {
+        $addFields: {
+          chatMessages: {
+            $cond: {
+              if: { $isArray: '$chatMessages' },
+              then: {
+                $map: {
+                  input: '$chatMessages',
+                  as: 'msg',
+                  in: {
+                    $mergeObjects: [
+                      '$$msg',
+                      {
+                        userId: {
+                          $cond: {
+                            if: { $eq: ['$$msg.userId', null] },
+                            then: null, // Keep null for system messages
+                            else: {
+                              $arrayElemAt: [
+                                {
+                                  $filter: {
+                                    input: '$chatMessageUsers',
+                                    as: 'user',
+                                    cond: { $eq: ['$$user._id', '$$msg.userId'] }
+                                  }
+                                },
+                                0
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              else: []
+            }
+          }
+        }
+      },
+      {
+        $project: {
+          chatMessageUsers: 0, // Remove the temporary field
+        }
       },
       {
         $lookup: {

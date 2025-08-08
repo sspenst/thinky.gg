@@ -27,13 +27,14 @@ export default function FormattedLevelLink({ gameId, id, level, onClick }: Enric
   const href = getUrl(level.gameId || gameId || game.id, `/level/${level.slug}`);
 
   const isSolved = level.userMoves === level.leastMoves;
-  const tooltipId = `formatted-level-link-${level._id.toString()}-${id}`;
+  const levelId = level._id?.toString() || level.id?.toString() || 'unknown';
+  const tooltipId = `formatted-level-link-${levelId}-${id}`;
   const showGameLabel = game.id === GameId.THINKY;
 
   return (<div className='flex flex-row items-center gap-1'>
-    {showGameLabel && <div className='' data-tooltip-content={level.gameId || game.id} data-tooltip-id={'game-label-tooltip-' + level._id.toString()}>
+    {showGameLabel && <div className='' data-tooltip-content={level.gameId || game.id} data-tooltip-id={'game-label-tooltip-' + levelId}>
       <GameLogo clickable gameId={level.gameId || game.id} id={'level'} size={16} />
-      <StyledTooltip id={'game-label-tooltip-' + level._id.toString()} />
+      <StyledTooltip id={'game-label-tooltip-' + levelId} />
     </div>}
     <Link
       className='flex items-center font-bold underline w-fit max-w-full'

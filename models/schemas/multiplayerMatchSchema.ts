@@ -26,6 +26,42 @@ export function generateMatchLog(type: MatchAction, data: MatchLogGeneric | Matc
   } as MatchLog;
 }
 
+export function createSystemChatMessage(message: string, data?: any) {
+  return {
+    userId: null, // System message
+    message: message,
+    systemData: data, // Optional structured data for system messages
+    createdAt: new Date(),
+  };
+}
+
+// Helper functions for specific system message types
+export function createUserActionMessage(action: string, userId: string, userName: string) {
+  return createSystemChatMessage(`${userName} ${action}`, {
+    type: 'user_action',
+    userId: userId,
+    userName: userName, // Store name at time of message creation (in case user changes name later)
+    action: action
+  });
+}
+
+export function createMatchEventMessage(event: string, data?: any) {
+  return createSystemChatMessage(event, {
+    type: 'match_event',
+    ...data
+  });
+}
+
+export function createLevelActionMessage(action: string, userId: string, userName: string, level: any) {
+  return createSystemChatMessage(`${userName} ${action}`, {
+    type: 'level_action',
+    userId: userId,
+    userName: userName,
+    action: action,
+    level: level // Store level data for FormattedLevelLink
+  });
+}
+
 const MultiplayerMatchSchema = new mongoose.Schema<MultiplayerMatch>(
   {
     createdBy: {
@@ -71,6 +107,31 @@ const MultiplayerMatchSchema = new mongoose.Schema<MultiplayerMatch>(
       // array of MatchLog
       type: [mongoose.Schema.Types.Mixed],
       required: true,
+    },
+    chatMessages: {
+      type: [
+        {
+          userId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
+            required: false, // Allow null for system messages
+          },
+          message: {
+            type: String,
+            required: true,
+            maxlength: 200, // Limit message length
+          },
+          createdAt: {
+            type: Date,
+            default: Date.now,
+          },
+          systemData: {
+            type: mongoose.Schema.Types.Mixed,
+            required: false, // Optional structured data for system messages
+          },
+        },
+      ],
+      default: [],
     },
     players: [
       {
@@ -131,6 +192,15 @@ export function enrichMultiplayerMatch(
     cleanUser(winner as User);
   }
 
+  // Clean chat message users
+  if (match.chatMessages && Array.isArray(match.chatMessages)) {
+    for (const chatMessage of match.chatMessages) {
+      if (chatMessage.userId && typeof chatMessage.userId === 'object') {
+        cleanUser(chatMessage.userId as User);
+      }
+    }
+  }
+
   // replace each level[] object with levelsPopulated[] object
   // convert this to a map with _id as key
   const levelMap = new Map<string, Level>();
@@ -148,11 +218,14 @@ export function enrichMultiplayerMatch(
   }
 
   const viewAccess = match.state === MultiplayerMatchState.FINISHED || !match.players.some(player => player._id.toString() === userId);
+  const matchNotStarted = Date.now() < match?.startTime?.getTime();
 
-  if (!viewAccess) {
-    if (Date.now() < match?.startTime?.getTime()) {
-      match.levels = []; // hide levels until match starts
-    } else if (userId && match.gameTable && match.gameTable[userId.toString()]) {
+  // Hide levels from everyone (players and spectators) until match starts
+  if (matchNotStarted) {
+    match.levels = [];
+  } else if (!viewAccess) {
+    // For active players during the match
+    if (userId && match.gameTable && match.gameTable[userId.toString()]) {
       // if user is in score table... then we should return the first level they have not solved
 
       const levelIndex = match.gameTable[userId.toString()].length || 0;
@@ -171,6 +244,7 @@ export function enrichMultiplayerMatch(
       match.levels = []; // hide levels if user is not in score table
     }
   }
+  // For spectators during active matches and finished matches, keep all levels visible
 
   match.scoreTable = computeMatchScoreTable(match);
 

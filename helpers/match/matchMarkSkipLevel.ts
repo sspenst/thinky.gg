@@ -1,7 +1,7 @@
 import { requestBroadcastMatch, requestBroadcastMatches } from '@root/lib/appSocketToClient';
 import { MatchAction, MultiplayerMatchState } from '@root/models/constants/multiplayer';
 import { MultiplayerMatchModel } from '@root/models/mongoose';
-import { generateMatchLog, SKIP_MATCH_LEVEL_ID } from '@root/models/schemas/multiplayerMatchSchema';
+import { generateMatchLog, SKIP_MATCH_LEVEL_ID, createSystemChatMessage, createUserActionMessage, createMatchEventMessage, createLevelActionMessage } from '@root/models/schemas/multiplayerMatchSchema';
 import { Types } from 'mongoose';
 
 export async function matchMarkSkipLevel(
@@ -10,6 +10,23 @@ export async function matchMarkSkipLevel(
   levelId: Types.ObjectId
 ) {
   const skipId = new Types.ObjectId(SKIP_MATCH_LEVEL_ID);
+
+  // First get the match to find the user's name and populate levels
+  const match = await MultiplayerMatchModel.findOne({
+    matchId: matchId,
+    players: userId,
+  }).populate('players').populate('levels');
+
+  if (!match) {
+    return null;
+  }
+
+  // Find the user's name
+  const user = (match.players as any[]).find(player => player._id.toString() === userId.toString());
+  const userName = user ? user.name : 'A player';
+
+  // Find the level being skipped
+  const level = (match.levels as any[]).find(l => l._id.toString() === levelId.toString());
 
   const updated = await MultiplayerMatchModel.findOneAndUpdate(
     {
@@ -32,6 +49,7 @@ export async function matchMarkSkipLevel(
           userId: userId,
           levelId: levelId,
         }),
+        chatMessages: createLevelActionMessage('skipped', userId.toString(), userName, level),
       },
     },
     {

@@ -108,6 +108,11 @@ export default function LevelResultsSection({ match }: LevelResultsSectionProps)
     }
   }
 
+  // Don't render anything if there are no level results
+  if (levelResults.length === 0) {
+    return null;
+  }
+
   return (
     <div className='w-full max-w-4xl'>
       <h2 className='text-2xl font-bold text-center mb-6'>

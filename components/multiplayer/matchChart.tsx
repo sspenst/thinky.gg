@@ -112,24 +112,27 @@ export default function MatchChart({ match }: MatchChartProps) {
     }
 
     // Calculate time spent on level
-    if (completedBy) { // Removed the lastActionTime check since we initialize it for all players
+    if (completedBy && playerMap[completedBy]) { // Check if player exists in playerMap
       const timeSpent = timestamp - lastActionTime[completedBy];
+      const playerName = playerMap[completedBy].name;
 
       if (!timePerLevelMap.has(levelName)) {
         timePerLevelMap.set(levelName, {
           level: levelName,
-          [`${playerMap[completedBy].name}_skipped`]: false,
+          [`${playerName}_skipped`]: false,
         });
       }
 
       const levelData = timePerLevelMap.get(levelName);
 
       if (!levelData) continue;
-      levelData[playerMap[completedBy].name] = timeSpent;
-      levelData[`${playerMap[completedBy].name}_skipped`] = log.type === MatchAction.SKIP_LEVEL;
+      levelData[playerName] = timeSpent;
+      levelData[`${playerName}_skipped`] = log.type === MatchAction.SKIP_LEVEL;
     }
 
-    lastActionTime[completedBy] = timestamp;
+    if (completedBy && playerMap[completedBy]) {
+      lastActionTime[completedBy] = timestamp;
+    }
 
     chartData.push({
       name: (match.levels as Level[])?.find(l => l._id.toString() === level)?.name,
