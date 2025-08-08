@@ -31,6 +31,7 @@ export default withAuth(
         action: ValidEnum([
           MatchAction.JOIN,
           MatchAction.MARK_READY,
+          MatchAction.UNMARK_READY,
           MatchAction.QUIT,
           MatchAction.SKIP_LEVEL,
         ]),
@@ -52,28 +53,99 @@ export default withAuth(
       const { action, levelId } = req.body;
 
       if (action === MatchAction.MARK_READY) {
-        const updateMatch = await MultiplayerMatchModel.findOneAndUpdate(
+        const match = await MultiplayerMatchModel.findOne({
+          matchId: matchId,
+          players: req.user._id,
+          state: MultiplayerMatchState.ACTIVE,
+          startTime: {
+            $gte: new Date(), // has not started yet but about to start
+          }
+        });
+
+        if (!match) {
+          return res.status(400).json({
+            error: 'Cannot mark yourself ready in this match',
+          });
+        }
+
+        const updatedMatch = await MultiplayerMatchModel.findOneAndUpdate(
           {
             matchId: matchId,
             players: req.user._id,
             state: MultiplayerMatchState.ACTIVE,
             startTime: {
-              $gte: new Date(), // has not started yet but about to start
+              $gte: new Date(),
             }
           },
           {
             $addToSet: { markedReady: req.user._id },
           },
           { new: true }
-        );
+        ).populate('players winners levels createdBy').lean<MultiplayerMatch>();
 
-        if (updateMatch.length === 0) {
+        // Check if all players are ready
+        if (updatedMatch && updatedMatch.markedReady.length === updatedMatch.players.length) {
+          // All players ready, start the match in 3 seconds
+          const newStartTime = new Date(Date.now() + 3000);
+          const newEndTime = new Date(newStartTime.getTime() + MultiplayerMatchTypeDurationMap[match.type as MultiplayerMatchType]);
+
+          await MultiplayerMatchModel.updateOne(
+            { matchId: matchId },
+            {
+              startTime: newStartTime,
+              endTime: newEndTime,
+            }
+          );
+
+          // Update the match object with new times for broadcasting
+          updatedMatch.startTime = newStartTime;
+          updatedMatch.endTime = newEndTime;
+
+          await requestScheduleBroadcastMatch(updatedMatch.gameId, matchId as string);
+        }
+
+        // Clean and enrich the match before broadcasting
+        if (updatedMatch) {
+          updatedMatch.players.forEach(player => cleanUser(player as User));
+          updatedMatch.winners.forEach(winner => cleanUser(winner as User));
+          cleanUser(updatedMatch.createdBy as User);
+          enrichMultiplayerMatch(updatedMatch, req.userId);
+        }
+
+        await requestBroadcastMatch(updatedMatch.gameId, matchId as string);
+
+        return res.status(200).json({ success: true });
+      } else if (action === MatchAction.UNMARK_READY) {
+        const updatedMatch = await MultiplayerMatchModel.findOneAndUpdate(
+          {
+            matchId: matchId,
+            players: req.user._id,
+            state: MultiplayerMatchState.ACTIVE,
+            startTime: {
+              $gte: new Date(), // has not started yet
+            }
+          },
+          {
+            $pull: { markedReady: req.user._id },
+          },
+          { new: true }
+        ).populate('players winners levels createdBy').lean<MultiplayerMatch>();
+
+        if (!updatedMatch) {
           return res.status(400).json({
-            error: 'Cannot mark yourself ready in this match',
+            error: 'Cannot unmark yourself ready in this match',
           });
         }
 
-        await requestBroadcastMatch(updateMatch.gameId, matchId as string);
+        // Clean and enrich the match before broadcasting
+        if (updatedMatch) {
+          updatedMatch.players.forEach(player => cleanUser(player as User));
+          updatedMatch.winners.forEach(winner => cleanUser(winner as User));
+          cleanUser(updatedMatch.createdBy as User);
+          enrichMultiplayerMatch(updatedMatch, req.userId);
+        }
+
+        await requestBroadcastMatch(updatedMatch.gameId, matchId as string);
 
         return res.status(200).json({ success: true });
       } else if (action === MatchAction.JOIN) {
@@ -123,8 +195,9 @@ export default withAuth(
               players: req.user._id,
               matchLog: log,
             },
-            startTime: Date.now() + 30000, // Auto abort 30 seconds into the future...
-            endTime: Date.now() + 30000 + MultiplayerMatchTypeDurationMap[match.type as MultiplayerMatchType], // end 3 minute after start
+            // Set a far future start time as placeholder until all players ready
+            startTime: Date.now() + 3600000, // 1 hour in the future as placeholder
+            endTime: Date.now() + 3600000 + MultiplayerMatchTypeDurationMap[match.type as MultiplayerMatchType],
             state: MultiplayerMatchState.ACTIVE,
           },
           { new: true }
@@ -297,9 +370,13 @@ export default withAuth(
           levelId,
         );
 
-        return result
-          ? res.status(200).json({ success: true })
-          : res.status(400).json({ error: 'Already used skip' });
+        if (!result) {
+          return res.status(400).json({ error: 'Already used skip' });
+        }
+
+        // The match is already broadcast by matchMarkSkipLevel
+        // Just need to ensure we return success
+        return res.status(200).json({ success: true });
       }
     }
   }

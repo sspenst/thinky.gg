@@ -185,12 +185,19 @@ export function enrichMultiplayerMatch(
 export function computeMatchScoreTable(match: MultiplayerMatch) {
   const scoreTable = {} as {[key: string]: number};
 
-  for (const tableEntry in match.gameTable) {
-    // create the scoreboard by counting non nulls
-    // filter out all zero objectIds
-    scoreTable[tableEntry] = match.gameTable[tableEntry].filter(
-      (level) => level.toString() !== SKIP_MATCH_LEVEL_ID
-    ).length;
+  if (match.gameTable) {
+    for (const tableEntry in match.gameTable) {
+      // create the scoreboard by counting non nulls
+      // filter out all zero objectIds
+      const entries = match.gameTable[tableEntry];
+      if (Array.isArray(entries)) {
+        scoreTable[tableEntry] = entries.filter(
+          (level) => level.toString() !== SKIP_MATCH_LEVEL_ID
+        ).length;
+      } else {
+        scoreTable[tableEntry] = 0;
+      }
+    }
   }
 
   return scoreTable;
