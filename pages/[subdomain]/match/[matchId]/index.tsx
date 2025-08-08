@@ -345,6 +345,7 @@ export default function Match({ initialMatch }: MatchProps) {
   return (
     <Page
       title='Multiplayer Match'
+      isFullScreen={matchInProgress && !currentIsSpectating}
     >
       <SpaceBackground
         constellationPattern='custom'
@@ -528,7 +529,7 @@ export default function Match({ initialMatch }: MatchProps) {
                         isMatchPage={true}
                         match={currentMatch}
                         onLeaveClick={() => {
-                          router.reload();
+                          //router.reload();
                         }}
                       />
                       <CountdownDisplay countDown={countDown} match={currentMatch} />
