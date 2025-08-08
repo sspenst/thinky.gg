@@ -97,7 +97,8 @@ const eslintConfig = [...compat.extends(
     }],
     quotes: ['warn', 'single'],
     // TODO: 'react/jsx-indent': ['warn', 2, { checkAttributes: true, indentLogicalExpressions: true }],
-    'react/jsx-newline': ['warn', { 'prevent': true }],
+    // Disabled due to circular fix conflicts with other spacing rules
+    // 'react/jsx-newline': ['warn', { 'prevent': true }],
     'react/jsx-tag-spacing': ['warn', {
       beforeSelfClosing: 'always',
     }],

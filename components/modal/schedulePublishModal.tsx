@@ -214,7 +214,7 @@ export default function SchedulePublishModal({ closeModal, isOpen, level }: Sche
               This Pro feature helps maximize engagement and reach.
             </p>
           </div>
-          
+
           <div className='bg-gradient-to-r from-purple-500/20 to-blue-500/20 rounded-lg p-4 border border-purple-500/30'>
             <h4 className='font-bold text-purple-300 mb-2'>Pro Features Include:</h4>
             <ul className='text-sm text-gray-300 space-y-1'>

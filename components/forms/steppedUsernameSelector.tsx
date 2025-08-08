@@ -59,7 +59,7 @@ export default function SteppedUsernameSelector({
           Continue
         </button>
       </div>
-      
+
       {/* Step 2: Rest of the form with username confirmation */}
       <div className='flex flex-col gap-6'>
         <div className='flex gap-2'>

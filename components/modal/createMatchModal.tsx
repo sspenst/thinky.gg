@@ -48,13 +48,13 @@ export default function CreateMatchModal({ closeModal, isOpen, onConfirm }: Crea
             Start a multiplayer match and challenge players worldwide!
           </p>
         </div>
-        
+
         {/* Main Content */}
         <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
           {/* Settings Column */}
           <div className='space-y-4'>
             <h3 className='text-lg font-semibold text-white mb-3'>Match Settings</h3>
-            
+
             {/* Private Match Toggle */}
             <div className='relative'>
               <div className='absolute -inset-1 bg-gradient-to-r from-purple-600/20 to-pink-600/20 blur-sm opacity-50' />

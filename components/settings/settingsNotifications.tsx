@@ -257,7 +257,7 @@ export default function SettingsNotifications() {
         <p className='text-gray-600 dark:text-gray-400 mb-6'>
           Choose how you want to be notified about activity and updates
         </p>
-        
+
         <div className='flex flex-col sm:flex-row justify-center gap-4 sm:gap-8 mb-6'>
           {!guest && (
             <div className='flex items-center gap-3'>
@@ -305,7 +305,7 @@ export default function SettingsNotifications() {
             <h3 className='text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100'>
               {groupName}
             </h3>
-            
+
             <div className='space-y-4'>
               {notifications.map(({ type, label, description }) => (
                 <div key={type} className='flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg gap-3'>
@@ -317,7 +317,7 @@ export default function SettingsNotifications() {
                       {description}
                     </p>
                   </div>
-                  
+
                   <div className='flex items-center gap-4 sm:gap-6 sm:ml-4'>
                     {!guest && type !== NotificationType.LEVEL_OF_DAY && (
                       <div className='flex items-center gap-2'>
@@ -338,7 +338,7 @@ export default function SettingsNotifications() {
               ))}
             </div>
           </div>
-          
+
           {/* Email digest settings - show after Daily Content section */}
           {groupName === 'Daily Content' && !guest && (
             <div className='bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800 p-6 mt-8'>
@@ -348,7 +348,7 @@ export default function SettingsNotifications() {
               <p className='text-sm text-blue-700 dark:text-blue-300 mb-4'>
                 Receive a daily summary email with level of the day and recent notifications
               </p>
-              
+
               <div className='flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4'>
                 <label className='flex items-center gap-2 cursor-pointer'>
                   <input
@@ -363,7 +363,7 @@ export default function SettingsNotifications() {
                   />
                   <span className='text-sm'>Daily digest</span>
                 </label>
-                
+
                 <label className='flex items-center gap-2 cursor-pointer'>
                   <input
                     type='radio'
@@ -382,7 +382,7 @@ export default function SettingsNotifications() {
           )}
         </div>
       ))}
-      
+
       {/* Fixed save button */}
       {hasChanges && (
         <div className='fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 p-4 shadow-lg z-10'>

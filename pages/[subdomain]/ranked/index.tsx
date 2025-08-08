@@ -115,12 +115,12 @@ export default function RankedPage({ levelsByDifficulty, rankedSolvesByDifficult
               🏆
             </div>
           </div>
-          
+
           {/* Title */}
           <h1 className='text-4xl sm:text-6xl lg:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 mb-6 text-center leading-tight px-2 animate-fadeInScale' style={{ animationDelay: '0.5s' }}>
             Ranked Arena
           </h1>
-          
+
           {/* Description */}
           <div className='max-w-2xl mx-auto text-center mb-8 sm:mb-12 animate-fadeInUp' style={{ animationDelay: '0.7s' }}>
             <p className='text-gray-300 text-lg sm:text-xl mb-4'>
@@ -132,7 +132,7 @@ export default function RankedPage({ levelsByDifficulty, rankedSolvesByDifficult
               Create amazing levels? Your puzzles could be selected for this prestigious collection!
             </p>
           </div>
-          
+
           {/* Progress Ring */}
           <div className='relative mb-8 sm:mb-12 animate-fadeInScale' style={{ animationDelay: '0.9s' }}>
             <svg className='w-48 h-48 sm:w-64 sm:h-64 transform -rotate-90' viewBox='0 0 256 256'>
@@ -166,7 +166,7 @@ export default function RankedPage({ levelsByDifficulty, rankedSolvesByDifficult
                 </linearGradient>
               </defs>
             </svg>
-            
+
             {/* Center content */}
             <div className='absolute inset-0 flex flex-col items-center justify-center'>
               <div className='text-3xl sm:text-5xl font-black text-white mb-2'>{completionPercentage}%</div>
@@ -174,7 +174,7 @@ export default function RankedPage({ levelsByDifficulty, rankedSolvesByDifficult
               <div className='text-xs sm:text-sm text-gray-400'>MASTERED</div>
             </div>
           </div>
-          
+
           {/* Current Rank Display */}
           {highestDifficultyAchieved && (
             <div className='mb-8 animate-fadeInUp' style={{ animationDelay: '1.1s' }}>
@@ -189,7 +189,7 @@ export default function RankedPage({ levelsByDifficulty, rankedSolvesByDifficult
               </div>
             </div>
           )}
-          
+
           {/* View All Button */}
           <Link
             href={{
@@ -211,7 +211,7 @@ export default function RankedPage({ levelsByDifficulty, rankedSolvesByDifficult
               </div>
             </div>
           </Link>
-          
+
           {/* Difficulty Breakdown */}
           <div className='flex flex-col gap-3 max-w-2xl w-full animate-fadeInUp' style={{ animationDelay: '1.5s' }}>
             {difficultyList.map((difficulty, index) => {
@@ -254,7 +254,7 @@ export default function RankedPage({ levelsByDifficulty, rankedSolvesByDifficult
                       }}
                     />
                   </div>
-                  
+
                   <div className='relative flex items-center justify-between'>
                     <div className='flex items-center gap-4'>
                       <FormattedDifficulty difficulty={difficulty} id='ranked' />

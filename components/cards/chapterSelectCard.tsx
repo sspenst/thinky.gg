@@ -54,14 +54,14 @@ export function ChapterSelectCardBase({
             highlight ? 'bg-gradient-to-r from-yellow-500/40 to-orange-500/40 animate-pulse' :
             'bg-gradient-to-r from-cyan-500/40 via-purple-500/40 to-pink-500/40'
           )} />
-          
+
           {/* Main card container */}
           <div className='relative rounded-3xl overflow-hidden border border-white/30 bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl shadow-2xl hover:shadow-3xl group-hover:scale-[1.02] group-hover:border-white/40 transform transition-all duration-500' style={{
             height: Dimensions.OptionHeightSmall + 30,
           }}>
             {/* Animated gradient overlay */}
             <div className='absolute inset-0 bg-gradient-to-tr from-purple-600/10 via-transparent to-cyan-600/10 opacity-60 group-hover:opacity-80 transition-opacity duration-500' />
-            
+
             {/* Level preview background with animation */}
             <div
               className={classNames(
@@ -74,12 +74,12 @@ export function ChapterSelectCardBase({
                 filter: 'blur(1px)',
               }}
             />
-            
+
             {/* Shimmer effect */}
             {!disabled && (
               <div className='absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000' />
             )}
-            
+
             <Link
               className={classNames(
                 'flex items-center h-full w-full relative rounded-3xl p-6',
@@ -91,7 +91,7 @@ export function ChapterSelectCardBase({
             >
               {/* Decorative orb */}
               <div className='absolute -top-10 -right-10 w-32 h-32 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-full blur-2xl' />
-              
+
               {/* Status badge */}
               <div className='absolute top-4 right-4'>
                 {complete ? (
@@ -112,7 +112,7 @@ export function ChapterSelectCardBase({
                   </div>
                 )}
               </div>
-              
+
               {disabled && (
                 <>
                   {/* Enhanced lock overlay with pattern */}
@@ -124,7 +124,7 @@ export function ChapterSelectCardBase({
                   </div>
                 </>
               )}
-              
+
               <div className={classNames('font-bold break-words flex-1 flex flex-col justify-center gap-2 relative z-10', disabled ? 'opacity-50' : '')}>
                 <div className={classNames(
                   'text-2xl font-black tracking-tight',
@@ -137,7 +137,7 @@ export function ChapterSelectCardBase({
                     {subtitle}
                   </div>
                 )}
-                
+
                 {/* Progress indicator for non-disabled cards */}
                 {!disabled && !complete && (
                   <div className='flex items-center gap-2 mt-2'>
@@ -176,14 +176,14 @@ export function ChapterSelectCardBase({
           highlight ? 'bg-gradient-to-r from-yellow-500/50 to-orange-500/50 animate-pulse' :
           'bg-gradient-to-r from-cyan-500/50 via-purple-500/50 to-pink-500/50'
         )} />
-        
+
         {/* Main card container */}
         <div className='relative rounded-3xl overflow-hidden border-2 border-white/40 bg-gradient-to-br from-white/15 to-white/8 backdrop-blur-xl shadow-2xl hover:shadow-3xl group-hover:scale-[1.02] group-hover:border-white/50 transform transition-all duration-500' style={{
           height: Dimensions.OptionHeightLarge,
         }}>
           {/* Animated gradient overlay */}
           <div className='absolute inset-0 bg-gradient-to-tr from-purple-600/15 via-transparent to-cyan-600/15 opacity-70 group-hover:opacity-90 transition-opacity duration-500' />
-          
+
           {/* Level preview background with animation */}
           <div
             className={classNames(
@@ -196,16 +196,16 @@ export function ChapterSelectCardBase({
               filter: 'blur(0.5px)',
             }}
           />
-          
+
           {/* Shimmer effect */}
           {!disabled && (
             <div className='absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1200' />
           )}
-          
+
           {/* Decorative elements */}
           <div className='absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400' />
           <div className='absolute -top-12 -right-12 w-40 h-40 bg-gradient-to-br from-purple-500/15 to-pink-500/15 rounded-full blur-3xl' />
-          
+
           <Link
             className={classNames(
               'flex items-center justify-center h-full w-full relative rounded-3xl p-8 pt-12',
@@ -235,7 +235,7 @@ export function ChapterSelectCardBase({
                 </div>
               )}
             </div>
-            
+
             {disabled && (
               <>
                 {/* Enhanced lock overlay with pattern */}
@@ -247,7 +247,7 @@ export function ChapterSelectCardBase({
                 </div>
               </>
             )}
-            
+
             <div className={classNames('font-bold break-words flex-1 flex flex-col justify-center items-center gap-3 relative z-10 py-6', disabled ? 'opacity-50' : '')}>
               <div className={classNames(
                 'text-4xl font-black tracking-tight text-center',

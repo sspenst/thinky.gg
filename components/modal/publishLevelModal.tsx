@@ -94,7 +94,7 @@ export default function PublishLevelModal({ closeModal, isOpen, level }: Publish
             >
               {isPublishing ? 'Publishing...' : 'Publish Now'}
             </button>
-            
+
             <button
               onClick={onSchedule}
               disabled={isPublishing}

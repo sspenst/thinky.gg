@@ -32,7 +32,7 @@ export default function LevelsSolvedByDifficultyList({ levelsSolvedByDifficulty 
             <div className='flex items-center gap-2'>
               <FormattedDifficulty difficulty={difficulty} id='level-solved-by-difficulty-list' />
             </div>
-            
+
             <span
               className='font-bold'
               style={{ color: levelsSolved > 0 ? getDifficultyColor(difficulty.value) : 'rgb(156 163 175)' }}

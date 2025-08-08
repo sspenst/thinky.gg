@@ -203,7 +203,7 @@ export default function PlayerRankProgress({ className = '', customCta }: Player
     <div className={`relative overflow-hidden ${className}`}>
       {/* Floating Island Effect */}
       <div className='absolute -inset-4 bg-gradient-to-r from-purple-600/30 via-cyan-500/30 to-pink-500/30 blur-xl opacity-60' />
-      
+
       {/* Vertical rank progression */}
       <div className='relative'>
         {/* Scrollable viewport container - matched to chapter cards height */}
@@ -231,7 +231,7 @@ export default function PlayerRankProgress({ className = '', customCta }: Player
                     <div className='w-2 h-2 bg-white rounded-full' />
                   )}
                 </div>
-                
+
                 {/* Rank card */}
                 <div
                   className={`flex flex-col gap-3 p-4 rounded-2xl border w-full transition-all duration-300 backdrop-blur-md ${
@@ -272,7 +272,7 @@ export default function PlayerRankProgress({ className = '', customCta }: Player
                         )}
                       </Link>
                     </div>
-                    
+
                     {/* Status for all ranks */}
                     <div className='text-right'>
                       {rankPos.isCurrent ? (
@@ -305,7 +305,7 @@ export default function PlayerRankProgress({ className = '', customCta }: Player
                       )}
                     </div>
                   </div>
-                  
+
                   {/* Bottom row: CTA button for current rank */}
                   {rankPos.isCurrent && (() => {
                     // Use custom CTA if provided, otherwise use default logic
@@ -382,7 +382,7 @@ export default function PlayerRankProgress({ className = '', customCta }: Player
           </p>
         </div>
         </div>
-        
+
         {/* Tooltips for progress indicators */}
         {allRankPositions.map((rankPos) => (
           rankPos.requirement && (

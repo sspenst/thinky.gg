@@ -365,7 +365,7 @@ export default function Match({ initialMatch }: MatchProps) {
         })} style={{ minHeight: matchInProgress && iAmPlaying ? '800px' : 'auto' }}>
 
           <MatchHeader matchInProgress={matchInProgress} prettyMatchState={prettyMatchState} />
-          
+
           {/* Head to Head Display */}
           {!matchInProgress && !loadingHeadToHead && currentMatch.players.length === 2 && headToHead && (
             <div className='flex justify-center animate-fadeInUp' style={{ animationDelay: '0.2s' }}>
@@ -384,10 +384,10 @@ export default function Match({ initialMatch }: MatchProps) {
               </div>
             </div>
           )}
-          
+
           <AbortedMatchInfo match={currentMatch} />
           <SpectatorCount connectedPlayersInRoom={connectedPlayersInRoom} matchState={currentMatch?.state} />
-          
+
           {/* Finished/Spectating Match View */}
           {currentMatch.state === MultiplayerMatchState.FINISHED || currentMatch.state === MultiplayerMatchState.ABORTED || currentIsSpectating ? (
             <div className='flex flex-col items-center justify-center gap-8 animate-fadeInUp' style={{ animationDelay: '0.4s' }}>
@@ -425,7 +425,7 @@ export default function Match({ initialMatch }: MatchProps) {
                     matchGameStateMap={matchGameStateMap}
                     getLevelIndexByPlayerId={(playerId: string) => getLevelIndexByPlayerId(currentMatch, playerId)}
                   />
-                  
+
                   <div className='w-full max-w-screen-lg flex flex-col md:flex-row items-center md:items-center gap-8 mx-auto'>
                     <div className='flex-1'>
                       <div className='relative'>
@@ -444,7 +444,7 @@ export default function Match({ initialMatch }: MatchProps) {
                     </div>
 
                   </div>
-                  
+
                   <LevelResultsSection match={currentMatch} />
                   {currentMatch.state === MultiplayerMatchState.ACTIVE && currentMatch.timeUntilStart > 0 && (
                     <CountdownDisplay countDown={countDown} match={currentMatch} />
@@ -473,7 +473,7 @@ export default function Match({ initialMatch }: MatchProps) {
                   <div className='flex flex-col gap-2 items-center'>
                   <MarkReadyButton match={currentMatch} user={user} onMarkReady={fetchMarkReady} onUnmarkReady={fetchUnmarkReady} />
                   <ReadyStatus match={currentMatch} user={user} />
-                  
+
                   {/* Invite Panel - Only show for match creator when match is OPEN and has only 1 player */}
                   {currentMatch.state === MultiplayerMatchState.OPEN &&
                    currentMatch.players.length === 1 &&
@@ -538,7 +538,7 @@ export default function Match({ initialMatch }: MatchProps) {
                 </div>
 
               </div>
-              
+
               {activeLevel && (
                 <div className={matchInProgress && iAmPlaying ? 'flex-1' : ''}>
                   <MatchGameplay

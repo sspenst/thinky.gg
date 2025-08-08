@@ -103,7 +103,7 @@ export default function CommentWall({ userId }: CommentWallProps) {
           <span className='text-sm font-normal text-gray-400'>({totalRows})</span>
         )}
       </h2>
-      
+
       {user && (
         <div className='mb-6'>
           <div className='bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-4'>
@@ -141,7 +141,7 @@ export default function CommentWall({ userId }: CommentWallProps) {
           </div>
         </div>
       )}
-      
+
       <div className='space-y-4'>
         {!comments ? (
           <div className='text-center py-8'>
@@ -173,7 +173,7 @@ export default function CommentWall({ userId }: CommentWallProps) {
           ))
         )}
       </div>
-      
+
       {totalRows > COMMENT_QUERY_LIMIT && !isUpdating && (
         <div className='flex justify-center gap-4 mt-6 pt-6 border-t border-white/10'>
           {page > 0 && (

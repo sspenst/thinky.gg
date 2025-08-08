@@ -442,7 +442,7 @@ export default function Home({
             {game.shortDescription}
           </p>
         </div>
-        
+
         <div className='flex flex-wrap justify-center gap-8 items-center max-w-full'>
           {getSuggestedAction()}
         </div>

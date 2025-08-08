@@ -229,7 +229,7 @@ export default function Leaderboards({ gmLeaderboard, rankedLeaderboard, reqUser
                   <div className='absolute inset-0 bg-gradient-to-r from-transparent via-yellow-400/20 to-transparent transform -skew-x-12 translate-x-full group-hover:-translate-x-full transition-transform duration-1000' />
                 </div>
               )}
-              
+
               {/* Main content container */}
               <div
                 className={`relative bg-black/20 backdrop-blur-sm border border-white/20 rounded-xl p-3 sm:p-4 hover:bg-black/30 transition-all duration-300 ${
@@ -247,13 +247,13 @@ export default function Leaderboards({ gmLeaderboard, rankedLeaderboard, reqUser
                     }`}>
                       {i + 1}
                     </div>
-                  
+
                   {/* User info */}
                     <div className='flex items-center text-base sm:text-lg gap-2 sm:gap-3 flex-1 min-w-0'>
                       <FormattedUser id='leaderboard' size={32} user={user} />
                     </div>
                   </div>
-                
+
                 {/* Score with glass morphism effect */}
                   <div className={`bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg px-3 sm:px-4 py-2 font-bold text-base sm:text-lg flex-shrink-0 ${
                     isYou ? 'text-yellow-400 bg-yellow-400/20 border-yellow-400/40' : 'text-white'
@@ -338,7 +338,7 @@ export default function Leaderboards({ gmLeaderboard, rankedLeaderboard, reqUser
               {game.displayName} Hall of Fame
             </div>
           </div>
-          
+
           {/* Tab Navigation */}
           <div className='mb-8 sm:mb-12 animate-fadeInScale px-4' style={{ animationDelay: '0.5s' }}>
             <div className='flex gap-2 sm:gap-4 bg-black/20 backdrop-blur-sm p-1.5 rounded-2xl border border-white/20'>
@@ -365,7 +365,7 @@ export default function Leaderboards({ gmLeaderboard, rankedLeaderboard, reqUser
               ))}
             </div>
           </div>
-          
+
           {/* Leaderboard Content */}
           <div className='w-full animate-fadeInUp' style={{ animationDelay: '0.7s' }}>
             {getLeaderboard()}

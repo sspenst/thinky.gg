@@ -362,7 +362,7 @@ export default function Create({ levels, user, page, totalCount, levelsPerPage, 
             Last Modified
           </button>
         </div>
-        
+
         <div className='flex flex-wrap justify-center gap-4'>
           {sortedLevels.map(level => {
             const isScheduled = level.scheduledQueueMessageId;
@@ -396,7 +396,7 @@ export default function Create({ levels, user, page, totalCount, levelsPerPage, 
                     </div>
                   )}
                 </div>
-                
+
                 <div className='text-center mt-1'>
                   <FormattedDate prefix='Updated' date={level?.updatedAt} className='italic text-xs block' />
                   {isScheduled && (

@@ -182,8 +182,6 @@ export default async function startSocketIOServer(server: Server) {
         room !== socket.id && room !== userId.toString() && !room.startsWith('LOBBY-')
       );
 
-      logger.info(`User ${userId} disconnecting from rooms: ${rooms.join(', ')}`);
-
       // Store rooms for later use in disconnect event
       socket.data.roomsOnDisconnect = rooms;
     });
@@ -202,10 +200,7 @@ export default async function startSocketIOServer(server: Server) {
         broadcastConnectedPlayers(gameId, adapted),
         broadcastMatches(gameId, mongoEmitter),
         // Broadcast updated counts for any match rooms the user was in
-        ...rooms.map((matchId: string) => {
-          logger.info(`Broadcasting room count update for match: ${matchId}`);
-          return broadcastCountOfUsersInRoom(gameId, adapted, matchId);
-        })
+        ...rooms.map((matchId: string) => broadcastCountOfUsersInRoom(gameId, adapted, matchId))
       ]);
     });
 

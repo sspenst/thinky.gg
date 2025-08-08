@@ -261,7 +261,7 @@ export default function AchievementPage({
             createdAt={displayAchievement?.createdAt}
             unlocked={!!displayAchievement}
           />
-          
+
           {/* Rarity Display */}
           <div className='flex items-center gap-4 text-center'>
             <div className='bg-2 rounded-lg px-4 py-2 border border-color-3'>

@@ -85,7 +85,6 @@ export function useMatchSocket({ matchId, isSpectating }: UseMatchSocketProps): 
       socketConn.off('matchNotFound');
       socketConn.off('connectedPlayersInRoom');
       socketConn.off('userMatchGameState');
-      console.log('DISCONN');
       socketConn.disconnect();
     };
   }, [game, isSpectating, matchId, router]);
