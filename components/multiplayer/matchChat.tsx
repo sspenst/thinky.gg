@@ -71,7 +71,7 @@ export default function MatchChat({ match, user, onSendMessage, showSpectatorNot
       const userId = chatMessage.systemData.userId;
       const userName = chatMessage.systemData.userName;
       const action = chatMessage.systemData.action;
-      const level = chatMessage.systemData.level;
+      const level = match.levels.find(a => a._id === chatMessage.systemData.level);
 
       // Create a minimal user object for FormattedUser
       const systemUser = {
@@ -84,7 +84,7 @@ export default function MatchChat({ match, user, onSendMessage, showSpectatorNot
           <div className='font-medium flex items-center justify-center gap-1 flex-wrap'>
             <FormattedUser id={`chat-user-${userId}`} user={systemUser} size={Dimensions.AvatarSizeSmall} />
             <span>{action}</span>
-            <FormattedLevelLink level={level} id={`chat-level-${level._id}`} />
+            {level && <FormattedLevelLink level={level} id={`chat-level-${level._id}`} /> }
           </div>
           <div className='text-yellow-300/60 mt-1'>
             {formatTime(chatMessage.createdAt)}
