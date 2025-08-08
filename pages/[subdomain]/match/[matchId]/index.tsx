@@ -184,6 +184,22 @@ export default function Match({ initialMatch }: MatchProps) {
     }
   }, [matchId]);
 
+  const fetchUnmarkReady = useCallback(async() => {
+    const res = await fetch(`/api/match/${matchId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        action: MatchAction.UNMARK_READY,
+      }),
+    });
+
+    if (res.ok) {
+      readyMark.current = false;
+    }
+  }, [matchId]);
+
   useEffect(() => {
     if (!currentMatch) {
       return;
@@ -285,7 +301,7 @@ export default function Match({ initialMatch }: MatchProps) {
         <div className={classNames('relative max-w-7xl mx-auto px-4 sm:px-6', {
           'py-8 ': !(matchInProgress && iAmPlaying),
           'h-full flex flex-col': matchInProgress && iAmPlaying
-        })} style={{ minHeight: matchInProgress && iAmPlaying ? '100%' : 'auto' }}>
+        })} style={{ minHeight: matchInProgress && iAmPlaying ? '800px' : 'auto' }}>
 
           <MatchHeader matchInProgress={matchInProgress} prettyMatchState={prettyMatchState} />
           
@@ -365,7 +381,7 @@ export default function Match({ initialMatch }: MatchProps) {
               })}>
 
                 <ReadyStatus match={currentMatch} user={user} />
-                <MarkReadyButton match={currentMatch} user={user} onMarkReady={fetchMarkReady} />
+                <MarkReadyButton match={currentMatch} user={user} onMarkReady={fetchMarkReady} onUnmarkReady={fetchUnmarkReady} />
                 <CountdownDisplay countDown={countDown} />
                 <div className='w-full max-w-4xl animate-fadeInUp' style={{ animationDelay: '0.6s' }}>
                   <MatchStatus

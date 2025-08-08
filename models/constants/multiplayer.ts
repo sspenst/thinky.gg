@@ -62,6 +62,7 @@ export enum MatchAction {
   CREATE = 'create',
   JOIN = 'join',
   MARK_READY = 'markReady',
+  UNMARK_READY = 'unmarkReady',
   QUIT = 'quit',
   ABORTED = 'aborted',
   COMPLETE_LEVEL = 'completeLevel',

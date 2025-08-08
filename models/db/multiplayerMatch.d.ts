@@ -1,6 +1,6 @@
 import { GameId } from '@root/constants/GameId';
 import { Types } from 'mongoose';
-import { MatchLog, MultiplayerMatchType } from '../constants/multiplayer';
+import { MatchLog, MultiplayerMatchState, MultiplayerMatchType } from '../constants/multiplayer';
 import Level from './level';
 import User, { UserWithMultiplayerProfile } from './user';
 
