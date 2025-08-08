@@ -192,7 +192,7 @@ export default function Nav({ isDropdown, onGameChange }: NavProps) {
         {!socket?.connected ?
           <span className='text-xs text-yellow-500'>Connecting...</span>
           :
-          <div>
+          <div className='flex flex-col'>
             <span className='text-xs text-green-500'>{`${connectedPlayersCount} player${connectedPlayersCount !== 1 ? 's' : ''} online`}</span>
             {matches.length > 0 &&
               <span className='text-xs text-green-300'>

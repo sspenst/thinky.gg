@@ -85,7 +85,7 @@ export default function SpaceBackground({
 
   return (
     <div className={`relative ${useFullHeight ? 'h-full' : 'min-h-screen'} bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 overflow-hidden ${className}`}>
-      {/* Animated Star Field Background */}a
+      {/* Animated Star Field Background */}
       <div className='absolute inset-0 animate-fadeIn'>
         {/* Regular stars */}
         {[...Array(starCount)].map((_, i) => {
