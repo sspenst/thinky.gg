@@ -114,9 +114,21 @@ export default function Multiplayer() {
         </p>
       </div>
 
-      {/* Online Players Indicator */}
-      <div className='flex justify-center mb-8 animate-fadeInUp' style={{ animationDelay: '0.3s' }}>
+      {/* Online Players Indicator and Create Match Button */}
+      <div className='flex flex-col sm:flex-row justify-center items-center gap-4 mb-8 animate-fadeInUp' style={{ animationDelay: '0.3s' }}>
         <OnlineUsers />
+        {!hasCreatedMatch && (
+          <button
+            className='group relative overflow-hidden bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-300'
+            onClick={btnCreateMatchClick}
+          >
+            <div className='absolute inset-0 bg-gradient-to-r from-white to-transparent opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-transform duration-700' />
+            <div className='relative flex items-center gap-2 justify-center'>
+              <span className='text-lg'>⚔️</span>
+              <span className='text-sm sm:text-base'>Create Match</span>
+            </div>
+          </button>
+        )}
       </div>
 
       {/* Main Content Grid */}
@@ -224,21 +236,6 @@ export default function Multiplayer() {
         </div>
         {/* Center Column - Matches */}
         <div className='lg:col-span-2 animate-fadeInUp' style={{ animationDelay: '0.5s' }}>
-          {/* Create Match Button */}
-          {!hasCreatedMatch && (
-            <div className='mb-6 text-center'>
-              <button
-                className='group relative overflow-hidden bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-black py-4 px-8 rounded-xl shadow-2xl transform hover:scale-105 transition-all duration-300'
-                onClick={btnCreateMatchClick}
-              >
-                <div className='absolute inset-0 bg-gradient-to-r from-white to-transparent opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-transform duration-700' />
-                <div className='relative flex items-center gap-3 justify-center'>
-                  <span className='text-xl'>⚔️</span>
-                  <span className='text-lg'>Create Match</span>
-                </div>
-              </button>
-            </div>
-          )}
           {/* Open Matches */}
           {openMatches.length > 0 && (
             <div className='mb-6'>
