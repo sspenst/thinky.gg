@@ -182,12 +182,12 @@ export function NotificationMessage({ notification, onMarkAsRead }: Notification
     const shortenedText = comment ? (comment.text.length > 10 ? comment.text.substring(0, 10) + '...' : comment.text) : '';
 
     return (<>
-      replied &quot;{shortenedText}&quot; to your <Link onClick={onMarkAsRead} className='underline' href={getProfileSlug(notification.target as User) + '?commentId=' + comment?._id}>message</Link> on {notification.target.name}&apos;s profile.
+      replied &quot;{shortenedText}&quot; to your <Link onClick={onMarkAsRead} className='underline' href={getProfileSlug(notification.target as User) + '?commentId=' + comment?._id}>message</Link> on {(notification.target as User)?.name}&apos;s profile.
     </>);
   }
 
   case NotificationType.UPGRADED_TO_PRO: {
-    const isGift = notification.source._id !== notification.target._id;
+    const isGift = notification.source && notification.source?._id !== notification.target._id;
 
     return (<>
       {isGift ? 'You received a gift of Pro!' : 'You just upgraded to Pro!'}

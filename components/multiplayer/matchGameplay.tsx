@@ -30,8 +30,7 @@ export default function MatchGameplay({ activeLevel, matchId, usedSkip, onMove, 
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          action: MatchAction.SKIP_LEVEL,
-          levelId: activeLevel._id.toString(),
+          action: MatchAction.SKIP_LEVEL
         }),
       }).then(res => {
         if (!res.ok) {

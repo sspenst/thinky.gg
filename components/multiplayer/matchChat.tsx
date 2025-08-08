@@ -140,7 +140,7 @@ export default function MatchChat({ match, user, onSendMessage, showSpectatorNot
           </h3>
           {showSpectatorNotice && (
             <p className='text-xs text-yellow-300 text-center mt-2'>
-              Players won't see these messages until after the match
+              Players won&apos;t see these messages until after the match
             </p>
           )}
         </div>

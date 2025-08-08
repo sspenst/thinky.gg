@@ -170,8 +170,8 @@ describe('matchJoin', () => {
         expect(match.matchId).toBe(matchId);
         expect(match.startTime).toBeDefined();
         expect(match.timeUntilStart).toBeDefined();
-        expect(match.timeUntilStart).toBeGreaterThan(1000); // should be 10 seconds in future
-        expect(match.timeUntilStart).toBeLessThan(20000);
+        expect(match.timeUntilStart).toBeGreaterThan(600000 - 10); // should be 10 minutes in future
+        expect(match.timeUntilStart).toBeLessThan(600000 + 10);
       },
     });
   });
