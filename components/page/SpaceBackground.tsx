@@ -16,6 +16,7 @@ interface SpaceBackgroundProps {
   showGeometricShapes?: boolean;
   showBottomGradient?: boolean;
   className?: string;
+  useFullHeight?: boolean;
 }
 
 export default function SpaceBackground({
@@ -26,6 +27,7 @@ export default function SpaceBackground({
   showGeometricShapes = true,
   showBottomGradient = true,
   className = '',
+  useFullHeight = false,
 }: SpaceBackgroundProps) {
   const pseudoRandom = (seed: number, max: number) => ((seed * 9.869604401089358) % max);
 
@@ -82,8 +84,8 @@ export default function SpaceBackground({
   const constellations = getConstellations();
 
   return (
-    <div className={`relative min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 overflow-hidden ${className}`}>
-      {/* Animated Star Field Background */}
+    <div className={`relative ${useFullHeight ? 'h-full' : 'min-h-screen'} bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 overflow-hidden ${className}`}>
+      {/* Animated Star Field Background */}a
       <div className='absolute inset-0 animate-fadeIn'>
         {/* Regular stars */}
         {[...Array(starCount)].map((_, i) => {
@@ -174,7 +176,7 @@ export default function SpaceBackground({
       )}
       
       {/* Content */}
-      <div className='relative z-10'>
+      <div className={`relative z-10 ${useFullHeight ? 'h-full' : ''}`}>
         {children}
       </div>
     </div>
