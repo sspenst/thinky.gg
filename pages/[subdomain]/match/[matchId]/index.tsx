@@ -13,6 +13,7 @@ import MatchResults from '@root/components/multiplayer/matchResults';
 import MatchStatus from '@root/components/multiplayer/matchStatus';
 import ReadyStatus from '@root/components/multiplayer/readyStatus';
 import SpectatorCount from '@root/components/multiplayer/spectatorCount';
+import MultiSelectUser from '@root/components/page/multiSelectUser';
 import Page from '@root/components/page/page';
 import SpaceBackground from '@root/components/page/SpaceBackground';
 import { initGameState, MatchGameState } from '@root/helpers/gameStateHelpers';
@@ -24,6 +25,7 @@ import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import toast from 'react-hot-toast';
 import { AppContext } from '../../../../contexts/appContext';
 import { getGameIdFromReq } from '../../../../helpers/getGameIdFromReq';
 import { getMatch } from '../../../../helpers/match/getMatch';
@@ -89,6 +91,8 @@ export default function Match({ initialMatch }: MatchProps) {
   const [activeLevel, setActiveLevel] = useState<Level | null>(null);
   const [usedSkip, setUsedSkip] = useState<boolean>(false);
   const [countDown, setCountDown] = useState<number>(-1);
+  const [showInvitePanel, setShowInvitePanel] = useState<boolean>(false);
+  const [isInviting, setIsInviting] = useState<boolean>(false);
   const { multiplayerSocket, sounds, user } = useContext(AppContext);
   const readyMark = useRef(false);
   const router = useRouter();
@@ -217,6 +221,45 @@ export default function Match({ initialMatch }: MatchProps) {
       console.error('Failed to send chat message');
     }
   }, [matchId]);
+
+  const handleInviteUser = useCallback(async(selectedUser: any) => {
+    if (!selectedUser || isInviting) {
+      return;
+    }
+
+    console.log('Inviting user:', selectedUser);
+    console.log('Match ID:', matchId);
+    setIsInviting(true);
+
+    try {
+      const res = await fetch(`/api/match/${matchId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: MatchAction.INVITE_USER,
+          invitedUserId: selectedUser._id,
+        }),
+      });
+
+      console.log('Response status:', res.status);
+
+      if (res.ok) {
+        setShowInvitePanel(false);
+        toast.success(`Invitation sent to ${selectedUser.name}!`);
+      } else {
+        const error = await res.json();
+
+        toast.error(`Failed to send invitation: ${error.error}`);
+      }
+    } catch (error) {
+      console.error('Error sending invitation:', error);
+      toast.error('Failed to send invitation. Please try again.');
+    } finally {
+      setIsInviting(false);
+    }
+  }, [matchId, isInviting]);
 
   useEffect(() => {
     if (!currentMatch) {
@@ -430,6 +473,48 @@ export default function Match({ initialMatch }: MatchProps) {
                   <div className='flex flex-col gap-2 items-center'>
                   <MarkReadyButton match={currentMatch} user={user} onMarkReady={fetchMarkReady} onUnmarkReady={fetchUnmarkReady} />
                   <ReadyStatus match={currentMatch} user={user} />
+                  
+                  {/* Invite Panel - Only show for match creator when match is OPEN and has only 1 player */}
+                  {currentMatch.state === MultiplayerMatchState.OPEN &&
+                   currentMatch.players.length === 1 &&
+                   currentMatch.createdBy._id.toString() === user._id.toString() && (
+                    <div className='flex flex-col gap-2 items-center mt-4 animate-fadeInUp' style={{ animationDelay: '0.5s' }}>
+                      {!showInvitePanel ? (
+                        <button
+                          onClick={() => setShowInvitePanel(true)}
+                          className='group relative overflow-hidden bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-300 flex items-center gap-2'
+                        >
+                          <div className='absolute inset-0 bg-gradient-to-r from-white to-transparent opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-transform duration-700' />
+                          <svg className='w-4 h-4 relative z-10' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                            <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 4v16m8-8H4' />
+                          </svg>
+                          <span className='relative z-10'>Invite Player</span>
+                        </button>
+                      ) : (
+                        <div className='flex flex-col gap-2 items-center bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20'>
+                          <h3 className='text-sm font-medium'>Invite a player</h3>
+                          <div className='w-64'>
+                            <MultiSelectUser
+                              placeholder='Search for a player...'
+                              onSelect={handleInviteUser}
+                            />
+                          </div>
+                          <div className='flex gap-2'>
+                            <button
+                              onClick={() => setShowInvitePanel(false)}
+                              disabled={isInviting}
+                              className='px-3 py-1 text-xs bg-gray-600 hover:bg-gray-700 text-white rounded transition-colors disabled:opacity-50'
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                          {isInviting && (
+                            <div className='text-xs text-gray-300'>Sending invitation...</div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   </div>
                   </div>

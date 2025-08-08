@@ -34,7 +34,7 @@ export default function ThinkyHomeRouter({ user }: ThinkyHomeRouterProps) {
   // PostHog handles persistence automatically via cookies/localStorage
   const variant = useFeatureFlagVariantKey('new-home-page-experiment-v2');
   const [timedOut, setTimedOut] = useState(false);
-  
+
   // After 2 seconds, fall back to test variant if PostHog hasn't loaded
   // This ensures users see content quickly even if PostHog is slow/blocked
   useEffect(() => {
@@ -44,11 +44,11 @@ export default function ThinkyHomeRouter({ user }: ThinkyHomeRouterProps) {
         console.log('PostHog experiment timed out, showing test variant');
       }
     }, 2000);
-    
+
     return () => clearTimeout(timeout);
   }, [variant]);
-  
-  // Show test variant if: 
+
+  // Show test variant if:
   // 1. PostHog explicitly returns 'test'
   // 2. PostHog times out (fallback to test)
   const shouldShowTest = variant === 'test' || (timedOut && variant === undefined);

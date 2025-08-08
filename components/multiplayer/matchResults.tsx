@@ -102,8 +102,8 @@ export default function MatchResults({ match, recap, showViewLink }: MatchResult
           {sortedPlayers.map((player, index) => (
             <div
               className={`flex items-center gap-3 rounded-lg p-2 border ${
-                index === 0 && sortedPlayers.length > 1 
-                  ? 'bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border-yellow-500/30' 
+                index === 0 && sortedPlayers.length > 1
+                  ? 'bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border-yellow-500/30'
                   : 'bg-white/5 border-white/10'
               }`}
               key={player._id.toString()}

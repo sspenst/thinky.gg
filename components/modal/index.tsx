@@ -120,48 +120,48 @@ export default function Modal({
                 <div className='relative flex justify-center gap-3 flex-wrap'>
                   {onConfirm ?
                     <>
-                      <ModalButton 
-                        className='group relative overflow-hidden bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-2 px-6 rounded-lg shadow-md transform hover:scale-105 transition-all duration-200' 
-                        disabled={disabled} 
-                        onClick={() => {}} 
-                        text={confirmText || submitLabel || 'Create Match'} 
-                        type='submit' 
+                      <ModalButton
+                        className='group relative overflow-hidden bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-2 px-6 rounded-lg shadow-md transform hover:scale-105 transition-all duration-200'
+                        disabled={disabled}
+                        onClick={() => {}}
+                        text={confirmText || submitLabel || 'Create Match'}
+                        type='submit'
                       />
-                      <ModalButton 
+                      <ModalButton
                         className='group relative overflow-hidden bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white font-bold py-2 px-6 rounded-lg shadow-md transform hover:scale-105 transition-all duration-200'
-                        disabled={disabled} 
-                        onClick={closeModal} 
-                        text={closeLabel || 'Cancel'} 
+                        disabled={disabled}
+                        onClick={closeModal}
+                        text={closeLabel || 'Cancel'}
                       />
                     </>
                     : onSubmit ?
                       <>
-                        <ModalButton 
-                          className='group relative overflow-hidden bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-2 px-6 rounded-lg shadow-md transform hover:scale-105 transition-all duration-200' 
-                          disabled={disabled} 
-                          onClick={() => {}} 
-                          text={submitLabel || 'Submit'} 
-                          type='submit' 
+                        <ModalButton
+                          className='group relative overflow-hidden bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-2 px-6 rounded-lg shadow-md transform hover:scale-105 transition-all duration-200'
+                          disabled={disabled}
+                          onClick={() => {}}
+                          text={submitLabel || 'Submit'}
+                          type='submit'
                         />
-                        <ModalButton 
+                        <ModalButton
                           className='group relative overflow-hidden bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white font-bold py-2 px-6 rounded-lg shadow-md transform hover:scale-105 transition-all duration-200'
-                          disabled={disabled} 
+                          disabled={disabled}
                           onClick={(e) => {
                             e?.preventDefault();
                             closeModal();
-                          }} 
-                          text={closeLabel || 'Cancel'} 
+                          }}
+                          text={closeLabel || 'Cancel'}
                         />
                       </>
                       :
-                      <ModalButton 
+                      <ModalButton
                         className='group relative overflow-hidden bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-2 px-6 rounded-lg shadow-md transform hover:scale-105 transition-all duration-200'
-                        disabled={disabled} 
+                        disabled={disabled}
                         onClick={(e) => {
                           e?.preventDefault();
                           closeModal();
-                        }} 
-                        text={closeLabel || 'Close'} 
+                        }}
+                        text={closeLabel || 'Close'}
                       />
                   }
                 </div>

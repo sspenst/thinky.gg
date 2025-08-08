@@ -264,6 +264,7 @@ export function computeMatchScoreTable(match: MultiplayerMatch) {
       // create the scoreboard by counting non nulls
       // filter out all zero objectIds
       const entries = match.gameTable[tableEntry];
+
       if (Array.isArray(entries)) {
         scoreTable[tableEntry] = entries.filter(
           (level) => level.toString() !== SKIP_MATCH_LEVEL_ID

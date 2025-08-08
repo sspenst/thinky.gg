@@ -20,7 +20,7 @@ import { MatchAction, MultiplayerMatchState, MultiplayerMatchType } from '../../
 import MultiplayerMatch from '../../../models/db/multiplayerMatch';
 import User from '../../../models/db/user';
 import { LevelModel, MultiplayerMatchModel, MultiplayerProfileModel, UserModel } from '../../../models/mongoose';
-import { computeMatchScoreTable, enrichMultiplayerMatch, generateMatchLog, createSystemChatMessage, createUserActionMessage, createMatchEventMessage } from '../../../models/schemas/multiplayerMatchSchema';
+import { computeMatchScoreTable, createMatchEventMessage, createSystemChatMessage, createUserActionMessage, enrichMultiplayerMatch, generateMatchLog } from '../../../models/schemas/multiplayerMatchSchema';
 import { queueRefreshAchievements } from '../internal-jobs/worker/queueFunctions';
 
 export async function checkForFinishedMatches() {
@@ -204,8 +204,9 @@ export async function finishMatch(finishedMatch: MultiplayerMatch, quitUserId?: 
       // Get user names for match end message
       const winnerUser = await UserModel.findById(winnerId, 'name').session(session);
       const loserUser = await UserModel.findById(loserId, 'name').session(session);
-      
+
       let endMessage: any;
+
       if (tie) {
         endMessage = createMatchEventMessage('Match ended in a tie!');
       } else if (quitUserId) {
@@ -289,17 +290,18 @@ export async function checkForUnreadyAboutToStartMatch(matchId: string) {
       { matchId: matchId },
       {
         $push: {
-          chatMessages: createMatchEventMessage("Match has started! Good luck!")
+          chatMessages: createMatchEventMessage('Match has started! Good luck!')
         }
       }
     );
+
     return null;
   }
 }
 
 export async function checkForFinishedMatch(matchId: string) {
   logger.info(`Checking if match ${matchId} is finished`);
-  
+
   const finishedMatch = await MultiplayerMatchModel.findOne(
     {
       matchId: matchId,
@@ -313,23 +315,25 @@ export async function checkForFinishedMatch(matchId: string) {
   if (!finishedMatch) {
     // Additional logging to help debug
     const anyMatch = await MultiplayerMatchModel.findOne({ matchId: matchId }).lean();
+
     if (anyMatch) {
       logger.info(`Match ${matchId} exists but not ready to finish: state=${anyMatch.state}, endTime=${anyMatch.endTime}, currentTime=${new Date()}`);
     } else {
       logger.info(`Match ${matchId} does not exist at all`);
     }
+
     return null;
   }
 
   logger.info(`Match ${matchId} is finished, calling finishMatch`);
   const result = await finishMatch(finishedMatch);
-  
+
   if (result) {
     logger.info(`Match ${matchId} successfully finished and transitioned to ${result.state}`);
   } else {
     logger.error(`Match ${matchId} failed to finish - finishMatch returned null`);
   }
-  
+
   return result;
 }
 

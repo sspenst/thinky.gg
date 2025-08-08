@@ -355,3 +355,26 @@ export async function createScheduledLevelPublishedNotification(gameId: GameId, 
 
   return notification[0];
 }
+
+export async function createMultiplayerInviteNotification(gameId: GameId, inviterUserId: string | Types.ObjectId, invitedUserId: string | Types.ObjectId, matchId: string | Types.ObjectId) {
+  const notificationId = new Types.ObjectId();
+
+  const [notification] = await Promise.all([
+    NotificationModel.create([{
+      _id: notificationId,
+      gameId: gameId,
+      message: matchId.toString(), // Store matchId in message field
+      source: inviterUserId,
+      sourceModel: 'User',
+      target: null, // No target since we're storing matchId in message
+      targetModel: 'MultiplayerMatch',
+      type: NotificationType.MULTIPLAYER_INVITE,
+      userId: invitedUserId,
+    }]),
+    queuePushNotification(notificationId),
+  ]);
+
+  await requestBroadcastNotifications(gameId, new Types.ObjectId(invitedUserId));
+
+  return notification[0];
+}

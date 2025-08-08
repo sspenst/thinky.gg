@@ -14,14 +14,17 @@ import User from '@root/models/db/user';
 import { PipelineStage } from 'mongoose';
 import { NextApiResponse } from 'next';
 import { DIFFICULTY_INDEX } from '../../../components/formatted/formattedDifficulty';
-import { ValidEnum } from '../../../helpers/apiWrapper';
+import NotificationType from '../../../constants/notificationType';
+import { ValidEnum, ValidType } from '../../../helpers/apiWrapper';
+import { checkIfBlocked } from '../../../helpers/getBlockedUserIds';
+import { createMultiplayerInviteNotification } from '../../../helpers/notificationHelper';
 import { requestBroadcastMatch, requestBroadcastMatches, requestBroadcastPrivateAndInvitedMatches, requestScheduleBroadcastMatch } from '../../../lib/appSocketToClient';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { MatchAction, MultiplayerMatchState, MultiplayerMatchType, MultiplayerMatchTypeDurationMap } from '../../../models/constants/multiplayer';
 import Level from '../../../models/db/level';
 import MultiplayerMatch from '../../../models/db/multiplayerMatch';
-import { LevelModel, MultiplayerMatchModel, UserModel } from '../../../models/mongoose';
-import { enrichMultiplayerMatch, generateMatchLog, createSystemChatMessage, createUserActionMessage, createMatchEventMessage } from '../../../models/schemas/multiplayerMatchSchema';
+import { LevelModel, MultiplayerMatchModel, NotificationModel, UserModel } from '../../../models/mongoose';
+import { createMatchEventMessage, createUserActionMessage, enrichMultiplayerMatch, generateMatchLog } from '../../../models/schemas/multiplayerMatchSchema';
 
 export default withAuth(
   {
@@ -35,7 +38,11 @@ export default withAuth(
           MatchAction.QUIT,
           MatchAction.SKIP_LEVEL,
           MatchAction.SEND_CHAT_MESSAGE,
+          MatchAction.INVITE_USER,
         ]),
+        invitedUserId: ValidType('string', false),
+        levelId: ValidType('string', false),
+        message: ValidType('string', false),
       },
     },
   },
@@ -80,8 +87,8 @@ export default withAuth(
           },
           {
             $addToSet: { markedReady: req.user._id },
-            $push: { 
-              chatMessages: createUserActionMessage('is ready!', req.user._id.toString(), req.user.name) 
+            $push: {
+              chatMessages: createUserActionMessage('is ready!', req.user._id.toString(), req.user.name)
             },
           },
           { new: true }
@@ -99,7 +106,7 @@ export default withAuth(
               startTime: newStartTime,
               endTime: newEndTime,
               $push: {
-                chatMessages: createMatchEventMessage("Match starting in 3 seconds!")
+                chatMessages: createMatchEventMessage('Match starting in 3 seconds!')
               }
             }
           );
@@ -133,8 +140,8 @@ export default withAuth(
           },
           {
             $pull: { markedReady: req.user._id },
-            $push: { 
-              chatMessages: createUserActionMessage('is no longer ready.', req.user._id.toString(), req.user.name) 
+            $push: {
+              chatMessages: createUserActionMessage('is no longer ready.', req.user._id.toString(), req.user.name)
             },
           },
           { new: true }
@@ -422,6 +429,89 @@ export default withAuth(
         await requestBroadcastMatch(updatedMatch.gameId, matchId as string);
 
         return res.status(200).json({ success: true, messageCount: updatedMatch.chatMessages?.length });
+      } else if (action === MatchAction.INVITE_USER) {
+        const { invitedUserId } = req.body;
+
+        console.log('INVITE_USER action triggered');
+        console.log('invitedUserId:', invitedUserId);
+        console.log('matchId:', matchId);
+
+        if (!invitedUserId) {
+          return res.status(400).json({ error: 'invitedUserId is required' });
+        }
+
+        // Check if match exists and is joinable (OPEN state, has space)
+        const match = await MultiplayerMatchModel.findOne({
+          matchId: matchId,
+          state: MultiplayerMatchState.OPEN,
+          players: { $size: 1 }, // Only creator present
+          createdBy: req.user._id, // Only match creator can invite
+        }).lean<MultiplayerMatch>();
+
+        console.log('Match found:', !!match);
+
+        if (match) {
+          console.log('Match state:', match.state);
+          console.log('Player count:', match.players.length);
+          console.log('Created by:', match.createdBy._id?.toString());
+          console.log('Current user:', req.user._id.toString());
+        }
+
+        if (!match) {
+          return res.status(400).json({
+            error: 'Match not found or you do not have permission to invite users'
+          });
+        }
+
+        // Check if inviter is blocked by invitee or vice versa
+        const [inviterBlockedByInvitee, inviteeBlockedByInviter] = await Promise.all([
+          checkIfBlocked(invitedUserId, req.user._id.toString()),
+          checkIfBlocked(req.user._id.toString(), invitedUserId)
+        ]);
+
+        if (inviterBlockedByInvitee || inviteeBlockedByInviter) {
+          return res.status(400).json({ error: 'Cannot invite this user' });
+        }
+
+        // Check if invited user exists
+        const invitedUser = await UserModel.findById(invitedUserId).lean<User>();
+
+        if (!invitedUser) {
+          return res.status(400).json({ error: 'Invited user not found' });
+        }
+
+        // Check if invited user is already in the match
+        if (match.players.some(playerId => playerId.toString() === invitedUserId)) {
+          return res.status(400).json({ error: 'User is already in this match' });
+        }
+
+        // Check if there's already a pending invitation for this user to this match
+        const existingInvitation = await NotificationModel.findOne({
+          userId: invitedUserId,
+          type: NotificationType.MULTIPLAYER_INVITE,
+          message: match.matchId,
+          read: false, // Only check unread invitations
+        }).lean();
+
+        if (existingInvitation) {
+          return res.status(400).json({ error: 'User has already been invited to this match' });
+        }
+
+        // Create notification
+        try {
+          await createMultiplayerInviteNotification(
+            req.gameId,
+            req.user._id,
+            invitedUserId,
+            match.matchId
+          );
+
+          return res.status(200).json({ success: true });
+        } catch (error) {
+          console.error('Error creating multiplayer invite notification:', error);
+
+          return res.status(500).json({ error: 'Failed to send invitation' });
+        }
       }
     }
   }

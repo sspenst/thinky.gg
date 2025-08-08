@@ -260,8 +260,7 @@ export function ChapterSelectCardBase({
                   {subtitle}
                 </div>
               )}
-              
-            
+
             </div>
           </Link>
         </div>

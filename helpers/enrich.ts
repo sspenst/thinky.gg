@@ -430,7 +430,9 @@ export function getEnrichNotificationPipelineStages(reqUser?: Types.ObjectId) {
         gameId: 1,
         message: 1,
         read: 1,
+        source: 1,
         sourceModel: 1,
+        target: 1,
         targetModel: 1,
         type: 1,
         updatedAt: 1,
@@ -469,21 +471,45 @@ export function getEnrichNotificationPipelineStages(reqUser?: Types.ObjectId) {
     ...getEnrichUserConfigPipelineStage('$gameId', { excludeCalcs: true, localField: 'sourceUser._id', lookupAs: 'sourceUser.config' }),
     ...getEnrichUserConfigPipelineStage('$gameId', { excludeCalcs: true, localField: 'targetUser._id', lookupAs: 'targetUser.config' }),
     {
-      // merge targetLevel and targetUser into target
+      // merge targetLevel and targetUser into target, preserving raw target if no populated data
       $addFields: {
         target: {
-          $mergeObjects: [
-            '$targetLevel',
-            '$targetUser',
-            '$targetCollection',
-          ]
+          $cond: {
+            if: {
+              $or: [
+                { $ne: ['$targetLevel', null] },
+                { $ne: ['$targetUser', null] },
+                { $ne: ['$targetCollection', null] }
+              ]
+            },
+            then: {
+              $mergeObjects: [
+                '$targetLevel',
+                '$targetUser',
+                '$targetCollection',
+              ]
+            },
+            else: '$target'
+          }
         },
         source: {
-          $mergeObjects: [
-            '$sourceAchievement',
-            '$sourceLevel',
-            '$sourceUser',
-          ]
+          $cond: {
+            if: {
+              $or: [
+                { $ne: ['$sourceAchievement', null] },
+                { $ne: ['$sourceLevel', null] },
+                { $ne: ['$sourceUser', null] }
+              ]
+            },
+            then: {
+              $mergeObjects: [
+                '$sourceAchievement',
+                '$sourceLevel',
+                '$sourceUser',
+              ]
+            },
+            else: '$source'
+          }
         }
       }
     },

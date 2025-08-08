@@ -18,12 +18,12 @@ export const posthogServer = apiKey
  * Helper to safely capture server-side events
  */
 export function captureEvent(
-  distinctId: string, 
-  event: string, 
+  distinctId: string,
+  event: string,
   properties?: Record<string, any>
 ) {
   if (!posthogServer) return;
-  
+
   try {
     posthogServer.capture({
       distinctId,

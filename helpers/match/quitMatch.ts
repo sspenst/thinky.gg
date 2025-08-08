@@ -2,7 +2,7 @@ import { requestBroadcastMatch, requestBroadcastMatches, requestClearBroadcastMa
 import { MatchAction, MultiplayerMatchState } from '@root/models/constants/multiplayer';
 import MultiplayerMatch from '@root/models/db/multiplayerMatch';
 import { MultiplayerMatchModel } from '@root/models/mongoose';
-import { enrichMultiplayerMatch, generateMatchLog, createSystemChatMessage, createUserActionMessage, createMatchEventMessage } from '@root/models/schemas/multiplayerMatchSchema';
+import { createMatchEventMessage, createSystemChatMessage, createUserActionMessage, enrichMultiplayerMatch, generateMatchLog } from '@root/models/schemas/multiplayerMatchSchema';
 import { finishMatch } from '@root/pages/api/match';
 import { Types } from 'mongoose';
 import { logger } from '../logger';
@@ -21,6 +21,7 @@ export async function quitMatch(matchId: string, userId: Types.ObjectId) {
 
   if (!match) {
     logger.error('Could not find match ' + matchId);
+
     return null;
   }
 
@@ -52,7 +53,7 @@ export async function quitMatch(matchId: string, userId: Types.ObjectId) {
         requestBroadcastMatches(updatedMatch.gameId)
       ]);
     }
-    
+
     return updatedMatch;
   }
 
@@ -64,7 +65,7 @@ export async function quitMatch(matchId: string, userId: Types.ObjectId) {
   if (isMatchStarted) {
     // Any player leaving a started match = forfeit (including host)
     logger.info(`${isHost ? 'Host' : 'Non-host'} ${quittingUserName} forfeiting started match ${matchId}`);
-    
+
     // Add forfeit message
     await MultiplayerMatchModel.updateOne(
       { matchId: matchId },
@@ -74,10 +75,10 @@ export async function quitMatch(matchId: string, userId: Types.ObjectId) {
         }
       }
     );
-    
+
     // Call finishMatch with the quitting player as the one who lost
     const finishedMatch = await finishMatch(match, userId.toString());
-    
+
     // Broadcast the finished match state
     if (finishedMatch) {
       await Promise.all([
@@ -86,7 +87,7 @@ export async function quitMatch(matchId: string, userId: Types.ObjectId) {
         requestClearBroadcastMatchSchedule(matchId)
       ]);
     }
-    
+
     return finishedMatch;
   } else if (isHost) {
     // Host leaving unstarted match - abort
@@ -156,6 +157,7 @@ export async function quitMatch(matchId: string, userId: Types.ObjectId) {
 
   if (!updatedMatch) {
     logger.error(`Could not find match ${matchId} for user ${userId.toString()}`);
+
     return null;
   }
 

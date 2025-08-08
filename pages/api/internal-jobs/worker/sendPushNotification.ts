@@ -83,8 +83,10 @@ export async function sendPushNotification(gameId: GameId, notification: Notific
     // Collect device IDs to update in bulk
     const inactiveDeviceIds: typeof devices[0]['_id'][] = [];
     const activeDeviceIds: typeof devices[0]['_id'][] = [];
+
     res.responses.forEach((response, idx) => {
       const device = devices[idx];
+
       if (response.error?.code === 'messaging/registration-token-not-registered') {
         if (device?._id) {
           inactiveDeviceIds.push(device._id);
@@ -93,7 +95,6 @@ export async function sendPushNotification(gameId: GameId, notification: Notific
         activeDeviceIds.push(device._id);
       }
     });
-
 
     const updatePromises = [];
 

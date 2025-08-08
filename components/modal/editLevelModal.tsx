@@ -68,7 +68,7 @@ export default function EditLevelModal({ closeModal, isOpen, level, onLevelUpdat
           if (onLevelUpdated) {
             onLevelUpdated(newLevel);
           }
-          
+
           if (!newLevel.isDraft) {
             router.replace(`/level/${newLevel.slug}`);
           }

@@ -37,7 +37,7 @@ export function useMultiplayerSocket(
 
   // Use ref to store notification handler to avoid socket reconnections
   const notificationHandlerRef = useRef(notificationActions.handleSocketNotifications);
-  
+
   // Update ref when handler changes but don't recreate socket
   useEffect(() => {
     notificationHandlerRef.current = notificationActions.handleSocketNotifications;
