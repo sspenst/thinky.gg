@@ -365,7 +365,7 @@ export default function Match({ initialMatch }: MatchProps) {
         <div className={classNames('relative max-w-7xl mx-auto px-2 sm:px-4 lg:px-6', {
           'py-4 sm:py-8': !(matchInProgress && iAmPlaying),
           'h-full flex flex-col': matchInProgress && iAmPlaying
-        })} style={{ minHeight: matchInProgress && iAmPlaying ? '800px' : 'auto' }}>
+        })} style={{ minHeight: matchInProgress && iAmPlaying ? '0' : 'auto' }}>
 
           <MatchHeader matchInProgress={matchInProgress} prettyMatchState={prettyMatchState} />
 
