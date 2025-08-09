@@ -218,7 +218,9 @@ export default function Match({ initialMatch }: MatchProps) {
     });
 
     if (!res.ok) {
-      console.error('Failed to send chat message');
+      const errorData = await res.json().catch(() => ({ error: 'Failed to send message' }));
+      toast.error(errorData.error || 'Failed to send message');
+      console.error('Failed to send chat message:', errorData);
     }
   }, [matchId]);
 
@@ -418,6 +420,7 @@ export default function Match({ initialMatch }: MatchProps) {
                         user={user}
                         onSendMessage={sendChatMessage}
                         showSpectatorNotice={matchInProgress && currentIsSpectating}
+                        connectedUsersCount={connectedPlayersInRoom?.count}
                       />
                     )}
                   </div>
@@ -469,6 +472,7 @@ export default function Match({ initialMatch }: MatchProps) {
                       user={user}
                       onSendMessage={sendChatMessage}
                       showSpectatorNotice={matchInProgress && currentIsSpectating}
+                      connectedUsersCount={connectedPlayersInRoom?.count}
                     />
                   )}
                   <div className='flex flex-col gap-2 items-center'>
