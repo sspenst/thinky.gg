@@ -25,6 +25,7 @@ import Level from '../../../models/db/level';
 import MultiplayerMatch from '../../../models/db/multiplayerMatch';
 import { LevelModel, MultiplayerMatchModel, NotificationModel, UserModel } from '../../../models/mongoose';
 import { createMatchEventMessage, createUserActionMessage, enrichMultiplayerMatch, generateMatchLog } from '../../../models/schemas/multiplayerMatchSchema';
+import { isChatRateLimited } from '../../../server/socket/chatRateLimiter';
 
 export default withAuth(
   {
@@ -404,6 +405,14 @@ export default withAuth(
         if (message.length > 200) {
           return res.status(400).json({ error: 'Message too long' });
         }
+
+        // Check chat rate limiting
+        if (isChatRateLimited(req.user._id.toString())) {
+          return res.status(429).json({ error: 'You are sending messages too quickly. Please wait before sending another message.' });
+        }
+
+        // Note: Room count check is handled on the frontend since the socket server runs separately
+        // and we can't reliably access its state from the API routes
 
         // Add chat message to match (allow spectators too)
         const updatedMatch = await MultiplayerMatchModel.findOneAndUpdate(
