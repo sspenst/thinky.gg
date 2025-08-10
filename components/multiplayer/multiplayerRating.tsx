@@ -23,7 +23,9 @@ export default function MultiplayerRating({ hideType, profile, record, type }: M
         {!hideType && <span className='text-xs'>{getMatchTypeNameFromMatchType(type)}</span>}
         <span data-tooltip-id='profile-rating' data-tooltip-content={`Played ${getMatchCountFromProfile(profile, type)} matches`} className='text-xs italic' style={{
           color: 'var(--color-gray)',
-        }}>{Math.round(getRatingFromProfile(profile, type))}</span>
+        }}>
+          <span className='text-xs opacity-70'>Elo:</span> {Math.round(getRatingFromProfile(profile, type))}
+        </span>
         {record && (
           <div data-tooltip-id='profile-record' className='text-xs' data-tooltip-content={'Wins-Draws-Losses'}>
           ({record.wins}-{record.draws}-{record.losses})

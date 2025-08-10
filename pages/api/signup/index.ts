@@ -31,12 +31,12 @@ import { KeyValueModel, UserConfigModel, UserModel } from '../../../models/mongo
 async function createUser({ gameId, email, name, password, tutorialCompletedAt, utm_source, roles, emailConfirmed, privateTags }: {gameId: GameId, email: string, name: string, password: string, tutorialCompletedAt: number, utm_source: string, roles: Role[], emailConfirmed?: boolean, privateTags?: PrivateTagType[]}, queryOptions: QueryOptions): Promise<[User, UserConfig]> {
   const id = new Types.ObjectId();
   const disallowedEmailNotifications = [
-    NotificationType.NEW_FOLLOWER,
+    /*NotificationType.NEW_FOLLOWER,
     NotificationType.NEW_LEVEL,
     NotificationType.NEW_LEVEL_ADDED_TO_COLLECTION,
     NotificationType.NEW_REVIEW_ON_YOUR_LEVEL,
-    NotificationType.NEW_RECORD_ON_A_LEVEL_YOU_SOLVED,
-  ];
+    NotificationType.NEW_RECORD_ON_A_LEVEL_YOU_SOLVED,*/
+  ] as NotificationType[];
 
   const [userCreated, configCreated] = await Promise.all([
     UserModel.create([{

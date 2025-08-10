@@ -3,6 +3,7 @@ import { getCheckpointKey } from '@root/helpers/checkpointHelpers';
 import { BEST_CHECKPOINT_INDEX } from '@root/hooks/useCheckpoints';
 import { NextApiResponse } from 'next';
 import { ValidDirections, ValidNumber } from '../../../../../helpers/apiWrapper';
+import { hasProAccessForLevel } from '../../../../../helpers/isDemoProAccess';
 import isPro from '../../../../../helpers/isPro';
 import withAuth, { NextApiRequestWithAuth } from '../../../../../lib/withAuth';
 import { KeyValueModel, LevelModel } from '../../../../../models/mongoose';
@@ -21,18 +22,18 @@ export default withAuth({
     }
   },
 }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
-  if (!isPro(req.user)) {
-    return res.status(401).json({
-      error: 'Not authorized',
-    });
-  }
-
   const { id: levelId } = req.query as { id: string };
-  const level = await LevelModel.findById(levelId, { gameId: 1, isDraft: 1 });
+  const level = await LevelModel.findById(levelId, { gameId: 1, isDraft: 1, userId: 1, slug: 1 }).populate('userId', 'name');
 
   if (!level) {
     return res.status(404).json({
       error: 'Level not found',
+    });
+  }
+
+  if (!hasProAccessForLevel(req.user, level)) {
+    return res.status(401).json({
+      error: 'Not authorized',
     });
   }
 

@@ -151,22 +151,18 @@ describe('matchCreateJoinAndQuit', () => {
         matchId = response.matchId;
         expect(response.createdBy).toBe(TestId.USER);
         expect(response.players).toHaveLength(1);
-        expect(response.gameTable).toBeDefined();
-        expect(response.gameTable && response.gameTable[TestId.USER]).toHaveLength(0);
+        expect(response.gameTable).toBeUndefined();
         expect(response.matchLog).toHaveLength(3);
         expect(response.matchLog && response.matchLog[2].type).toBe(MatchAction.QUIT);
         expect(response.state).toBe(MultiplayerMatchState.ABORTED);
         expect(response.type).toBe(MultiplayerMatchType.RushBullet);
-        expect(response.levels).toHaveLength(3); // NOTE - On 12/4 when introducing the platform we made it so that multiplayer will select pending levels if there is not enough levels in the ecosystem that are not "pending"
+        expect(response.levels).toHaveLength(0);
         expect(response.winners).toHaveLength(0);
         expect(response.timeUntilStart).toBeGreaterThan(500);
         expect(response.timeUntilEnd).toBeGreaterThan(15000);
         expect(response.private).toBe(false);
         expect(response.rated).toBe(true);
-        expect(response.scoreTable).toEqual({
-          [TestId.USER]: 0,
-          [TestId.USER_B]: 0,
-        });
+        expect(response.scoreTable).toEqual({});
       },
     });
   });

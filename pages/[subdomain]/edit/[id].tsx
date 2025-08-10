@@ -36,6 +36,16 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     };
   }
 
+  // Check if level is scheduled for publishing
+  if (level.scheduledQueueMessageId) {
+    return {
+      redirect: {
+        destination: '/drafts?scheduled=true',
+        permanent: false,
+      },
+    };
+  }
+
   return {
     props: {
       level: JSON.parse(JSON.stringify(level)),
@@ -59,13 +69,14 @@ export default function Edit({ level }: EditProps) {
         new LinkInfo('Drafts', '/drafts'),
       ]}
       isFullScreen={true}
-      title={`${level?.name}${isDirty ? '*' : ''}`}
+      title={`${_level?.name}${isDirty ? '*' : ''}`}
     >
       <Editor
         isDirty={isDirty}
         level={_level}
         setIsDirty={setIsDirty}
         setLevel={setLevel}
+        originalLevel={level}
       />
     </Page>
   );

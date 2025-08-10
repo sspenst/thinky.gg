@@ -35,6 +35,7 @@ export default withAuth({
       deviceToken: ValidType('string', false),
       disallowedEmailNotifications: ValidArray(false),
       disallowedPushNotifications: ValidArray(false),
+      disallowedInboxNotifications: ValidArray(false),
       emailDigest: ValidType('string', false),
       theme: ValidType('string', false),
       tutorialCompletedAt: ValidNumber(false),
@@ -52,6 +53,7 @@ export default withAuth({
       deviceToken,
       disallowedEmailNotifications,
       disallowedPushNotifications,
+      disallowedInboxNotifications,
       emailDigest,
       theme,
       toursCompleted,
@@ -97,6 +99,10 @@ export default withAuth({
 
     if (disallowedPushNotifications !== undefined) {
       setObjUser['disallowedPushNotifications'] = disallowedPushNotifications;
+    }
+
+    if (disallowedInboxNotifications !== undefined) {
+      setObjUser['disallowedInboxNotifications'] = disallowedInboxNotifications;
     }
 
     // check if setObj is blank

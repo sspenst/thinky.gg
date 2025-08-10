@@ -6,7 +6,8 @@ export default apiWrapper({
   GET: {}
 }, async (req: NextApiRequestWrapper, res: NextApiResponse) => {
   const clientId = process.env.DISCORD_CLIENT_ID;
-  const redirectUri = process.env.DISCORD_REDIRECT_URI || `${req.headers.origin}/api/auth/discord/callback`;
+
+  const redirectUri = process.env.DISCORD_REDIRECT_URI || `${req.headers.origin ?? 'http://localhost:3000'}/api/auth/discord/callback`;
 
   if (!clientId) {
     res.status(500).json({ error: 'Discord client ID not configured' });

@@ -1,6 +1,5 @@
 import { DEFAULT_GAME_ID, GameId } from '@root/constants/GameId';
 import { Games } from '@root/constants/Games';
-import NotificationType from '@root/constants/notificationType';
 import UserConfig from '@root/models/db/userConfig';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
@@ -321,15 +320,7 @@ describe('pages/api/signup', () => {
         expect(config).toBeDefined();
         expect(config.gameId).toBe(DEFAULT_GAME_ID);
 
-        const disallowedEmailNotifications = [
-          NotificationType.NEW_FOLLOWER,
-          NotificationType.NEW_LEVEL,
-          NotificationType.NEW_LEVEL_ADDED_TO_COLLECTION,
-          NotificationType.NEW_RECORD_ON_A_LEVEL_YOU_SOLVED,
-          NotificationType.NEW_REVIEW_ON_YOUR_LEVEL,
-        ];
-
-        expect(db.disallowedEmailNotifications.sort()).toStrictEqual(disallowedEmailNotifications);
+        expect(db.disallowedEmailNotifications.sort()).toStrictEqual([]);
         expect(db.disallowedPushNotifications).toStrictEqual([]);
       },
     });

@@ -66,14 +66,37 @@ export async function broadcastMatches(gameId: GameId, emitter: Emitter) {
 export async function scheduleBroadcastMatch(gameId: GameId, emitter: Emitter, matchId: string) {
   const match = await MultiplayerMatchModel.findOne({ matchId: matchId });
 
+  if (!match) {
+    logger.error(`scheduleBroadcastMatch: Could not find match ${matchId}`);
+    return;
+  }
+
+  // Clear any existing timers for this match
+  if (GlobalMatchTimers[matchId]) {
+    clearTimeout(GlobalMatchTimers[matchId].start);
+    clearTimeout(GlobalMatchTimers[matchId].end);
+  }
+
+  const now = Date.now();
+  const startTime = new Date(match.startTime).getTime();
+  const endTime = new Date(match.endTime).getTime();
+  
+  const timeUntilStart = Math.max(0, startTime - now + 1);
+  const timeUntilEnd = Math.max(0, endTime - now + 1);
+
+  logger.info(`Scheduling match ${matchId}: start in ${timeUntilStart}ms, end in ${timeUntilEnd}ms`);
+
   const timeoutStart = setTimeout(async () => {
+    logger.info(`Match ${matchId} start timeout triggered`);
     await checkForUnreadyAboutToStartMatch(matchId);
     await broadcastMatch(gameId, emitter, matchId);
-  }, 1 + new Date(match.startTime).getTime() - Date.now()); // @TODO: the +1 is kind of hacky, we need to make sure websocket server and mongodb are on same time
+  }, timeUntilStart);
+  
   const timeoutEnd = setTimeout(async () => {
+    logger.info(`Match ${matchId} end timeout triggered`);
     await checkForFinishedMatch(matchId);
     await broadcastMatch(gameId, emitter, matchId);
-  }, 1 + new Date(match.endTime).getTime() - Date.now()); // @TODO: the +1 is kind of hacky, we need to make sure websocket server and mongodb are on same time
+  }, timeUntilEnd);
 
   GlobalMatchTimers[matchId] = {
     start: timeoutStart,

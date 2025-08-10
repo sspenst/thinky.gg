@@ -3,6 +3,7 @@ import getMobileNotification from '@root/helpers/getMobileNotification';
 import Device from '@root/models/db/device';
 import Notification from '@root/models/db/notification';
 import { DeviceModel } from '@root/models/mongoose';
+import { DeviceState } from '@root/models/schemas/deviceSchema';
 import admin from 'firebase-admin';
 
 /**
@@ -19,7 +20,7 @@ export async function sendPushNotification(gameId: GameId, notification: Notific
   }
 
   const notificationId = notification._id.toString();
-  const devices = await DeviceModel.find({ userId: notification.userId._id });
+  const devices = await DeviceModel.find({ userId: notification.userId._id, state: { $ne: DeviceState.INACTIVE } });
   let log = '';
 
   if (devices.length === 0) {
@@ -70,6 +71,55 @@ export async function sendPushNotification(gameId: GameId, notification: Notific
         },
       },
     });
+
+    // check if response is an error
+
+    /**
+     * [
+  "{\"responses\":[{\"success\":false,\"error\":{\"code\":\"messaging/registration-token-not-registered\",\"message\":\"Requested entity was not found.\"}},{\"success\":true,\"messageId\":\"projects/pathology-699c4/messages/1753373676192371\"}],\"successCount\":1,\"failureCount\":1}"
+]
+     */
+    // We should loop through the responses and check if the error code is "messaging/registration-token-not-registered", if so, we should update the device state to INACTIVE for the device that has the error
+    // Collect device IDs to update in bulk
+    const inactiveDeviceIds: typeof devices[0]['_id'][] = [];
+    const activeDeviceIds: typeof devices[0]['_id'][] = [];
+
+    res.responses.forEach((response, idx) => {
+      const device = devices[idx];
+
+      if (response.error?.code === 'messaging/registration-token-not-registered') {
+        if (device?._id) {
+          inactiveDeviceIds.push(device._id);
+        }
+      } else if (response.success && device?._id) {
+        activeDeviceIds.push(device._id);
+      }
+    });
+
+    const updatePromises = [];
+
+    if (inactiveDeviceIds.length > 0) {
+      updatePromises.push(
+        DeviceModel.updateMany(
+          { _id: { $in: inactiveDeviceIds } },
+          { $set: { state: DeviceState.INACTIVE } }
+        )
+      );
+    }
+
+    if (activeDeviceIds.length > 0) {
+      updatePromises.push(
+        DeviceModel.updateMany(
+          { _id: { $in: activeDeviceIds } },
+          { $set: { state: DeviceState.ACTIVE } }
+        )
+      );
+    }
+
+    if (updatePromises.length > 0) {
+      await Promise.all(updatePromises);
+    }
+
     const responseJSON = JSON.stringify(res);
 
     log = `${responseJSON}`;

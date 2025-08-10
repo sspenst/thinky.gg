@@ -1,4 +1,5 @@
 import { GameState } from '@root/helpers/gameStateHelpers';
+import { Redo, Undo } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import Control from '../models/control';
 
@@ -69,13 +70,13 @@ export default function useGameControls({
     );
 
     const undoTxt = isMobile ?
-      React.createElement('span', {}, '⟵') :
+      React.createElement('span', {}, React.createElement(Undo, { className: 'w-6 h-6' })) :
       React.createElement('div', {},
         React.createElement('span', { className: 'underline' }, 'U'), 'ndo'
       );
 
     const redoTxt = isMobile ?
-      React.createElement('span', {}, '⟶') :
+      React.createElement('span', {}, React.createElement(Redo, { className: 'w-6 h-6' })) :
       React.createElement('div', {},
         'Redo (', React.createElement('span', { className: 'underline' }, 'Y'), ')'
       );
@@ -138,7 +139,7 @@ export default function useGameControls({
     } else {
       setControls(_controls);
     }
-  }, [extraControls, gameState.redoStack.length, onKeyDown, isMobile, onNext, onPrev, isPro]);
+  }, [extraControls, gameState.redoStack.length, onKeyDown, isMobile, onNext, onPrev, isPro, gameState.moves.length]);
 
   return {
     controls,

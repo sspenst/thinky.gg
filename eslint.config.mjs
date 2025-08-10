@@ -61,7 +61,8 @@ const eslintConfig = [...compat.extends(
     'import/first': 'warn',
     'import/newline-after-import': 'warn',
     'import/no-duplicates': 'warn',
-    indent: ['warn', 2],
+    // Temporarily disabled due to stack overflow in achievementsBrowser.tsx
+    // indent: ['warn', 2],
     'jsx-quotes': ['warn', 'prefer-single'],
     'key-spacing': ['warn', {
       beforeColon: false,
@@ -96,7 +97,8 @@ const eslintConfig = [...compat.extends(
     }],
     quotes: ['warn', 'single'],
     // TODO: 'react/jsx-indent': ['warn', 2, { checkAttributes: true, indentLogicalExpressions: true }],
-    'react/jsx-newline': ['warn', { 'prevent': true }],
+    // Disabled due to circular fix conflicts with other spacing rules
+    // 'react/jsx-newline': ['warn', { 'prevent': true }],
     'react/jsx-tag-spacing': ['warn', {
       beforeSelfClosing: 'always',
     }],

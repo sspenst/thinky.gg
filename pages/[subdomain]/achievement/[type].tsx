@@ -13,6 +13,7 @@ import { GameId } from '@root/constants/GameId';
 import { Games } from '@root/constants/Games';
 import { AppContext } from '@root/contexts/appContext';
 import { getRarityColor, getRarityFromStats, getRarityText, getRarityTooltip } from '@root/helpers/achievementRarity';
+import { countUsersWhoCompletedOneLevel } from '@root/helpers/countUsersWhoCompletedOneLevel';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import cleanUser from '@root/lib/cleanUser';
 import dbConnect from '@root/lib/dbConnect';
@@ -84,8 +85,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
         }
       }
     ]),
-    // Get total count of users
-    UserModel.countDocuments({}),
+    // Get total count of active users (users with calcLevelsCompletedCount > 0)
+    countUsersWhoCompletedOneLevel(),
   ]);
 
   const totalAchievementCount = allAchievementsData[0]?.totalCount[0]?.count || 0;
@@ -260,7 +261,7 @@ export default function AchievementPage({
             createdAt={displayAchievement?.createdAt}
             unlocked={!!displayAchievement}
           />
-          
+
           {/* Rarity Display */}
           <div className='flex items-center gap-4 text-center'>
             <div className='bg-2 rounded-lg px-4 py-2 border border-color-3'>

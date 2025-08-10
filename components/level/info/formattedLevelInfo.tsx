@@ -5,7 +5,6 @@ import FormattedLevelReviews from '@root/components/level/reviews/formattedLevel
 import StyledTooltip from '@root/components/page/styledTooltip';
 import { GameType } from '@root/constants/Games';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
-import isPro from '@root/helpers/isPro';
 import Image from 'next/image';
 import Link from 'next/link';
 import React, { useContext, useState } from 'react';
@@ -113,14 +112,7 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
             <span data-tooltip-id='difficulty-tooltip' data-tooltip-content={tooltipTable[difficultyType]} className='text-xs italic'>{difficultyType} Difficulty</span>
           </div>
           <div className='text-sm flex pt-0.5 gap-2 items-center'>
-            {isPro(user) ?
-              <FormattedDifficulty id='formatted-level-info-other' level={level} difficultyField={otherDifficultyField} />
-              :
-              <Link className='flex gap-2 italic' href='/pro'>
-                <span>Unlock Pro</span>
-                <Image alt='pro' src='/pro.svg' width='16' height='16' />
-              </Link>
-            }
+            <FormattedDifficulty id='formatted-level-info-other' level={level} difficultyField={otherDifficultyField} />
             <span data-tooltip-id='difficulty-tooltip-other' data-tooltip-content={tooltipTable[otherDifficultyType]} className='text-xs italic'>{otherDifficultyType} Difficulty</span>
             <StyledTooltip id='difficulty-tooltip-other' />
           </div>

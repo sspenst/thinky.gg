@@ -14,6 +14,7 @@ import { MultiplayerMatchState } from '../../models/constants/multiplayer';
 import { MultiplayerMatchModel } from '../../models/mongoose';
 import { enrichMultiplayerMatch } from '../../models/schemas/multiplayerMatchSchema';
 import { broadcastConnectedPlayers, broadcastCountOfUsersInRoom, broadcastMatches, broadcastMatchGameState, broadcastNotifications, broadcastPrivateAndInvitedMatches, scheduleBroadcastMatch } from './socketFunctions';
+import { isRateLimited } from './rateLimiter';
 
 'use strict';
 
@@ -54,6 +55,15 @@ let GlobalSocketIO: Server;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function authenticateSocket(socket: any, next: (err?: Error) => void) {
+  // Rate limit based on IP address
+  const clientIp = socket.handshake.address || socket.request.connection.remoteAddress;
+  const identifier = clientIp;
+
+  if (isRateLimited(identifier)) {
+    logger.warn(`Blocking connection from ${identifier} due to rate limiting`);
+    return next(new Error('Rate limit exceeded. Please wait before reconnecting.'));
+  }
+
   const cookies = socket.handshake.headers.cookie;
 
   if (!cookies) {
@@ -159,6 +169,23 @@ export default async function startSocketIOServer(server: Server) {
       }
     });
 
+    socket.on('disconnecting', async () => {
+      const userId = socket.data.userId as Types.ObjectId;
+
+      if (!userId) {
+        return;
+      }
+
+      // Get the rooms this socket was in (excluding personal room and socket.id)
+      // Use 'disconnecting' event so we can access rooms before they're cleared
+      const rooms = Array.from(socket.rooms).filter(room => 
+        room !== socket.id && room !== userId.toString() && !room.startsWith('LOBBY-')
+      );
+
+      // Store rooms for later use in disconnect event
+      socket.data.roomsOnDisconnect = rooms;
+    });
+
     socket.on('disconnect', async () => {
       const userId = socket.data.userId as Types.ObjectId;
 
@@ -166,9 +193,14 @@ export default async function startSocketIOServer(server: Server) {
         return;
       }
 
+      // Use the rooms we stored during 'disconnecting' event
+      const rooms = socket.data.roomsOnDisconnect || [];
+
       await Promise.all([
         broadcastConnectedPlayers(gameId, adapted),
         broadcastMatches(gameId, mongoEmitter),
+        // Broadcast updated counts for any match rooms the user was in
+        ...rooms.map((matchId: string) => broadcastCountOfUsersInRoom(gameId, adapted, matchId))
       ]);
     });
 

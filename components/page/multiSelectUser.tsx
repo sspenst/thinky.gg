@@ -52,8 +52,14 @@ export default function MultiSelectUser({ className, controlStyles, defaultValue
       DropdownIndicator: null,
       IndicatorSeparator: null,
     }}
-    formatOptionLabel={(option: any) => (
-      <FormattedUser id='select' noLinks noTooltip size={Dimensions.AvatarSizeSmall} user={option} />
+    formatOptionLabel={(option: any, { context }: any) => (
+      <div style={{
+        animation: context === 'menu' ? 'fadeIn 0.1s ease-out' : 'none',
+        animationDelay: context === 'menu' ? `${(options.findIndex((opt: any) => opt._id === option._id) * 0.02)}s` : '0s',
+        animationFillMode: 'both'
+      }}>
+        <FormattedUser id='select' noLinks noTooltip size={Dimensions.AvatarSizeSmall} user={option} />
+      </div>
     )}
     getOptionLabel={(option: any) => option.name}
     getOptionValue={(option: any) => option._id.toString()}
@@ -79,21 +85,24 @@ export default function MultiSelectUser({ className, controlStyles, defaultValue
     }}
     options={options} // Options to display in the dropdown
     placeholder={placeholder ? placeholder : 'Search users...'}
-    // https://react-select.com/styles
+    // https://react-select.com/styles - Updated with glassmorphism theme
     styles={{
       control: (provided: any, state: any) => ({
         ...provided,
-        backgroundColor: 'var(--bg-color)',
-        borderColor: state.isFocused ? 'rgb(59 130 246)' : 'var(--bg-color-3)',
-        borderRadius: '0.25rem',
+        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+        backdropFilter: 'blur(10px)',
+        borderColor: state.isFocused ? 'rgba(139, 92, 246, 0.5)' : 'rgba(255, 255, 255, 0.2)',
+        borderRadius: '0.75rem',
         borderWidth: '1px',
-        boxShadow: 'none',
+        boxShadow: state.isFocused ? '0 0 0 2px rgba(139, 92, 246, 0.2)' : 'none',
         cursor: 'text',
         height: 44,
         maxWidth: '100%',
         minWidth: '100%',
+        transition: 'all 0.2s ease',
         '&:hover': {
-          borderColor: undefined,
+          borderColor: 'rgba(255, 255, 255, 0.3)',
+          backgroundColor: 'rgba(255, 255, 255, 0.15)',
         },
         ...controlStyles,
       }),
@@ -103,42 +112,54 @@ export default function MultiSelectUser({ className, controlStyles, defaultValue
       }),
       dropdownIndicator: (provided: any) => ({
         ...provided,
-        color: 'var(--color)',
-        // change to search icon
+        color: 'rgba(255, 255, 255, 0.7)',
         '&:hover': {
-          color: 'var(--color)',
+          color: 'rgba(255, 255, 255, 0.9)',
         },
       }),
       input: (provided: any) => ({
         ...provided,
-        color: 'var(--color)',
+        color: 'white',
       }),
       menu: (provided: any) => ({
         ...provided,
-        backgroundColor: 'var(--bg-color-2)',
-        borderColor: 'var(--bg-color-4)',
-        borderRadius: '0.25rem',
+        backgroundColor: 'rgba(30, 41, 59, 0.95)',
+        backdropFilter: 'blur(20px)',
+        borderColor: 'rgba(255, 255, 255, 0.2)',
+        borderRadius: '0.75rem',
         borderWidth: '1px',
-        marginTop: '2px',
+        marginTop: '4px',
+        boxShadow: '0 10px 32px rgba(0, 0, 0, 0.3)',
+        zIndex: 9999,
+        animation: 'fadeInDown 0.2s ease-out',
       }),
       option: (provided: any, state: any) => ({
         ...provided,
-        backgroundColor: state.isSelected ? 'var(--bg-color-3)' : 'var(--bg-color-2)',
-        color: 'var(--color)',
+        backgroundColor: state.isSelected
+          ? 'rgba(139, 92, 246, 0.3)'
+          : state.isFocused
+            ? 'rgba(255, 255, 255, 0.1)'
+            : 'transparent',
+        color: 'white',
         '&:hover': {
-          backgroundColor: 'var(--bg-color-3)',
+          backgroundColor: 'rgba(255, 255, 255, 0.15)',
         },
         overflow: 'hidden',
         textOverflow: 'ellipsis',
         whiteSpace: 'nowrap',
+        padding: '12px 16px',
+        transition: 'all 0.2s ease',
+        animation: 'fadeInUp 0.15s ease-out',
+        animationDelay: `${(provided.index || 0) * 0.03}s`,
+        animationFillMode: 'both',
       }),
       placeholder: (provided: any) => ({
         ...provided,
-        color: 'var(--color-gray)',
+        color: 'rgba(255, 255, 255, 0.6)',
       }),
       singleValue: (provided: any) => ({
         ...provided,
-        color: 'var(--color)',
+        color: 'white',
       }),
     }}
     value={value}

@@ -322,6 +322,6 @@ describe('Worker test', () => {
     // expect logger error to be called exactly once
 
     await processQueueMessages();
-    expect(logger.error).toBeCalledTimes(1);
+    expect(logger.error).toHaveBeenCalledTimes(1);
   });
 });

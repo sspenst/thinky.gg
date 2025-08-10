@@ -9,6 +9,7 @@ import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'r
 import { renderToStaticMarkup } from 'react-dom/server';
 import getProfileSlug from '../../helpers/getProfileSlug';
 import User from '../../models/db/user';
+import { getStreakRankIndex, STREAK_RANK_GROUPS } from '../counters/AnimateCounterOne';
 import GameLogoAndLabel from '../gameLogoAndLabel';
 import LoadingSpinner from '../page/loadingSpinner';
 import RoleIcons from '../page/roleIcons';
@@ -117,7 +118,9 @@ export default function FormattedUser({ className, hideAvatar, id, noLinks, noTo
       setShowTooltip(true);
     }, 200);
   }, []);
-
+  const userConfig = user?.config;
+  const streak = userExtendedData?.user.config?.calcCurrentStreak;
+  const streakRank = streak && streak > 0 && STREAK_RANK_GROUPS[getStreakRankIndex(streak)];
   const tooltipContent = useMemo(() => {
     if (!userExtendedData || !user) return renderToStaticMarkup(<LoadingSpinner />);
 
@@ -130,21 +133,25 @@ export default function FormattedUser({ className, hideAvatar, id, noLinks, noTo
           />
         }
         {!game.isNotAGame && !game.disableRanked &&
+        userExtendedData.user.config?.calcRankedSolves && userExtendedData.user.config?.calcRankedSolves > 0 &&
         <div className='flex gap-1'>
           <span className='font-medium'>Ranked Solves:</span>
-          <span className='gray'>{userExtendedData.user.config?.calcRankedSolves ?? 0} 🏅</span>
+          <span className='gray'>{userExtendedData.user.config?.calcRankedSolves} 🏅</span>
         </div>
         }
-        { userExtendedData.user.config?.calcCurrentStreak && userExtendedData.user.config?.calcCurrentStreak > 0 &&
+        {streak && streak > 0 &&
         <div className='flex gap-1'>
           <span className='font-medium'>{game.displayName} Streak</span>
-          <span className='gray'>{userExtendedData.user.config?.calcCurrentStreak ?? 0} days</span>
+          <span className='gray'>
+            {streak} days {streakRank ? streakRank.emoji : ''}
+          </span>
         </div>
         }
         {!game.isNotAGame &&
+        userExtendedData.user.config?.calcLevelsSolvedCount && userExtendedData.user.config?.calcLevelsSolvedCount > 0 &&
         <div className='flex gap-1'>
           <span className='font-medium'>Levels Solved:</span>
-          <span className='gray'>{userExtendedData.user.config?.calcLevelsSolvedCount ?? 0}</span>
+          <span className='gray'>{userExtendedData.user.config?.calcLevelsSolvedCount}</span>
         </div>
         }
         {!game.isNotAGame &&

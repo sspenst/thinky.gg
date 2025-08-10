@@ -34,8 +34,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   return {
     props: {
       stripeCustomerPortalLink: process.env.STRIPE_CUSTOMER_PORTAL,
-      stripePaymentLink: game.stripePaymentLinkMonthly,
-      stripePaymentYearlyLink: game.stripePaymentLinkYearly,
+      stripePaymentLink: game.stripePaymentLinkMonthly ?? '',
+      stripePaymentYearlyLink: game.stripePaymentLinkYearly ?? '',
     } as SettingsProps,
   };
 }

@@ -1,8 +1,10 @@
 import { GameId } from '@root/constants/GameId';
 import { Types } from 'mongoose';
 import NotificationType from '../../constants/notificationType';
+import Achievement from './achievement';
 import Collection from './collection';
-import { EnrichedLevel } from './level';
+import Level, { EnrichedLevel } from './level';
+import MultiplayerMatch from './multiplayerMatch';
 import User from './user';
 
 interface Notification {
@@ -12,10 +14,10 @@ interface Notification {
   message?: string;
   read: boolean;
   // the object that initiates the notification
-  source: User | Achievement | null;
+  source: User | Achievement | Level | null;
   sourceModel: string;
   // the object that the notification is about
-  target: User | EnrichedLevel | Collection;
+  target: User | EnrichedLevel | Collection | MultiplayerMatch;
   targetModel: string;
   type: NotificationType;
   updatedAt: Date;

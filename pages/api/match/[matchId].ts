@@ -14,14 +14,18 @@ import User from '@root/models/db/user';
 import { PipelineStage } from 'mongoose';
 import { NextApiResponse } from 'next';
 import { DIFFICULTY_INDEX } from '../../../components/formatted/formattedDifficulty';
-import { ValidEnum } from '../../../helpers/apiWrapper';
+import NotificationType from '../../../constants/notificationType';
+import { ValidEnum, ValidType } from '../../../helpers/apiWrapper';
+import { checkIfBlocked } from '../../../helpers/getBlockedUserIds';
+import { createMultiplayerInviteNotification } from '../../../helpers/notificationHelper';
 import { requestBroadcastMatch, requestBroadcastMatches, requestBroadcastPrivateAndInvitedMatches, requestScheduleBroadcastMatch } from '../../../lib/appSocketToClient';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { MatchAction, MultiplayerMatchState, MultiplayerMatchType, MultiplayerMatchTypeDurationMap } from '../../../models/constants/multiplayer';
 import Level from '../../../models/db/level';
 import MultiplayerMatch from '../../../models/db/multiplayerMatch';
-import { LevelModel, MultiplayerMatchModel, UserModel } from '../../../models/mongoose';
-import { enrichMultiplayerMatch, generateMatchLog } from '../../../models/schemas/multiplayerMatchSchema';
+import { LevelModel, MultiplayerMatchModel, NotificationModel, UserModel } from '../../../models/mongoose';
+import { createMatchEventMessage, createUserActionMessage, enrichMultiplayerMatch, generateMatchLog } from '../../../models/schemas/multiplayerMatchSchema';
+import { isChatRateLimited } from '../../../server/socket/chatRateLimiter';
 
 export default withAuth(
   {
@@ -31,9 +35,15 @@ export default withAuth(
         action: ValidEnum([
           MatchAction.JOIN,
           MatchAction.MARK_READY,
+          MatchAction.UNMARK_READY,
           MatchAction.QUIT,
           MatchAction.SKIP_LEVEL,
+          MatchAction.SEND_CHAT_MESSAGE,
+          MatchAction.INVITE_USER,
         ]),
+        invitedUserId: ValidType('string', false),
+        levelId: ValidType('string', false),
+        message: ValidType('string', false),
       },
     },
   },
@@ -49,31 +59,186 @@ export default withAuth(
 
       return res.status(200).json(match);
     } else if (req.method === 'PUT') {
-      const { action, levelId } = req.body;
+      const { action, message } = req.body;
 
       if (action === MatchAction.MARK_READY) {
-        const updateMatch = await MultiplayerMatchModel.findOneAndUpdate(
-          {
-            matchId: matchId,
-            players: req.user._id,
-            state: MultiplayerMatchState.ACTIVE,
-            startTime: {
-              $gte: new Date(), // has not started yet but about to start
-            }
-          },
-          {
-            $addToSet: { markedReady: req.user._id },
-          },
-          { new: true }
-        );
+        const match = await MultiplayerMatchModel.findOne({
+          matchId: matchId,
+          players: req.user._id,
+          state: MultiplayerMatchState.ACTIVE,
+          startTime: {
+            $gte: new Date(), // has not started yet but about to start
+          }
+        });
 
-        if (updateMatch.length === 0) {
+        if (!match) {
           return res.status(400).json({
             error: 'Cannot mark yourself ready in this match',
           });
         }
 
-        await requestBroadcastMatch(updateMatch.gameId, matchId as string);
+        let updatedMatch = await MultiplayerMatchModel.findOneAndUpdate(
+          {
+            matchId: matchId,
+            players: req.user._id,
+            state: MultiplayerMatchState.ACTIVE,
+            startTime: {
+              $gte: new Date(),
+            }
+          },
+          {
+            $addToSet: { markedReady: req.user._id },
+            $push: {
+              chatMessages: createUserActionMessage('is ready!', req.user._id.toString(), req.user.name)
+            },
+          },
+          { new: true }
+        ).populate('players winners levels createdBy').lean<MultiplayerMatch>();
+
+        // Check if all players are ready
+
+        if (updatedMatch && updatedMatch.markedReady.length === updatedMatch.players.length) {
+          // All players ready, start the match in 3 seconds
+          const newStartTime = new Date(Date.now() + 3000);
+          const newEndTime = new Date(
+            newStartTime.getTime() + MultiplayerMatchTypeDurationMap[updatedMatch.type as MultiplayerMatchType]
+          );
+
+          // If levels are not yet generated, generate them now that both players are ready
+            const level0s = generateLevels(
+              updatedMatch.gameId,
+              DIFFICULTY_INDEX.KINDERGARTEN,
+              DIFFICULTY_INDEX.ELEMENTARY,
+              {
+                minSteps: 6,
+                maxSteps: 25,
+                minLaplace: 0.5,
+              },
+              10
+            );
+            const level1s = generateLevels(
+              updatedMatch.gameId,
+              DIFFICULTY_INDEX.JUNIOR_HIGH,
+              DIFFICULTY_INDEX.HIGH_SCHOOL,
+              {},
+              20
+            );
+            const level2s = generateLevels(
+              updatedMatch.gameId,
+              DIFFICULTY_INDEX.BACHELORS,
+              DIFFICULTY_INDEX.PROFESSOR,
+              {},
+              5
+            );
+            const level3s = generateLevels(
+              updatedMatch.gameId,
+              DIFFICULTY_INDEX.PHD,
+              DIFFICULTY_INDEX.SUPER_GRANDMASTER,
+              {},
+              5
+            );
+
+            const [l0, l1, l2, l3] = await Promise.all([level0s, level1s, level2s, level3s]);
+
+            // Dedupe these level ids
+            const dedupedLevels = new Set([...l0, ...l1, ...l2, ...l3]);
+
+            if (dedupedLevels.size < 40) {
+              // Fallback to any levels to ensure we have enough
+              const level4s = await LevelModel.find<Level[]>(
+                {
+                  isDraft: { $ne: true },
+                  isDeleted: { $ne: true },
+                  gameId: updatedMatch.gameId,
+                },
+                { _id: 1 },
+                { limit: 40 - dedupedLevels.size }
+              ).lean<Level[]>();
+
+              level4s.forEach((level) => dedupedLevels.add(level));
+            }
+
+            // Update match with levels and initialize gameTable
+            const matchUrl = `${req.headers.origin}/match/${matchId}`;
+            const game = getGameFromId(updatedMatch.gameId);
+            const discordChannel = game.id === GameId.SOKOPATH ? DiscordChannel.SokopathMultiplayer : DiscordChannel.PathologyMultiplayer;
+            const discordMessage = `*${multiplayerMatchTypeToText(updatedMatch.type)}* match starting between ${updatedMatch.players
+              ?.map((p) => `**${(p as User).name}**`)
+              .join(' and ')}! [Spectate here](<${matchUrl}>)`;
+
+              console.log('generating with levels ', dedupedLevels, matchId);
+            const [updatedMatch2, ] = await Promise.all([
+              MultiplayerMatchModel.findOneAndUpdate(
+                { matchId: matchId },
+                {
+                  startTime: newStartTime,
+                  endTime: newEndTime,
+                  $push: {
+                    chatMessages: createMatchEventMessage('Match starting in 3 seconds!'),
+                  },
+                  levels: [...dedupedLevels].map((level: Level) => level._id),
+                  gameTable: {
+                    [updatedMatch.players[0]._id.toString()]: [],
+                    [updatedMatch.players[1]._id.toString()]: [],
+                  },
+                }, {
+                  new: true
+                }
+              ),
+              // Only announce if not private
+              updatedMatch.private && Promise.resolve(),
+              !updatedMatch.private && queueDiscordWebhook(discordChannel, discordMessage),
+            ]);
+
+          // Update the match object with new times for broadcasting
+          updatedMatch = updatedMatch2;
+          await requestScheduleBroadcastMatch(updatedMatch2.gameId, matchId as string);
+        }
+
+        // Clean and enrich the match before broadcasting
+        if (updatedMatch) {
+          updatedMatch.players.forEach(player => cleanUser(player as User));
+          updatedMatch.winners.forEach(winner => cleanUser(winner as User));
+          cleanUser(updatedMatch.createdBy as User);
+          enrichMultiplayerMatch(updatedMatch, req.userId);
+          await requestBroadcastMatch(updatedMatch.gameId, matchId as string);
+        }
+
+        return res.status(200).json({ success: true });
+      } else if (action === MatchAction.UNMARK_READY) {
+        const updatedMatch = await MultiplayerMatchModel.findOneAndUpdate(
+          {
+            matchId: matchId,
+            players: req.user._id,
+            state: MultiplayerMatchState.ACTIVE,
+            startTime: {
+              $gte: new Date(), // has not started yet
+            }
+          },
+          {
+            $pull: { markedReady: req.user._id },
+            $push: {
+              chatMessages: createUserActionMessage('is no longer ready.', req.user._id.toString(), req.user.name)
+            },
+          },
+          { new: true }
+        ).populate('players winners levels createdBy').lean<MultiplayerMatch>();
+
+        if (!updatedMatch) {
+          return res.status(400).json({
+            error: 'Cannot unmark yourself ready in this match',
+          });
+        }
+
+        // Clean and enrich the match before broadcasting
+        if (updatedMatch) {
+          updatedMatch.players.forEach(player => cleanUser(player as User));
+          updatedMatch.winners.forEach(winner => cleanUser(winner as User));
+          cleanUser(updatedMatch.createdBy as User);
+          enrichMultiplayerMatch(updatedMatch, req.userId);
+        }
+
+        await requestBroadcastMatch(updatedMatch.gameId, matchId as string);
 
         return res.status(200).json({ success: true });
       } else if (action === MatchAction.JOIN) {
@@ -122,9 +287,11 @@ export default withAuth(
             $push: {
               players: req.user._id,
               matchLog: log,
+              chatMessages: createUserActionMessage('joined the match!', req.user._id.toString(), req.user.name),
             },
-            startTime: Date.now() + 15000, // start 15 seconds into the future...
-            endTime: Date.now() + 15000 + MultiplayerMatchTypeDurationMap[match.type as MultiplayerMatchType], // end 3 minute after start
+            // Set a far future start time as placeholder until all players ready
+            startTime: Date.now() + 600000, // 10 minutes in the future as placeholder
+            endTime: Date.now() + 600000 + MultiplayerMatchTypeDurationMap[match.type as MultiplayerMatchType],
             state: MultiplayerMatchState.ACTIVE,
           },
           { new: true }
@@ -190,81 +357,7 @@ export default withAuth(
 
         const populatedMatch = matchPopulated[0];
 
-        if (populatedMatch.players.length === 2) {
-          const level0s = generateLevels(
-            populatedMatch.gameId,
-            DIFFICULTY_INDEX.KINDERGARTEN,
-            DIFFICULTY_INDEX.ELEMENTARY,
-            {
-              minSteps: 6,
-              maxSteps: 25,
-              minLaplace: 0.5,
-            },
-            10
-          );
-          const level1s = generateLevels(
-            populatedMatch.gameId,
-            DIFFICULTY_INDEX.JUNIOR_HIGH,
-            DIFFICULTY_INDEX.HIGH_SCHOOL,
-            {},
-            20
-          );
-          const level2s = generateLevels(
-            populatedMatch.gameId,
-            DIFFICULTY_INDEX.BACHELORS,
-            DIFFICULTY_INDEX.PROFESSOR,
-            {},
-            5
-          );
-          const level3s = generateLevels(
-            populatedMatch.gameId,
-            DIFFICULTY_INDEX.PHD,
-            DIFFICULTY_INDEX.SUPER_GRANDMASTER,
-            {},
-            5
-          );
-
-          const [l0, l1, l2, l3] = await Promise.all([
-            level0s,
-            level1s,
-            level2s,
-            level3s,
-          ]);
-
-          // dedupe these level ids, just in case though it should be extremely rare
-          const dedupedLevels = new Set([...l0, ...l1, ...l2, ...l3]);
-
-          if (dedupedLevels.size < 40) {
-            // we don't have enough levels, so try and query any levels at all...
-            // @TODO: Remove this when games have enough levels
-            const level4s = await LevelModel.find<Level[]>({
-              isDraft: { $ne: true },
-              isDeleted: { $ne: true },
-              gameId: populatedMatch.gameId }, { _id: 1 }, { limit: 40 - dedupedLevels.size }).lean<Level[]>();
-
-            level4s.forEach(level => dedupedLevels.add(level));
-          }
-
-          // add levels to match
-          const matchUrl = `${req.headers.origin}/match/${matchId}`;
-          const game = getGameFromId(populatedMatch.gameId);
-          const discordChannel = game.id === GameId.SOKOPATH ? DiscordChannel.SokopathMultiplayer : DiscordChannel.PathologyMultiplayer;
-          const discordMessage = `*${multiplayerMatchTypeToText(match.type)}* match starting between ${populatedMatch.players?.map(p => `**${p.name}**`).join(' and ')}! [Spectate here](<${matchUrl}>)`;
-
-          Promise.all([
-            MultiplayerMatchModel.updateOne(
-              { matchId: matchId },
-              {
-                levels: [...dedupedLevels].map((level: Level) => level._id),
-                gameTable: {
-                  [populatedMatch.players[0]._id.toString()]: [],
-                  [populatedMatch.players[1]._id.toString()]: [],
-                },
-              }
-            ),
-            !match.private && queueDiscordWebhook(discordChannel, discordMessage),
-          ]);
-        }
+        // Defer level generation until both players are marked ready
 
         // cleanUser for players, winners
         populatedMatch.players.map(player => cleanUser(player as User));
@@ -290,16 +383,145 @@ export default withAuth(
 
         return res.status(200).json(updatedMatch);
       } else if (action === MatchAction.SKIP_LEVEL) {
-        // skipping level
+        // skipping level (always skips the current level)
         const result = await matchMarkSkipLevel(
           req.user._id,
-          matchId as string,
-          levelId,
+          matchId as string
         );
 
-        return result
-          ? res.status(200).json({ success: true })
-          : res.status(400).json({ error: 'Already used skip' });
+        if (!result) {
+          return res.status(400).json({ error: 'Already used skip' });
+        }
+
+        // The match is already broadcast by matchMarkSkipLevel
+        // Just need to ensure we return success
+        return res.status(200).json({ success: true });
+      } else if (action === MatchAction.SEND_CHAT_MESSAGE) {
+        // Validate message
+        if (!message || typeof message !== 'string' || message.trim().length === 0) {
+          return res.status(400).json({ error: 'Message is required' });
+        }
+
+        if (message.length > 200) {
+          return res.status(400).json({ error: 'Message too long' });
+        }
+
+        // Check chat rate limiting
+        if (isChatRateLimited(req.user._id.toString())) {
+          return res.status(429).json({ error: 'You are sending messages too quickly. Please wait before sending another message.' });
+        }
+
+        // Note: Room count check is handled on the frontend since the socket server runs separately
+        // and we can't reliably access its state from the API routes
+
+        // Add chat message to match (allow spectators too)
+        const updatedMatch = await MultiplayerMatchModel.findOneAndUpdate(
+          {
+            matchId: matchId,
+          },
+          {
+            $push: {
+              chatMessages: {
+                userId: req.user._id,
+                message: message.trim(),
+                createdAt: new Date(),
+              },
+            },
+          },
+          { new: true }
+        ).lean<MultiplayerMatch>();
+
+        if (!updatedMatch) {
+          return res.status(400).json({ error: 'Cannot send message to this match' });
+        }
+
+        // Broadcast the match update so players see the new message
+        await requestBroadcastMatch(updatedMatch.gameId, matchId as string);
+
+        return res.status(200).json({ success: true, messageCount: updatedMatch.chatMessages?.length });
+      } else if (action === MatchAction.INVITE_USER) {
+        const { invitedUserId } = req.body;
+
+        console.log('INVITE_USER action triggered');
+        console.log('invitedUserId:', invitedUserId);
+        console.log('matchId:', matchId);
+
+        if (!invitedUserId) {
+          return res.status(400).json({ error: 'invitedUserId is required' });
+        }
+
+        // Check if match exists and is joinable (OPEN state, has space)
+        const match = await MultiplayerMatchModel.findOne({
+          matchId: matchId,
+          state: MultiplayerMatchState.OPEN,
+          players: { $size: 1 }, // Only creator present
+          createdBy: req.user._id, // Only match creator can invite
+        }).lean<MultiplayerMatch>();
+
+        console.log('Match found:', !!match);
+
+        if (match) {
+          console.log('Match state:', match.state);
+          console.log('Player count:', match.players.length);
+          console.log('Created by:', match.createdBy._id?.toString());
+          console.log('Current user:', req.user._id.toString());
+        }
+
+        if (!match) {
+          return res.status(400).json({
+            error: 'Match not found or you do not have permission to invite users'
+          });
+        }
+
+        // Check if inviter is blocked by invitee or vice versa
+        const [inviterBlockedByInvitee, inviteeBlockedByInviter] = await Promise.all([
+          checkIfBlocked(invitedUserId, req.user._id.toString()),
+          checkIfBlocked(req.user._id.toString(), invitedUserId)
+        ]);
+
+        if (inviterBlockedByInvitee || inviteeBlockedByInviter) {
+          return res.status(400).json({ error: 'Cannot invite this user' });
+        }
+
+        // Check if invited user exists
+        const invitedUser = await UserModel.findById(invitedUserId).lean<User>();
+
+        if (!invitedUser) {
+          return res.status(400).json({ error: 'Invited user not found' });
+        }
+
+        // Check if invited user is already in the match
+        if (match.players.some(playerId => playerId.toString() === invitedUserId)) {
+          return res.status(400).json({ error: 'User is already in this match' });
+        }
+
+        // Check if there's already a pending invitation for this user to this match
+        const existingInvitation = await NotificationModel.findOne({
+          userId: invitedUserId,
+          type: NotificationType.MULTIPLAYER_INVITE,
+          message: match.matchId,
+          read: false, // Only check unread invitations
+        }).lean();
+
+        if (existingInvitation) {
+          return res.status(400).json({ error: 'User has already been invited to this match' });
+        }
+
+        // Create notification
+        try {
+          await createMultiplayerInviteNotification(
+            req.gameId,
+            req.user._id,
+            invitedUserId,
+            match.matchId
+          );
+
+          return res.status(200).json({ success: true });
+        } catch (error) {
+          console.error('Error creating multiplayer invite notification:', error);
+
+          return res.status(500).json({ error: 'Failed to send invitation' });
+        }
       }
     }
   }

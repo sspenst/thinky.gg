@@ -53,7 +53,6 @@ export default {
     }],
     'node_modules/(react-dnd|dnd-core|@react-dnd|react-dnd-html5-backend)/.+\\.(j|t)sx?$': 'ts-jest',
     '^.+\\.tsx$': ['ts-jest', {
-      isolatedModules: true,
       tsconfig: {
         // Updated to use the new JSX transform which doesn't require React imports
         jsx: 'react-jsx',
@@ -107,7 +106,7 @@ export default {
   globalTeardown: './tests/globalTeardown.ts',
 
   // The maximum amount of workers used to run your tests. Can be specified as % or a number. E.g. maxWorkers: 10% will use 10% of your CPU amount + 1 as the maximum worker number. maxWorkers: 2 will use a maximum of 2 workers.
-  maxWorkers: '100%',
+  maxWorkers: '50%',
 
   // An array of directory names to be searched recursively up from the requiring module's location
   // moduleDirectories: [

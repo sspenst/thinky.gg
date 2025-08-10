@@ -3,13 +3,20 @@ import { UserWithMultiplayerProfile } from '../models/db/user';
 import { getRatingFromProfile, isProvisional } from './multiplayerHelperFunctions';
 
 export default function sortByRating(a: UserWithMultiplayerProfile, b: UserWithMultiplayerProfile, type: MultiplayerMatchType) {
-  const aprofile = a.multiplayerProfile;
-  const bprofile = b.multiplayerProfile;
+  // Safety checks for undefined users
+  if (!a || !b) {
+    if (!a && !b) return 0;
+    if (!a) return 1;
+    if (!b) return -1;
+  }
+
+  const aprofile = a?.multiplayerProfile;
+  const bprofile = b?.multiplayerProfile;
 
   if (isProvisional(type, aprofile)) {
     // if both users are provisional, then sort by name
     if (isProvisional(type, bprofile)) {
-      return a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1;
+      return (a.name || '').toLowerCase() < (b.name || '').toLowerCase() ? -1 : 1;
     }
 
     // otherwise, sort a to the bottom

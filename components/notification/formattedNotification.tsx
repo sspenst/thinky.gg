@@ -140,6 +140,7 @@ export function NotificationMessage({ notification, onMarkAsRead }: Notification
       />
     </>);
   case NotificationType.NEW_LEVEL_ADDED_TO_COLLECTION:
+
     return (<>
       <FormattedLevelLink
         gameId={game.id}
@@ -148,7 +149,7 @@ export function NotificationMessage({ notification, onMarkAsRead }: Notification
         onClick={onMarkAsRead}
       />
       {' was added to the collection '}
-      <FormattedCollectionLink collection={notification.target as Collection} onClick={onMarkAsRead} />
+      <FormattedCollectionLink gameId={game.id} collection={notification.target as Collection} onClick={onMarkAsRead} />
     </>);
 
   case NotificationType.NEW_ACHIEVEMENT:
@@ -181,16 +182,56 @@ export function NotificationMessage({ notification, onMarkAsRead }: Notification
     const shortenedText = comment ? (comment.text.length > 10 ? comment.text.substring(0, 10) + '...' : comment.text) : '';
 
     return (<>
-      replied &quot;{shortenedText}&quot; to your <Link onClick={onMarkAsRead} className='underline' href={getProfileSlug(notification.target as User) + '?commentId=' + comment?._id}>message</Link> on {notification.target.name}&apos;s profile.
+      replied &quot;{shortenedText}&quot; to your <Link onClick={onMarkAsRead} className='underline' href={getProfileSlug(notification.target as User) + '?commentId=' + comment?._id}>message</Link> on {(notification.target as User)?.name}&apos;s profile.
     </>);
   }
 
   case NotificationType.UPGRADED_TO_PRO: {
-    const isGift = notification.source._id !== notification.target._id;
+    const isGift = notification.source && notification.source?._id !== notification.target._id;
 
     return (<>
       {isGift ? 'You received a gift of Pro!' : 'You just upgraded to Pro!'}
       <Link href='/pro' className='underline' onClick={onMarkAsRead}>Check it out!</Link>
+    </>);
+  }
+
+  case NotificationType.LEVEL_OF_DAY: {
+    return (<>
+      {notification.message}  <FormattedLevelLink
+        gameId={game.id}
+        id={`notification-${notification._id.toString()}`}
+        level={notification.source as EnrichedLevel}
+        onClick={onMarkAsRead}
+      />
+    </>);
+  }
+
+  case NotificationType.SCHEDULED_LEVEL_PUBLISHED: {
+    return (<>
+      {'Your scheduled level was published: '}
+      <FormattedLevelLink
+        gameId={game.id}
+        id={`notification-${notification._id.toString()}`}
+        level={notification.source as EnrichedLevel}
+        onClick={onMarkAsRead}
+      />
+    </>);
+  }
+
+  case NotificationType.MULTIPLAYER_INVITE: {
+    const baseUrl = getGameFromId(notification.gameId as GameId).baseUrl;
+    // For multiplayer invites, the matchId is stored in the message field
+    const matchId = notification.message;
+
+    return (<>
+      {'invited you to a multiplayer match! '}
+      <Link
+        onClick={onMarkAsRead}
+        className='underline font-bold'
+        href={`${baseUrl}/match/${matchId}`}
+      >
+        Join match
+      </Link>
     </>);
   }
 
@@ -228,7 +269,6 @@ export default function FormattedNotification({ close, notification, notificatio
         color: notification.read ? 'var(--color-gray)' : undefined,
       }}
     >
-
       <div className='flex flex-col gap-1 truncate'>
         <div className='flex flex-row items-center gap-2'>
           <GameLogo gameId={notification.gameId} id={notification._id.toString()} size={24} tooltip />

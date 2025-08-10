@@ -267,7 +267,7 @@ export async function createNewLevelNotifications(gameId: GameId, userIdWhoCreat
 
   // TODO: can probably generate all the ids in the above map and then wrap in a Promise.all
   const [nm,] = await Promise.all([
-    await NotificationModel.create(createRecords, options),
+    await NotificationModel.create(createRecords, { ...options, ...(options?.session && { ordered: true }) }),
     ...ids.map(id => queuePushNotification(id)),
   ]);
 
@@ -297,7 +297,7 @@ export async function createNewRecordOnALevelYouSolvedNotifications(gameId: Game
   });
 
   const [nm, ] = await Promise.all([
-    NotificationModel.create(createRecords, options),
+    NotificationModel.create(createRecords, { ...options, ...(options?.session && { ordered: true }) }),
     ...ids.map(id => queuePushNotification(id)),
   ]);
 
@@ -333,4 +333,48 @@ export async function clearNotifications(userId?: string | Types.ObjectId, sourc
   // TODO: should we loop through all queuemessages with the deletedIds and remove them? Maybe not necessary...
 
   return deleted;
+}
+
+export async function createScheduledLevelPublishedNotification(gameId: GameId, userId: Types.ObjectId, levelId: Types.ObjectId, levelName: string, options?: SaveOptions) {
+  const notificationId = new Types.ObjectId();
+
+  const [notification] = await Promise.all([
+    NotificationModel.create([{
+      _id: notificationId,
+      gameId: gameId,
+      message: levelName,
+      source: levelId,
+      sourceModel: 'Level',
+      type: NotificationType.SCHEDULED_LEVEL_PUBLISHED,
+      userId: userId,
+    }], options || {}),
+    queuePushNotification(notificationId),
+  ]);
+
+  await requestBroadcastNotifications(gameId, userId);
+
+  return notification[0];
+}
+
+export async function createMultiplayerInviteNotification(gameId: GameId, inviterUserId: string | Types.ObjectId, invitedUserId: string | Types.ObjectId, matchId: string | Types.ObjectId) {
+  const notificationId = new Types.ObjectId();
+
+  const [notification] = await Promise.all([
+    NotificationModel.create([{
+      _id: notificationId,
+      gameId: gameId,
+      message: matchId.toString(), // Store matchId in message field
+      source: inviterUserId,
+      sourceModel: 'User',
+      target: null, // No target since we're storing matchId in message
+      targetModel: 'MultiplayerMatch',
+      type: NotificationType.MULTIPLAYER_INVITE,
+      userId: invitedUserId,
+    }]),
+    queuePushNotification(notificationId),
+  ]);
+
+  await requestBroadcastNotifications(gameId, new Types.ObjectId(invitedUserId));
+
+  return notification[0];
 }

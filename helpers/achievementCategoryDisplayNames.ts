@@ -5,6 +5,7 @@ import AchievementCategory from '@root/constants/achievements/achievementCategor
  */
 export const achievementCategoryDisplayNames: Record<AchievementCategory, string> = {
   [AchievementCategory.SOCIAL]: 'Social',
+  [AchievementCategory.FEATURE_EXPLORER]: 'Feature Explorer',
   [AchievementCategory.PROGRESS]: 'Progress',
   [AchievementCategory.CREATOR]: 'Creator',
   [AchievementCategory.SKILL]: 'Skill',

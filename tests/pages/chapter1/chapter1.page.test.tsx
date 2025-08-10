@@ -51,9 +51,8 @@ describe('pages/chapter1 page', () => {
     const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext) as any;
 
     expect(ret).toBeDefined();
-    expect(ret.props).toBeDefined();
-    expect(ret.props?.enrichedCollections).toBeDefined();
-    expect(ret.props?.enrichedCollections[0]._id).toBe(TestId.COLLECTION);
+    expect(ret.redirect).toBeDefined();
+    expect(ret.redirect?.destination).toBe('/chapter/1');
   });
   test('getServerSideProps logged in but on game with no campaign', async () => {
     // Created from initialize db file
@@ -73,7 +72,7 @@ describe('pages/chapter1 page', () => {
     expect(ret).toBeDefined();
     expect(ret.props).toBeUndefined();
     expect(ret.redirect).toBeDefined();
-    expect(ret.redirect?.destination).toBe('/');
+    expect(ret.redirect?.destination).toBe('/chapter/1');
   });
   test('getServerSideProps logged in no collection exists', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
@@ -90,6 +89,7 @@ describe('pages/chapter1 page', () => {
     const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext) as any;
 
     expect(ret).toBeDefined();
-    expect(ret.props).toBeUndefined();
+    expect(ret.redirect).toBeDefined();
+    expect(ret.redirect?.destination).toBe('/chapter/1');
   });
 });

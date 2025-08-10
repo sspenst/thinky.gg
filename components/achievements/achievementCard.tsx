@@ -30,7 +30,7 @@ export default function AchievementCard({
   viewMode,
   statsMap,
   selectedGame,
-  userAchievementsByGame,
+  userAchievementsByGame: _userAchievementsByGame,
   totalActiveUsers,
 }: AchievementCardProps) {
   const achievementInfo = AchievementRulesCombined[achievementType];
@@ -162,7 +162,6 @@ export default function AchievementCard({
         style={achievementInfo.secret ? glowingBorderCSS : {}}
       >
         <div className='text-3xl flex-shrink-0'>{achievementInfo.emoji}</div>
-        
         <div className='flex-1 min-w-0'>
           <div className='flex items-center gap-2 mb-1'>
             <h3 className='font-bold text-lg truncate'>{achievementInfo.name}</h3>
@@ -278,7 +277,6 @@ export default function AchievementCard({
             </div>
           )}
           {renderGameLogos()}
-          
           {stats && (
             <div className='flex justify-between items-center text-xs'>
               <span

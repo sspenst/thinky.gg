@@ -2,6 +2,7 @@ import { AchievementCategoryMapping } from '@root/constants/achievements/achieve
 import AchievementType from '@root/constants/achievements/achievementType';
 import { GameId } from '@root/constants/GameId';
 import { AppContext } from '@root/contexts/appContext';
+import { countUsersWhoCompletedOneLevel } from '@root/helpers/countUsersWhoCompletedOneLevel';
 import dbConnect from '@root/lib/dbConnect';
 import { getUserFromToken } from '@root/lib/withAuth';
 import Achievement from '@root/models/db/achievement';
@@ -19,7 +20,10 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   if (!reqUser) {
     return {
-      notFound: true,
+      redirect: {
+        destination: '/login?redirect=' + encodeURIComponent(context.resolvedUrl),
+        permanent: false,
+      },
     };
   }
 
@@ -56,7 +60,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
         }
       }
     ]),
-    UserModel.countDocuments({})
+    // Get total count of active users (users with calcLevelsCompletedCount > 0)
+    countUsersWhoCompletedOneLevel()
   ]);
 
   // Get total counts by category

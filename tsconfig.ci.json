@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.json",
+  "exclude": [
+    "node_modules",
+    "server/gen_img",
+    "thinky-react-native",
+    "tests"
+  ]
+}

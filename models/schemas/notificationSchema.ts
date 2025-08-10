@@ -27,7 +27,7 @@ const NotificationSchema = new mongoose.Schema<Notification>({
   sourceModel: {
     type: String,
     required: false,
-    enum: ['User', 'Level', 'Achievement'],
+    enum: ['User', 'Level', 'Achievement', 'MultiplayerMatch'],
   },
   target: {
     type: mongoose.Schema.Types.ObjectId,
@@ -37,7 +37,7 @@ const NotificationSchema = new mongoose.Schema<Notification>({
   targetModel: {
     type: String,
     required: false,
-    enum: ['User', 'Level', 'Collection'],
+    enum: ['User', 'Level', 'Collection', 'MultiplayerMatch'],
   },
   type: {
     type: String,

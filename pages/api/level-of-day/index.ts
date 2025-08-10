@@ -1,3 +1,4 @@
+import { DIFFICULTY_INDEX, getDifficultyRangeByIndex } from '@root/components/formatted/formattedDifficulty';
 import { GameId } from '@root/constants/GameId';
 import { GameType } from '@root/constants/Games';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
@@ -61,12 +62,12 @@ async function getNewLevelOfDay(key: string, gameId: GameId) {
   const todaysDayOfWeek = new Date(TimerUtil.getTs() * 1000).getUTCDay();
   const dayOfWeekDifficultyMap = [
     40, // sunday
-    115, // monday
-    150, // tuesday
-    250, // wednesday
-    300, // thursday
-    500, // friday
-    600, // saturday
+    getDifficultyRangeByIndex(DIFFICULTY_INDEX.ELEMENTARY)[0], // monday
+    getDifficultyRangeByIndex(DIFFICULTY_INDEX.JUNIOR_HIGH)[0], // tuesday
+    getDifficultyRangeByIndex(DIFFICULTY_INDEX.HIGH_SCHOOL)[0], // wednesday
+    getDifficultyRangeByIndex(DIFFICULTY_INDEX.BACHELORS)[0], // thursday
+    getDifficultyRangeByIndex(DIFFICULTY_INDEX.MASTERS)[0], // friday
+    getDifficultyRangeByIndex(DIFFICULTY_INDEX.PHD)[0], // saturday
   ];
   let newLevelId: Types.ObjectId | null = null;
 

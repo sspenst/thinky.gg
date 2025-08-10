@@ -1,10 +1,15 @@
 import AchievementCategory from '@root/constants/achievements/achievementCategory';
 import AchievementType from '@root/constants/achievements/achievementType';
-import { DEFAULT_GAME_ID } from '@root/constants/GameId';
+import { DEFAULT_GAME_ID, GameId } from '@root/constants/GameId';
+import GraphType from '@root/constants/graphType';
 import TestId from '@root/constants/testId';
 import { refreshAchievements } from '@root/helpers/refreshAchievements';
-import { AchievementModel, LevelModel, UserConfigModel } from '@root/models/mongoose';
+import { getTokenCookieValue } from '@root/lib/getTokenCookie';
+import { AchievementModel, CollectionModel, GraphModel, LevelModel, UserConfigModel, UserModel } from '@root/models/mongoose';
+import { processQueueMessages } from '@root/pages/api/internal-jobs/worker';
+import socialShareHandler from '@root/pages/api/social-share/index';
 import { Types } from 'mongoose';
+import { testApiHandler } from 'next-test-api-route-handler';
 import dbConnect, { dbDisconnect } from '../../lib/dbConnect';
 
 beforeAll(async () => {
@@ -44,7 +49,7 @@ describe('helpers/refreshAchievements.ts', () => {
       { upsert: true }
     );
 
-    await refreshAchievements(DEFAULT_GAME_ID, new Types.ObjectId(TestId.USER), [AchievementCategory.PROGRESS]);
+    await refreshAchievements(DEFAULT_GAME_ID, new Types.ObjectId(TestId.USER), [AchievementCategory.CHAPTER_COMPLETION]);
     let achievements = await AchievementModel.find({ userId: TestId.USER }).lean();
 
     expect(achievements.some(a => a.type === AchievementType.CHAPTER_1_COMPLETED)).toBe(true);
@@ -57,7 +62,7 @@ describe('helpers/refreshAchievements.ts', () => {
       { $set: { chapterUnlocked: 3 } }
     );
 
-    await refreshAchievements(DEFAULT_GAME_ID, new Types.ObjectId(TestId.USER), [AchievementCategory.PROGRESS]);
+    await refreshAchievements(DEFAULT_GAME_ID, new Types.ObjectId(TestId.USER), [AchievementCategory.CHAPTER_COMPLETION]);
     achievements = await AchievementModel.find({ userId: TestId.USER }).lean();
 
     expect(achievements.some(a => a.type === AchievementType.CHAPTER_1_COMPLETED)).toBe(true);
@@ -70,11 +75,277 @@ describe('helpers/refreshAchievements.ts', () => {
       { $set: { chapterUnlocked: 4 } }
     );
 
-    await refreshAchievements(DEFAULT_GAME_ID, new Types.ObjectId(TestId.USER), [AchievementCategory.PROGRESS]);
+    await refreshAchievements(DEFAULT_GAME_ID, new Types.ObjectId(TestId.USER), [AchievementCategory.CHAPTER_COMPLETION]);
     achievements = await AchievementModel.find({ userId: TestId.USER }).lean();
 
     expect(achievements.some(a => a.type === AchievementType.CHAPTER_1_COMPLETED)).toBe(true);
     expect(achievements.some(a => a.type === AchievementType.CHAPTER_2_COMPLETED)).toBe(true);
     expect(achievements.some(a => a.type === AchievementType.CHAPTER_3_COMPLETED)).toBe(true);
+  });
+
+  test('test avatar upload achievement', async () => {
+    // Clean up any existing achievements
+    await AchievementModel.deleteMany({ userId: TestId.USER });
+
+    // Test without avatar
+    await UserModel.updateOne(
+      { _id: TestId.USER },
+      { $unset: { avatarUpdatedAt: 1 } }
+    );
+
+    await refreshAchievements(GameId.THINKY, new Types.ObjectId(TestId.USER), [AchievementCategory.FEATURE_EXPLORER]);
+    let achievements = await AchievementModel.find({ userId: TestId.USER }).lean();
+
+    expect(achievements.some(a => a.type === AchievementType.UPLOAD_AVATAR)).toBe(false);
+
+    // Test with avatar
+    await UserModel.updateOne(
+      { _id: TestId.USER },
+      { $set: { avatarUpdatedAt: Date.now() } }
+    );
+
+    await refreshAchievements(GameId.THINKY, new Types.ObjectId(TestId.USER), [AchievementCategory.FEATURE_EXPLORER]);
+    achievements = await AchievementModel.find({ userId: TestId.USER }).lean();
+
+    expect(achievements.some(a => a.type === AchievementType.UPLOAD_AVATAR)).toBe(true);
+  });
+
+  test('test bio update achievement', async () => {
+    // Clean up any existing achievements
+    await AchievementModel.deleteMany({ userId: TestId.USER });
+
+    // Test without bio
+    await UserModel.updateOne(
+      { _id: TestId.USER },
+      { $unset: { bio: 1 } }
+    );
+
+    await refreshAchievements(GameId.THINKY, new Types.ObjectId(TestId.USER), [AchievementCategory.FEATURE_EXPLORER]);
+    let achievements = await AchievementModel.find({ userId: TestId.USER }).lean();
+
+    expect(achievements.some(a => a.type === AchievementType.UPDATE_BIO)).toBe(false);
+
+    // Test with empty bio
+    await UserModel.updateOne(
+      { _id: TestId.USER },
+      { $set: { bio: '' } }
+    );
+
+    await refreshAchievements(GameId.THINKY, new Types.ObjectId(TestId.USER), [AchievementCategory.FEATURE_EXPLORER]);
+    achievements = await AchievementModel.find({ userId: TestId.USER }).lean();
+
+    expect(achievements.some(a => a.type === AchievementType.UPDATE_BIO)).toBe(false);
+
+    // Test with non-empty bio
+    await UserModel.updateOne(
+      { _id: TestId.USER },
+      { $set: { bio: 'This is my bio!' } }
+    );
+
+    await refreshAchievements(GameId.THINKY, new Types.ObjectId(TestId.USER), [AchievementCategory.FEATURE_EXPLORER]);
+    achievements = await AchievementModel.find({ userId: TestId.USER }).lean();
+
+    expect(achievements.some(a => a.type === AchievementType.UPDATE_BIO)).toBe(true);
+  });
+
+  describe('SOCIAL achievements', () => {
+    beforeEach(async () => {
+      await AchievementModel.deleteMany({ userId: TestId.USER });
+      await GraphModel.deleteMany({});
+    });
+
+    test('should award SOCIAL_SHARE achievement when user shares a level', async () => {
+      // Make API call to create a share
+      await testApiHandler({
+        pagesHandler: socialShareHandler as any,
+        test: async ({ fetch }) => {
+          const res = await fetch({
+            method: 'POST',
+            headers: {
+              'content-type': 'application/json',
+              'cookie': `token=${getTokenCookieValue(TestId.USER)}`,
+            },
+            body: JSON.stringify({
+              platform: 'X',
+              levelId: TestId.LEVEL_3,
+            }),
+          });
+
+          expect(res.status).toBe(200);
+          const response = await res.json();
+
+          expect(response.success).toBe(true);
+          expect(response.platform).toBe('X');
+        },
+      });
+
+      // Process the queued achievement refresh
+      await processQueueMessages();
+
+      // Verify the share was created in the database
+      const shareCount = await GraphModel.countDocuments({
+        source: TestId.USER,
+        type: GraphType.SHARE
+      });
+
+      expect(shareCount).toBe(1);
+
+      // Verify achievement was awarded
+      const socialAchievements = await AchievementModel.find({
+        userId: TestId.USER,
+        gameId: GameId.THINKY,
+        type: AchievementType.SOCIAL_SHARE,
+      });
+
+      expect(socialAchievements).toHaveLength(1);
+    });
+
+    test('should not award SOCIAL_SHARE achievement when user has not shared', async () => {
+      await refreshAchievements(GameId.THINKY, new Types.ObjectId(TestId.USER), [AchievementCategory.SOCIAL]);
+
+      const socialAchievements = await AchievementModel.find({
+        userId: TestId.USER,
+        gameId: GameId.THINKY,
+        type: AchievementType.SOCIAL_SHARE,
+      });
+
+      expect(socialAchievements).toHaveLength(0);
+    });
+
+    test('should count shares from multiple platforms', async () => {
+      // Make API calls to create shares on different platforms for different levels
+      await testApiHandler({
+        pagesHandler: socialShareHandler as any,
+        test: async ({ fetch }) => {
+          // First share
+          const res1 = await fetch({
+            method: 'POST',
+            headers: {
+              'content-type': 'application/json',
+              'cookie': `token=${getTokenCookieValue(TestId.USER)}`,
+            },
+            body: JSON.stringify({
+              platform: 'X',
+              levelId: TestId.LEVEL_3,
+            }),
+          });
+
+          expect(res1.status).toBe(200);
+          const response1 = await res1.json();
+
+          expect(response1.success).toBe(true);
+          expect(response1.platform).toBe('X');
+
+          // Second share
+          const res2 = await fetch({
+            method: 'POST',
+            headers: {
+              'content-type': 'application/json',
+              'cookie': `token=${getTokenCookieValue(TestId.USER)}`,
+            },
+            body: JSON.stringify({
+              platform: 'Facebook',
+              levelId: TestId.LEVEL_4,
+            }),
+          });
+
+          expect(res2.status).toBe(200);
+          const response2 = await res2.json();
+
+          expect(response2.success).toBe(true);
+          expect(response2.platform).toBe('Facebook');
+        },
+      });
+
+      // Process the queued achievement refreshes
+      await processQueueMessages();
+
+      // Verify both shares were created
+      const shareCount = await GraphModel.countDocuments({
+        source: TestId.USER,
+        type: GraphType.SHARE
+      });
+
+      expect(shareCount).toBe(2);
+
+      // Verify achievement was awarded (should still only get one achievement even with multiple shares)
+      const socialAchievements = await AchievementModel.find({
+        userId: TestId.USER,
+        gameId: GameId.THINKY,
+        type: AchievementType.SOCIAL_SHARE,
+      });
+
+      expect(socialAchievements).toHaveLength(1);
+    });
+  });
+
+  describe('FEATURE_EXPLORER achievements', () => {
+    beforeEach(async () => {
+      await AchievementModel.deleteMany({ userId: TestId.USER });
+      await CollectionModel.deleteMany({ userId: TestId.USER });
+    });
+
+    test('should award ADD_LEVEL_TO_COLLECTION achievement when user adds a level to collection', async () => {
+      // First ensure no achievement
+      await refreshAchievements(GameId.THINKY, new Types.ObjectId(TestId.USER), [AchievementCategory.FEATURE_EXPLORER]);
+      let achievements = await AchievementModel.find({ userId: TestId.USER, type: AchievementType.ADD_LEVEL_TO_COLLECTION }).lean();
+
+      expect(achievements).toHaveLength(0);
+
+      // Create a collection with a level
+      await CollectionModel.create({
+        _id: new Types.ObjectId(),
+        userId: TestId.USER,
+        name: 'My Collection',
+        slug: 'my-collection',
+        levels: [TestId.LEVEL],
+        gameId: GameId.PATHOLOGY,
+      });
+
+      // Refresh achievements
+      await refreshAchievements(GameId.THINKY, new Types.ObjectId(TestId.USER), [AchievementCategory.FEATURE_EXPLORER]);
+      achievements = await AchievementModel.find({ userId: TestId.USER, type: AchievementType.ADD_LEVEL_TO_COLLECTION }).lean();
+
+      expect(achievements).toHaveLength(1);
+      expect(achievements[0].type).toBe(AchievementType.ADD_LEVEL_TO_COLLECTION);
+      expect(achievements[0].gameId).toBe(GameId.THINKY);
+    });
+
+    test('should not award ADD_LEVEL_TO_COLLECTION achievement when collection is empty', async () => {
+      // Create an empty collection
+      await CollectionModel.create({
+        _id: new Types.ObjectId(),
+        userId: TestId.USER,
+        name: 'Empty Collection',
+        slug: 'empty-collection',
+        levels: [],
+        gameId: GameId.PATHOLOGY,
+      });
+
+      // Refresh achievements
+      await refreshAchievements(GameId.THINKY, new Types.ObjectId(TestId.USER), [AchievementCategory.FEATURE_EXPLORER]);
+      const achievements = await AchievementModel.find({ userId: TestId.USER, type: AchievementType.ADD_LEVEL_TO_COLLECTION }).lean();
+
+      expect(achievements).toHaveLength(0);
+    });
+
+    test('should not process FEATURE_EXPLORER achievements for non-THINKY games', async () => {
+      // Create a collection with a level
+      await CollectionModel.create({
+        _id: new Types.ObjectId(),
+        userId: TestId.USER,
+        name: 'My Collection',
+        slug: 'my-collection',
+        levels: [TestId.LEVEL],
+        gameId: GameId.PATHOLOGY,
+      });
+
+      // Try to refresh achievements for PATHOLOGY with FEATURE_EXPLORER category
+      // This should not create any achievements since FEATURE_EXPLORER is only for THINKY
+      await refreshAchievements(GameId.PATHOLOGY, new Types.ObjectId(TestId.USER), [AchievementCategory.FEATURE_EXPLORER]);
+      const achievements = await AchievementModel.find({ userId: TestId.USER, type: AchievementType.ADD_LEVEL_TO_COLLECTION }).lean();
+
+      expect(achievements).toHaveLength(0);
+    });
   });
 });

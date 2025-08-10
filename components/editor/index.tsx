@@ -1,10 +1,11 @@
+import Direction from '@root/constants/direction';
 import { ValidateLevelResponse } from '@root/constants/Games';
 import { AppContext } from '@root/contexts/appContext';
 import TileTypeHelper from '@root/helpers/tileTypeHelper';
-import { LucideCode, LucideFlipHorizontal2, LucidePencil, LucidePlay, LucideRepeat2, LucideSave, LucideShare } from 'lucide-react';
+import { ChevronDown, LucideCode, LucideFlipHorizontal2, LucidePencil, LucidePlay, LucideRepeat2, LucideSave, LucideShare } from 'lucide-react';
+import Image from 'next/image';
 import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { renderToStaticMarkup } from 'react-dom/server';
 import toast from 'react-hot-toast';
 import TileType from '../../constants/tileType';
 import { PageContext } from '../../contexts/pageContext';
@@ -12,11 +13,13 @@ import Control from '../../models/control';
 import Level from '../../models/db/level';
 import { ICON_REDO, ICON_RESIZE, ICON_UNDO } from '../icons/gameIcons';
 import BasicLayout from '../level/basicLayout';
+import GameRefactored from '../level/game-refactored';
 import CreateLevelModal from '../modal/createLevelModal';
 import DataModal from '../modal/dataModal';
 import EditLevelModal from '../modal/editLevelModal';
 import ModifyModal from '../modal/modifyModal';
 import PublishLevelModal from '../modal/publishLevelModal';
+import SchedulePublishModal from '../modal/schedulePublishModal';
 import SizeModal from '../modal/sizeModal';
 import StyledTooltip from '../page/styledTooltip';
 
@@ -25,10 +28,15 @@ interface EditorProps {
   level: Level;
   setIsDirty: (isDirty: boolean) => void;
   setLevel: React.Dispatch<React.SetStateAction<Level>>;
+  originalLevel?: Level;
+  setAllowNavigation?: (allow: boolean) => void;
 }
 
-export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorProps) {
+export default function Editor({ isDirty, level, setIsDirty, setLevel, originalLevel, setAllowNavigation }: EditorProps) {
   const { game, deviceInfo } = useContext(AppContext);
+  const [isTestMode, setIsTestMode] = useState(false);
+  const [bestSolution, setBestSolution] = useState<Direction[] | null>(null);
+  const bestSolutionRef = useRef<Direction[] | null>(null); // Use ref for immediate access
   const history = useRef<Level[]>([level]);
   const historyIndex = useRef<number>(0);
   const [isCreateLevelOpen, setIsCreateLevelOpen] = useState(false);
@@ -36,12 +44,86 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
   const [isEditLevelModalOpen, setIsEditLevelOpen] = useState(false);
   const [isModifyOpen, setIsModifyOpen] = useState(false);
   const [isPublishLevelOpen, setIsPublishLevelOpen] = useState(false);
+  const [isSchedulePublishOpen, setIsSchedulePublishOpen] = useState(false);
+  const [isPublishDropdownOpen, setIsPublishDropdownOpen] = useState(false);
   const [isSizeOpen, setIsSizeOpen] = useState(false);
   const { preventKeyDownEvent } = useContext(PageContext);
   const router = useRouter();
   const [tileType, setTileType] = useState<TileType>(TileType.Default);
   const [validateLevelResponse, setValidateLevelResponse] = useState<ValidateLevelResponse>();
   const { id } = router.query;
+  const publishDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Track the server level data (what's actually saved on the server)
+  const [serverLevelData, setServerLevelData] = useState({
+    data: (originalLevel || level).data,
+    width: (originalLevel || level).width,
+    height: (originalLevel || level).height,
+    leastMoves: (originalLevel || level).leastMoves,
+  });
+
+  // For unsaved levels, track the level state when a solution was found
+  const [solutionLevelData, setSolutionLevelData] = useState<{data: string, width: number, height: number} | null>(null);
+
+  // Check if current level data differs from server
+  const hasLevelDataChanged = useCallback(() => {
+    return (
+      serverLevelData.data !== level.data ||
+      serverLevelData.width !== level.width ||
+      serverLevelData.height !== level.height
+    );
+  }, [serverLevelData, level.data, level.width, level.height]);
+
+  // Helper to clear best solution from both state and ref
+  const clearBestSolution = useCallback(() => {
+    setBestSolution(null);
+    bestSolutionRef.current = null;
+  }, []);
+
+  // Update dirty state and leastMoves when level data changes
+  useEffect(() => {
+    if (id) {
+      // For saved levels, compare against server state
+      const hasChanged = hasLevelDataChanged();
+
+      if (hasChanged !== isDirty) {
+        setIsDirty(hasChanged);
+      }
+
+      // Update leastMoves based on whether level matches server version
+      setLevel(prevLevel => {
+        const newLeastMoves = hasChanged ? 0 : serverLevelData.leastMoves;
+
+        if (prevLevel.leastMoves !== newLeastMoves) {
+          return {
+            ...prevLevel,
+            leastMoves: newLeastMoves
+          };
+        }
+
+        return prevLevel;
+      });
+    } else if (!id && solutionLevelData) {
+      // For unsaved levels, check if level changed after a solution was found
+      const levelChangedSinceSolution = (
+        solutionLevelData.data !== level.data ||
+        solutionLevelData.width !== level.width ||
+        solutionLevelData.height !== level.height
+      );
+
+      if (levelChangedSinceSolution && level.leastMoves > 0) {
+        // Reset leastMoves to 0 when level is modified after finding a solution
+        setLevel(prevLevel => ({
+          ...prevLevel,
+          leastMoves: 0
+        }));
+        // Clear the solution data and best solution since the level changed
+        setSolutionLevelData(null);
+        clearBestSolution();
+      }
+    }
+  }, [level.data, level.width, level.height, hasLevelDataChanged, isDirty, setIsDirty, id, serverLevelData.leastMoves, solutionLevelData, clearBestSolution]);
+  const [savedLevelId, setSavedLevelId] = useState<string | null>(id ? String(id) : null);
 
   const undo = useCallback(() => {
     if (historyIndex.current === 0) {
@@ -186,12 +268,12 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
   }, [redo, undo]);
 
   const handleKeyDownEvent = useCallback((event: KeyboardEvent) => {
-    if (!isCreateLevelOpen && !isDataOpen && !isEditLevelModalOpen && !isModifyOpen && !isPublishLevelOpen && !isSizeOpen && !preventKeyDownEvent) {
+    if (!isCreateLevelOpen && !isDataOpen && !isEditLevelModalOpen && !isModifyOpen && !isPublishLevelOpen && !isSchedulePublishOpen && !isSizeOpen && !preventKeyDownEvent) {
       const { code } = event;
 
       handleKeyDown(code);
     }
-  }, [handleKeyDown, isCreateLevelOpen, isDataOpen, isEditLevelModalOpen, isModifyOpen, isPublishLevelOpen, isSizeOpen, preventKeyDownEvent]);
+  }, [handleKeyDown, isCreateLevelOpen, isDataOpen, isEditLevelModalOpen, isModifyOpen, isPublishLevelOpen, isSchedulePublishOpen, isSizeOpen, preventKeyDownEvent]);
 
   useEffect(() => {
     document.addEventListener('keydown', handleKeyDownEvent);
@@ -200,6 +282,53 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
       document.removeEventListener('keydown', handleKeyDownEvent);
     };
   }, [handleKeyDownEvent]);
+
+  // Handle clicking outside dropdown to close it
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (publishDropdownRef.current && !publishDropdownRef.current.contains(event.target as Node)) {
+        setIsPublishDropdownOpen(false);
+      }
+    }
+
+    if (isPublishDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isPublishDropdownOpen]);
+
+  // Handle browser back button during test mode
+  useEffect(() => {
+    if (isTestMode) {
+      // Push a new history state when entering test mode
+      window.history.pushState({ testMode: true }, '', window.location.href);
+
+      const handlePopState = (e: PopStateEvent) => {
+        // When back button is pressed, exit test mode instead of navigating away
+        e.preventDefault();
+        setIsTestMode(false);
+
+        // Only clear best solution for truly unsaved levels
+        const isUnsaved = !id && !savedLevelId;
+
+        if (isUnsaved) {
+          clearBestSolution();
+        }
+
+        // Push the state back to prevent actual navigation
+        window.history.pushState(null, '', window.location.href);
+      };
+
+      window.addEventListener('popstate', handlePopState);
+
+      return () => {
+        window.removeEventListener('popstate', handlePopState);
+      };
+    }
+  }, [isTestMode, id, savedLevelId, clearBestSolution]);
 
   function historyPush(level: Level) {
     if (level.data !== history.current[history.current.length - 1].data) {
@@ -310,14 +439,31 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
             return prevLevel;
           }
 
-          const level = JSON.parse(JSON.stringify(prevLevel)) as Level;
+          // Update the server level state to match what was just saved
+          setServerLevelData({
+            data: prevLevel.data,
+            width: prevLevel.width,
+            height: prevLevel.height,
+            leastMoves: prevLevel.leastMoves,
+          });
 
-          level.leastMoves = 0;
-
-          return level;
+          return { ...prevLevel };
         });
         toast.dismiss();
         toast.success('Saved');
+
+        // If we have a best solution, submit it now
+        if (bestSolution && bestSolution.length > 0 && typeof id === 'string') {
+          // Validate the solution against the current level data first
+          const validateSolution = game.validateSolution;
+
+          if (validateSolution && !validateSolution(bestSolution, level)) {
+            toast.error('Your solution is no longer valid due to level changes.');
+            clearBestSolution();
+          } else {
+            submitBestSolution(id, bestSolution);
+          }
+        }
       } else {
         throw res.text();
       }
@@ -325,6 +471,38 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
       console.error(err);
       toast.dismiss();
       toast.error('Error fetching level');
+    });
+  }
+
+  function submitBestSolution(levelId: string, moves: Direction[]) {
+    // Submit the best solution found during testing
+    fetch('/api/stats', {
+      method: 'PUT',
+      body: JSON.stringify({
+        levelId: levelId,
+        directions: moves,
+      }),
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    }).then(async res => {
+      if (res.status === 200) {
+        toast.success(`Your best solution (${moves.length} moves) has been submitted!`, {
+          duration: 3000,
+        });
+        clearBestSolution();
+      } else {
+        const error = await res.text();
+
+        console.error('Stats submission failed:', error);
+        toast.error('Failed to submit solution.');
+        clearBestSolution();
+      }
+    }).catch(err => {
+      console.error('Failed to submit solution:', err);
+      toast.error('Failed to submit solution.');
+      clearBestSolution();
     });
   }
 
@@ -345,11 +523,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
 
   const isValid = !validateLevelResponse || validateLevelResponse.valid;
   const btnTestTooltip = !isValid ?
-    renderToStaticMarkup(
-      <div className='flex flex-col items-start'>
-        {validateLevelResponse.reasons.map(reason => <div key={'reason-' + reason}>{reason}</div>)}
-      </div>
-    ) : isDirty ? 'Save before testing' : null;
+    validateLevelResponse.reasons.join('\n') : null;
 
   const isMobile = deviceInfo.isMobile;
 
@@ -366,7 +540,153 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
   const modifySave = isMobile ? <LucideSave /> : <div className='flex gap-1'><LucideSave /><span>Save</span></div>;
 
   const modifyEdit = isMobile ? <LucidePencil /> : <div className='flex gap-1'><LucidePencil /><span>Edit</span></div>;
-  const modifyPlay = isMobile ? <LucidePlay /> : <div className='flex gap-1'><LucidePlay /><span>Play</span></div>;
+  const modifyPlay = isMobile ? <LucidePlay /> : <div className='flex gap-1'><LucidePlay /><span>Test</span></div>;
+
+  if (isTestMode) {
+    const isUnsaved = !id && !savedLevelId;
+    const testLevel = {
+      ...level,
+      _id: isUnsaved ? (level._id || ('temp_' + Date.now())) : (savedLevelId || level._id || id),
+    } as Level;
+
+    // Show the game in test mode
+    return (
+      <div className='flex flex-col h-full'>
+        <div className='flex flex-col gap-2 p-2 bg-gray-800'>
+          <div className='flex justify-between items-center'>
+            <h2 className='font-bold'>
+              Testing: {level.name || 'Untitled Level'}
+            </h2>
+            <div className='flex gap-2'>
+              {(isUnsaved || isDirty) && (
+                <button
+                  className='px-4 py-2 bg-green-500 hover:bg-green-600 rounded flex items-center gap-2'
+                  onClick={() => {
+                    if (isUnsaved) {
+                      setIsTestMode(false);
+                      setIsCreateLevelOpen(true);
+                    } else {
+                      // For dirty saved levels, just save the changes without exiting test mode
+                      save();
+                    }
+                  }}
+                >
+                  <LucideSave size={16} />
+                  {isUnsaved ? 'Save Level' : 'Save Changes'}
+                </button>
+              )}
+              <button
+                className='px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded'
+                onClick={() => {
+                  setIsTestMode(false);
+
+                  // Clear the best solution when exiting test mode without saving
+                  if (isUnsaved) {
+                    clearBestSolution();
+                  }
+                }}
+              >
+                Back to Editor
+              </button>
+            </div>
+          </div>
+          {isUnsaved && (
+            <div className='bg-yellow-600/20 border border-yellow-500/50 rounded px-3 py-2 text-sm text-yellow-200'>
+              ⚠️ This level is not saved. Progress will not be recorded until you save the level.
+            </div>
+          )}
+          {!isUnsaved && isDirty && (
+            <div className='bg-yellow-600/20 border border-yellow-500/50 rounded px-3 py-2 text-sm text-yellow-200'>
+              ⚠️ This level has unsaved changes. Stats will not be submitted until you save your changes.
+            </div>
+          )}
+        </div>
+        <GameRefactored
+          disablePlayAttempts={true}
+          disableCheckpoints={isUnsaved} // Only disable checkpoints for unsaved levels
+          disableStats={true} // Always disable automatic stats - we'll handle it manually
+          level={testLevel}
+          onSolve={() => {
+            if (isUnsaved) {
+              // Truly unsaved levels
+              toast('Solution completed! Save the level to submit your solution.', {
+                icon: '💾',
+                duration: 4000,
+              });
+            } else if (isDirty) {
+              // Saved but modified levels
+              toast('Solution completed! Save your changes first to submit stats.', {
+                icon: '⚠️',
+                duration: 4000,
+              });
+            }
+            // For saved unmodified levels, onMove handles everything (submission and silence)
+          }}
+          onMove={(gameState) => {
+            if (game.isComplete(gameState)) {
+              // Store the complete solution path as Direction array
+              const moves = gameState.moves.map(move => move.direction);
+
+              // Defer state updates to avoid the React warning
+              setTimeout(() => {
+                if (isUnsaved) {
+                  // For truly unsaved levels, track the best solution locally for later submission
+                  if (!bestSolution || moves.length < bestSolution.length) {
+                    bestSolutionRef.current = moves; // Set ref immediately for synchronous access
+                    setBestSolution(moves);
+                    // Update the level's leastMoves for display
+                    setLevel(prevLevel => ({
+                      ...prevLevel,
+                      leastMoves: moves.length
+                    }));
+                    // Track the level state when this solution was found
+                    setSolutionLevelData({
+                      data: level.data,
+                      width: level.width,
+                      height: level.height
+                    });
+                    toast.success(`New best solution: ${moves.length} moves!`);
+                  }
+                  // Don't show anything if it's not an improvement
+                } else if (isDirty) {
+                  // For saved but modified levels (leastMoves should already be 0 from useEffect)
+                  if (!bestSolution || moves.length < bestSolution.length) {
+                    bestSolutionRef.current = moves; // Set ref immediately for synchronous access
+                    setBestSolution(moves);
+                    // Update leastMoves only if it's better than 0 (which is the expected value for modified levels)
+                    setLevel(prevLevel => ({
+                      ...prevLevel,
+                      leastMoves: moves.length
+                    }));
+                    toast.success(`New best solution: ${moves.length} moves!`);
+                  }
+                } else {
+                  // For saved unmodified levels, check if this is a new record
+                  const isNewRecord = moves.length < level.leastMoves || level.leastMoves === 0;
+
+                  if (isNewRecord) {
+                    // Update the level's leastMoves for display
+                    setLevel(prevLevel => ({
+                      ...prevLevel,
+                      leastMoves: moves.length
+                    }));
+                    // Submit immediately for new records
+                    submitBestSolution(String(id || savedLevelId), moves);
+                  }
+                  // For non-records on saved unmodified levels, stay silent and don't submit
+                }
+              }, 0);
+            }
+          }}
+          onStatsSuccess={() => {
+            // This will be called when we manually submit stats
+            // Don't exit test mode - user might want to continue testing
+            toast.success('New record submitted!');
+          }}
+        />
+      </div>
+    );
+  }
 
   return (<>
     <div className='flex flex-col h-full'>
@@ -399,30 +719,97 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
             } else {
               setIsCreateLevelOpen(true);
             }
-          }, modifySave),
+          }, modifySave, id ? !hasLevelDataChanged() : false), // Disable save if no changes for existing levels
+          new Control(
+            'btn-test',
+            () => {
+              // Simply switch to test mode
+              setIsTestMode(true);
+            },
+            <div className='flex flex-row'>
+              <div data-tooltip-id='btn-test-tooltip' data-tooltip-content={btnTestTooltip}>
+                {!isValid && '⚠️ '}
+              </div>
+              {modifyPlay}
+              <StyledTooltip id='btn-test-tooltip' />
+            </div>,
+            !isValid,
+          ),
           ...(!id ? [] : [
             new Control('btn-edit', () => setIsEditLevelOpen(true), modifyEdit, isDirty),
             new Control(
-              'btn-test',
-              () => router.push(`/test/${id}`),
-              <div className='flex flex-row'>
-                <div data-tooltip-id='btn-test-tooltip' data-tooltip-html={btnTestTooltip}>
-                  {!isValid && '⚠️ '}
-                </div>
-                {modifyPlay}
-                <StyledTooltip id='btn-test-tooltip' />
-              </div>,
-              isDirty || !isValid,
-            ),
-            new Control(
-              'btn-publish',
+              'btn-publish-main',
               () => setIsPublishLevelOpen(true),
-              <>
-                <div data-tooltip-id='btn-publish-tooltip' data-tooltip-html={isDirty ? 'Save and test before publishing' : level.leastMoves === 0 ? 'Test before publishing' : null}>
-                  <span className='flex gap-1'><LucideShare stroke={isDirty ? 'white' : 'lightgreen'} /> { !isMobile && <div>Publish</div>}</span>
+              <div className='flex items-center gap-1 w-full'>
+                <div className='flex items-center gap-1 flex-1' data-tooltip-id='btn-publish-tooltip' data-tooltip-content={isDirty ? 'Save and test before publishing' : level.leastMoves === 0 ? 'Test before publishing' : null}>
+                  <LucideShare stroke={isDirty ? 'white' : 'lightgreen'} />
+                  {!isMobile && <div>Publish</div>}
                 </div>
+                {(
+                  <div className='relative' ref={publishDropdownRef}>
+                    <div
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsPublishDropdownOpen(!isPublishDropdownOpen);
+                      }}
+                      className='flex items-center p-1 hover:bg-purple-600/20 hover:border-purple-500/50 border border-transparent rounded transition-all duration-200 cursor-pointer'
+                      role='button'
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setIsPublishDropdownOpen(!isPublishDropdownOpen);
+                        }
+                      }}
+                    >
+                      <ChevronDown size={16} className={`transition-transform duration-200 ${isPublishDropdownOpen ? 'rotate-180' : ''}`} />
+                    </div>
+                    {isPublishDropdownOpen && (
+                      <div className='absolute right-0 bottom-full mb-2 w-56 bg-gradient-to-br from-gray-900 to-gray-800 border border-purple-500/30 rounded-lg shadow-2xl z-50 backdrop-blur-sm'>
+                        <div className='py-2'>
+                          <div
+                            onClick={() => {
+                              if (isDirty || level.leastMoves === 0) return;
+                              setIsSchedulePublishOpen(true);
+                              setIsPublishDropdownOpen(false);
+                            }}
+                            className={`w-full text-left px-4 py-3 transition-all duration-200 flex items-center gap-3 group ${
+                              isDirty || level.leastMoves === 0
+                                ? 'opacity-50 cursor-not-allowed'
+                                : 'hover:bg-gradient-to-r hover:from-purple-600/20 hover:to-blue-600/20 cursor-pointer'
+                            }`}
+                            title={isDirty ? 'Save and test before scheduling publish' : level.leastMoves === 0 ? 'Test before scheduling publish' : undefined}
+                            role='button'
+                            tabIndex={isDirty || level.leastMoves === 0 ? -1 : 0}
+                            onKeyDown={(e) => {
+                              if ((e.key === 'Enter' || e.key === ' ') && !(isDirty || level.leastMoves === 0)) {
+                                e.preventDefault();
+                                setIsSchedulePublishOpen(true);
+                                setIsPublishDropdownOpen(false);
+                              }
+                            }}
+                          >
+                            <div className='flex items-center justify-center w-8 h-8 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg group-hover:scale-110 transition-transform duration-200'>
+                              <svg width='16' height='16' viewBox='0 0 24 24' fill='white' className='drop-shadow-sm'>
+                                <path d='M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.89-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.11-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z' />
+                              </svg>
+                            </div>
+                            <div className='flex-1'>
+                              <div className='flex items-center gap-2'>
+                                <span className='font-medium text-white group-hover:text-purple-200 transition-colors'>Schedule Publish</span>
+                                <Image alt='pro' src='/pro.svg' width={16} height={16} className='opacity-90' />
+                              </div>
+                              <div className='text-xs text-gray-400 group-hover:text-gray-300 transition-colors'>Publish at optimal times</div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
                 <StyledTooltip id='btn-publish-tooltip' />
-              </>,
+              </div>,
               isDirty || level.leastMoves === 0,
             ),
           ]),
@@ -462,15 +849,53 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
       }}
       isOpen={isCreateLevelOpen}
       level={level}
+      onLevelCreated={(levelId: string) => {
+        // Allow navigation since we're successfully saving
+        if (setAllowNavigation) {
+          setAllowNavigation(true);
+        }
+
+        // Update the saved level ID so we know it's no longer unsaved
+        setSavedLevelId(levelId);
+        // If we have a best solution, submit it now (use ref for immediate access)
+        const solutionToSubmit = bestSolutionRef.current;
+
+        if (solutionToSubmit && solutionToSubmit.length > 0) {
+          // Validate the solution against the current level data first
+          const validateSolution = game.validateSolution;
+
+          if (validateSolution && !validateSolution(solutionToSubmit, level)) {
+            toast.error('Your solution is no longer valid due to level changes.');
+            clearBestSolution();
+          } else {
+            submitBestSolution(levelId, solutionToSubmit);
+          }
+        }
+      }}
     />
     <EditLevelModal
       closeModal={() => setIsEditLevelOpen(false)}
       isOpen={isEditLevelModalOpen}
       level={level}
+      onLevelUpdated={(updatedLevel) => {
+        // Update the level locally, preserving current leastMoves logic
+        setLevel(prevLevel => ({
+          ...updatedLevel,
+          leastMoves: prevLevel.leastMoves, // Keep current leastMoves (might be 0 if modified, or server value if not)
+        }));
+
+        // Server state for level data doesn't change during metadata updates
+        // Only the metadata changes, level data (width, height, data, leastMoves) stays the same
+      }}
     />
     <PublishLevelModal
       closeModal={() => setIsPublishLevelOpen(false)}
       isOpen={isPublishLevelOpen}
+      level={level}
+    />
+    <SchedulePublishModal
+      closeModal={() => setIsSchedulePublishOpen(false)}
+      isOpen={isSchedulePublishOpen}
       level={level}
     />
   </>);

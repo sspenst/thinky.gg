@@ -6,7 +6,7 @@ import { generateLevelSlug } from '@root/helpers/generateSlug';
 import { TimerUtil } from '@root/helpers/getTs';
 import { logger } from '@root/helpers/logger';
 import Level from '@root/models/db/level';
-import { AchievementModel, CollectionModel, CommentModel, DeviceModel, GraphModel, KeyValueModel, LevelModel, NotificationModel, PlayAttemptModel, ReportModel, ReviewModel, UserAuthModel, UserConfigModel, UserModel } from '@root/models/mongoose';
+import { AchievementModel, CollectionModel, CommentModel, DeviceModel, EmailLogModel, GraphModel, KeyValueModel, LevelModel, MultiplayerMatchModel, MultiplayerProfileModel, NotificationModel, PlayAttemptModel, RecordModel, ReportModel, ReviewModel, StatModel, UserAuthModel, UserConfigModel, UserModel } from '@root/models/mongoose';
 import { queueCalcCreatorCounts } from '@root/pages/api/internal-jobs/worker/queueFunctions';
 import mongoose, { ClientSession, Types } from 'mongoose';
 
@@ -166,6 +166,7 @@ export async function deleteUser(userId: Types.ObjectId, session?: ClientSession
         CollectionModel.deleteMany({ userId: userId }, { session: session }),
         CommentModel.updateMany({ _id: { $in: commentIdsToDelete } }, { $set: { deletedAt: deletedAt } }, { session: session }),
         DeviceModel.deleteMany({ userId: userId }, { session: session }),
+        EmailLogModel.deleteMany({ userId: userId }, { session: session }),
         GraphModel.deleteMany({ $or: [{ source: userId }, { target: userId }] }, { session: session }),
         KeyValueModel.deleteMany({ key: { $regex: `.*${userId}.*` } }, { session: session }),
         // Delete draft levels
@@ -178,10 +179,13 @@ export async function deleteUser(userId: Types.ObjectId, session?: ClientSession
         UserConfigModel.deleteMany({ userId: userId }, { session: session }),
         UserAuthModel.deleteMany({ userId: userId }, { session: session }),
         UserModel.deleteOne({ _id: userId }, { session: session }),
-
+        RecordModel.deleteMany({ userId: userId }, { session: session }),
         ReportModel.deleteMany({ reportedUser: userId }, { session: session }),
         PlayAttemptModel.deleteMany({ userId: userId }, { session: session }),
         ReviewModel.updateMany({ userId: userId }, { $set: { isDeleted: true } }, { session: session }),
+        StatModel.deleteMany({ userId: userId }, { session: session }),
+        MultiplayerProfileModel.deleteMany({ userId: userId }, { session: session }),
+        MultiplayerMatchModel.deleteMany({ $or: [{ source: userId }, { target: userId }] }, { session: session }),
 
       ]);
     };

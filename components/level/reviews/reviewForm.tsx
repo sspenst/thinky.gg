@@ -102,8 +102,8 @@ export default function ReviewForm({ inModal, review }: ReviewFormProps) {
         <ProfileAvatar user={user} />
         {!isOwnLevel &&
           <Rating
-            allowFraction={true}
-            allowHover={true}
+            allowFraction
+            allowHover
             // account for 4px of whitespace at the top of this component
             className='pb-1'
             emptyIcon={<Star empty={true} half={false} />}
@@ -112,6 +112,7 @@ export default function ReviewForm({ inModal, review }: ReviewFormProps) {
             initialValue={rating}
             onClick={(value: number) => setRating(value)}
             size={20}
+            disableFillHover
             transition
           />
         }

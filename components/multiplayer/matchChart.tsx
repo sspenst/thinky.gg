@@ -3,7 +3,7 @@ import dayjs from 'dayjs';
 import { useState } from 'react';
 import { Bar, CartesianGrid, ComposedChart, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { NameType, Payload } from 'recharts/types/component/DefaultTooltipContent';
-import { MatchAction, MatchLogDataLevelComplete, MatchLogDataUserLeveId, MultiplayerMatchTypeDurationMap } from '../../models/constants/multiplayer';
+import { MatchAction, MatchLog, MatchLogDataLevelComplete, MatchLogDataUserLeveId, MultiplayerMatchTypeDurationMap } from '../../models/constants/multiplayer';
 import Level from '../../models/db/level';
 import MultiplayerMatch from '../../models/db/multiplayerMatch';
 import { UserWithMultiplayerProfile } from '../../models/db/user';
@@ -85,7 +85,7 @@ export default function MatchChart({ match }: MatchChartProps) {
   }
 
   for (let i = 0; i < match.matchLog.length; i++) {
-    const log = match.matchLog[i];
+    const log = match.matchLog[i] as MatchLog;
 
     if (![MatchAction.COMPLETE_LEVEL, MatchAction.SKIP_LEVEL].includes(log.type as MatchAction)) {
       continue;
@@ -112,24 +112,27 @@ export default function MatchChart({ match }: MatchChartProps) {
     }
 
     // Calculate time spent on level
-    if (completedBy) { // Removed the lastActionTime check since we initialize it for all players
+    if (completedBy && playerMap[completedBy]) { // Check if player exists in playerMap
       const timeSpent = timestamp - lastActionTime[completedBy];
+      const playerName = playerMap[completedBy].name;
 
       if (!timePerLevelMap.has(levelName)) {
         timePerLevelMap.set(levelName, {
           level: levelName,
-          [`${playerMap[completedBy].name}_skipped`]: false,
+          [`${playerName}_skipped`]: false,
         });
       }
 
       const levelData = timePerLevelMap.get(levelName);
 
       if (!levelData) continue;
-      levelData[playerMap[completedBy].name] = timeSpent;
-      levelData[`${playerMap[completedBy].name}_skipped`] = log.type === MatchAction.SKIP_LEVEL;
+      levelData[playerName] = timeSpent;
+      levelData[`${playerName}_skipped`] = log.type === MatchAction.SKIP_LEVEL;
     }
 
-    lastActionTime[completedBy] = timestamp;
+    if (completedBy && playerMap[completedBy]) {
+      lastActionTime[completedBy] = timestamp;
+    }
 
     chartData.push({
       name: (match.levels as Level[])?.find(l => l._id.toString() === level)?.name,
@@ -318,9 +321,9 @@ export default function MatchChart({ match }: MatchChartProps) {
                       const isSkipped = props.payload[`${playerName}_skipped`];
                       const isIncomplete = props.payload[`${playerName}_incomplete`];
 
-                      const pathData = `M ${props.x},${props.y + props.height} 
-                                        L ${props.x},${props.y} 
-                                        L ${props.x + props.width},${props.y} 
+                      const pathData = `M ${props.x},${props.y + props.height}
+                                        L ${props.x},${props.y}
+                                        L ${props.x + props.width},${props.y}
                                         L ${props.x + props.width},${props.y + props.height} Z`;
 
                       if (isSkipped || isIncomplete) {

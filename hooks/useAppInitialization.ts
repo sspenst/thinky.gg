@@ -8,9 +8,9 @@ import { useRouter } from 'next/router';
 import nProgress from 'nprogress';
 import React, { useCallback, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import User from '../models/db/user';
+import { ReqUser } from '../models/db/user';
 
-export function useAppInitialization(user: User | null | undefined, initGame: Game) {
+export function useAppInitialization(user: ReqUser | null | undefined, initGame: Game) {
   const router = useRouter();
   const [host, setHost] = useState<string>('thinky.gg');
   const [playLater, setPlayLater] = useState<{ [key: string]: boolean }>();
@@ -180,6 +180,16 @@ export function useAppInitialization(user: User | null | undefined, initGame: Ga
       const loggedIn = user !== undefined;
 
       window.ReactNativeWebView.postMessage(JSON.stringify({ loggedIn: loggedIn }));
+
+      // Send badge count if user has notifications
+      if (user && user.notifications) {
+        const unreadCount = user.notifications.filter(n => !n.read).length;
+
+        window.ReactNativeWebView.postMessage(JSON.stringify({
+          action: 'update_badge_count',
+          count: unreadCount
+        }));
+      }
     }
   }, [user]);
 
