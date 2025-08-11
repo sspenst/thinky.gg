@@ -187,7 +187,34 @@ export const wallTileShader = `
 export const playerTileShader = `
   vec3 renderPlayerTile() {
     vec2 center = vec2(0.5);
-    vec2 uv = v_texCoord - center;
+    
+    // Apply rotation shake transformation
+    vec2 texCoord = v_texCoord;
+    float shakeDuration = 0.6; // Shake for 0.6 seconds
+    
+    if (u_playerCompleteTime > 0.0 && u_playerCompleteTime < shakeDuration) {
+      // Rotation-based wobble shake
+      float fadeOut = 1.0 - (u_playerCompleteTime / shakeDuration);
+      fadeOut = fadeOut * fadeOut; // Quadratic fade for smoother ending
+      
+      // Use completion time for shake timing
+      float shakeTime = u_playerCompleteTime * 20.0;
+      
+      // Multi-frequency rotation for chaotic wobble
+      float rotation = sin(shakeTime) * 0.15 * fadeOut;
+      rotation += sin(shakeTime * 1.7) * 0.08 * fadeOut * 15.0;
+      rotation += sin(shakeTime * 2.3) * 0.05 * fadeOut;
+      
+      // Apply rotation around center
+      texCoord -= center;
+      vec2 rotatedCoord = vec2(
+        cos(rotation) * texCoord.x - sin(rotation) * texCoord.y,
+        sin(rotation) * texCoord.x + cos(rotation) * texCoord.y
+      );
+      texCoord = rotatedCoord + center;
+    }
+    
+    vec2 uv = texCoord - center;
     float dist = length(uv);
     
     // Calculate rounded corners mask
@@ -201,6 +228,8 @@ export const playerTileShader = `
     }
     
     vec3 baseColor = vec3(0.0);
+    
+    // Base player color
     baseColor += neonPink;
     
     // Energy core
@@ -236,7 +265,7 @@ export const playerTileShader = `
     float xOffset = 0.55 - size/2.0 - size*(numDigitsInStepCount-1.0)/2.0;
     float yOffset = 0.5 - size/2.0;
     float isOutline = 0.0;
-    float stepNumber = renderNumberReadable(v_texCoord, u_currentStepCount, vec2(xOffset, yOffset), size, isOutline);
+    float stepNumber = renderNumberReadable(texCoord, u_currentStepCount, vec2(xOffset, yOffset), size, isOutline);
     
     if (stepNumber > 0.5) {
       if (isOutline > 0.5) {
