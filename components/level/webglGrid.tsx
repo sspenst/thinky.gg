@@ -1,4 +1,4 @@
-import { Game } from '@root/constants/Games';
+import { Game, GameType } from '@root/constants/Games';
 import TileType from '@root/constants/tileType';
 import { AppContext } from '@root/contexts/appContext';
 import { GameState } from '@root/helpers/gameStateHelpers';
@@ -62,6 +62,12 @@ export default function WebGLGrid({
   // Shadow position tracking - follows player with easing
   const shadowPosition = useRef<Position>(new Position(0, 0));
   const lastShadowUpdate = useRef<number>(0);
+  
+  // Victory animation tracking
+  const victoryAnimationStart = useRef<number | null>(null);
+  const wasComplete = useRef<boolean>(false);
+  const victoryEffectType = useRef<number>(0);
+  const playerCompleteTime = useRef<number | null>(null);
 
   // Motion blur tracking
   const motionBlurHistory = useRef<Map<string, Array<{x: number, y: number, time: number}>>>(new Map());
@@ -1379,9 +1385,36 @@ export default function WebGLGrid({
     const u_currentStepCount = gl.getUniformLocation(program, 'u_currentStepCount');
     const u_goalStepCount = gl.getUniformLocation(program, 'u_goalStepCount');
     const u_trailStepCount = gl.getUniformLocation(program, 'u_trailStepCount');
+    const u_victoryTime = gl.getUniformLocation(program, 'u_victoryTime');
+    const u_victoryEffect = gl.getUniformLocation(program, 'u_victoryEffect');
+    const u_playerCompleteTime = gl.getUniformLocation(program, 'u_playerCompleteTime');
 
     if (u_resolution) gl.uniform2f(u_resolution, canvas.width, canvas.height);
     if (u_time) gl.uniform1f(u_time, time * 0.001);
+    
+    // Calculate victory animation time globally
+    const isLevelComplete = game.isComplete(gameState);
+    
+    // For victory animation, we need to determine if level is truly "solved":
+    // - For COMPLETE_AND_SHORTEST games: just reaching the exit is enough
+    // - For SHORTEST_PATH games: must reach exit in optimal moves to be "solved"
+    const currentMoves = gameState.moves.length;
+    const isTrulySolved = isLevelComplete && 
+      (game.type === GameType.COMPLETE_AND_SHORTEST || currentMoves === leastMoves);
+    
+    if (isTrulySolved && !wasComplete.current) {
+      victoryAnimationStart.current = time;
+      wasComplete.current = true;
+      // Randomly select victory effect (0 = Rainbow Wave, 1 = Matrix Glitch)
+      victoryEffectType.current = Math.floor(Math.random() * 2);
+    } else if (!isTrulySolved && wasComplete.current) {
+      victoryAnimationStart.current = null;
+      wasComplete.current = false;
+    }
+    const globalVictoryTime = victoryAnimationStart.current !== null ? 
+      (time - victoryAnimationStart.current) * 0.001 : 0.0;
+    if (u_victoryTime) gl.uniform1f(u_victoryTime, globalVictoryTime);
+    if (u_victoryEffect) gl.uniform1f(u_victoryEffect, victoryEffectType.current);
 
     // Calculate player position for proximity effects
     let playerCurrentPos = new Position(0, 0);
@@ -1516,10 +1549,12 @@ export default function WebGLGrid({
           gl.vertexAttribPointer(a_texCoord, 2, gl.FLOAT, false, 0, 0);
         }
 
-        const color = getTileColor(tileType);
+        // If hole is filled, render as default tile instead
+        const renderTileType = (tileType === TileType.Hole && tileState.blockInHole) ? TileType.Default : tileType;
+        const color = getTileColor(renderTileType);
 
         if (u_tileColor) gl.uniform3f(u_tileColor, color[0], color[1], color[2]);
-        if (u_tileType) gl.uniform1f(u_tileType, getTileTypeValue(tileType));
+        if (u_tileType) gl.uniform1f(u_tileType, getTileTypeValue(renderTileType));
         if (u_glowIntensity) gl.uniform1f(u_glowIntensity, tileState.text.length > 0 ? 0.8 : 0.3);
         if (u_tileGridPos) gl.uniform2f(u_tileGridPos, x, y);
 
@@ -1534,11 +1569,15 @@ export default function WebGLGrid({
 
         if (u_randomSeed) gl.uniform1f(u_randomSeed, tileSeed);
 
-        // Set movement direction uniforms for movable blocks
-        if (u_canMoveUp) gl.uniform1f(u_canMoveUp, TileTypeHelper.canMoveUp(tileType) ? 1.0 : 0.0);
-        if (u_canMoveDown) gl.uniform1f(u_canMoveDown, TileTypeHelper.canMoveDown(tileType) ? 1.0 : 0.0);
-        if (u_canMoveLeft) gl.uniform1f(u_canMoveLeft, TileTypeHelper.canMoveLeft(tileType) ? 1.0 : 0.0);
-        if (u_canMoveRight) gl.uniform1f(u_canMoveRight, TileTypeHelper.canMoveRight(tileType) ? 1.0 : 0.0);
+        // Set movement direction uniforms for movable blocks (filled holes can't move)
+        const canMove = tileType !== TileType.Hole || !tileState.blockInHole;
+        if (u_canMoveUp) gl.uniform1f(u_canMoveUp, canMove && TileTypeHelper.canMoveUp(tileType) ? 1.0 : 0.0);
+        if (u_canMoveDown) gl.uniform1f(u_canMoveDown, canMove && TileTypeHelper.canMoveDown(tileType) ? 1.0 : 0.0);
+        if (u_canMoveLeft) gl.uniform1f(u_canMoveLeft, canMove && TileTypeHelper.canMoveLeft(tileType) ? 1.0 : 0.0);
+        if (u_canMoveRight) gl.uniform1f(u_canMoveRight, canMove && TileTypeHelper.canMoveRight(tileType) ? 1.0 : 0.0);
+        
+        // Reset player complete time for non-player tiles
+        if (u_playerCompleteTime) gl.uniform1f(u_playerCompleteTime, 0.0);
         // set player position
         if (u_currentPos) gl.uniform2f(u_currentPos, playerCurrentPos.x, playerCurrentPos.y);
         // Check if this hole is being filled
@@ -1658,22 +1697,7 @@ export default function WebGLGrid({
           gl.drawArrays(gl.TRIANGLES, 0, 6);
         }
 
-        if (tileState.blockInHole) {
-          // When hole is filled, render as a default tile instead of hole
-          const defaultColor = getTileColor(TileType.Default);
-
-          if (u_tileColor) gl.uniform3f(u_tileColor, defaultColor[0], defaultColor[1], defaultColor[2]);
-          if (u_tileType) gl.uniform1f(u_tileType, getTileTypeValue(TileType.Default)); // Render as default tile
-          if (u_glowIntensity) gl.uniform1f(u_glowIntensity, 0.6);
-
-          // Clear movement uniforms for filled hole
-          if (u_canMoveUp) gl.uniform1f(u_canMoveUp, 0.0);
-          if (u_canMoveDown) gl.uniform1f(u_canMoveDown, 0.0);
-          if (u_canMoveLeft) gl.uniform1f(u_canMoveLeft, 0.0);
-          if (u_canMoveRight) gl.uniform1f(u_canMoveRight, 0.0);
-
-          gl.drawArrays(gl.TRIANGLES, 0, 6);
-        }
+        // No need to render filled holes separately anymore - they're handled in base tile rendering
       }
     }
 
@@ -1734,12 +1758,23 @@ export default function WebGLGrid({
       gl.bufferData(gl.ARRAY_BUFFER, texCoords, gl.STATIC_DRAW);
       gl.vertexAttribPointer(a_texCoord, 2, gl.FLOAT, false, 0, 0);
 
-      const isComplete = game.isComplete(gameState);
-      const playerColor: [number, number, number] = isComplete ? [1.0, 1.0, 0.0] : [0.0, 1.0, 0.8];
+      const playerColor: [number, number, number] = isLevelComplete ? [1.0, 1.0, 0.0] : [0.0, 1.0, 0.8];
 
+      // Track when player first completes
+      if (isLevelComplete && playerCompleteTime.current === null) {
+        playerCompleteTime.current = time;
+      } else if (!isLevelComplete) {
+        playerCompleteTime.current = null;
+      }
+      
+      // Calculate time since completion (0 if not complete)
+      const timeSinceComplete = playerCompleteTime.current !== null ? 
+        (time - playerCompleteTime.current) * 0.001 : 0.0;
+      
       if (u_tileColor) gl.uniform3f(u_tileColor, playerColor[0], playerColor[1], playerColor[2]);
       if (u_tileType) gl.uniform1f(u_tileType, 1);
-      if (u_glowIntensity) gl.uniform1f(u_glowIntensity, isComplete ? 1.0 : 0.8);
+      if (u_glowIntensity) gl.uniform1f(u_glowIntensity, isLevelComplete ? 1.0 : 0.8);
+      if (u_playerCompleteTime) gl.uniform1f(u_playerCompleteTime, timeSinceComplete);
 
       // Player doesn't have movement restrictions, so set all to 0
       if (u_canMoveUp) gl.uniform1f(u_canMoveUp, 0.0);
