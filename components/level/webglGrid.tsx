@@ -6,6 +6,7 @@ import TileTypeHelper from '@root/helpers/tileTypeHelper';
 import Position from '@root/models/position';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import Theme from '../../constants/theme';
+import { buildVertexShader, buildFragmentShader } from './webgl/shaderBuilder';
 
 interface WebGLGridProps {
   cellClassName?: (x: number, y: number) => string | undefined;
@@ -87,26 +88,12 @@ export default function WebGLGrid({
   const width = gameState.board[0].length;
   const gridId = `webgl-grid-${id}`;
 
-  // WebGL shader sources
-  const vertexShaderSource = `
-    attribute vec2 a_position;
-    attribute vec2 a_texCoord;
-    varying vec2 v_texCoord;
-    uniform vec2 u_resolution;
-    
-    void main() {
-      vec2 zeroToOne = a_position / u_resolution;
-      vec2 zeroToTwo = zeroToOne * 2.0;
-      vec2 clipSpace = zeroToTwo - 1.0;
-      gl_Position = vec4(clipSpace * vec2(1, -1), 0, 1);
-      v_texCoord = a_texCoord;
-    }
-  `;
+  // WebGL shader sources from modular builders
+  const vertexShaderSource = buildVertexShader();
+  const fragmentShaderSource = buildFragmentShader();
 
-  const fragmentShaderSource = `
-    precision mediump float;
-    varying vec2 v_texCoord;
-    uniform float u_time;
+  // Legacy shader code removed - now using modular shaders
+  const _legacyPlaceholder = `
     uniform vec3 u_tileColor;
     uniform float u_tileType;
     uniform float u_glowIntensity;
