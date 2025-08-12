@@ -1,4 +1,5 @@
 import { Game, GameType } from '@root/constants/Games';
+import Direction from '@root/constants/direction';
 import TileType from '@root/constants/tileType';
 import { AppContext } from '@root/contexts/appContext';
 import { GameState } from '@root/helpers/gameStateHelpers';
@@ -55,6 +56,27 @@ export default function WebGLGrid({
   const previousGameState = useRef<GameState | null>(null);
   const animationStartTime = useRef<number>(0);
 
+  // Animation overlay system - visual effects independent from game state
+  const animationOverlays = useRef<Map<string, {
+    type: 'hole-fill' | 'block-fade' | 'block-move';
+    position: Position;
+    startTime: number;
+    duration: number;
+    blockType?: TileType;
+    startPos?: Position;
+    targetPos?: Position;
+  }>>(new Map());
+
+  // Independent block animations - blocks that move independently of grid positions
+  const animatingBlocks = useRef<Map<string, {
+    blockType: TileType;
+    startPos: Position;
+    targetPos: Position;
+    startTime: number;
+    duration: number;
+  }>>(new Map());
+
+
   // Position tracking for particle lag effects
   const previousPositions = useRef<Map<string, Position>>(new Map());
   const currentPositions = useRef<Map<string, Position>>(new Map());
@@ -92,6 +114,7 @@ export default function WebGLGrid({
 
   const height = gameState.board.length;
   const width = gameState.board[0].length;
+
   const gridId = `webgl-grid-${id}`;
 
   // WebGL shader sources from modular builders
@@ -1549,12 +1572,8 @@ export default function WebGLGrid({
           gl.vertexAttribPointer(a_texCoord, 2, gl.FLOAT, false, 0, 0);
         }
 
-        // If hole is filled, render as default tile instead
-        const renderTileType = (tileType === TileType.Hole && tileState.blockInHole) ? TileType.Default : tileType;
-        const color = getTileColor(renderTileType);
+        const color = getTileColor(tileType);
 
-        if (u_tileColor) gl.uniform3f(u_tileColor, color[0], color[1], color[2]);
-        if (u_tileType) gl.uniform1f(u_tileType, getTileTypeValue(renderTileType));
         if (u_glowIntensity) gl.uniform1f(u_glowIntensity, tileState.text.length > 0 ? 0.8 : 0.3);
         if (u_tileGridPos) gl.uniform2f(u_tileGridPos, x, y);
 
@@ -1580,26 +1599,44 @@ export default function WebGLGrid({
         if (u_playerCompleteTime) gl.uniform1f(u_playerCompleteTime, 0.0);
         // set player position
         if (u_currentPos) gl.uniform2f(u_currentPos, playerCurrentPos.x, playerCurrentPos.y);
-        // Check if this hole is being filled
+        // Check if this hole has a fill animation overlay OR if it has blockInHole
         let holeFillProgress = 0.0;
+        const holeFillOverlay = animationOverlays.current.get(`hole-fill-${x}-${y}`);
+        
+        if (holeFillOverlay && holeFillOverlay.type === 'hole-fill') {
+          const fadeElapsed = time - holeFillOverlay.startTime;
+          const fadeProgress = Math.min(fadeElapsed / holeFillOverlay.duration, 1.0);
+          holeFillProgress = fadeProgress;
 
-        if (tileType === TileType.Hole && tileState.blockInHole) {
-          // Hole is filled, show as completely filled
-          holeFillProgress = 1.0;
-        } else if (tileType === TileType.Hole) {
-          // Check if there's an active animation for a block moving into this hole
-          const blockKey = `${x}-${y}`;
-          const blockAnimation = animatedPositions.current.get(blockKey);
+          // Clean up completed animation
+          if (fadeProgress >= 1.0) {
+            animationOverlays.current.delete(`hole-fill-${x}-${y}`);
+          }
+        } else if (tileState.blockInHole) {
+          // For tiles that have blockInHole but no animation overlay, don't fade yet
+          holeFillProgress = 0.0;
+        }
 
-          if (blockAnimation && !disableAnimation) {
-            const elapsed = time - blockAnimation.startTime;
-            const progress = Math.min(elapsed / blockAnimation.duration, 1.0);
-
-            holeFillProgress = progress;
+        if (u_holeFillProgress) {
+          gl.uniform1f(u_holeFillProgress, holeFillProgress);
+          if (tileState.blockInHole) {
+            console.log(`Setting u_holeFillProgress=${holeFillProgress} for tile with blockInHole`);
           }
         }
 
-        if (u_holeFillProgress) gl.uniform1f(u_holeFillProgress, holeFillProgress);
+        // Use the actual tile type and color
+        let renderTileType = tileType;
+        let renderColor = color;
+
+        // Update uniforms with the render tile type and color
+        if (u_tileColor) gl.uniform3f(u_tileColor, renderColor[0], renderColor[1], renderColor[2]);
+        if (u_tileType) {
+          const tileTypeValue = getTileTypeValue(renderTileType);
+          gl.uniform1f(u_tileType, tileTypeValue);
+          if (tileState.blockInHole) {
+            console.log(`Setting u_tileType=${tileTypeValue} for renderTileType=${renderTileType} (${TileType.Hole})`);
+          }
+        }
 
         // Calculate velocity for motion blur
         const velocityX = currentPos.x - previousPos.x;
@@ -1614,8 +1651,13 @@ export default function WebGLGrid({
         if (u_mousePos) gl.uniform2f(u_mousePos, mousePos.current.x, mousePos.current.y);
 
         gl.drawArrays(gl.TRIANGLES, 0, 6);
-
-        // Render blocks
+        
+        // Check if blockInHole is being rendered as a block somewhere
+        if (tileState.blockInHole) {
+          console.log(`Tile ${x},${y} has blockInHole but about to check tileState.block=${!!tileState.block}`);
+        }
+        
+        // Now render the regular block if there is one
         if (tileState.block) {
           // Check if this block is being animated
           const blockKey = `${x}-${y}`;
@@ -1697,7 +1739,143 @@ export default function WebGLGrid({
           gl.drawArrays(gl.TRIANGLES, 0, 6);
         }
 
-        // No need to render filled holes separately anymore - they're handled in base tile rendering
+        // Render blocks with fade overlay effects
+        const blockFadeOverlay = animationOverlays.current.get(`block-fade-${x}-${y}`);
+        if (blockFadeOverlay && blockFadeOverlay.type === 'block-fade' && blockFadeOverlay.blockType) {
+          const fadeElapsed = time - blockFadeOverlay.startTime;
+          const fadeProgress = Math.min(fadeElapsed / blockFadeOverlay.duration, 1.0);
+          
+          // Only render if not fully faded
+          if (fadeProgress < 1.0) {
+            const blockLeft = left;
+            const blockTop = top;
+            const blockRight = blockLeft + tileSize;
+            const blockBottom = blockTop + tileSize;
+
+            const blockPositions = new Float32Array([
+              blockLeft, blockTop,
+              blockRight, blockTop,
+              blockLeft, blockBottom,
+              blockLeft, blockBottom,
+              blockRight, blockTop,
+              blockRight, blockBottom,
+            ]);
+
+            gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, blockPositions, gl.STATIC_DRAW);
+
+            if (a_position >= 0) {
+              gl.vertexAttribPointer(a_position, 2, gl.FLOAT, false, 0, 0);
+            }
+
+            const blockColor = getTileColor(blockFadeOverlay.blockType);
+
+            if (u_tileColor) gl.uniform3f(u_tileColor, blockColor[0], blockColor[1], blockColor[2]);
+            if (u_tileType) gl.uniform1f(u_tileType, getTileTypeValue(blockFadeOverlay.blockType));
+            if (u_glowIntensity) gl.uniform1f(u_glowIntensity, 0.6);
+            if (u_tileGridPos) gl.uniform2f(u_tileGridPos, x, y);
+            
+            // Pass the fade progress for the shader to handle fading
+            if (u_holeFillProgress) gl.uniform1f(u_holeFillProgress, fadeProgress);
+
+            // For fading blocks, trail step count is 0
+            if (u_trailStepCount) gl.uniform1f(u_trailStepCount, 0);
+
+            // Set random seed for particle effects
+            const blockSeed = (x * 31.7 + y * 17.3 + getTileTypeValue(blockFadeOverlay.blockType) * 7.1) * 0.001;
+            if (u_randomSeed) gl.uniform1f(u_randomSeed, blockSeed);
+
+            // Fading blocks can't move
+            if (u_canMoveUp) gl.uniform1f(u_canMoveUp, 0.0);
+            if (u_canMoveDown) gl.uniform1f(u_canMoveDown, 0.0);
+            if (u_canMoveLeft) gl.uniform1f(u_canMoveLeft, 0.0);
+            if (u_canMoveRight) gl.uniform1f(u_canMoveRight, 0.0);
+            
+            // Set position for shader effects
+            if (u_previousPos) gl.uniform2f(u_previousPos, x, y);
+            if (u_currentPos) gl.uniform2f(u_currentPos, x, y);
+
+            // No motion blur for fading blocks
+            if (u_velocity) gl.uniform2f(u_velocity, 0, 0);
+            if (u_motionBlurStrength) gl.uniform1f(u_motionBlurStrength, 0);
+
+            gl.drawArrays(gl.TRIANGLES, 0, 6);
+          } else {
+            // Animation complete, clean up
+            animationOverlays.current.delete(`block-fade-${x}-${y}`);
+          }
+        }
+    }
+
+    // Render independent animating blocks (on top of everything)
+    for (const [key, animBlock] of animatingBlocks.current.entries()) {
+      const elapsed = time - animBlock.startTime;
+      const progress = Math.min(elapsed / animBlock.duration, 1.0);
+      
+      if (progress < 1.0) {
+        const eased = progress * progress * (3.0 - 2.0 * progress);
+        
+        const animInterpX = animBlock.startPos.x + (animBlock.targetPos.x - animBlock.startPos.x) * eased;
+        const animInterpY = animBlock.startPos.y + (animBlock.targetPos.y - animBlock.startPos.y) * eased;
+        
+        const blockLeft = startX + animInterpX * tileSize;
+        const blockTop = startY + animInterpY * tileSize;
+        const blockRight = blockLeft + tileSize;
+        const blockBottom = blockTop + tileSize;
+        
+        const blockPositions = new Float32Array([
+          blockLeft, blockTop,
+          blockRight, blockTop,
+          blockLeft, blockBottom,
+          blockLeft, blockBottom,
+          blockRight, blockTop,
+          blockRight, blockBottom,
+        ]);
+        
+        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, blockPositions, gl.STATIC_DRAW);
+        
+        if (a_position >= 0) {
+          gl.vertexAttribPointer(a_position, 2, gl.FLOAT, false, 0, 0);
+        }
+        
+        const blockColor = getTileColor(animBlock.blockType);
+        
+        if (u_tileColor) gl.uniform3f(u_tileColor, blockColor[0], blockColor[1], blockColor[2]);
+        if (u_tileType) gl.uniform1f(u_tileType, getTileTypeValue(animBlock.blockType));
+        if (u_glowIntensity) gl.uniform1f(u_glowIntensity, 0.6);
+        if (u_tileGridPos) gl.uniform2f(u_tileGridPos, animInterpX, animInterpY);
+        
+        // No fade during movement
+        if (u_holeFillProgress) gl.uniform1f(u_holeFillProgress, 0.0);
+        
+        // For animating blocks, trail step count is 0
+        if (u_trailStepCount) gl.uniform1f(u_trailStepCount, 0);
+        
+        // Set random seed for particle effects
+        const blockSeed = (animInterpX * 31.7 + animInterpY * 17.3 + getTileTypeValue(animBlock.blockType) * 7.1) * 0.001;
+        if (u_randomSeed) gl.uniform1f(u_randomSeed, blockSeed);
+        
+        // Set movement direction uniforms for proper block border rendering
+        if (u_canMoveUp) gl.uniform1f(u_canMoveUp, TileTypeHelper.canMoveUp(animBlock.blockType) ? 1.0 : 0.0);
+        if (u_canMoveDown) gl.uniform1f(u_canMoveDown, TileTypeHelper.canMoveDown(animBlock.blockType) ? 1.0 : 0.0);
+        if (u_canMoveLeft) gl.uniform1f(u_canMoveLeft, TileTypeHelper.canMoveLeft(animBlock.blockType) ? 1.0 : 0.0);
+        if (u_canMoveRight) gl.uniform1f(u_canMoveRight, TileTypeHelper.canMoveRight(animBlock.blockType) ? 1.0 : 0.0);
+        
+        // Set position for shader effects
+        if (u_previousPos) gl.uniform2f(u_previousPos, animBlock.startPos.x, animBlock.startPos.y);
+        if (u_currentPos) gl.uniform2f(u_currentPos, animInterpX, animInterpY);
+        
+        // Calculate velocity for motion effect
+        const blockVelocityX = (animBlock.targetPos.x - animBlock.startPos.x) * progress;
+        const blockVelocityY = (animBlock.targetPos.y - animBlock.startPos.y) * progress;
+        if (u_velocity) gl.uniform2f(u_velocity, blockVelocityX, blockVelocityY);
+        if (u_motionBlurStrength) gl.uniform1f(u_motionBlurStrength, 0.0);
+        
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
+      } else {
+        // Animation complete, clean up
+        animatingBlocks.current.delete(key);
       }
     }
 
@@ -1928,7 +2106,8 @@ export default function WebGLGrid({
 
       gl.drawArrays(gl.TRIANGLES, 0, 6);
     }
-
+    }
+    
     gl.deleteBuffer(positionBuffer);
     gl.deleteBuffer(texCoordBuffer);
   }, [gameState, width, height, game, getInterpolatedPosition, disableAnimation]);
@@ -1937,13 +2116,12 @@ export default function WebGLGrid({
   useEffect(() => {
     if (!previousGameState.current || disableAnimation) {
       previousGameState.current = gameState;
-
       return;
     }
 
     const currentTime = performance.now();
     const normalDuration = 100; // 100ms for normal moves
-    const holeFillDuration = 50; // 50ms for hole filling (faster suction effect)
+    const holeFillDuration = normalDuration; // Use same duration as normal moves
 
     // Check for player movement
     if (previousGameState.current.pos && gameState.pos) {
@@ -1972,7 +2150,16 @@ export default function WebGLGrid({
         if (prevTile.tileType === TileType.Hole &&
             currentTile.blockInHole &&
             !prevTile.blockInHole) {
-          // Find where the block came from
+          // Create hole fill animation overlay
+          const holeKey = `hole-fill-${x}-${y}`;
+          animationOverlays.current.set(holeKey, {
+            type: 'hole-fill',
+            position: new Position(x, y),
+            startTime: currentTime,
+            duration: 2000 // 2 second fade duration
+          });
+
+          // Find where the block came from and create independent block animation
           for (let py = 0; py < height; py++) {
             for (let px = 0; px < width; px++) {
               const prevOtherTile = previousGameState.current.board[py][px];
@@ -1981,14 +2168,25 @@ export default function WebGLGrid({
               if (prevOtherTile.block &&
                   !currentOtherTile.block &&
                   prevOtherTile.block.tileType === currentTile.blockInHole.tileType) {
-                // Animate block moving into hole with suction effect
-                const blockKey = `${x}-${y}`;
-
-                animatedPositions.current.set(blockKey, {
+                
+                // Create independent block animation that moves on top of everything
+                const animBlockKey = `animating-block-${px}-${py}-to-${x}-${y}`;
+                animatingBlocks.current.set(animBlockKey, {
+                  blockType: prevOtherTile.block.tileType,
                   startPos: new Position(px, py),
                   targetPos: new Position(x, y),
                   startTime: currentTime,
-                  duration: holeFillDuration // Faster animation for suction
+                  duration: holeFillDuration
+                });
+
+                // Create block fade animation overlay (starts after movement)
+                const blockFadeKey = `block-fade-${x}-${y}`;
+                animationOverlays.current.set(blockFadeKey, {
+                  type: 'block-fade',
+                  position: new Position(x, y),
+                  startTime: currentTime + holeFillDuration, // Start after movement
+                  duration: 2000, // 2 second fade duration
+                  blockType: prevOtherTile.block.tileType
                 });
                 break;
               }
