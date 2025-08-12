@@ -1768,10 +1768,11 @@ export default function WebGLGrid({
               gl.vertexAttribPointer(a_position, 2, gl.FLOAT, false, 0, 0);
             }
 
-            const blockColor = getTileColor(blockFadeOverlay.blockType);
+            // For block fade overlays, render the HOLE shader (since block went into hole)
+            const holeColor = getTileColor(TileType.Hole);
 
-            if (u_tileColor) gl.uniform3f(u_tileColor, blockColor[0], blockColor[1], blockColor[2]);
-            if (u_tileType) gl.uniform1f(u_tileType, getTileTypeValue(blockFadeOverlay.blockType));
+            if (u_tileColor) gl.uniform3f(u_tileColor, holeColor[0], holeColor[1], holeColor[2]);
+            if (u_tileType) gl.uniform1f(u_tileType, getTileTypeValue(TileType.Hole));
             if (u_glowIntensity) gl.uniform1f(u_glowIntensity, 0.6);
             if (u_tileGridPos) gl.uniform2f(u_tileGridPos, x, y);
             
