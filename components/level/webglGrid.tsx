@@ -1768,39 +1768,60 @@ export default function WebGLGrid({
               gl.vertexAttribPointer(a_position, 2, gl.FLOAT, false, 0, 0);
             }
 
-            // For block fade overlays, render the HOLE shader (since block went into hole)
+            // For block fade overlays, render both the HOLE (background) and BLOCK (foreground) together
+            
+            // First render the hole background with fade
             const holeColor = getTileColor(TileType.Hole);
-
             if (u_tileColor) gl.uniform3f(u_tileColor, holeColor[0], holeColor[1], holeColor[2]);
             if (u_tileType) gl.uniform1f(u_tileType, getTileTypeValue(TileType.Hole));
             if (u_glowIntensity) gl.uniform1f(u_glowIntensity, 0.6);
             if (u_tileGridPos) gl.uniform2f(u_tileGridPos, x, y);
-            
-            // Pass the fade progress for the shader to handle fading
             if (u_holeFillProgress) gl.uniform1f(u_holeFillProgress, fadeProgress);
-
-            // For fading blocks, trail step count is 0
             if (u_trailStepCount) gl.uniform1f(u_trailStepCount, 0);
-
-            // Set random seed for particle effects
-            const blockSeed = (x * 31.7 + y * 17.3 + getTileTypeValue(blockFadeOverlay.blockType) * 7.1) * 0.001;
-            if (u_randomSeed) gl.uniform1f(u_randomSeed, blockSeed);
-
-            // Fading blocks can't move
+            
+            const holeSeed = (x * 31.7 + y * 17.3 + getTileTypeValue(TileType.Hole) * 7.1) * 0.001;
+            if (u_randomSeed) gl.uniform1f(u_randomSeed, holeSeed);
+            
             if (u_canMoveUp) gl.uniform1f(u_canMoveUp, 0.0);
             if (u_canMoveDown) gl.uniform1f(u_canMoveDown, 0.0);
             if (u_canMoveLeft) gl.uniform1f(u_canMoveLeft, 0.0);
             if (u_canMoveRight) gl.uniform1f(u_canMoveRight, 0.0);
             
-            // Set position for shader effects
             if (u_previousPos) gl.uniform2f(u_previousPos, x, y);
             if (u_currentPos) gl.uniform2f(u_currentPos, x, y);
-
-            // No motion blur for fading blocks
             if (u_velocity) gl.uniform2f(u_velocity, 0, 0);
             if (u_motionBlurStrength) gl.uniform1f(u_motionBlurStrength, 0);
 
+            // Draw the hole background
             gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+            // Enable additive blending for the block on top so orange shows through
+            gl.enable(gl.BLEND);
+            gl.blendFunc(gl.ONE, gl.ONE);
+
+            // Now render the block on top with the same fade progress
+            const blockColor = getTileColor(blockFadeOverlay.blockType);
+            if (u_tileColor) gl.uniform3f(u_tileColor, blockColor[0], blockColor[1], blockColor[2]);
+            if (u_tileType) gl.uniform1f(u_tileType, getTileTypeValue(blockFadeOverlay.blockType));
+            if (u_glowIntensity) gl.uniform1f(u_glowIntensity, 0.8);
+            
+            // Pass the fade progress for the block shader to handle fading
+            if (u_holeFillProgress) gl.uniform1f(u_holeFillProgress, fadeProgress);
+            
+            const blockSeed = (x * 31.7 + y * 17.3 + getTileTypeValue(blockFadeOverlay.blockType) * 7.1) * 0.001;
+            if (u_randomSeed) gl.uniform1f(u_randomSeed, blockSeed);
+
+            // Set the pushable block direction properties so the orange border shows
+            if (u_canMoveUp) gl.uniform1f(u_canMoveUp, TileTypeHelper.canMoveUp(blockFadeOverlay.blockType) ? 1.0 : 0.0);
+            if (u_canMoveDown) gl.uniform1f(u_canMoveDown, TileTypeHelper.canMoveDown(blockFadeOverlay.blockType) ? 1.0 : 0.0);
+            if (u_canMoveLeft) gl.uniform1f(u_canMoveLeft, TileTypeHelper.canMoveLeft(blockFadeOverlay.blockType) ? 1.0 : 0.0);
+            if (u_canMoveRight) gl.uniform1f(u_canMoveRight, TileTypeHelper.canMoveRight(blockFadeOverlay.blockType) ? 1.0 : 0.0);
+
+            // Draw the block on top
+            gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+            // Disable blending for subsequent renders
+            gl.disable(gl.BLEND);
           } else {
             // Animation complete, clean up
             animationOverlays.current.delete(`block-fade-${x}-${y}`);
