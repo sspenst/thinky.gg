@@ -495,6 +495,9 @@ export const holeTileShader = `
     // Apply rounded mask
     baseColor *= roundedMask;
     
+    // Apply fade effect based on u_holeFillProgress (0.0 = full hole, 1.0 = fully faded)
+    baseColor *= (1.0 - u_holeFillProgress);
+    
     return baseColor;
   }
 `;
@@ -723,6 +726,35 @@ export const movableBlockShader = `
     
     // Apply final rounded mask with antialiasing
     baseColor *= roundedMask;
+    
+    // Apply fade-out effect when block is in a hole (being consumed)
+    if (u_holeFillProgress > 0.0) {
+      // Fade out the block as it gets consumed by the hole
+      float fadeAlpha = 1.0 - u_holeFillProgress;
+      
+      // Add some distortion/warping effect as it gets sucked in
+      vec2 center = vec2(0.5);
+      vec2 toCenter = v_texCoord - center;
+      float distToCenter = length(toCenter);
+      
+      // Create a spiral/swirl effect as it fades
+      float swirl = u_holeFillProgress * 3.14159;
+      vec2 swirlCoord = vec2(
+        cos(swirl) * toCenter.x - sin(swirl) * toCenter.y,
+        sin(swirl) * toCenter.x + cos(swirl) * toCenter.y
+      );
+      
+      // Shrink towards center as it fades
+      float shrinkFactor = 1.0 - u_holeFillProgress * 0.5;
+      vec2 shrunkCoord = center + swirlCoord * shrinkFactor;
+      
+      // Apply fade and discard fully transparent pixels
+      baseColor *= fadeAlpha;
+      
+      if (fadeAlpha < 0.01) {
+        discard;
+      }
+    }
     
     return baseColor;
   }
