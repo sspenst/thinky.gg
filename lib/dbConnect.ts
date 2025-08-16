@@ -37,8 +37,8 @@ export default async function dbConnect({ ignoreInitializeLocalDb }: DBConnectPr
   if (!cached.promise) {
     const options: ConnectOptions = {
       connectTimeoutMS: 10000,
-      heartbeatFrequencyMS: 30000,
-      serverSelectionTimeoutMS: 10000,
+     // heartbeatFrequencyMS: 30000,
+     // serverSelectionTimeoutMS: 10000,
       socketTimeoutMS: 20000,
       maxIdleTimeMS: process.env.NODE_ENV === 'development' ? 5000 : 30000,
       ...(process.env.NODE_ENV === 'development' && {
