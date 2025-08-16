@@ -81,6 +81,7 @@ export default async function dbConnect({ ignoreInitializeLocalDb }: DBConnectPr
       uri = process.env.MONGODB_URI;
     }
 
+console.log('Connecting to ' + uri);
     cached.promise = mongoose.connect(uri, options).then((mongoose) => {
       mongoose.connection.on('disconnected', () => {
         if (!cached.autoReconnect) {
