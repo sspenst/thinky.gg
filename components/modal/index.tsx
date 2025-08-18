@@ -124,7 +124,7 @@ export default function Modal({
                         className='group relative overflow-hidden bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-2 px-6 rounded-lg shadow-md transform hover:scale-105 transition-all duration-200'
                         disabled={disabled}
                         onClick={() => {}}
-                        text={confirmText || submitLabel || 'Create Match'}
+                        text={confirmText || submitLabel || 'Confirm'}
                         type='submit'
                       />
                       <ModalButton

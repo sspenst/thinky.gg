@@ -39,6 +39,7 @@ export default function CreateMatchModal({ closeModal, isOpen, onConfirm }: Crea
 
         onConfirm(matchType, isPrivate, isRated);
       }}
+      confirmText={'Create Match'}
       title={'Create Match'}
     >
       <div className='flex flex-col gap-6'>
