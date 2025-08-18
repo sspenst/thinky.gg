@@ -12,12 +12,28 @@ interface LevelResultsSectionProps {
   match: MultiplayerMatch;
 }
 
+function getIdString(value: any): string | undefined {
+  if (!value) return undefined;
+  // Support either ObjectId string, ObjectId instance, or populated document with _id
+  if (typeof value === 'string') return value;
+  if (typeof value.toString === 'function' && value._bsontype === 'ObjectID') return value.toString();
+  if (value._id && typeof value._id.toString === 'function') return value._id.toString();
+  if (typeof value.toString === 'function') return value.toString();
+  return undefined;
+}
+
 function getLevelResultIcon(match: MultiplayerMatch, level: Level, userId: string) {
   if (!match || !match.matchLog) {
     return;
   }
 
-  const completedLog = match.matchLog.filter(log => log.type === MatchAction.COMPLETE_LEVEL && (log.data as MatchLogDataLevelComplete).levelId.toString() === level._id.toString() && (log.data as MatchLogDataLevelComplete).userId.toString() === userId);
+  const completedLog = match.matchLog.filter(log => {
+    if (log.type !== MatchAction.COMPLETE_LEVEL) return false;
+    const data = log.data as MatchLogDataLevelComplete;
+    const logLevelId = getIdString((data as any)?.levelId);
+    const logUserId = getIdString((data as any)?.userId);
+    return logLevelId === level._id.toString() && logUserId === userId;
+  });
 
   if (completedLog.length !== 0) {
     const timestamp = new Date(completedLog[0].createdAt).getTime() - new Date(match.startTime).getTime();
@@ -36,7 +52,13 @@ function getLevelResultIcon(match: MultiplayerMatch, level: Level, userId: strin
     </>);
   }
 
-  const skippedLog = match.matchLog.filter(log => log.type === MatchAction.SKIP_LEVEL && (log.data as MatchLogDataLevelComplete).levelId.toString() === level._id.toString() && (log.data as MatchLogDataLevelComplete).userId.toString() === userId);
+  const skippedLog = match.matchLog.filter(log => {
+    if (log.type !== MatchAction.SKIP_LEVEL) return false;
+    const data = log.data as MatchLogDataLevelComplete;
+    const logLevelId = getIdString((data as any)?.levelId);
+    const logUserId = getIdString((data as any)?.userId);
+    return logLevelId === level._id.toString() && logUserId === userId;
+  });
 
   if (skippedLog.length !== 0) {
     const timestamp = new Date(skippedLog[0].createdAt).getTime() - new Date(match.startTime).getTime();
