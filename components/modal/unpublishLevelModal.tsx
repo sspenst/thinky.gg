@@ -53,6 +53,7 @@ export default function UnpublishLevelModal({ closeModal, isOpen, level }: Unpub
       disabled={isUnpublishing}
       isOpen={isOpen}
       onConfirm={onConfirm}
+      confirmText={'Unpublish'}
       title={'Unpublish Level'}
     >
       <div className='break-words text-center'>
