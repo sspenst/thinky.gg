@@ -4,18 +4,19 @@ import { AppContext } from '@root/contexts/appContext';
 import { useRouter } from 'next/router';
 import { JSX, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { toast } from 'react-hot-toast';
-import ReactJoyride, { CallBackProps, Step, Styles, StylesOptions } from 'react-joyride';
+import CustomTour from '@root/components/tour/CustomTour';
+import { TourCallbackData, TourStep } from '@root/types/tour';
 import TOUR_STEPS_HOME_PAGE from '../constants/tourSteps/TOUR_STEPS_HOME_PAGE';
 
-export const TOUR_DATA: { [key in TourType]: Step[] } = {
+export const TOUR_DATA: { [key in TourType]: TourStep[] } = {
   [TourType.HOME_PAGE]: TOUR_STEPS_HOME_PAGE,
 };
 
-export default function useTour(path: TourPath, cb?: (data: CallBackProps) => void, disableScrolling = false) {
+export default function useTour(path: TourPath, cb?: (data: TourCallbackData) => void, disableScrolling = false) {
   const { game, mutateUser, userConfig } = useContext(AppContext);
   const router = useRouter();
   const [run, setRun] = useState(false);
-  const stepsRef = useRef<Step[]>([]);
+  const stepsRef = useRef<TourStep[]>([]);
   const [tour, setTour] = useState<JSX.Element>();
   const [currentUrl, setCurrentUrl] = useState(router.asPath);
 
@@ -86,30 +87,10 @@ export default function useTour(path: TourPath, cb?: (data: CallBackProps) => vo
     }
 
     setTour(
-      <ReactJoyride
-        callback={(data: CallBackProps) => {
-          if (!tourType) {
-            return;
-          }
-
-          if ((data.type === 'tour:end' || data.status === 'skipped')) {
-            putFinishedTour(tourType);
-          }
-
-          // Handle scrolling for all steps
-          if ((data.type === 'step:after' || data.type === 'step:before') && data.step?.target) {
-            scrollToTarget(data.step.target);
-          }
-
-          if (cb) {
-            cb(data);
-          }
-        }}
+      <CustomTour
         run={run}
         steps={stepsRef.current}
-        continuous
-        hideCloseButton
-        disableScrolling={true} // Disable react-joyride's built-in scrolling
+        disableScrolling={true}
         showProgress
         showSkipButton
         locale={{
@@ -119,51 +100,16 @@ export default function useTour(path: TourPath, cb?: (data: CallBackProps) => vo
           next: 'Next',
           skip: 'Skip',
         }}
-        styles={{
-          buttonBack: {
-            backgroundColor: '#3B82F6',
-            borderRadius: '6px',
-            color: 'var(--color)',
-          },
-          buttonClose: {
-            display: 'none',
-          },
-          buttonNext: {
-            backgroundColor: '#3B82F6',
-            borderRadius: '6px',
-            color: 'var(--color)',
-          },
-          buttonSkip: {
-            color: 'var(--color)',
-            textDecoration: 'underline',
-          },
-          options: {
-            arrowColor: 'var(--bg-color-2)',
-            primaryColor: '#5c6bc0',
-            textColor: 'var(--color)',
-            zIndex: 10000,
-          } as StylesOptions,
-          spotlight: {
-            borderRadius: '8px',
-          },
-          tooltip: {
-            backgroundColor: 'var(--bg-color-2)',
-            borderRadius: '8px',
-            boxShadow: '0px 8px 16px rgba(0, 0, 0, 0.1)',
-          },
-          tooltipContainer: {
-            textAlign: 'left',
-          },
-          tooltipContent: {
-            padding: '8px',
-          },
-          tooltipTitle: {
-            color: 'var(--color)',
-            fontSize: '24px',
-            marginLeft: '8px',
-            fontWeight: 'bold',
-          },
-        } as Styles}
+        onCallback={(data) => {
+          if (!tourType) return;
+          if (data.type === 'tour:end' || data.type === 'skipped') {
+            putFinishedTour(tourType);
+          }
+          if ((data.type === 'step:after' || data.type === 'step:before') && data.step?.target) {
+            scrollToTarget(data.step.target as any);
+          }
+          if (cb) cb(data);
+        }}
       />
     );
   }, [cb, game.disableTour, path, putFinishedTour, run, scrollToTarget, userConfig]);
