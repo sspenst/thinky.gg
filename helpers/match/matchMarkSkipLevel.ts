@@ -25,9 +25,11 @@ export async function matchMarkSkipLevel(
   const userName = user ? user.name : 'A player';
 
   // Get the current level for the user
-  match = enrichMultiplayerMatch(match);
-  const userScore = match.scoreTable[userId.toString()] || 0;
-  const currentLevel = (match.levels as any[])[userScore];
+  // Use gameTable length (not scoreTable) to get the correct level index
+  // scoreTable filters out skips, but we need the actual position in the levels array
+  const userGameTable = match.gameTable?.get(userId.toString()) || [];
+  const currentLevelIndex = userGameTable.length;
+  const currentLevel = (match.levels as any[])[currentLevelIndex];
 
   if (!currentLevel) {
     // User has no current level to skip (might have finished all levels)
@@ -35,6 +37,9 @@ export async function matchMarkSkipLevel(
   }
 
   const levelId = currentLevel._id;
+  
+  // Enrich the match after getting the level info
+  match = enrichMultiplayerMatch(match);
 
   const updated = await MultiplayerMatchModel.findOneAndUpdate(
     {
