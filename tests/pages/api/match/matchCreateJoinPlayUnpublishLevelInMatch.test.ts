@@ -363,6 +363,11 @@ describe('matchUnpublishLevelInMatch', () => {
     const levels = match.levels;
 
     expect(levels).toHaveLength(6); // see 3+3 comment above
+    
+    // Store the level USER (TestId.USER) is currently on (should be the second level, index 1)
+    const userCurrentLevelIndex = 1; // User A completed level 0, now on level 1
+    const userCurrentLevel = levels[userCurrentLevelIndex];
+    
     await testApiHandler({
       pagesHandler: async (_, res) => {
         await handler({
@@ -385,7 +390,151 @@ describe('matchUnpublishLevelInMatch', () => {
         expect(response.success).toBe(true);
       }
     });
+    
+    // Verify that the skip was recorded correctly
+    const updatedMatch = await MultiplayerMatchModel.findOne({ matchId: matchId });
+    const userGameTable = updatedMatch.gameTable.get(TestId.USER);
+    
+    // Should have 2 entries: the completed level and the skip marker
+    expect(userGameTable).toHaveLength(2);
+    expect(userGameTable[0].toString()).toBe(levels[0]._id.toString()); // First completed level
+    expect(userGameTable[1].toString()).toBe('000000000000000000000000'); // Skip marker
+    
+    // Check the match log to verify the correct level was marked as skipped
+    const skipLogEntry = updatedMatch.matchLog.find(log => log.type === MatchAction.SKIP_LEVEL && log.data.userId.toString() === TestId.USER);
+    expect(skipLogEntry).toBeDefined();
+    expect(skipLogEntry.data.levelId.toString()).toBe(userCurrentLevel._id.toString());
+    
+    // Check chat messages for the skip action
+    const skipChatMessage = updatedMatch.chatMessages[updatedMatch.chatMessages.length - 1];
+    expect(skipChatMessage.systemData.type).toBe('level_action');
+    expect(skipChatMessage.systemData.action).toBe('skipped');
+    expect(skipChatMessage.systemData.level._id.toString()).toBe(userCurrentLevel._id.toString());
   });
+  test('user A completes another level then skips (verifying skip records correct level)', async () => {
+    MockDate.set(new Date().getTime() + 2000); // two seconds later
+    
+    const match = await MultiplayerMatchModel.findOne({ matchId: matchId });
+    const levels = match.levels;
+    
+    // User A should be on level 2 now (after completing level 0 and skipping level 1)
+    // Let's have them complete level 2
+    await testApiHandler({
+      pagesHandler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'PUT',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          body: {
+            directions: [Direction.RIGHT],
+            levelId: levels[2]._id, // Complete level at index 2
+            matchId: matchId,
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        Games[DEFAULT_GAME_ID].validateSolution = () => true;
+        await statHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBeUndefined();
+        expect(res.status).toBe(200);
+      }
+    });
+    
+    // Now User A is on level 3, let's skip it
+    const userACurrentLevel = levels[3];
+    
+    await testApiHandler({
+      pagesHandler: async (_, res) => {
+        await handler({
+          ...defaultReq,
+          method: 'PUT',
+          query: {
+            matchId: matchId,
+          },
+          body: {
+            action: MatchAction.SKIP_LEVEL
+          }
+        }, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(res.status).toBe(400);
+        expect(response.error).toBe('Already used skip'); // User A already used their skip
+      }
+    });
+  });
+  
+  test('user B skips their first level', async () => {
+    MockDate.set(new Date().getTime() + 2000); // two seconds later
+
+    const match = await MultiplayerMatchModel.findOne({ matchId: matchId });
+    const levels = match.levels;
+    
+    // User B is on their first level (index 0)
+    const userBCurrentLevelIndex = 0;
+    const userBCurrentLevel = levels[userBCurrentLevelIndex];
+    
+    await testApiHandler({
+      pagesHandler: async (_, res) => {
+        await handler({
+          ...defaultReq,
+          method: 'PUT',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER_B),
+          },
+          query: {
+            matchId: matchId,
+          },
+          body: {
+            action: MatchAction.SKIP_LEVEL
+          }
+        }, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(res.status).toBe(200);
+        expect(response.error).toBeUndefined();
+        expect(response.success).toBe(true);
+      }
+    });
+    
+    // Verify that User B's skip was recorded correctly
+    const updatedMatch = await MultiplayerMatchModel.findOne({ matchId: matchId });
+    const userBGameTable = updatedMatch.gameTable.get(TestId.USER_B);
+    
+    // Should have 1 entry: just the skip marker
+    expect(userBGameTable).toHaveLength(1);
+    expect(userBGameTable[0].toString()).toBe('000000000000000000000000'); // Skip marker
+    
+    // Check the match log to verify the correct level was marked as skipped for User B
+    const skipLogEntry = updatedMatch.matchLog.find(log => log.type === MatchAction.SKIP_LEVEL && log.data.userId.toString() === TestId.USER_B);
+    expect(skipLogEntry).toBeDefined();
+    expect(skipLogEntry.data.levelId.toString()).toBe(userBCurrentLevel._id.toString());
+    
+    // Check chat messages for User B's skip action
+    const chatMessages = updatedMatch.chatMessages;
+    const userBSkipMessage = chatMessages.find(msg => 
+      msg.systemData && 
+      msg.systemData.type === 'level_action' && 
+      msg.systemData.userId === TestId.USER_B &&
+      msg.systemData.action === 'skipped'
+    );
+    expect(userBSkipMessage).toBeDefined();
+    expect(userBSkipMessage.systemData.level._id.toString()).toBe(userBCurrentLevel._id.toString());
+  });
+  
   test('user B match skip via api again', async () => {
     MockDate.set(new Date().getTime() + 2000); // two seconds later
 
@@ -400,6 +549,9 @@ describe('matchUnpublishLevelInMatch', () => {
         await handler({
           ...defaultReq,
           method: 'PUT',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER_B),
+          },
           query: {
             matchId: matchId,
           },
@@ -435,8 +587,8 @@ describe('matchUnpublishLevelInMatch', () => {
 
         expect(response.matchId).toBeDefined();
         expect(response.scoreTable).toEqual({
-          [TestId.USER]: 1,
-          [TestId.USER_B]: 0,
+          [TestId.USER]: 2,  // User A completed level 0 and level 2 (skipped level 1)
+          [TestId.USER_B]: 0, // User B skipped level 0
         });
         expect(response.winners).toHaveLength(0);
 
@@ -484,8 +636,8 @@ describe('matchUnpublishLevelInMatch', () => {
 
         expect(response.matchId).toBeDefined();
         expect(response.scoreTable).toEqual({
-          [TestId.USER]: 1,
-          [TestId.USER_B]: 0,
+          [TestId.USER]: 2,  // User A completed level 0 and level 2 (skipped level 1)
+          [TestId.USER_B]: 0, // User B skipped level 0
         });
         expect(response.winners).toHaveLength(0);
 
@@ -493,9 +645,9 @@ describe('matchUnpublishLevelInMatch', () => {
         expect(response.state).toBe(MultiplayerMatchState.ABORTED);
         const match = await MultiplayerMatchModel.findOne({ matchId: matchId });
 
-        expect(match.matchLog).toHaveLength(5);
-        expect(match.matchLog[4].type).toBe(MatchAction.ABORTED);
-        expect(match.matchLog[4].data.log).toBe('The level ' + levelThatWeWillWantToTestDeletionFor._id.toString() + ' was unpublished');
+        expect(match.matchLog).toHaveLength(7); // create, join, A complete, A skip, A complete2, B skip, aborted
+        expect(match.matchLog[6].type).toBe(MatchAction.ABORTED);
+        expect(match.matchLog[6].data.log).toBe('The level ' + levelThatWeWillWantToTestDeletionFor._id.toString() + ' was unpublished');
       }
     });
   });
