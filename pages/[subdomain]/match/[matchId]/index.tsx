@@ -24,7 +24,7 @@ import classNames from 'classnames';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { AppContext } from '../../../../contexts/appContext';
 import { getGameIdFromReq } from '../../../../helpers/getGameIdFromReq';
@@ -35,6 +35,7 @@ import { MatchAction, MatchLogDataGameRecap, MultiplayerMatchState } from '../..
 import Level from '../../../../models/db/level';
 import MultiplayerMatch from '../../../../models/db/multiplayerMatch';
 import { enrichMultiplayerMatch } from '../../../../models/schemas/multiplayerMatchSchema';
+import { throttle } from 'throttle-debounce';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const token = context.req?.cookies?.token;
@@ -138,6 +139,18 @@ export default function Match({ initialMatch }: MatchProps) {
     }
   }, [activeLevel, matchId, multiplayerSocket.socket]);
 
+  const throttledEmitMatchState = useMemo(() => throttle(500, (gameState: MatchGameState) => {
+    void emitMatchState(gameState);
+  }), [emitMatchState]);
+
+  useEffect(() => {
+    return () => {
+      // cancel pending trailing calls on unmount
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (throttledEmitMatchState as any)?.cancel?.();
+    };
+  }, [throttledEmitMatchState]);
+
   useEffect(() => {
     if (!currentMatch) {
       return;
@@ -151,7 +164,7 @@ export default function Match({ initialMatch }: MatchProps) {
         const initialMatchGameState: MatchGameState = { ...baseState, leastMoves: firstLevel.leastMoves };
 
         latestMatchGameStateRef.current = initialMatchGameState;
-        emitMatchState(initialMatchGameState);
+        throttledEmitMatchState(initialMatchGameState);
       }
 
       setActiveLevel((currentMatch.levels as Level[])[0]);
@@ -166,7 +179,7 @@ export default function Match({ initialMatch }: MatchProps) {
 
     const intervalId = setInterval(() => {
       if (latestMatchGameStateRef.current) {
-        emitMatchState(latestMatchGameStateRef.current);
+        throttledEmitMatchState(latestMatchGameStateRef.current);
       }
     }, 5000);
 
@@ -554,7 +567,7 @@ export default function Match({ initialMatch }: MatchProps) {
                       const matchGameState: MatchGameState = { ...gameState, leastMoves: activeLevel.leastMoves };
 
                       latestMatchGameStateRef.current = matchGameState;
-                      emitMatchState(matchGameState);
+                      throttledEmitMatchState(matchGameState);
                     }}
                     onSkipUsed={() => setUsedSkip(true)}
                   />
