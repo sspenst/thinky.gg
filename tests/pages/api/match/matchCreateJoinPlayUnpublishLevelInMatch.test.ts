@@ -401,7 +401,7 @@ describe('matchUnpublishLevelInMatch', () => {
     expect(userGameTable[1].toString()).toBe('000000000000000000000000'); // Skip marker
     
     // Check the match log to verify the correct level was marked as skipped
-    const skipLogEntry = updatedMatch.matchLog.find(log => log.type === MatchAction.SKIP_LEVEL && log.data.userId.toString() === TestId.USER);
+    const skipLogEntry = updatedMatch.matchLog.find((log: any) => log.type === MatchAction.SKIP_LEVEL && log.data.userId.toString() === TestId.USER);
     expect(skipLogEntry).toBeDefined();
     expect(skipLogEntry.data.levelId.toString()).toBe(userCurrentLevel._id.toString());
     
@@ -519,13 +519,13 @@ describe('matchUnpublishLevelInMatch', () => {
     expect(userBGameTable[0].toString()).toBe('000000000000000000000000'); // Skip marker
     
     // Check the match log to verify the correct level was marked as skipped for User B
-    const skipLogEntry = updatedMatch.matchLog.find(log => log.type === MatchAction.SKIP_LEVEL && log.data.userId.toString() === TestId.USER_B);
+    const skipLogEntry = updatedMatch.matchLog.find((log: any) => log.type === MatchAction.SKIP_LEVEL && log.data.userId.toString() === TestId.USER_B);
     expect(skipLogEntry).toBeDefined();
     expect(skipLogEntry.data.levelId.toString()).toBe(userBCurrentLevel._id.toString());
     
     // Check chat messages for User B's skip action
     const chatMessages = updatedMatch.chatMessages;
-    const userBSkipMessage = chatMessages.find(msg => 
+    const userBSkipMessage = chatMessages.find((msg: any) => 
       msg.systemData && 
       msg.systemData.type === 'level_action' && 
       msg.systemData.userId === TestId.USER_B &&
