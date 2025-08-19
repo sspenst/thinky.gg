@@ -15,6 +15,7 @@ import { MultiplayerMatchModel } from '../../models/mongoose';
 import { enrichMultiplayerMatch } from '../../models/schemas/multiplayerMatchSchema';
 import { broadcastConnectedPlayers, broadcastCountOfUsersInRoom, broadcastMatches, broadcastMatchGameState, broadcastNotifications, broadcastPrivateAndInvitedMatches, scheduleBroadcastMatch } from './socketFunctions';
 import { isRateLimited } from './rateLimiter';
+import { isGameStateRateLimited } from './gameStateRateLimiter';
 
 'use strict';
 
@@ -164,6 +165,10 @@ export default async function startSocketIOServer(server: Server) {
       const { matchId, matchGameState } = data;
 
       if (userId && isValidMatchGameState(matchGameState)) {
+        // server-side throttle: allow at most 2 updates per second per user
+        if (isGameStateRateLimited(userId.toString())) {
+          return;
+        }
         await broadcastMatchGameState(mongoEmitter, userId, matchId, matchGameState);
         await broadcastCountOfUsersInRoom(gameId, adapted, matchId); // TODO: probably worth finding a better place to put this
       }
