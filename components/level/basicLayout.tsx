@@ -44,13 +44,13 @@ export default function BasicLayout({ cellClassName, cellStyle, controls, hideTe
             onClick(index, rightClick);
           }
         } : undefined}
-        onCellClick={!deviceInfo.isMobile ? (x, y, rightClick) => {
+        onCellClick={(x, y, rightClick) => {
           if (onClick) {
             const index = y * (level.width + 1) + x;
 
             onClick(index, rightClick);
           }
-        } : undefined}
+        }}
 
       />
       {!controls ? null : <Controls controls={controls} />}
