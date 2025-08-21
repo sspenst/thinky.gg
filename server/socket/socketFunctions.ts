@@ -50,6 +50,7 @@ export async function broadcastPrivateAndInvitedMatches(gameId: GameId, emitter:
 }
 
 export async function broadcastMatches(gameId: GameId, emitter: Emitter) {
+  console.log('BROADCASTING???');
   const matches = await getAllMatches(gameId);
 
   matches.forEach(match => {
@@ -68,6 +69,7 @@ export async function scheduleBroadcastMatch(gameId: GameId, emitter: Emitter, m
 
   if (!match) {
     logger.error(`scheduleBroadcastMatch: Could not find match ${matchId}`);
+
     return;
   }
 
@@ -80,7 +82,7 @@ export async function scheduleBroadcastMatch(gameId: GameId, emitter: Emitter, m
   const now = Date.now();
   const startTime = new Date(match.startTime).getTime();
   const endTime = new Date(match.endTime).getTime();
-  
+
   const timeUntilStart = Math.max(0, startTime - now + 1);
   const timeUntilEnd = Math.max(0, endTime - now + 1);
 
@@ -91,7 +93,7 @@ export async function scheduleBroadcastMatch(gameId: GameId, emitter: Emitter, m
     await checkForUnreadyAboutToStartMatch(matchId);
     await broadcastMatch(gameId, emitter, matchId);
   }, timeUntilStart);
-  
+
   const timeoutEnd = setTimeout(async () => {
     logger.info(`Match ${matchId} end timeout triggered`);
     await checkForFinishedMatch(matchId);
