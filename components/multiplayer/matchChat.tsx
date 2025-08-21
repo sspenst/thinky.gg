@@ -185,7 +185,7 @@ export default function MatchChat({ match, user, onSendMessage, showSpectatorNot
                         className={isMe ? 'text-white/80 hover:text-white' : 'text-white/70 hover:text-white'}
                       />
                     </div>
-                    <div className='text-sm'>{chatMessage.message}</div>
+                    <div className='text-sm break-words'>{chatMessage.message}</div>
                     <div className='text-xs text-white/60 mt-1'>
                       {formatTime(chatMessage.createdAt)}
                     </div>
@@ -208,7 +208,7 @@ export default function MatchChat({ match, user, onSendMessage, showSpectatorNot
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 placeholder='Type a message...'
-                maxLength={200}
+                maxLength={150}
                 className='flex-1 bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white placeholder-white/50 focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400'
                 disabled={isSending}
               />
