@@ -6,7 +6,7 @@ interface GameStateAttempt {
 
 // Rate limiting for match game state messages (2 per second)
 const gameStateAttempts = new Map<string, GameStateAttempt>();
-const MAX_MESSAGES_PER_WINDOW = 2; // 2 updates
+const MAX_MESSAGES_PER_WINDOW = 10; // 10 updates
 const WINDOW_DURATION_MS = 1000; // per 1 second
 const CLEANUP_INTERVAL_MS = 300000; // 5 minutes
 
@@ -35,6 +35,7 @@ export function isGameStateRateLimited(userId: string): boolean {
   // Check if user has exceeded the limit
   if (userAttempts.timestamps.length >= MAX_MESSAGES_PER_WINDOW) {
     logger.debug?.(`User ${userId} gameState rate limited: ${userAttempts.timestamps.length} in ${WINDOW_DURATION_MS}ms`);
+
     return true;
   }
 
@@ -44,4 +45,3 @@ export function isGameStateRateLimited(userId: string): boolean {
 
   return false;
 }
-

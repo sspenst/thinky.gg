@@ -35,6 +35,12 @@ process.on('uncaughtException', (err) => {
 });
 process.on('unhandledRejection', (err) => {
   logger.error('unhandledRejection', err);
+  // Don't exit on MongoDB connection errors - let Mongoose handle reconnection
+  if (err && typeof err === 'object' && 'name' in err && 
+      (err.name === 'MongoNetworkError' || err.name === 'MongoServerError' || err.name === 'MongoTimeoutError')) {
+    logger.error('MongoDB error detected, Mongoose will handle reconnection automatically');
+    return;
+  }
   process.exit(1);
 });
 
@@ -48,9 +54,21 @@ process.on('SIGINT', () => {
   process.exit(0);
 });
 // kill
-process.on('SIGTERM', () => {
-  logger.info('SIGTERM signal received.');
-  // exit 0
+process.on('SIGTERM', async () => {
+  logger.info('SIGTERM signal received. Gracefully shutting down...');
+  
+  if (GlobalSocketIO) {
+    logger.info('Closing Socket.IO server...');
+    GlobalSocketIO.close(() => {
+      logger.info('Socket.IO server closed');
+    });
+  }
+
+  // Give connections time to close gracefully
+  setTimeout(() => {
+    logger.info('Forcing exit after graceful shutdown timeout');
+    process.exit(0);
+  }, 10000);
 });
 let GlobalSocketIO: Server;
 
@@ -108,6 +126,23 @@ export default async function startSocketIOServer(server: Server) {
   const mongooseConnection = await dbConnect();
 
   logger.info('Connected to DB');
+
+  // Set up connection event handlers for monitoring
+  mongooseConnection.connection.on('connected', () => {
+    logger.info('MongoDB connected successfully');
+  });
+
+  mongooseConnection.connection.on('disconnected', () => {
+    logger.warn('MongoDB disconnected - Mongoose will automatically attempt to reconnect');
+  });
+
+  mongooseConnection.connection.on('reconnected', () => {
+    logger.info('MongoDB reconnected successfully');
+  });
+
+  mongooseConnection.connection.on('error', (err) => {
+    logger.error('MongoDB connection error:', err);
+  });
 
   logger.info('Booting Server on ' + server.path());
   GlobalSocketIO = server;
