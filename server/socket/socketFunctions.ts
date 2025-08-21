@@ -125,7 +125,11 @@ export async function broadcastCountOfUsersInRoom(gameId: GameId, emitter: Serve
   let clientsMap;
 
   try {
-    clientsMap = await emitter?.in(matchId).fetchSockets();
+    // Use local.fetchSockets() in development to avoid adapter timeout issues
+    const isLocal = process.env.LOCAL === 'true';
+    clientsMap = isLocal 
+      ? await emitter?.local.in(matchId).fetchSockets()
+      : await emitter?.in(matchId).fetchSockets();
   } catch (e) {
     logger.error('error fetching sockets', e);
 
@@ -179,7 +183,11 @@ export async function broadcastConnectedPlayers(gameId: GameId, emitter: Server)
   let clientsMap;
 
   try {
-    clientsMap = await emitter?.fetchSockets();
+    // Use local.fetchSockets() in development to avoid adapter timeout issues
+    const isLocal = process.env.LOCAL === 'true';
+    clientsMap = isLocal
+      ? await emitter?.local.fetchSockets()
+      : await emitter?.fetchSockets();
   } catch (e) {
     logger.error('error fetching sockets', e);
 

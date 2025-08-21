@@ -56,8 +56,12 @@ let GlobalSocketIO: Server;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function authenticateSocket(socket: any, next: (err?: Error) => void) {
   // Rate limit based on IP address
-  const clientIp = socket.handshake.address || socket.request.connection.remoteAddress;
-  const identifier = clientIp;
+  const clientIp = socket.handshake.headers['x-forwarded-for'] || 
+                   socket.handshake.headers['x-real-ip'] || 
+                   socket.handshake.address || 
+                   socket.request?.connection?.remoteAddress ||
+                   'unknown';
+  const identifier = typeof clientIp === 'string' ? clientIp : clientIp?.[0] || 'unknown';
 
   if (isRateLimited(identifier)) {
     logger.warn(`Blocking connection from ${identifier} due to rate limiting`);
@@ -142,7 +146,7 @@ export default async function startSocketIOServer(server: Server) {
   logger.info('Found ' + activeMatches.length + ' active matches. Rescheduling broadcasts');
   activeMatches.map(async (match) => {
     logger.info('Rescheduling broadcasts for active match ' + match.matchId);
-    await scheduleBroadcastMatch(match.gameId, MongoEmitter, match.matchId.toString());
+    await scheduleBroadcastMatch(match.gameId, mongoEmitter, match.matchId.toString());
   });
 
   GlobalSocketIO.use(authenticateSocket);
