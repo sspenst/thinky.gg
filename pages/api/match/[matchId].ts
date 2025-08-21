@@ -402,8 +402,8 @@ export default withAuth(
           return res.status(400).json({ error: 'Message is required' });
         }
 
-        if (message.length > 200) {
-          return res.status(400).json({ error: 'Message too long' });
+        if (message.length > 150) {
+          return res.status(400).json({ error: 'Message too long (max 150 characters)' });
         }
 
         // Check chat rate limiting

@@ -26,6 +26,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
+import { throttle } from 'throttle-debounce';
 import { AppContext } from '../../../../contexts/appContext';
 import { getGameIdFromReq } from '../../../../helpers/getGameIdFromReq';
 import { getMatch } from '../../../../helpers/match/getMatch';
@@ -35,7 +36,6 @@ import { MatchAction, MatchLogDataGameRecap, MultiplayerMatchState } from '../..
 import Level from '../../../../models/db/level';
 import MultiplayerMatch from '../../../../models/db/multiplayerMatch';
 import { enrichMultiplayerMatch } from '../../../../models/schemas/multiplayerMatchSchema';
-import { throttle } from 'throttle-debounce';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const token = context.req?.cookies?.token;
@@ -139,9 +139,11 @@ export default function Match({ initialMatch }: MatchProps) {
     }
   }, [activeLevel, matchId, multiplayerSocket.socket]);
 
-  const throttledEmitMatchState = useMemo(() => throttle(500, (gameState: MatchGameState) => {
+  const throttledEmitMatchState = useMemo(() => throttle(200, (gameState: MatchGameState) => {
     void emitMatchState(gameState);
-  }), [emitMatchState]);
+  }, {
+    noLeading: true
+  }), [emitMatchState]); // trailing i guess is true by default
 
   useEffect(() => {
     return () => {
@@ -169,7 +171,7 @@ export default function Match({ initialMatch }: MatchProps) {
 
       setActiveLevel((currentMatch.levels as Level[])[0]);
     }
-  }, [currentMatch, emitMatchState]);
+  }, [currentMatch, emitMatchState, throttledEmitMatchState]);
 
   // Periodically emit the latest game state every 5 seconds while actively playing
   useEffect(() => {
@@ -184,7 +186,7 @@ export default function Match({ initialMatch }: MatchProps) {
     }, 5000);
 
     return () => clearInterval(intervalId);
-  }, [emitMatchState, iAmPlaying, matchInProgress]);
+  }, [emitMatchState, iAmPlaying, matchInProgress, throttledEmitMatchState]);
 
   const fetchMarkReady = useCallback(async() => {
     const res = await fetch(`/api/match/${matchId}`, {
@@ -232,6 +234,7 @@ export default function Match({ initialMatch }: MatchProps) {
 
     if (!res.ok) {
       const errorData = await res.json().catch(() => ({ error: 'Failed to send message' }));
+
       toast.error(errorData.error || 'Failed to send message');
       console.error('Failed to send chat message:', errorData);
     }

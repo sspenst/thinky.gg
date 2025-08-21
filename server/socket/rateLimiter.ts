@@ -2,7 +2,7 @@ import { logger } from '@root/helpers/logger';
 
 // Rate limiting for rapid reconnections
 const connectionAttempts = new Map<string, { count: number; lastAttempt: number; blockedUntil?: number }>();
-const MAX_CONNECTIONS_PER_MINUTE = 30;
+const MAX_CONNECTIONS_PER_MINUTE = 60;
 const BLOCK_DURATION_MS = 60000; // 1 minute
 const CLEANUP_INTERVAL_MS = 300000; // 5 minutes
 
