@@ -2,7 +2,7 @@
   <!-- <img src="src/img/icon-48.png" alt="Simplify YouTube" /> -->
   <img src="public/logos/thinky/thinky_pfp.png" width="48">
 </p>
-
+.
 <p align="center">
   <strong>
     <a href="https://thinky.gg">Thinky.gg</a>
