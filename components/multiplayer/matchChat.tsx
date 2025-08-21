@@ -85,14 +85,12 @@ export default function MatchChat({ match, user, onSendMessage, showSpectatorNot
       } as User;
 
       return (
-        <div className='bg-yellow-500/20 border border-yellow-400/30 text-yellow-200 rounded-lg px-3 py-2 text-xs text-center max-w-[90%]'>
-          <div className='font-medium flex items-center justify-center gap-1 flex-wrap'>
+        <div className='bg-white/5 border border-white/10 text-white/50 rounded-lg px-2 py-1 text-xs text-center max-w-[90%]'>
+          <div className='font-normal flex items-center justify-center gap-1 flex-wrap'>
             <FormattedUser id={`chat-user-${userId}`} user={systemUser} size={Dimensions.AvatarSizeSmall} />
             <span>{action}</span>
             {level && <FormattedLevelLink level={level} id={`chat-level-${level._id}`} /> }
-          </div>
-          <div className='text-yellow-300/60 mt-1'>
-            {formatTime(chatMessage.createdAt)}
+            <span className='text-white/30 text-[10px]'>• {formatTime(chatMessage.createdAt)}</span>
           </div>
         </div>
       );
@@ -111,13 +109,11 @@ export default function MatchChat({ match, user, onSendMessage, showSpectatorNot
       } as User;
 
       return (
-        <div className='bg-yellow-500/20 border border-yellow-400/30 text-yellow-200 rounded-lg px-3 py-2 text-xs text-center max-w-[90%]'>
-          <div className='font-medium flex items-center justify-center gap-1'>
+        <div className='bg-white/5 border border-white/10 text-white/50 rounded-lg px-2 py-1 text-xs text-center max-w-[90%]'>
+          <div className='font-normal flex items-center justify-center gap-1'>
             <FormattedUser id={`chat-user-${userId}`} user={systemUser} size={Dimensions.AvatarSizeSmall} />
             <span>{action}</span>
-          </div>
-          <div className='text-yellow-300/60 mt-1'>
-            {formatTime(chatMessage.createdAt)}
+            <span className='text-white/30 text-[10px]'>• {formatTime(chatMessage.createdAt)}</span>
           </div>
         </div>
       );
@@ -125,10 +121,10 @@ export default function MatchChat({ match, user, onSendMessage, showSpectatorNot
 
     // For other system messages, just show plain text
     return (
-      <div className='bg-yellow-500/20 border border-yellow-400/30 text-yellow-200 rounded-lg px-3 py-2 text-xs text-center max-w-[90%]'>
-        <div className='font-medium'>{chatMessage.message}</div>
-        <div className='text-yellow-300/60 mt-1'>
-          {formatTime(chatMessage.createdAt)}
+      <div className='bg-white/5 border border-white/10 text-white/50 rounded-lg px-2 py-1 text-xs text-center max-w-[90%]'>
+        <div className='font-normal'>
+          {chatMessage.message}
+          <span className='text-white/30 text-[10px] ml-1'>• {formatTime(chatMessage.createdAt)}</span>
         </div>
       </div>
     );
