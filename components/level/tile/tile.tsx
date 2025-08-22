@@ -124,7 +124,7 @@ const Tile = React.memo(function Tile({
   return (
     <div
       className={classNames(`absolute tile-${game.id} tile-type-${tileType}`, className)}
-      onClick={onClick}
+      onClick={!deviceInfo.isMobile ? onClick : undefined}
       onContextMenu={onClick}
       onMouseDown={!deviceInfo.isMobile ? onMouseDown : undefined}
       onTouchStart={onTouchStart}
