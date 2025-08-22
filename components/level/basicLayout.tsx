@@ -37,17 +37,17 @@ export default function BasicLayout({ cellClassName, cellStyle, controls, hideTe
             onClick(index, false, isDragging);
           }
         }}
-        onCellMouseDown={deviceInfo.isMobile ? (x, y, rightClick) => {
+        onCellMouseDown={(x, y, rightClick) => {
           if (onClick) {
             const index = y * (level.width + 1) + x;
 
             onClick(index, rightClick);
           }
-        } : undefined}
-        onCellClick={!deviceInfo.isMobile ? (x, y, rightClick) => {
+        }}
+        // Disable desktop click events; rely on mouse down + drag for painting and single-click
+        onCellClick={deviceInfo.isMobile ? (x, y, rightClick) => {
           if (onClick) {
             const index = y * (level.width + 1) + x;
-
             onClick(index, rightClick);
           }
         } : undefined}

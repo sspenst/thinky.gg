@@ -139,9 +139,7 @@ export default function Grid({ cellClassName, cellStyle, disableAnimation, gameO
               lastTileDragged.current = new Position(x, y);
               onCellMouseDown(x, y, rightClick);
             } : undefined}
-            handleClick={onCellClick ? (rightClick: boolean, isDragging?: boolean) => {
-              onCellClick(x, y, rightClick, isDragging);
-            } : undefined}
+            handleClick={onCellClick ? (rightClick: boolean, isDraggingDuringClick?: boolean) => onCellClick(x, y, rightClick, isDraggingDuringClick) : undefined}
             inHole={true}
             key={`block-${tileState.blockInHole.id}`}
             pos={new Position(x, y)}
@@ -295,7 +293,12 @@ export default function Grid({ cellClassName, cellStyle, disableAnimation, gameO
                   lastTileDragged.current = gameState.pos;
                   onCellMouseDown(gameState.pos.x, gameState.pos.y, rightClick);
                 } : undefined}
-                handleClick={onCellClick ? (rightClick: boolean) => onCellClick(gameState.pos.x, gameState.pos.y, rightClick, isDragging) : undefined}
+                handleClick={onCellClick ? (rightClick: boolean) => {
+                  if (isDragging) {
+                    return; // suppress click while dragging
+                  }
+                  onCellClick(gameState.pos.x, gameState.pos.y, rightClick, isDragging);
+                } : undefined}
                 onTopOf={gameState.board[gameState.pos.y][gameState.pos.x].tileType}
                 pos={gameState.pos}
                 style={cellStyle ? cellStyle(gameState.pos.x, gameState.pos.y) : undefined}
