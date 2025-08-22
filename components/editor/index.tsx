@@ -291,12 +291,12 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, originalL
   }, [redo, undo]);
 
   const handleKeyDownEvent = useCallback((event: KeyboardEvent) => {
-    if (!isCreateLevelOpen && !isDataOpen && !isEditLevelModalOpen && !isModifyOpen && !isPublishLevelOpen && !isSchedulePublishOpen && !isSizeOpen && !preventKeyDownEvent) {
+    if (!isTestMode && !isCreateLevelOpen && !isDataOpen && !isEditLevelModalOpen && !isModifyOpen && !isPublishLevelOpen && !isSchedulePublishOpen && !isSizeOpen && !preventKeyDownEvent) {
       const { code } = event;
 
       handleKeyDown(code);
     }
-  }, [handleKeyDown, isCreateLevelOpen, isDataOpen, isEditLevelModalOpen, isModifyOpen, isPublishLevelOpen, isSchedulePublishOpen, isSizeOpen, preventKeyDownEvent]);
+  }, [handleKeyDown, isTestMode, isCreateLevelOpen, isDataOpen, isEditLevelModalOpen, isModifyOpen, isPublishLevelOpen, isSchedulePublishOpen, isSizeOpen, preventKeyDownEvent]);
 
   useEffect(() => {
     document.addEventListener('keydown', handleKeyDownEvent);
