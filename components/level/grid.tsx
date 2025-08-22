@@ -269,10 +269,22 @@ export default function Grid({ cellClassName, cellStyle, disableAnimation, gameO
               },
               onTouchStart: () => {
                 setIsMouseDown(true);
+                setIsDragging(false);
               },
-              onTouchEnd: () => {
+              onTouchEnd: (e: React.TouchEvent<HTMLDivElement>) => {
+                // Treat a tap (no move) as a click on that tile
+                const wasDrag = isDragging;
                 setIsMouseDown(false);
                 setIsDragging(false);
+                if (!wasDrag && onCellClick) {
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  const touch = e.changedTouches[0];
+                  const x = Math.floor((touch.clientX - rect.left) / tileSize);
+                  const y = Math.floor((touch.clientY - rect.top) / tileSize);
+                  if (x >= 0 && x < width && y >= 0 && y < height) {
+                    onCellClick(x, y, false, false);
+                  }
+                }
               },
               onTouchMove: onMouseMove,
               onMouseMove: (e) => {
