@@ -137,6 +137,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, originalL
       paintingLastIndexRef.current = null;
       paintingClearedIndicesRef.current.clear();
       paintingAddedIndicesRef.current.clear();
+      paintingLockedModeRef.current = null;
     };
 
     window.addEventListener('mouseup', resetPainting);
@@ -370,6 +371,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, originalL
   const ignoreNextClickRef = useRef(false);
   const paintingClearedIndicesRef = useRef<Set<number>>(new Set());
   const paintingAddedIndicesRef = useRef<Set<number>>(new Set());
+  const paintingLockedModeRef = useRef<'add' | 'delete' | null>(null);
 
   function normalizeToBase(tile: TileType) {
     const sibling = TileTypeHelper.getExitSibilingTileType(tile);
@@ -392,13 +394,39 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, originalL
       const level = JSON.parse(JSON.stringify(prevLevel)) as Level;
       let clear = rightClick;
 
+      // Ensure each new press/tap starts a fresh painting session (desktop and mobile)
+      if (isDragging === undefined) {
+        paintingSessionStartedRef.current = false;
+        paintingDragOccurredRef.current = false;
+        paintingModeRef.current = null;
+        paintingDeleteStrategyRef.current = null;
+        paintingLastIndexRef.current = null;
+        paintingClearedIndicesRef.current.clear();
+        paintingAddedIndicesRef.current.clear();
+        paintingLockedModeRef.current = null;
+      }
+
+      // Strong early guard: if we're locked in delete mode during a drag, never paint non-matching tiles
+      if (paintingSessionStartedRef.current && paintingLockedModeRef.current === 'delete' && isDragging) {
+        const prevBase = normalizeToBase(prevTileType);
+        const selBase = normalizeToBase(tileType);
+
+        if (prevBase !== selBase) {
+          return prevLevel;
+        }
+      }
+
       // Painting session management (desktop drag painting)
-      // Start paint session only once: on mousedown (isDragging === undefined)
+      // Start paint session only once: on mousedown/tap (isDragging === undefined)
       // or on the first drag event if no mousedown was received (isDragging === true)
       if (!paintingSessionStartedRef.current && (isDragging === undefined || isDragging === true)) {
         paintingSessionStartedRef.current = true;
         const startedOnSameBase = normalizeToBase(tileType) === normalizeToBase(prevTileType);
-        const startedOnNonEmpty = prevTileType !== TileType.Default;
+        const _startedOnNonEmpty = prevTileType !== TileType.Default;
+        const _isClick = isDragging === undefined; // single press/tap
+
+        const prevBaseAtStart = normalizeToBase(prevTileType);
+        const selectedBaseAtStart = normalizeToBase(tileType);
 
         if (rightClick) {
           paintingModeRef.current = 'delete';
@@ -406,9 +434,6 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, originalL
         } else if (startedOnSameBase) {
           paintingModeRef.current = 'delete';
           paintingDeleteStrategyRef.current = 'matchSelectedBase';
-        } else if (startedOnNonEmpty) {
-          paintingModeRef.current = 'delete';
-          paintingDeleteStrategyRef.current = 'anyNonEmpty';
         } else {
           paintingModeRef.current = 'add';
           paintingDeleteStrategyRef.current = null;
@@ -418,16 +443,11 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, originalL
         paintingLastIndexRef.current = null;
         paintingClearedIndicesRef.current.clear();
         paintingAddedIndicesRef.current.clear();
-
-        if (DEBUG_PAINT) console.log('paint:start', { index, prevTileType, selected: tileType, mode: paintingModeRef.current, strategy: paintingDeleteStrategyRef.current });
+        paintingLockedModeRef.current = paintingModeRef.current;
       }
 
-      // During a drag session, ignore any stray click events that try to restart painting
+      // During a drag session, ignore any event that looks like a fresh start (no isDragging)
       if (paintingSessionStartedRef.current && paintingDragOccurredRef.current && isDragging === undefined) {
-        if (DEBUG_PAINT) console.log('paint:ignore-stray-click', { index });
-
-        paintingLastIndexRef.current = index;
-
         return prevLevel;
       }
 
@@ -448,35 +468,34 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, originalL
         return prevLevel;
       }
 
-      // If we already cleared this tile earlier in this drag session, never re-add it
-      if (paintingSessionStartedRef.current && paintingModeRef.current === 'delete' && paintingClearedIndicesRef.current.has(index)) {
-        if (DEBUG_PAINT) console.log('paint:skip-readd', { index });
+      const effectiveMode = paintingLockedModeRef.current || paintingModeRef.current;
 
+      // If we already cleared this tile earlier in this drag session, never re-add it
+      if (paintingSessionStartedRef.current && effectiveMode === 'delete' && paintingClearedIndicesRef.current.has(index)) {
         paintingLastIndexRef.current = index;
 
         return prevLevel;
       }
 
       // If we already added this exact index in this drag session (add mode), don't clear it right away unless strategy says so
-      if (paintingSessionStartedRef.current && paintingModeRef.current === 'add' && paintingAddedIndicesRef.current.has(index)) {
+      if (paintingSessionStartedRef.current && effectiveMode === 'add' && paintingAddedIndicesRef.current.has(index)) {
         paintingLastIndexRef.current = index;
 
         return prevLevel;
       }
 
       // Derive clear behavior based on painting mode
-      if (paintingModeRef.current === 'add') {
+      if (effectiveMode === 'add') {
         // In add mode, never clear. Also, do not change tiles that already match.
         clear = false;
 
         if (normalizeToBase(tileType) === normalizeToBase(prevTileType)) {
           // No-op for identical base type
           paintingLastIndexRef.current = index;
-          if (DEBUG_PAINT) console.log('paint:skip-same-base', { index });
 
           return prevLevel;
         }
-      } else if (paintingModeRef.current === 'delete') {
+      } else if (effectiveMode === 'delete') {
         // In delete mode, clear according to strategy
         const shouldClear = paintingDeleteStrategyRef.current === 'anyNonEmpty'
           ? prevTileType !== TileType.Default
@@ -484,7 +503,6 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, originalL
 
         if (!shouldClear) {
           paintingLastIndexRef.current = index;
-          if (DEBUG_PAINT) console.log('paint:skip-not-matching', { index, prevTileType });
 
           return prevLevel;
         }
@@ -500,7 +518,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, originalL
       // handle all cases related to the player
       if (prevTileType === TileType.Player || prevTileType === TileType.PlayerOnExit) {
         // In delete mode, erase player tiles rather than toggling
-        if (paintingModeRef.current === 'delete' || clear) {
+        if (effectiveMode === 'delete' || clear) {
           const clearedTile = (game.allowMovableOnExit && TileTypeHelper.isOnExit(prevTileType)) ? TileType.Exit : TileType.Default;
 
           level.data = level.data.substring(0, index) + clearedTile + level.data.substring(index + 1);
@@ -569,8 +587,6 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, originalL
         }
       }
 
-      if (DEBUG_PAINT) console.log('paint:apply', { index, clear, from: prevTileType, to: newTileType });
-
       const newData = level.data.substring(0, index) + newTileType + level.data.substring(index + 1);
 
       level.data = newData;
@@ -581,21 +597,12 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, originalL
       if (paintingSessionStartedRef.current) {
         paintingLastIndexRef.current = index;
 
-        if (paintingModeRef.current === 'delete' && clear) {
+        if (effectiveMode === 'delete' && clear) {
           paintingClearedIndicesRef.current.add(index);
         }
 
-        if (paintingModeRef.current === 'add' && !clear) {
+        if (effectiveMode === 'add' && !clear) {
           paintingAddedIndicesRef.current.add(index);
-        }
-
-        // If this was a simple click (no drag), end the session immediately
-        if (!paintingDragOccurredRef.current && isDragging === undefined) {
-          paintingSessionStartedRef.current = false;
-          paintingModeRef.current = null;
-          paintingDeleteStrategyRef.current = null;
-          paintingLastIndexRef.current = null;
-          paintingClearedIndicesRef.current.clear();
         }
       }
 

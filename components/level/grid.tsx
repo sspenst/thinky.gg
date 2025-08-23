@@ -243,7 +243,7 @@ export default function Grid({ cellClassName, cellStyle, disableAnimation, gameO
         'grow flex items-center justify-center overflow-hidden',
         themeClass,
         { [teko.className]: classic }
-      )} id={gridId}>
+      )} id={gridId} style={{ touchAction: 'none' }}>
       {tileSize !== 0 &&
         <GridContext.Provider value={{
           borderWidth: borderWidth,
@@ -257,28 +257,24 @@ export default function Grid({ cellClassName, cellStyle, disableAnimation, gameO
             style={{
               height: tileSize * height,
               width: tileSize * width,
+              touchAction: 'none',
             }}
 
             {...(onCellDrag && {
-              onMouseDown: () => {
+              onPointerDown: (e: React.PointerEvent<HTMLDivElement>) => {
+                e.currentTarget.setPointerCapture(e.pointerId);
                 setIsMouseDown(true);
               },
-              onMouseUp: () => {
+              onPointerUp: (e: React.PointerEvent<HTMLDivElement>) => {
+                if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+                  e.currentTarget.releasePointerCapture(e.pointerId);
+                }
+
                 setIsMouseDown(false);
                 setIsDragging(false);
               },
-              onTouchStart: () => {
-                setIsMouseDown(true);
-                setIsDragging(false);
-              },
-              onTouchEnd: () => {
-                // Finish gesture; tile-level touchEnd will handle tap clicks
-                setIsMouseDown(false);
-                setIsDragging(false);
-              },
-              onTouchMove: onMouseMove,
-              onMouseMove: (e) => {
-                onMouseMove(e);
+              onPointerMove: (e: React.PointerEvent<HTMLDivElement>) => {
+                onMouseMove(e as unknown as React.MouseEvent<HTMLDivElement>);
               }
             })}
           >
@@ -299,6 +295,7 @@ export default function Grid({ cellClassName, cellStyle, disableAnimation, gameO
                   if (isDragging) {
                     return; // suppress click while dragging
                   }
+
                   onCellClick(gameState.pos.x, gameState.pos.y, rightClick, isDragging);
                 } : undefined}
                 onTopOf={gameState.board[gameState.pos.y][gameState.pos.x].tileType}
