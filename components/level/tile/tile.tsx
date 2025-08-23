@@ -51,16 +51,12 @@ const Tile = React.memo(function Tile({
 
   const classic = theme === Theme.Classic;
 
-  function onMouseDown(e: React.MouseEvent<HTMLDivElement>) {
+  function onPointerDown(e: React.PointerEvent<HTMLDivElement>) {
+    // Use pointer events to unify touch and mouse handling
     if (handleMouseDown) {
-      handleMouseDown(e.type === 'contextmenu');
+      handleMouseDown(e.button === 2); // button 2 is right click
     }
-  }
-
-  function onTouchStart(_: React.TouchEvent<HTMLDivElement>) {
-    if (handleMouseDown) {
-      handleMouseDown(false);
-    }
+    e.preventDefault(); // Prevent any default touch/mouse behavior
   }
 
   function onClick(e: React.MouseEvent<HTMLDivElement>) {
@@ -70,14 +66,6 @@ const Tile = React.memo(function Tile({
 
     e.preventDefault();
     e.stopPropagation();
-  }
-
-  function onTouchEnd(e: React.TouchEvent<HTMLDivElement>) {
-    if (handleClick) {
-      handleClick(false);
-    }
-
-    e.preventDefault();
   }
 
   const tile = useMemo(() => {
@@ -119,16 +107,13 @@ const Tile = React.memo(function Tile({
       />
     );
   }, [atEnd, game, hideText, inHole, onTopOf, text, theme, tileType, visited]);
-  const { deviceInfo } = useContext(AppContext);
 
   return (
     <div
       className={classNames(`absolute tile-${game.id} tile-type-${tileType}`, className)}
-      onClick={!deviceInfo.isMobile ? onClick : undefined}
+      onClick={onClick}
       onContextMenu={onClick}
-      onMouseDown={!deviceInfo.isMobile ? onMouseDown : undefined}
-      onTouchStart={onTouchStart}
-      onTouchEnd={onTouchEnd}
+      onPointerDown={onPointerDown}
       style={{
         backgroundColor: tileType === TileType.Player ? 'var(--bg-color)' : undefined,
         height: classic ? tileSize : innerTileSize,

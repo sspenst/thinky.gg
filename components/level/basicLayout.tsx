@@ -44,13 +44,9 @@ export default function BasicLayout({ cellClassName, cellStyle, controls, hideTe
             onClick(index, rightClick);
           }
         }}
-        // Disable desktop click events; rely on mouse down + drag for painting and single-click
-        onCellClick={deviceInfo.isMobile ? (x, y, rightClick) => {
-          if (onClick) {
-            const index = y * (level.width + 1) + x;
-            onClick(index, rightClick);
-          }
-        } : undefined}
+        // Mobile uses onCellMouseDown via touch events, desktop uses it via mouse events
+        // We don't need onCellClick since onCellMouseDown handles single taps/clicks
+        onCellClick={undefined}
 
       />
       {!controls ? null : <Controls controls={controls} />}
