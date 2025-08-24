@@ -55,15 +55,14 @@ const Tile = React.memo(function Tile({
     // Use pointer events to unify touch and mouse handling
     if (handleMouseDown) {
       handleMouseDown(e.button === 2); // button 2 is right click
+      e.preventDefault(); // Prevent double-firing in editor
     }
-    e.preventDefault(); // Prevent any default touch/mouse behavior
   }
 
   function onClick(e: React.MouseEvent<HTMLDivElement>) {
     if (handleClick) {
       handleClick(e.type === 'contextmenu');
     }
-
     e.preventDefault();
     e.stopPropagation();
   }
@@ -111,6 +110,7 @@ const Tile = React.memo(function Tile({
   return (
     <div
       className={classNames(`absolute tile-${game.id} tile-type-${tileType}`, className)}
+      onTouchStart={handleClick ? () => { handleClick(false);} : undefined}
       onClick={onClick}
       onContextMenu={onClick}
       onPointerDown={onPointerDown}
