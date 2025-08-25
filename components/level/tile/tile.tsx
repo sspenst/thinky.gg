@@ -1,6 +1,5 @@
 import { Game, GameType } from '@root/constants/Games';
 import Theme from '@root/constants/theme';
-import { AppContext } from '@root/contexts/appContext';
 import { GridContext } from '@root/contexts/gridContext';
 import Position from '@root/models/position';
 import classNames from 'classnames';
@@ -63,6 +62,7 @@ const Tile = React.memo(function Tile({
     if (handleClick) {
       handleClick(e.type === 'contextmenu');
     }
+
     e.preventDefault();
     e.stopPropagation();
   }
@@ -110,7 +110,6 @@ const Tile = React.memo(function Tile({
   return (
     <div
       className={classNames(`absolute tile-${game.id} tile-type-${tileType}`, className)}
-      onTouchStart={handleClick ? () => { handleClick(false);} : undefined}
       onClick={onClick}
       onContextMenu={onClick}
       onPointerDown={onPointerDown}

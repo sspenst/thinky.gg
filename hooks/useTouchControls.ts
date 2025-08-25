@@ -56,7 +56,6 @@ export default function useTouchControls({
       touchYDown.current = event.touches[0].clientY;
       isSwiping.current = false;
       lastTouchTimestamp.current = Date.now();
-      event.preventDefault();
     }
   }, [levelId, preventKeyDownEvent]);
 
@@ -129,14 +128,20 @@ export default function useTouchControls({
         return;
       }
 
+      // Mark as swiping briefly to suppress the synthetic click that follows touchend
+      isSwiping.current = true;
       moveByDXDY(dx, dy);
       touchXDown.current = clientX;
       touchYDown.current = clientY;
+
+      // Allow clicks again on the next tick
+      setTimeout(() => {
+        isSwiping.current = false;
+      }, 0);
     }
 
     // Reset touch state
     validTouchStart.current = false;
-    isSwiping.current = false;
   }, [moveByDXDY, preventKeyDownEvent]);
 
   useEffect(() => {
