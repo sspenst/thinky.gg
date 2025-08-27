@@ -17,12 +17,7 @@ import QuickActionButton from '../quickActionButton';
 import StreakSection from '../streak/streakSection';
 import { StreakCalendar } from './streakCalendar';
 
-interface StreakDisplayProps {
-  streak: number;
-  timeToKeepStreak: number;
-  gameId: GameId;
-  userConfig?: UserConfig;
-}
+
 
 export function ThinkyHomePageLoggedIn({ user }: { user: User }) {
   const getUrl = useUrl();
