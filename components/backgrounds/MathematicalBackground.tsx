@@ -10,7 +10,7 @@ const MathematicalBackground: React.FC<MathematicalBackgroundProps> = ({ classNa
   const frameId = useRef<number | null>(null);
   const [performanceMode, setPerformanceMode] = useState<'high' | 'medium' | 'low'>('medium');
   const [isVisible, setIsVisible] = useState(true);
-  
+
   const sceneRef = useRef<{
     scene: THREE.Scene;
     camera: THREE.PerspectiveCamera;
@@ -26,13 +26,13 @@ const MathematicalBackground: React.FC<MathematicalBackgroundProps> = ({ classNa
       // Check for slow devices
       const memoryInfo = (performance as any).memory;
       const hasLowMemory = memoryInfo && memoryInfo.jsHeapSizeLimit < 1073741824; // Less than 1GB
-      
+
       // Check device pixel ratio (high DPR can indicate mobile)
       const isMobile = window.devicePixelRatio > 2 || window.innerWidth < 768;
-      
+
       // Check for reduced motion preference
       const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      
+
       if (prefersReducedMotion || hasLowMemory) {
         setPerformanceMode('low');
       } else if (isMobile) {
@@ -41,10 +41,10 @@ const MathematicalBackground: React.FC<MathematicalBackgroundProps> = ({ classNa
         setPerformanceMode('high');
       }
     };
-    
+
     checkPerformance();
   }, []);
-  
+
   // Visibility observer for pausing when off-screen
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -55,12 +55,13 @@ const MathematicalBackground: React.FC<MathematicalBackgroundProps> = ({ classNa
       },
       { threshold: 0.1 }
     );
-    
+
     const currentMount = mountRef.current;
+
     if (currentMount) {
       observer.observe(currentMount);
     }
-    
+
     return () => {
       if (currentMount) {
         observer.unobserve(currentMount);
@@ -74,20 +75,21 @@ const MathematicalBackground: React.FC<MathematicalBackgroundProps> = ({ classNa
     // Scene setup
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({ 
-      alpha: true, 
+    const renderer = new THREE.WebGLRenderer({
+      alpha: true,
       antialias: performanceMode === 'high', // Only use antialiasing in high performance mode
       powerPreference: performanceMode === 'low' ? 'low-power' : 'high-performance'
     });
 
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setClearColor(0x000000, 1);
-    
+
     // Reduce pixel ratio on lower performance modes
-    const pixelRatio = performanceMode === 'high' ? window.devicePixelRatio : 
+    const pixelRatio = performanceMode === 'high' ? window.devicePixelRatio :
                        performanceMode === 'medium' ? Math.min(window.devicePixelRatio, 1.5) : 1;
+
     renderer.setPixelRatio(pixelRatio);
-    
+
     mountRef.current.appendChild(renderer.domElement);
 
     // Scroll state
@@ -98,12 +100,12 @@ const MathematicalBackground: React.FC<MathematicalBackgroundProps> = ({ classNa
     // Camera target positions for smooth interpolation
     const targetCameraPosition = { x: 0, y: 2, z: 20 };
     const targetLookAt = { x: 0, y: 0, z: 0 };
-    let targetFOV = 75;
+    const targetFOV = 75;
 
     // Reduce particle count based on performance mode
-    const particleCount = performanceMode === 'high' ? 2000 : 
+    const particleCount = performanceMode === 'high' ? 2000 :
                          performanceMode === 'medium' ? 800 : 300;
-    
+
     const particles = new THREE.BufferGeometry();
     const positions = new Float32Array(particleCount * 3);
     const colors = new Float32Array(particleCount * 3);
@@ -140,11 +142,12 @@ const MathematicalBackground: React.FC<MathematicalBackgroundProps> = ({ classNa
     });
 
     const particleSystem = new THREE.Points(particles, particleMaterial);
+
     scene.add(particleSystem);
 
     // Only add puzzle elements in medium/high performance modes
     const puzzleElements3D = new THREE.Group();
-    
+
     if (performanceMode !== 'low') {
       const puzzleElements = ['↑ ↓ ← →', '◯ → ◎', '▢ ■ ▣', '⬆ ⬇ ⬅ ➡', '🎯'];
       const elementCount = performanceMode === 'high' ? puzzleElements.length : 3;
@@ -172,6 +175,7 @@ const MathematicalBackground: React.FC<MathematicalBackgroundProps> = ({ classNa
         const sprite = new THREE.Sprite(material);
 
         const angle = (index / elementCount) * Math.PI * 2;
+
         sprite.position.set(
           Math.cos(angle) * 15,
           (Math.random() - 0.5) * 10,
@@ -204,6 +208,7 @@ const MathematicalBackground: React.FC<MathematicalBackgroundProps> = ({ classNa
         });
 
         const mesh = new THREE.Mesh(geometry, material);
+
         mesh.position.set((index - 0.5) * 8, 0, -10);
 
         (mesh as any).rotationSpeed = {
@@ -247,10 +252,10 @@ const MathematicalBackground: React.FC<MathematicalBackgroundProps> = ({ classNa
 
     // Track frame timing for performance throttling
     let lastFrameTime = 0;
-    const targetFPS = performanceMode === 'high' ? 60 : 
+    const targetFPS = performanceMode === 'high' ? 60 :
                      performanceMode === 'medium' ? 30 : 20;
     const frameInterval = 1000 / targetFPS;
-    
+
     // Track update cycles to reduce expensive operations
     let updateCycle = 0;
 
@@ -261,40 +266,46 @@ const MathematicalBackground: React.FC<MathematicalBackgroundProps> = ({ classNa
       // Pause animation when not visible
       if (!isVisible) {
         frameId.current = requestAnimationFrame(animate);
+
         return;
       }
-      
+
       // Throttle animation based on performance mode
       const deltaTime = currentTime - lastFrameTime;
+
       if (deltaTime < frameInterval) {
         frameId.current = requestAnimationFrame(animate);
+
         return;
       }
+
       lastFrameTime = currentTime - (deltaTime % frameInterval);
 
       const { scene, camera, renderer, particles, puzzleElements } = sceneRef.current;
 
       sceneRef.current.time += 0.01;
       const time = sceneRef.current.time;
+
       updateCycle++;
 
       // Smooth scroll interpolation (less frequent in low performance)
       const scrollLerpFactor = performanceMode === 'low' ? 0.01 : 0.03;
+
       scrollY = lerp(scrollY, targetScrollY, scrollLerpFactor);
 
       const scrollProgress = Math.min(scrollY / maxScroll, 1);
 
       // Only update particle positions every N frames in lower performance modes
-      const shouldUpdateParticles = performanceMode === 'high' || 
+      const shouldUpdateParticles = performanceMode === 'high' ||
                                    (performanceMode === 'medium' && updateCycle % 2 === 0) ||
                                    (performanceMode === 'low' && updateCycle % 4 === 0);
 
       if (shouldUpdateParticles && performanceMode !== 'low') {
         const positions = particles.geometry.attributes.position.array as Float32Array;
-        
+
         // Update fewer particles in medium mode
         const step = performanceMode === 'high' ? 3 : 9;
-        
+
         for (let i = 0; i < positions.length; i += step) {
           positions[i + 1] += Math.sin(time + positions[i] * 0.1) * 0.01;
         }
@@ -304,7 +315,7 @@ const MathematicalBackground: React.FC<MathematicalBackgroundProps> = ({ classNa
 
       // Simple rotation for particle system
       particles.rotation.y = time * 0.1;
-      
+
       // Only animate other elements in non-low modes
       if (performanceMode !== 'low') {
         particles.rotation.x = Math.sin(time * 0.3) * 0.2;
@@ -313,6 +324,7 @@ const MathematicalBackground: React.FC<MathematicalBackgroundProps> = ({ classNa
         if (updateCycle % 2 === 0) {
           puzzleElements.children.forEach((sprite) => {
             const s = sprite as any;
+
             sprite.position.copy(s.initialPosition);
             sprite.position.y += Math.sin(time + s.animationOffset) * 2;
           });
@@ -323,6 +335,7 @@ const MathematicalBackground: React.FC<MathematicalBackgroundProps> = ({ classNa
           scene.children.forEach(child => {
             if (child instanceof THREE.Mesh && (child as any).rotationSpeed) {
               const speed = (child as any).rotationSpeed;
+
               child.rotation.x += speed.x;
               child.rotation.y += speed.y;
               child.rotation.z += speed.z;
@@ -352,6 +365,7 @@ const MathematicalBackground: React.FC<MathematicalBackgroundProps> = ({ classNa
         if (!sceneRef.current) return;
 
         const { camera, renderer } = sceneRef.current;
+
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
@@ -373,6 +387,7 @@ const MathematicalBackground: React.FC<MathematicalBackgroundProps> = ({ classNa
         sceneRef.current.scene.traverse((object) => {
           if (object instanceof THREE.Mesh) {
             object.geometry.dispose();
+
             if (Array.isArray(object.material)) {
               object.material.forEach(material => material.dispose());
             } else {
