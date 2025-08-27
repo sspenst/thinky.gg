@@ -1,7 +1,6 @@
 /* istanbul ignore file */
 import MathematicalBackground from '@root/components/backgrounds/MathematicalBackground';
 import { ThinkyHomePageLoggedIn } from '@root/components/home/thinkyLoggedIn';
-import ThinkyHomePageNotLoggedIn from '@root/components/home/thinkyNotLoggedIn';
 import ThinkyHomePageNotLoggedInVariant from '@root/components/home/thinkyNotLoggedInVariant';
 import Page from '@root/components/page/page';
 import dbConnect from '@root/lib/dbConnect';
