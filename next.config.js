@@ -1,5 +1,5 @@
 module.exports = {
-  productionBrowserSourceMaps: true,
+  productionBrowserSourceMaps: false,
 
   // Optimize output for faster builds
   // output: 'standalone',
