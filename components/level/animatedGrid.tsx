@@ -18,7 +18,7 @@ interface AnimatedGridProps {
 const AnimatedGrid = React.memo(function AnimatedGrid({ animationInstructions, id, game, theme, leastMoves, levelData }: AnimatedGridProps) {
   const [gameState, setGameState] = useState(initGameState(levelData));
   const gameStateRef = useRef(gameState);
-  const animationFrameRef = useRef<number>();
+  const animationFrameRef = useRef<number>(0);
   const lastTimeRef = useRef<number>(0);
   const animationIndexRef = useRef<number>(0);
   const waitTimeRef = useRef<number>(200);
