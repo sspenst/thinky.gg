@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 
 interface MathematicalBackgroundProps {
@@ -8,6 +8,9 @@ interface MathematicalBackgroundProps {
 const MathematicalBackground: React.FC<MathematicalBackgroundProps> = ({ className }) => {
   const mountRef = useRef<HTMLDivElement>(null);
   const frameId = useRef<number | null>(null);
+  const [performanceMode, setPerformanceMode] = useState<'high' | 'medium' | 'low'>('medium');
+  const [isVisible, setIsVisible] = useState(true);
+  
   const sceneRef = useRef<{
     scene: THREE.Scene;
     camera: THREE.PerspectiveCamera;
@@ -17,34 +20,93 @@ const MathematicalBackground: React.FC<MathematicalBackgroundProps> = ({ classNa
     time: number;
   } | null>(null);
 
+  // Detect performance capabilities
+  useEffect(() => {
+    const checkPerformance = () => {
+      // Check for slow devices
+      const memoryInfo = (performance as any).memory;
+      const hasLowMemory = memoryInfo && memoryInfo.jsHeapSizeLimit < 1073741824; // Less than 1GB
+      
+      // Check device pixel ratio (high DPR can indicate mobile)
+      const isMobile = window.devicePixelRatio > 2 || window.innerWidth < 768;
+      
+      // Check for reduced motion preference
+      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      
+      if (prefersReducedMotion || hasLowMemory) {
+        setPerformanceMode('low');
+      } else if (isMobile) {
+        setPerformanceMode('medium');
+      } else {
+        setPerformanceMode('high');
+      }
+    };
+    
+    checkPerformance();
+  }, []);
+  
+  // Visibility observer for pausing when off-screen
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          setIsVisible(entry.isIntersecting);
+        });
+      },
+      { threshold: 0.1 }
+    );
+    
+    const currentMount = mountRef.current;
+    if (currentMount) {
+      observer.observe(currentMount);
+    }
+    
+    return () => {
+      if (currentMount) {
+        observer.unobserve(currentMount);
+      }
+    };
+  }, []);
+
   useEffect(() => {
     if (!mountRef.current) return;
 
     // Scene setup
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    const renderer = new THREE.WebGLRenderer({ 
+      alpha: true, 
+      antialias: performanceMode === 'high', // Only use antialiasing in high performance mode
+      powerPreference: performanceMode === 'low' ? 'low-power' : 'high-performance'
+    });
 
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setClearColor(0x000000, 1); // Black background
+    renderer.setClearColor(0x000000, 1);
+    
+    // Reduce pixel ratio on lower performance modes
+    const pixelRatio = performanceMode === 'high' ? window.devicePixelRatio : 
+                       performanceMode === 'medium' ? Math.min(window.devicePixelRatio, 1.5) : 1;
+    renderer.setPixelRatio(pixelRatio);
+    
     mountRef.current.appendChild(renderer.domElement);
 
     // Scroll state
     let scrollY = 0;
     let targetScrollY = 0;
-    const maxScroll = 3000; // Adjust based on your page height
+    const maxScroll = 3000;
 
     // Camera target positions for smooth interpolation
     const targetCameraPosition = { x: 0, y: 2, z: 20 };
     const targetLookAt = { x: 0, y: 0, z: 0 };
     let targetFOV = 75;
 
-    // Create particle system for mathematical patterns
-    const particleCount = 2000;
+    // Reduce particle count based on performance mode
+    const particleCount = performanceMode === 'high' ? 2000 : 
+                         performanceMode === 'medium' ? 800 : 300;
+    
     const particles = new THREE.BufferGeometry();
     const positions = new Float32Array(particleCount * 3);
     const colors = new Float32Array(particleCount * 3);
-    const velocities = new Float32Array(particleCount * 3);
 
     for (let i = 0; i < particleCount; i++) {
       const i3 = i * 3;
@@ -57,13 +119,8 @@ const MathematicalBackground: React.FC<MathematicalBackgroundProps> = ({ classNa
       positions[i3 + 1] = Math.sin(t * 2) * 3 + (Math.random() - 0.5) * 10;
       positions[i3 + 2] = Math.sin(t) * r + (Math.random() - 0.5) * 20;
 
-      // Velocity for animation
-      velocities[i3] = (Math.random() - 0.5) * 0.02;
-      velocities[i3 + 1] = (Math.random() - 0.5) * 0.02;
-      velocities[i3 + 2] = (Math.random() - 0.5) * 0.02;
-
       // Colors - mathematical gradient
-      const hue = (i / particleCount + Math.sin(t)) % 1;
+      const hue = (i / particleCount) % 1;
       const color = new THREE.Color().setHSL(hue * 0.3 + 0.5, 0.8, 0.6);
 
       colors[i3] = color.r;
@@ -76,108 +133,88 @@ const MathematicalBackground: React.FC<MathematicalBackgroundProps> = ({ classNa
 
     const particleMaterial = new THREE.PointsMaterial({
       size: 0.05,
-      vertexColors: true,
+      vertexColors: performanceMode !== 'low', // Disable vertex colors in low mode
       transparent: true,
       opacity: 0.8,
       blending: THREE.AdditiveBlending,
     });
 
     const particleSystem = new THREE.Points(particles, particleMaterial);
-
     scene.add(particleSystem);
 
-    // Create puzzle game elements as text textures
+    // Only add puzzle elements in medium/high performance modes
     const puzzleElements3D = new THREE.Group();
-    const puzzleElements = [
-      '↑ ↓ ← →',
-      '◯ → ◎',
-      '▢ ■ ▣',
-      '⬆ ⬇ ⬅ ➡',
-      '🎯',
-      '⊞ ⊟ ⊠',
-      '╬ ╫ ╪',
-      '⟐ ⟐ ⟐',
-      '◈ ◉ ○',
-      '⚹ ⚺ ⚻'
-    ];
+    
+    if (performanceMode !== 'low') {
+      const puzzleElements = ['↑ ↓ ← →', '◯ → ◎', '▢ ■ ▣', '⬆ ⬇ ⬅ ➡', '🎯'];
+      const elementCount = performanceMode === 'high' ? puzzleElements.length : 3;
 
-    puzzleElements.forEach((text, index) => {
-      const canvas = document.createElement('canvas');
-      const context = canvas.getContext('2d');
+      puzzleElements.slice(0, elementCount).forEach((text, index) => {
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
 
-      if (!context) return;
+        if (!context) return;
 
-      canvas.width = 256;
-      canvas.height = 64;
+        canvas.width = 128; // Reduced from 256
+        canvas.height = 32; // Reduced from 64
 
-      context.fillStyle = 'rgba(255, 255, 255, 0)';
-      context.fillRect(0, 0, canvas.width, canvas.height);
+        context.font = '16px Arial'; // Reduced from 24px
+        context.fillStyle = `hsl(${200 + index * 20}, 70%, 80%)`;
+        context.textAlign = 'center';
+        context.fillText(text, canvas.width / 2, canvas.height / 2 + 4);
 
-      context.font = '24px Arial';
-      context.fillStyle = `hsl(${200 + index * 20}, 70%, 80%)`;
-      context.textAlign = 'center';
-      context.fillText(text, canvas.width / 2, canvas.height / 2 + 8);
+        const texture = new THREE.CanvasTexture(canvas);
+        const material = new THREE.SpriteMaterial({
+          map: texture,
+          transparent: true,
+          opacity: 0.7
+        });
+        const sprite = new THREE.Sprite(material);
 
-      const texture = new THREE.CanvasTexture(canvas);
-      const material = new THREE.SpriteMaterial({
-        map: texture,
-        transparent: true,
-        opacity: 0.7
-      });
-      const sprite = new THREE.Sprite(material);
+        const angle = (index / elementCount) * Math.PI * 2;
+        sprite.position.set(
+          Math.cos(angle) * 15,
+          (Math.random() - 0.5) * 10,
+          Math.sin(angle) * 15
+        );
+        sprite.scale.set(4, 1, 1);
 
-      // Position puzzle elements in 3D space
-      const angle = (index / puzzleElements.length) * Math.PI * 2;
+        (sprite as any).initialPosition = sprite.position.clone();
+        (sprite as any).animationOffset = index;
 
-      sprite.position.set(
-        Math.cos(angle) * 15,
-        (Math.random() - 0.5) * 10,
-        Math.sin(angle) * 15
-      );
-      sprite.scale.set(4, 1, 1);
-
-      // Store initial position for animation
-      (sprite as any).initialPosition = sprite.position.clone();
-      (sprite as any).animationOffset = index;
-
-      puzzleElements3D.add(sprite);
-    });
-
-    scene.add(puzzleElements3D);
-
-    // Create geometric shapes with mathematical properties
-    const geometries = [
-      new THREE.TetrahedronGeometry(1, 0),
-      new THREE.OctahedronGeometry(1, 0),
-      new THREE.IcosahedronGeometry(1, 0),
-      new THREE.DodecahedronGeometry(1, 0),
-    ];
-
-    geometries.forEach((geometry, index) => {
-      const material = new THREE.MeshBasicMaterial({
-        color: new THREE.Color().setHSL(index * 0.25, 0.8, 0.5),
-        wireframe: true,
-        transparent: true,
-        opacity: 0.3
+        puzzleElements3D.add(sprite);
       });
 
-      const mesh = new THREE.Mesh(geometry, material);
+      scene.add(puzzleElements3D);
+    }
 
-      mesh.position.set(
-        (index - 1.5) * 8,
-        Math.sin(index) * 3,
-        -10
-      );
+    // Only add geometric shapes in high performance mode
+    if (performanceMode === 'high') {
+      const geometries = [
+        new THREE.TetrahedronGeometry(1, 0),
+        new THREE.OctahedronGeometry(1, 0),
+      ];
 
-      // Store for animation
-      (mesh as any).rotationSpeed = {
-        x: (Math.random() - 0.5) * 0.02,
-        y: (Math.random() - 0.5) * 0.02,
-        z: (Math.random() - 0.5) * 0.02
-      };
+      geometries.forEach((geometry, index) => {
+        const material = new THREE.MeshBasicMaterial({
+          color: new THREE.Color().setHSL(index * 0.5, 0.8, 0.5),
+          wireframe: true,
+          transparent: true,
+          opacity: 0.3
+        });
 
-      scene.add(mesh);
-    });
+        const mesh = new THREE.Mesh(geometry, material);
+        mesh.position.set((index - 0.5) * 8, 0, -10);
+
+        (mesh as any).rotationSpeed = {
+          x: 0.01,
+          y: 0.01,
+          z: 0.01
+        };
+
+        scene.add(mesh);
+      });
+    }
 
     // Initial camera position
     camera.position.z = 20;
@@ -193,147 +230,132 @@ const MathematicalBackground: React.FC<MathematicalBackgroundProps> = ({ classNa
       time: 0
     };
 
-    // Scroll event listener
+    // Throttled scroll handler
+    let scrollTimeout: NodeJS.Timeout;
     const handleScroll = () => {
-      targetScrollY = window.scrollY;
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        targetScrollY = window.scrollY;
+      }, 50); // Throttle scroll events
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
-
-    // Easing function for smooth transitions
-    const easeOutCubic = (t: number): number => {
-      return 1 - Math.pow(1 - t, 3);
-    };
 
     const lerp = (start: number, end: number, factor: number): number => {
       return start + (end - start) * factor;
     };
 
+    // Track frame timing for performance throttling
+    let lastFrameTime = 0;
+    const targetFPS = performanceMode === 'high' ? 60 : 
+                     performanceMode === 'medium' ? 30 : 20;
+    const frameInterval = 1000 / targetFPS;
+    
+    // Track update cycles to reduce expensive operations
+    let updateCycle = 0;
+
     // Animation loop
-    const animate = () => {
+    const animate = (currentTime: number) => {
       if (!sceneRef.current) return;
+
+      // Pause animation when not visible
+      if (!isVisible) {
+        frameId.current = requestAnimationFrame(animate);
+        return;
+      }
+      
+      // Throttle animation based on performance mode
+      const deltaTime = currentTime - lastFrameTime;
+      if (deltaTime < frameInterval) {
+        frameId.current = requestAnimationFrame(animate);
+        return;
+      }
+      lastFrameTime = currentTime - (deltaTime % frameInterval);
 
       const { scene, camera, renderer, particles, puzzleElements } = sceneRef.current;
 
       sceneRef.current.time += 0.01;
       const time = sceneRef.current.time;
+      updateCycle++;
 
-      // Smooth scroll interpolation
-      const scrollLerpFactor = 0.03; // Reduced from 0.08 - much slower scroll response
-
+      // Smooth scroll interpolation (less frequent in low performance)
+      const scrollLerpFactor = performanceMode === 'low' ? 0.01 : 0.03;
       scrollY = lerp(scrollY, targetScrollY, scrollLerpFactor);
 
-      // Calculate scroll-based camera adjustments with easing
       const scrollProgress = Math.min(scrollY / maxScroll, 1);
-      const easedScrollProgress = easeOutCubic(scrollProgress);
-      const scrollSin = Math.sin(easedScrollProgress * Math.PI);
 
-      // Animate particles
-      const positions = particles.geometry.attributes.position.array as Float32Array;
-      const colors = particles.geometry.attributes.color.array as Float32Array;
+      // Only update particle positions every N frames in lower performance modes
+      const shouldUpdateParticles = performanceMode === 'high' || 
+                                   (performanceMode === 'medium' && updateCycle % 2 === 0) ||
+                                   (performanceMode === 'low' && updateCycle % 4 === 0);
 
-      for (let i = 0; i < positions.length; i += 3) {
-        // Wave motion
-        positions[i + 1] += Math.sin(time + positions[i] * 0.1) * 0.01;
+      if (shouldUpdateParticles && performanceMode !== 'low') {
+        const positions = particles.geometry.attributes.position.array as Float32Array;
+        
+        // Update fewer particles in medium mode
+        const step = performanceMode === 'high' ? 3 : 9;
+        
+        for (let i = 0; i < positions.length; i += step) {
+          positions[i + 1] += Math.sin(time + positions[i] * 0.1) * 0.01;
+        }
 
-        // Color animation
-        const colorIndex = i / 3;
-        const hue = (colorIndex / 1000 + time * 0.1) % 1;
-        const color = new THREE.Color().setHSL(hue * 0.3 + 0.5, 0.8, 0.6);
-
-        colors[i] = color.r;
-        colors[i + 1] = color.g;
-        colors[i + 2] = color.b;
+        particles.geometry.attributes.position.needsUpdate = true;
       }
 
-      particles.geometry.attributes.position.needsUpdate = true;
-      particles.geometry.attributes.color.needsUpdate = true;
+      // Simple rotation for particle system
+      particles.rotation.y = time * 0.1;
+      
+      // Only animate other elements in non-low modes
+      if (performanceMode !== 'low') {
+        particles.rotation.x = Math.sin(time * 0.3) * 0.2;
 
-      // Rotate particle system with smooth scroll influence
-      particles.rotation.y = time * 0.1 + easedScrollProgress * 0.2; // Reduced from 0.3
-      particles.rotation.x = Math.sin(time * 0.3) * 0.2 + scrollSin * 0.1; // Reduced from 0.15
-
-      // Animate puzzle elements
-      puzzleElements.children.forEach((sprite) => {
-        const s = sprite as any;
-
-        sprite.position.copy(s.initialPosition);
-        sprite.position.y += Math.sin(time + s.animationOffset) * 2;
-        sprite.position.x += Math.cos(time * 0.5 + s.animationOffset) * 1;
-
-        // Smooth scroll-based depth movement
-        sprite.position.z += scrollSin * 1; // Reduced from 2
-      });
-
-      // Animate geometric shapes
-      scene.children.forEach(child => {
-        if (child instanceof THREE.Mesh && (child as any).rotationSpeed) {
-          const speed = (child as any).rotationSpeed;
-
-          child.rotation.x += speed.x;
-          child.rotation.y += speed.y;
-          child.rotation.z += speed.z;
-
-          // Smooth scroll-based position adjustment
-          child.position.y += Math.sin(easedScrollProgress * Math.PI * 2) * 0.02; // Reduced from 0.05
+        // Animate puzzle elements (reduced frequency)
+        if (updateCycle % 2 === 0) {
+          puzzleElements.children.forEach((sprite) => {
+            const s = sprite as any;
+            sprite.position.copy(s.initialPosition);
+            sprite.position.y += Math.sin(time + s.animationOffset) * 2;
+          });
         }
-      });
 
-      // Calculate target camera position with reduced intensity
-      const baseX = Math.sin(time * 0.2) * 2;
-      const baseY = 2 + Math.cos(time * 0.15) * 1;
-      const baseZ = 20;
+        // Animate geometric shapes
+        if (performanceMode === 'high') {
+          scene.children.forEach(child => {
+            if (child instanceof THREE.Mesh && (child as any).rotationSpeed) {
+              const speed = (child as any).rotationSpeed;
+              child.rotation.x += speed.x;
+              child.rotation.y += speed.y;
+              child.rotation.z += speed.z;
+            }
+          });
+        }
+      }
 
-      // Update target positions with smoother, more subtle movements
-      targetCameraPosition.x = baseX + scrollSin * 2; // Reduced from 4
-      targetCameraPosition.y = baseY + easedScrollProgress * 3; // Reduced from 5
-      targetCameraPosition.z = baseZ - easedScrollProgress * 5; // Reduced from 8
+      // Simplified camera movement
+      camera.position.x = Math.sin(time * 0.2) * 2;
+      camera.position.y = 2 + scrollProgress * 3;
+      camera.position.z = 20 - scrollProgress * 5;
 
-      // Dynamic look-at target with reduced intensity
-      targetLookAt.x = scrollSin * 0.8; // Reduced from 1.5
-      targetLookAt.y = easedScrollProgress * 1.5; // Reduced from 2.5
-      targetLookAt.z = -easedScrollProgress * 1.5; // Reduced from 2.5
-
-      // Target FOV with subtle changes
-      targetFOV = 75 + scrollSin * 4; // Reduced from 8
-
-      // Smooth camera interpolation
-      const cameraLerpFactor = 0.02; // Reduced from 0.05 - much slower camera movement
-
-      camera.position.x = lerp(camera.position.x, targetCameraPosition.x, cameraLerpFactor);
-      camera.position.y = lerp(camera.position.y, targetCameraPosition.y, cameraLerpFactor);
-      camera.position.z = lerp(camera.position.z, targetCameraPosition.z, cameraLerpFactor);
-
-      // Smooth look-at interpolation
-      const currentLookAt = new THREE.Vector3();
-
-      camera.getWorldDirection(currentLookAt);
-      const targetLookAtVector = new THREE.Vector3(targetLookAt.x, targetLookAt.y, targetLookAt.z);
-
-      currentLookAt.lerp(targetLookAtVector.normalize(), 0.01); // Reduced from 0.03
-
-      // Apply the smooth look-at
-      camera.lookAt(targetLookAt.x, targetLookAt.y, targetLookAt.z);
-
-      // Smooth FOV changes
-      camera.fov = lerp(camera.fov, targetFOV, 0.015); // Reduced from 0.03
-      camera.updateProjectionMatrix();
+      camera.lookAt(0, scrollProgress * 1.5, 0);
 
       renderer.render(scene, camera);
       frameId.current = requestAnimationFrame(animate);
     };
 
-    animate();
+    animate(0);
 
-    // Handle resize
+    // Handle resize with debounce
+    let resizeTimeout: NodeJS.Timeout;
     const handleResize = () => {
-      if (!sceneRef.current) return;
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        if (!sceneRef.current) return;
 
-      const { camera, renderer } = sceneRef.current;
-
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
+        const { camera, renderer } = sceneRef.current;
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      }, 200);
     };
 
     window.addEventListener('resize', handleResize);
@@ -348,6 +370,16 @@ const MathematicalBackground: React.FC<MathematicalBackgroundProps> = ({ classNa
 
       if (sceneRef.current) {
         sceneRef.current.renderer.dispose();
+        sceneRef.current.scene.traverse((object) => {
+          if (object instanceof THREE.Mesh) {
+            object.geometry.dispose();
+            if (Array.isArray(object.material)) {
+              object.material.forEach(material => material.dispose());
+            } else {
+              object.material.dispose();
+            }
+          }
+        });
         sceneRef.current.scene.clear();
       }
 
@@ -355,7 +387,7 @@ const MathematicalBackground: React.FC<MathematicalBackgroundProps> = ({ classNa
         mountRef.current.removeChild(renderer.domElement);
       }
     };
-  }, []);
+  }, [performanceMode, isVisible]);
 
   return (
     <div

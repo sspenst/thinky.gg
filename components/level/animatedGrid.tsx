@@ -2,7 +2,7 @@ import Direction from '@root/constants/direction';
 import { Game } from '@root/constants/Games';
 import Theme from '@root/constants/theme';
 import { initGameState, makeMove } from '@root/helpers/gameStateHelpers';
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Grid from './grid';
 
 interface AnimatedGridProps {
@@ -15,9 +15,13 @@ interface AnimatedGridProps {
 
 }
 
-export default function AnimatedGrid({ animationInstructions, id, game, theme, leastMoves, levelData }: AnimatedGridProps) {
+const AnimatedGrid = React.memo(function AnimatedGrid({ animationInstructions, id, game, theme, leastMoves, levelData }: AnimatedGridProps) {
   const [gameState, setGameState] = useState(initGameState(levelData));
   const gameStateRef = useRef(gameState);
+  const animationFrameRef = useRef<number>();
+  const lastTimeRef = useRef<number>(0);
+  const animationIndexRef = useRef<number>(0);
+  const waitTimeRef = useRef<number>(200);
 
   // Update the ref when gameState changes
   useEffect(() => {
@@ -25,46 +29,69 @@ export default function AnimatedGrid({ animationInstructions, id, game, theme, l
   }, [gameState]);
 
   useEffect(() => {
-    let animationIndex = 0;
-
+    animationIndexRef.current = 0;
+    lastTimeRef.current = 0;
+    waitTimeRef.current = 200;
     setGameState(initGameState(levelData));
-    let timer: NodeJS.Timeout;
-    const act = () => {
-      const currentMove = animationInstructions[animationIndex];
 
-      if (currentMove === Direction.NONE) {
-        // reset
-        setGameState(initGameState(levelData));
-      } else {
-        makeMove(gameStateRef.current, currentMove);
-        setGameState({ ...gameStateRef.current });
+    const animate = (timestamp: number) => {
+      if (!lastTimeRef.current) {
+        lastTimeRef.current = timestamp;
       }
 
-      animationIndex++;
-      let waitPlusSomeVariation = 500;
+      const elapsed = timestamp - lastTimeRef.current;
 
-      if (animationIndex < animationInstructions.length) {
-        // check if the next move is a reset, if it is we want to wait a bit longer before executing it
-        const nextMove = animationInstructions[animationIndex];
-        const wait = nextMove === Direction.NONE ? 1000 : 120;
+      // Only proceed if enough time has passed
+      if (elapsed >= waitTimeRef.current) {
+        const currentMove = animationInstructions[animationIndexRef.current];
 
-        waitPlusSomeVariation = wait + Math.random() * 200;
-
-        if (currentMove === nextMove) {
-          // make it faster if it's the same move
-          waitPlusSomeVariation /= 2;
+        if (currentMove === Direction.NONE) {
+          // reset
+          setGameState(initGameState(levelData));
+        } else {
+          makeMove(gameStateRef.current, currentMove);
+          setGameState({ ...gameStateRef.current });
         }
-      } else {
-        animationIndex = 0;
+
+        animationIndexRef.current++;
+
+        if (animationIndexRef.current < animationInstructions.length) {
+          // check if the next move is a reset, if it is we want to wait a bit longer before executing it
+          const nextMove = animationInstructions[animationIndexRef.current];
+          const wait = nextMove === Direction.NONE ? 1000 : 120;
+
+          // Use more predictable timing without random variation for better performance
+          waitTimeRef.current = wait;
+
+          if (currentMove === nextMove) {
+            // make it faster if it's the same move
+            waitTimeRef.current /= 2;
+          }
+        } else {
+          animationIndexRef.current = 0;
+          waitTimeRef.current = 500;
+        }
+
+        lastTimeRef.current = timestamp;
       }
 
-      timer = setTimeout(act, waitPlusSomeVariation);
+      animationFrameRef.current = requestAnimationFrame(animate);
     };
 
-    timer = setTimeout(act, 200);
+    // Start animation after initial delay
+    const timeoutId = setTimeout(() => {
+      animationFrameRef.current = requestAnimationFrame(animate);
+    }, 200);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timeoutId);
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
   }, [animationInstructions, levelData]);
 
   return <Grid id={id || game.id + '-animated'} leastMoves={leastMoves || 0} gameOverride={game} themeOverride={theme} gameState={gameState} />;
-}
+});
+
+export default AnimatedGrid;

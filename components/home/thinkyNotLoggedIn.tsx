@@ -10,7 +10,7 @@ import useUrl from '@root/hooks/useUrl';
 import { Play, Share2, Trophy, Users } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import React, { useContext, useRef } from 'react';
+import React, { useContext, useMemo, useRef } from 'react';
 
 interface FeatureCardProps {
   description: React.ReactNode;
@@ -18,7 +18,7 @@ interface FeatureCardProps {
   icon: string;
 }
 
-function FeatureCard({ description, title, icon }: FeatureCardProps) {
+const FeatureCard = React.memo(function FeatureCard({ description, title, icon }: FeatureCardProps) {
   return (
     <div className='w-full rounded-xl p-5 flex flex-col gap-3 items-start text-left border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition'>
       <div className='bg-blue-100 dark:bg-blue-900 p-3 rounded-lg'>
@@ -32,7 +32,7 @@ function FeatureCard({ description, title, icon }: FeatureCardProps) {
       </div>
     </div>
   );
-}
+});
 
 interface GameCardProps {
   game: typeof Games[GameId];
@@ -42,7 +42,7 @@ interface GameCardProps {
   theme: Theme;
 }
 
-function GameCard({ game, levelData, instructions, leastMoves, theme }: GameCardProps) {
+const GameCard = React.memo(function GameCard({ game, levelData, instructions, leastMoves, theme }: GameCardProps) {
   const getUrl = useUrl();
   const router = useRouter();
   const { user } = useContext(AppContext);
@@ -87,7 +87,7 @@ function GameCard({ game, levelData, instructions, leastMoves, theme }: GameCard
       </div>
     </div>
   );
-}
+});
 
 export default function ThinkyHomePageNotLoggedIn() {
   const getUrl = useUrl();
@@ -95,28 +95,31 @@ export default function ThinkyHomePageNotLoggedIn() {
   const gamesSectionRef = useRef<HTMLDivElement>(null);
   const whatIsThinkySectionRef = useRef<HTMLDivElement>(null);
 
-  const strMap = {
-    'u': Direction.UP,
-    'd': Direction.DOWN,
-    'l': Direction.LEFT,
-    'r': Direction.RIGHT,
-    'X': Direction.NONE,
-  } as {[key: string]: Direction};
+  // Memoize static game instructions to avoid recreating on every render
+  const gameInstr = useMemo(() => {
+    const strMap = {
+      'u': Direction.UP,
+      'd': Direction.DOWN,
+      'l': Direction.LEFT,
+      'r': Direction.RIGHT,
+      'X': Direction.NONE,
+    } as {[key: string]: Direction};
 
-  const gameInstr = {
-    [GameId.PATHOLOGY]: {
-      data: '0001\n0100\n4220\n1300',
-      instructions: 'uurrdrddllXuurrdddldX'.split('').map(x => strMap[x]),
-      leastMoves: 8,
-      theme: Theme.Modern,
-    },
-    [GameId.SOKOPATH]: {
-      data: '0000\n0130\n0220\n0003',
-      instructions: 'ddddrrudllurrlluurrrddXrrdduullddrdruX'.split('').map(x => strMap[x]),
-      leastMoves: 14,
-      theme: Theme.Winter,
-    },
-  };
+    return {
+      [GameId.PATHOLOGY]: {
+        data: '0001\n0100\n4220\n1300',
+        instructions: 'uurrdrddllXuurrdddldX'.split('').map(x => strMap[x]),
+        leastMoves: 8,
+        theme: Theme.Modern,
+      },
+      [GameId.SOKOPATH]: {
+        data: '0000\n0130\n0220\n0003',
+        instructions: 'ddddrrudllurrlluurrrddXrrdduullddrdruX'.split('').map(x => strMap[x]),
+        leastMoves: 14,
+        theme: Theme.Winter,
+      },
+    };
+  }, []);
 
   return (
     <div className='flex flex-col gap-6 max-w-7xl mx-auto px-4'>
