@@ -6,7 +6,7 @@ import { parseHostname } from '@root/helpers/parseUrl';
 import Collection from '@root/models/db/collection';
 import { useRouter } from 'next/router';
 import nProgress from 'nprogress';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { ReqUser } from '../models/db/user';
 
@@ -17,8 +17,8 @@ export function useAppInitialization(user: ReqUser | null | undefined, initGame:
   const [protocol, setProtocol] = useState<string>('https:');
   const [selectedGame, setSelectedGame] = useState<Game>(initGame);
   const [shouldAttemptAuth, setShouldAttemptAuth] = useState(true);
-  const [sounds, setSounds] = useState<{ [key: string]: HTMLAudioElement }>({});
   const [tempCollection, setTempCollection] = useState<Collection>();
+  const soundsRef = useRef<{ [key: string]: HTMLAudioElement }>({});
 
   const mutatePlayLater = useCallback(() => {
     if (!isPro(user)) {
@@ -61,10 +61,10 @@ export function useAppInitialization(user: ReqUser | null | undefined, initGame:
 
   // Preload sounds
   useEffect(() => {
-    setSounds({
+    soundsRef.current = {
       'start': new Audio('/sounds/start.wav'),
       'warning': new Audio('/sounds/warning.wav'),
-    });
+    };
   }, []);
 
   // Set protocol
@@ -200,7 +200,7 @@ export function useAppInitialization(user: ReqUser | null | undefined, initGame:
     selectedGame,
     shouldAttemptAuth,
     setShouldAttemptAuth,
-    sounds,
+    sounds: soundsRef.current,
     tempCollection,
     setTempCollection,
     mutatePlayLater,
