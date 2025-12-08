@@ -115,6 +115,7 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
   );
   const [paymentMethod, setPaymentMethod] = useState<string>(paymentMethodOptions?.[0]?.props.value);
   const hasAPaymentMethod = paymentMethods && paymentMethods?.length > 0;
+  const showManageBilling = hasAPaymentMethod || (subscriptions && subscriptions.length > 0);
 
   useEffect(() => {
     if (paymentMethods && paymentMethods.length > 0 ) {
@@ -295,7 +296,7 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
         </div>
       )}
       {giftsLoading ? <LoadingSpinner /> : null}
-      {hasAPaymentMethod && (
+      {showManageBilling && (
         <Link
           className='py-2.5 px-3.5 mt-2 inline-flex justify-center items-center gap-2 rounded-md border font-medium align-middle focus:z-10 focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all text-sm whitespace-nowrap bg-green-100 dark:bg-gray-800 hover:bg-gray-50 hover:dark:bg-slate-600 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300'
           href={stripeCustomerPortalLink || ''}
