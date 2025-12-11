@@ -83,11 +83,11 @@ describe('helpers/processDiscordMentions.ts', () => {
     expect(result).toBe(content);
   });
 
-  test('Should handle multiple mentions of same user', async () => {
+  test('Should only convert the first mention of a user', async () => {
     const content = 'BBB is awesome, thanks BBB!';
     const result = await processDiscordMentions(content, ['BBB']);
 
-    expect(result).toBe('<@discord123> is awesome, thanks <@discord123>!');
+    expect(result).toBe('<@discord123> is awesome, thanks BBB!');
   });
 
   test('Should handle case sensitivity correctly', async () => {
@@ -118,10 +118,10 @@ describe('helpers/processDiscordMentions.ts', () => {
     expect(result).toBe('Congratulations <@discord123> and [test](https://thinky.gg/profile/test) and <@discord456>!');
   });
 
-  test('Should handle multiple mentions of non-Discord user', async () => {
+  test('Should only link to Thinky profile for the first mention of a non-Discord user', async () => {
     const content = 'test made a level, thanks test!';
     const result = await processDiscordMentions(content, ['test']);
 
-    expect(result).toBe('[test](https://thinky.gg/profile/test) made a level, thanks [test](https://thinky.gg/profile/test)!');
+    expect(result).toBe('[test](https://thinky.gg/profile/test) made a level, thanks test!');
   });
 });
