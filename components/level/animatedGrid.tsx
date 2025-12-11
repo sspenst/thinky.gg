@@ -85,6 +85,7 @@ const AnimatedGrid = React.memo(function AnimatedGrid({ animationInstructions, i
 
     return () => {
       clearTimeout(timeoutId);
+
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
       }

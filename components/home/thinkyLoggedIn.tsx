@@ -17,8 +17,6 @@ import QuickActionButton from '../quickActionButton';
 import StreakSection from '../streak/streakSection';
 import { StreakCalendar } from './streakCalendar';
 
-
-
 export function ThinkyHomePageLoggedIn({ user }: { user: User }) {
   const getUrl = useUrl();
   const router = useRouter();
