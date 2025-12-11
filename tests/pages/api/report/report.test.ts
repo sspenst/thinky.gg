@@ -60,6 +60,8 @@ describe('pages/api/report/index.ts', () => {
         expect(queueDiscordWebhook).toHaveBeenCalledWith(
           expect.any(String),
           expect.stringMatching(/User test reported a \[Review\]\(https.*\) by user BBB for reason HARASSMENT with message:\n`This is a test report`./),
+          undefined,
+          ['test']
         );
       },
     });
@@ -117,6 +119,8 @@ describe('pages/api/report/index.ts', () => {
         expect(queueDiscordWebhook).toHaveBeenCalledWith(
           expect.any(String),
           expect.stringMatching(/User Curator reported a \[Review\]\(https.*\) by user BBB for reason HARASSMENT with message:\n`This is a test report`./),
+          undefined,
+          ['Curator']
         );
       },
     });
