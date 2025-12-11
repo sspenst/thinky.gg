@@ -1,4 +1,4 @@
-import * as aws from '@aws-sdk/client-ses';
+import { SendEmailCommand, SESv2Client } from '@aws-sdk/client-sesv2';
 import { defaultProvider } from '@aws-sdk/credential-provider-node';
 import { getStreakRankIndex, STREAK_RANK_GROUPS } from '@root/components/counters/AnimateCounterOne';
 import DiscordChannel from '@root/constants/discordChannel';
@@ -28,7 +28,7 @@ import { EmailLogModel, NotificationModel, UserConfigModel, UserModel } from '..
 import { EmailState } from '../../../../models/schemas/emailLogSchema';
 import { getLevelOfDay } from '../../level-of-day';
 
-const ses = new aws.SES({
+const sesClient = new SESv2Client({
   region: 'us-east-1',
   credentials: defaultProvider(),
 });
@@ -47,8 +47,7 @@ const transporter = isLocal() ? nodemailer.createTransport({
   rateLimit: 3,
   rateDelta: 10000,
 }) : nodemailer.createTransport({
-  SES: { ses, aws },
-  sendingRate: 20 // max 10 messages/second
+  SES: { sesClient, SendEmailCommand },
 });
 
 export async function sendMail(gameId: GameId, batchId: Types.ObjectId, type: EmailType | NotificationType, user: User, subject: string, body: string) {
