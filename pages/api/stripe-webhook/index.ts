@@ -48,7 +48,12 @@ async function subscriptionDeleted(userToDowngrade: User, subscription: Stripe.S
             session: session
           },
         ),
-        queueDiscordWebhook(DiscordChannel.DevPriv, `🥹 UNSUBSCRIBED. [${userToDowngrade.name}](https://thinky.gg/profile/${userToDowngrade.name}) was just unsubscribed from ` + productName),
+        queueDiscordWebhook(
+          DiscordChannel.DevPriv,
+          `🥹 UNSUBSCRIBED. [${userToDowngrade.name}](https://thinky.gg/profile/${userToDowngrade.name}) was just unsubscribed from ` + productName,
+          undefined,
+          [userToDowngrade.name],
+        ),
       ];
 
       // if the game is thinky, then we should findOneAndUpdate the other game configs too
@@ -219,7 +224,12 @@ async function checkoutSessionGift(giftFromUser: User, giftToUser: User, subscri
           ),
           // TODO: Figure a way to get the game ID from the subscription object since each game should be different, but for now this is fine
           createNewProUserNotification(gameId, giftToUser._id, giftFromUser._id),
-          queueDiscordWebhook(DiscordChannel.DevPriv, `💸 [${giftFromUser.name}](https://thinky.gg/profile/${giftFromUser.name}) just gifted ${quantity} ${type === GiftType.Yearly ? 'year' : 'month'}${quantity === 1 ? '' : 's'} of Pro to [${giftToUser.name}](https://thinky.gg/profile/${giftToUser.name})`)
+          queueDiscordWebhook(
+            DiscordChannel.DevPriv,
+            `💸 [${giftFromUser.name}](https://thinky.gg/profile/${giftFromUser.name}) just gifted ${quantity} ${type === GiftType.Yearly ? 'year' : 'month'}${quantity === 1 ? '' : 's'} of Pro to [${giftToUser.name}](https://thinky.gg/profile/${giftToUser.name})`,
+            undefined,
+            [giftFromUser.name, giftToUser.name],
+          ),
         ]);
 
         // if the game is thinky, then we should findOneAndUpdate the userconfigmodel for all the other games too
@@ -293,7 +303,12 @@ async function checkoutSessionComplete(userToUpgrade: User, properties: Stripe.C
             },
           ),
           createNewProUserNotification(gameId, userToUpgrade._id),
-          queueDiscordWebhook(DiscordChannel.DevPriv, `💸 NEW SUBSCRIBER! [${userToUpgrade.name}](https://thinky.gg/profile/${userToUpgrade.name}) just subscribed to ${productName}!`),
+          queueDiscordWebhook(
+            DiscordChannel.DevPriv,
+            `💸 NEW SUBSCRIBER! [${userToUpgrade.name}](https://thinky.gg/profile/${userToUpgrade.name}) just subscribed to ${productName}!`,
+            undefined,
+            [userToUpgrade.name],
+          ),
         ]);
 
         // Move giveAccessToAllGames inside the transaction to ensure atomicity
@@ -561,7 +576,12 @@ export default apiWrapper({
                   { upsert: true, session }
                 ),
                 createNewProUserNotification(gameId as GameId, userTarget._id),
-                queueDiscordWebhook(DiscordChannel.DevPriv, `💸 NEW SUBSCRIBER! [${userTarget.name}](https://thinky.gg/profile/${userTarget.name}) just subscribed to ${game.displayName} ${metadata?.type}!`)
+                queueDiscordWebhook(
+                  DiscordChannel.DevPriv,
+                  `💸 NEW SUBSCRIBER! [${userTarget.name}](https://thinky.gg/profile/${userTarget.name}) just subscribed to ${game.displayName} ${metadata?.type}!`,
+                  undefined,
+                  [userTarget.name],
+                ),
               ]);
 
               // if the game is thinky, then we should upsert the userconfigmodel for all the other games too

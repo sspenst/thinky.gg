@@ -54,7 +54,12 @@ function generateDiscordWebhook(
   const discordTxt = `${score ? getScoreEmojis(score) + ' - ' : ''}**${req.user?.name}** wrote a review for ${level.userId.name}'s [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}):\n${contentCleaned}`;
 
   // Pass the level creator's username for potential Discord mention
-  return queueDiscordWebhook(discordChannel, discordTxt, undefined, [level.userId.name]);
+  return queueDiscordWebhook(
+    discordChannel,
+    discordTxt,
+    undefined,
+    [level.userId.name],
+  );
 }
 
 export default withAuth({
