@@ -3,7 +3,7 @@ module.exports = {
 
   // Optimize output for faster builds
   // output: 'standalone',
-  
+
   // Reduce build traces collection time
   outputFileTracingIncludes: {
     '/': ['./constants/**/*', './lib/**/*', './models/**/*', './helpers/**/*'],
@@ -21,7 +21,7 @@ module.exports = {
     if (!dev && !isServer) {
       // Enable module concatenation for smaller bundles (client only)
       config.optimization.concatenateModules = true;
-      
+
       // Optimize chunk splitting for client bundles only
       config.optimization.splitChunks = {
         chunks: 'all',
