@@ -4,19 +4,6 @@ import UserAuth, { AuthProvider } from '../models/db/userAuth';
 import { UserAuthModel } from '../models/mongoose';
 
 /**
- * Get all authentication providers for a user
- * @param userId User ObjectId
- * @returns Array of UserAuth records
- */
-export async function getUserAuthProviders(userId: Types.ObjectId | string): Promise<UserAuth[]> {
-  await dbConnect();
-
-  return UserAuthModel.find({
-    userId: userId
-  }).lean<UserAuth[]>();
-}
-
-/**
  * Get a specific authentication provider for a user
  * @param userId User ObjectId
  * @param provider AuthProvider enum
@@ -111,36 +98,6 @@ export async function removeUserAuthProvider(
   });
 
   return result.deletedCount > 0;
-}
-
-/**
- * Get Discord user IDs for given user IDs
- * @param userIds Array of user ObjectIds
- * @returns Array of Discord user IDs for users who have connected Discord
- */
-export async function getDiscordUserIds(userIds: (Types.ObjectId | string)[]): Promise<string[]> {
-  await dbConnect();
-
-  const auths = await UserAuthModel.find(
-    {
-      userId: { $in: userIds },
-      provider: AuthProvider.DISCORD
-    },
-    { providerId: 1 }
-  ).lean<Pick<UserAuth, 'providerId'>[]>();
-
-  return auths.map(auth => auth.providerId);
-}
-
-/**
- * Get Discord user ID for a single user
- * @param userId User ObjectId or string
- * @returns Discord user ID if user has connected Discord, null otherwise
- */
-export async function getDiscordUserId(userId: Types.ObjectId | string): Promise<string | null> {
-  const discordIds = await getDiscordUserIds([userId]);
-
-  return discordIds.length > 0 ? discordIds[0] : null;
 }
 
 /**
