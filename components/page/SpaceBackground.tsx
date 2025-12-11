@@ -32,7 +32,6 @@ const SpaceBackground = React.memo(function SpaceBackground({
   className = '',
   useFullHeight = false,
 }: SpaceBackgroundProps) {
-
   // Memoize constellation positions - only recalculate when pattern or custom constellations change
   const constellations = useMemo(() => {
     if (customConstellations) return customConstellations;

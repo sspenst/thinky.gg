@@ -1,5 +1,4 @@
 /* istanbul ignore file */
-import dynamic from 'next/dynamic';
 import { ThinkyHomePageLoggedIn } from '@root/components/home/thinkyLoggedIn';
 import ThinkyHomePageNotLoggedInVariant from '@root/components/home/thinkyNotLoggedInVariant';
 import Page from '@root/components/page/page';
@@ -7,6 +6,7 @@ import dbConnect from '@root/lib/dbConnect';
 import { getUserFromToken } from '@root/lib/withAuth';
 import User, { ReqUser } from '@root/models/db/user';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
+import dynamic from 'next/dynamic';
 import { NextSeo, SoftwareAppJsonLd } from 'next-seo';
 import { useEffect, useState } from 'react';
 
