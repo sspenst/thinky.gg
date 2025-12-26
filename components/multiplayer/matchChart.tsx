@@ -14,9 +14,10 @@ interface MatchChartProps {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const CustomizedDot = (props: any) => {
-  const { cx, cy, payload } = props;
+  const { cx, cy, payload, value } = props;
 
-  if (cy !== null) {
+  // Only render a dot when this series has a value at this x (i.e., it's the acting user row)
+  if (cy !== null && payload && value !== undefined && value !== null) {
     if (payload.type === MatchAction.COMPLETE_LEVEL) {
       return (<>
         <svg x={cx - 5} y={cy - 5} width={20} height={20} fill='var(--bg-color)' viewBox='0 0 32 32'>
@@ -61,7 +62,9 @@ export default function MatchChart({ match }: MatchChartProps) {
   const chartData = [];
   const timePerLevelMap = new Map<string, LevelTimeData>();
   const playerMap = {} as { [id: string]: UserWithMultiplayerProfile };
-  const lastLevelMap = {} as { [playerId: string]: string }; // Track last level for each player
+  const lastLevelMap = {} as { [playerId: string]: string }; // Track last level name for each player
+  const lastLevelIndexMap = {} as { [playerId: string]: number }; // Track last level index for each player
+  const lastActionByPlayer = {} as { [playerId: string]: MatchAction | undefined };
 
   for (const player of match.players) {
     playerMap[player._id.toString()] = player;
@@ -93,16 +96,20 @@ export default function MatchChart({ match }: MatchChartProps) {
 
     let completedBy = (log.data as MatchLogDataUserLeveId)?.userId?.toString();
     const level = (log.data as MatchLogDataLevelComplete)?.levelId?.toString();
-    const levelName = (match.levels as Level[])?.find(l => l._id.toString() === level)?.name;
+    const levelObj = (match.levels as Level[])?.find(l => l._id.toString() === level);
+    const levelName = levelObj?.name;
+    const levelIndex = (match.levels as Level[])?.findIndex(l => l._id.toString() === level);
 
     if (log.type === MatchAction.COMPLETE_LEVEL) {
       completedBy = (log.data as MatchLogDataLevelComplete).userId.toString();
       playerScore[completedBy] = playerScore[completedBy] ? playerScore[completedBy] + 1 : 1;
     }
 
-    // Track the last level for this player
-    if (completedBy && levelName) {
+    // Track the last level and action for this player
+    if (completedBy && levelName && typeof levelIndex === 'number' && levelIndex >= 0) {
       lastLevelMap[completedBy] = levelName;
+      lastLevelIndexMap[completedBy] = levelIndex;
+      lastActionByPlayer[completedBy] = log.type as MatchAction;
     }
 
     const timestamp = new Date(log.createdAt).getTime() - new Date(match.startTime).getTime();
@@ -143,12 +150,23 @@ export default function MatchChart({ match }: MatchChartProps) {
     });
   }
 
-  // Mark last levels as incomplete
-  for (const [levelName, levelData] of timePerLevelMap.entries()) {
-    for (const playerId in playerMap) {
-      if (lastLevelMap[playerId] === levelName) {
-        levelData[`${playerMap[playerId].name}_incomplete`] = true;
-      }
+  // Mark the next level after the last action as incomplete (current working level)
+  for (const playerId in playerMap) {
+    const playerName = playerMap[playerId]?.name;
+    const lastIndex = lastLevelIndexMap[playerId];
+    if (playerName === undefined || lastIndex === undefined) continue;
+
+    const nextIndex = lastIndex + 1;
+    const nextLevel = (match.levels as Level[])[nextIndex];
+    if (!nextLevel) continue;
+
+    const nextLevelName = nextLevel.name;
+    if (!timePerLevelMap.has(nextLevelName)) {
+      timePerLevelMap.set(nextLevelName, { level: nextLevelName });
+    }
+    const nextLevelData = timePerLevelMap.get(nextLevelName);
+    if (nextLevelData) {
+      nextLevelData[`${playerName}_incomplete`] = true;
     }
   }
 
