@@ -187,7 +187,12 @@ export default withAuth(
               ),
               // Only announce if not private
               updatedMatch.private && Promise.resolve(),
-              !updatedMatch.private && queueDiscordWebhook(discordChannel, discordMessage),
+              !updatedMatch.private && queueDiscordWebhook(
+                discordChannel,
+                discordMessage,
+                undefined,
+                updatedMatch.players.map((player: User) => player.name),
+              ),
             ]);
 
           // Update the match object with new times for broadcasting

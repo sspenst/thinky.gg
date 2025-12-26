@@ -32,7 +32,7 @@ afterEach(async () => {
   try {
     await QueueMessageModel.deleteMany({ dedupeKey: { $regex: /^test-/ } });
     await QueueMessageModel.deleteMany({ state: QueueMessageState.PENDING });
-  } catch (e) {
+  } catch {
     // Ignore errors during cleanup
   }
 
@@ -419,7 +419,7 @@ describe('pages/api/internal-jobs/worker', () => {
         expect.objectContaining({
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ content: 'Test message without mentions' })
+          body: JSON.stringify({ content: 'Test message without mentions', allowed_mentions: { parse: [] } })
         })
       );
     });
@@ -453,7 +453,7 @@ describe('pages/api/internal-jobs/worker', () => {
         expect.objectContaining({
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ content: 'mocked processed content' })
+          body: JSON.stringify({ content: 'mocked processed content', allowed_mentions: { parse: [] } })
         })
       );
     });

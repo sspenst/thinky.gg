@@ -98,7 +98,6 @@ export async function archiveUserLevels(userId: Types.ObjectId, session?: Client
 
 export async function deleteUser(userId: Types.ObjectId, session?: ClientSession): Promise<void> {
   const deletedAt = new Date();
-  const ts = TimerUtil.getTs();
   const sessionProvided = !!session;
 
   if (!sessionProvided) {

@@ -96,7 +96,12 @@ export default withAuth({
 
   const content = `User ${userReporting.name} reported a [${reportType}](${url}) by user ${userBeingReported.name} for reason ${reportReason} with message:\n\`${message}\`.`;
 
-  await queueDiscordWebhook( DiscordChannel.DevPriv, content);
+  await queueDiscordWebhook(
+    DiscordChannel.DevPriv,
+    content,
+    undefined,
+    [userReporting.name],
+  );
 
   return res.status(200).json({ success: true });
 });

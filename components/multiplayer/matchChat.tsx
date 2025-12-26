@@ -55,7 +55,7 @@ export default function MatchChat({ match, user, onSendMessage, showSpectatorNot
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!message.trim() || isSending) return;
-    
+
     // Don't send if we're alone in the room
     if (connectedUsersCount && connectedUsersCount <= 1) return;
 

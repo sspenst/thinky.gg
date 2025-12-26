@@ -1,5 +1,5 @@
 import TestId from '@root/constants/testId';
-import { getDiscordUserId, getDiscordUserIds, getUserAuthProvider, getUserAuthProviders, getUserAuthProvidersForSettings, getUserByProviderId, removeUserAuthProvider, upsertUserAuthProvider } from '@root/helpers/userAuthHelpers';
+import { getUserAuthProvider, getUserAuthProvidersForSettings, getUserByProviderId, removeUserAuthProvider, upsertUserAuthProvider } from '@root/helpers/userAuthHelpers';
 import dbConnect, { dbDisconnect } from '@root/lib/dbConnect';
 import { AuthProvider } from '@root/models/db/userAuth';
 import { UserAuthModel } from '@root/models/mongoose';
@@ -19,53 +19,6 @@ afterEach(async () => {
 });
 
 describe('helpers/userAuthHelpers.ts', () => {
-  describe('getUserAuthProviders', () => {
-    test('Should return empty array when user has no auth providers', async () => {
-      const providers = await getUserAuthProviders(TestId.USER);
-
-      expect(providers).toEqual([]);
-    });
-
-    test('Should return all auth providers for a user', async () => {
-      // Create multiple auth providers for the user
-      await Promise.all([
-        UserAuthModel.create({
-          _id: new Types.ObjectId(),
-          userId: TestId.USER,
-          provider: AuthProvider.DISCORD,
-          providerId: 'discord123',
-          providerUsername: 'testuser',
-          connectedAt: Math.floor(Date.now() / 1000),
-          updatedAt: Math.floor(Date.now() / 1000),
-        }),
-        UserAuthModel.create({
-          _id: new Types.ObjectId(),
-          userId: TestId.USER,
-          provider: AuthProvider.GOOGLE,
-          providerId: 'google456',
-          providerUsername: 'testuser@gmail.com',
-          connectedAt: Math.floor(Date.now() / 1000),
-          updatedAt: Math.floor(Date.now() / 1000),
-        }),
-      ]);
-
-      const providers = await getUserAuthProviders(TestId.USER);
-
-      expect(providers).toHaveLength(2);
-      expect(providers.map(p => p.provider)).toContain(AuthProvider.DISCORD);
-      expect(providers.map(p => p.provider)).toContain(AuthProvider.GOOGLE);
-
-      // Clean up
-      await UserAuthModel.deleteMany({ userId: TestId.USER });
-    });
-
-    test('Should work with ObjectId parameter', async () => {
-      const providers = await getUserAuthProviders(new Types.ObjectId(TestId.USER));
-
-      expect(Array.isArray(providers)).toBe(true);
-    });
-  });
-
   describe('getUserAuthProvider', () => {
     test('Should return null when provider not found', async () => {
       const provider = await getUserAuthProvider(TestId.USER, AuthProvider.DISCORD);
@@ -276,82 +229,6 @@ describe('helpers/userAuthHelpers.ts', () => {
         userId: { $in: [TestId.USER, TestId.USER_B] },
         provider: AuthProvider.DISCORD
       });
-    });
-  });
-
-  describe('getDiscordUserIds', () => {
-    test('Should return empty array when no users have Discord connected', async () => {
-      const result = await getDiscordUserIds([TestId.USER, TestId.USER_B]);
-
-      expect(result).toEqual([]);
-    });
-
-    test('Should return Discord IDs for users who have Discord connected', async () => {
-      await Promise.all([
-        UserAuthModel.create({
-          _id: new Types.ObjectId(),
-          userId: TestId.USER,
-          provider: AuthProvider.DISCORD,
-          providerId: 'discord123',
-          connectedAt: Math.floor(Date.now() / 1000),
-          updatedAt: Math.floor(Date.now() / 1000),
-        }),
-        UserAuthModel.create({
-          _id: new Types.ObjectId(),
-          userId: TestId.USER_B,
-          provider: AuthProvider.GOOGLE, // Different provider
-          providerId: 'google456',
-          connectedAt: Math.floor(Date.now() / 1000),
-          updatedAt: Math.floor(Date.now() / 1000),
-        }),
-      ]);
-
-      const result = await getDiscordUserIds([TestId.USER, TestId.USER_B]);
-
-      expect(result).toEqual(['discord123']);
-
-      // Clean up
-      await UserAuthModel.deleteMany({
-        userId: { $in: [TestId.USER, TestId.USER_B] }
-      });
-    });
-
-    test('Should work with ObjectId array', async () => {
-      const result = await getDiscordUserIds([new Types.ObjectId(TestId.USER)]);
-
-      expect(Array.isArray(result)).toBe(true);
-    });
-  });
-
-  describe('getDiscordUserId', () => {
-    test('Should return null when user has no Discord connected', async () => {
-      const result = await getDiscordUserId(TestId.USER);
-
-      expect(result).toBeNull();
-    });
-
-    test('Should return Discord ID when user has Discord connected', async () => {
-      await UserAuthModel.create({
-        _id: new Types.ObjectId(),
-        userId: TestId.USER,
-        provider: AuthProvider.DISCORD,
-        providerId: 'discord123',
-        connectedAt: Math.floor(Date.now() / 1000),
-        updatedAt: Math.floor(Date.now() / 1000),
-      });
-
-      const result = await getDiscordUserId(TestId.USER);
-
-      expect(result).toBe('discord123');
-
-      // Clean up
-      await UserAuthModel.deleteOne({ userId: TestId.USER, provider: AuthProvider.DISCORD });
-    });
-
-    test('Should work with ObjectId parameter', async () => {
-      const result = await getDiscordUserId(new Types.ObjectId(TestId.USER));
-
-      expect(result).toBeNull();
     });
   });
 

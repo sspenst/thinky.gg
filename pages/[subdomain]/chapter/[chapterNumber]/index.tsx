@@ -357,7 +357,6 @@ export default function ChapterPage({ enrichedCollections, reqUser, solvedLevels
           </Link>
         </div>
 
-
         {/* Floating Next Chapter Info */}
         {solvedLevels < totalLevels && (
           <div className='absolute bottom-24 right-4 sm:bottom-32 sm:right-6 lg:bottom-40 lg:right-12 animate-fadeInRight' style={{ animationDelay: '0.9s' }}>
@@ -455,9 +454,9 @@ export default function ChapterPage({ enrichedCollections, reqUser, solvedLevels
                 </div>
               </div>
             </Link>
-            
+
           </div>
-          
+
         {/* Floating Chapter Progress */}
         <div className='md:absolute bottom-24 left-4 sm:bottom-32 sm:left-6 lg:bottom-40 lg:left-12 animate-fadeInLeft' style={{ animationDelay: '0.7s' }}>
           <div className='bg-black/20 backdrop-blur-sm border border-white/20 rounded-xl px-3 py-2 sm:px-4 sm:py-3 text-white'>

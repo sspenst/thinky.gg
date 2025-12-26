@@ -37,7 +37,7 @@ export async function matchMarkSkipLevel(
   }
 
   const levelId = currentLevel._id;
-  
+
   // Enrich the match after getting the level info
   match = enrichMultiplayerMatch(match);
 

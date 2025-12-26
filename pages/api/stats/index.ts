@@ -352,7 +352,12 @@ export async function putStat(user: User, directions: Direction[], levelId: stri
             { session: session },
           ),
           // Call your webhook with the final message
-          queueDiscordWebhook(discordChannel, messageContent, { session: session }),
+          queueDiscordWebhook(
+            discordChannel,
+            messageContent,
+            { session: session },
+            [user.name],
+          ),
         ]);
       }
 

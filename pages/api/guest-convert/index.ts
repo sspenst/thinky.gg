@@ -73,7 +73,12 @@ export default withAuth({
 
   await Promise.all([
     sendEmailConfirmationEmail(req, user),
-    queueDiscordWebhook(DiscordChannel.NewUsers, `**${trimmedName}** just converted from a guest account! Welcome them on their [profile](${req.headers.origin}${getProfileSlug(user)})!`),
+    queueDiscordWebhook(
+      DiscordChannel.NewUsers,
+      `**${trimmedName}** just converted from a guest account! Welcome them on their [profile](${req.headers.origin}${getProfileSlug(user)})!`,
+      undefined,
+      [trimmedName],
+    ),
   ]);
 
   return res.status(200).json({ updated: true });

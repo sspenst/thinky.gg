@@ -398,7 +398,12 @@ async function createMatch(req: NextApiRequestWithAuth) {
         const discordChannel = game.id === GameId.SOKOPATH ? DiscordChannel.SokopathMultiplayer : DiscordChannel.PathologyMultiplayer;
         const discordMessage = `New *${multiplayerMatchTypeToText(type)}* match created by **${reqUser.name}**! [Join here](<${matchUrl}>)`;
 
-        await queueDiscordWebhook(discordChannel, discordMessage);
+        await queueDiscordWebhook(
+          discordChannel,
+          discordMessage,
+          undefined,
+          [reqUser.name],
+        );
       }
 
       enrichMultiplayerMatch(match, reqUser._id.toString());

@@ -75,6 +75,9 @@ async function processQueueMessage(queueMessage: QueueMessage) {
         },
         body: JSON.stringify({
           content: processedContent,
+          allowed_mentions: {
+            parse: [], // Empty array prevents all mentions from triggering notifications
+          },
         }),
       });
 
@@ -205,7 +208,12 @@ async function processQueueMessage(queueMessage: QueueMessage) {
         const game = getGameFromId(lvl.gameId);
         const discordChannel = game.id === GameId.SOKOPATH ? DiscordChannel.SokopathLevels : DiscordChannel.PathologyLevels;
 
-        await queueDiscordWebhook(discordChannel, `**${lvl.userId?.name}** published a new level: [${lvl.name}](${game.baseUrl}/level/${lvl.slug}?ts=${lvl.ts})`);
+        await queueDiscordWebhook(
+          discordChannel,
+          `**${lvl.userId?.name}** published a new level: [${lvl.name}](${game.baseUrl}/level/${lvl.slug}?ts=${lvl.ts})`,
+          undefined,
+          [lvl.userId?.name],
+        );
       }
 
       // Need to create the new level notification because technically the image needs to be generated beforehand...

@@ -142,7 +142,12 @@ export default withAuth({ POST: {
         queueRefreshIndexCalcs(levelClone._id, { session: session }),
         queueCalcPlayAttempts(levelClone._id, { session: session }),
         queueCalcCreatorCounts(level.gameId, level.userId, { session: session }),
-        queueDiscordWebhook(discordChannel, `**${req.user.name}** unpublished a level: ${level.name}`, { session: session }),
+        queueDiscordWebhook(
+          discordChannel,
+          `**${req.user.name}** unpublished a level: ${level.name}`,
+          { session: session },
+          [req.user.name],
+        ),
         ...matchesToRebroadcast.map(match => requestBroadcastMatch(level.gameId, match.matchId)),
         // invalidate cache
         CacheModel.deleteMany({

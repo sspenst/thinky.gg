@@ -839,7 +839,8 @@ describe('pages/api/level/index.ts', () => {
         expect(queueDiscordWebhookMock).toHaveBeenCalledWith(
           expect.any(String), // discordChannel
           expect.stringContaining('~~20~~ 8 moves'), // messageContent
-          expect.objectContaining({ session: expect.any(Object) }) // options
+          expect.objectContaining({ session: expect.any(Object) }), // options
+          expect.arrayContaining(['BBB']) // mentionUsernames
         );
       },
     });

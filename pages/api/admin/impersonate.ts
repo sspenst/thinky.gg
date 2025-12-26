@@ -28,7 +28,9 @@ export default withAuth({
       logger.warn(`Non-admin user ${req.user._id} (${req.user.name}) attempted to impersonate`);
       await queueDiscordWebhook(
         DiscordChannel.DevPriv,
-        `🚨 **Failed Impersonation Attempt**\nUser: ${req.user.name} (${req.user._id})\nReason: User is not an admin`
+        `🚨 **Failed Impersonation Attempt**\nUser: ${req.user.name} (${req.user._id})\nReason: User is not an admin`,
+        undefined,
+        [req.user.name],
       );
 
       return res.status(403).json({ error: 'Forbidden: Admin access required' });
@@ -43,7 +45,9 @@ export default withAuth({
       logger.warn(`Admin ${req.user._id} (${req.user.name}) attempted to impersonate non-existent user ${userId}`);
       await queueDiscordWebhook(
         DiscordChannel.DevPriv,
-        `🚨 **Failed Impersonation Attempt**\nAdmin: ${req.user.name} (${req.user._id})\nTarget User ID: ${userId}\nReason: User not found`
+        `🚨 **Failed Impersonation Attempt**\nAdmin: ${req.user.name} (${req.user._id})\nTarget User ID: ${userId}\nReason: User not found`,
+        undefined,
+        [req.user.name],
       );
 
       return res.status(404).json({ error: 'User not found' });
@@ -65,7 +69,9 @@ export default withAuth({
     logger.info(`Admin ${req.user._id} (${req.user.name}) started impersonating user ${targetUser._id} (${targetUser.name})`);
     await queueDiscordWebhook(
       DiscordChannel.DevPriv,
-      `👤 **Impersonation Started**\nAdmin: ${req.user.name} (${req.user._id})\nTarget: ${targetUser.name} (${targetUser._id})`
+      `👤 **Impersonation Started**\nAdmin: ${req.user.name} (${req.user._id})\nTarget: ${targetUser.name} (${targetUser._id})`,
+      undefined,
+      [req.user.name, targetUser.name],
     );
 
     return res.status(200).json({
@@ -102,7 +108,9 @@ export default withAuth({
       logger.error(`User ${impersonatingAdminId} (${adminUser.name}) lost admin role during impersonation`);
       await queueDiscordWebhook(
         DiscordChannel.DevPriv,
-        `🚨 **Security Alert**\nUser: ${adminUser.name} (${impersonatingAdminId})\nReason: Lost admin role during impersonation session`
+        `🚨 **Security Alert**\nUser: ${adminUser.name} (${impersonatingAdminId})\nReason: Lost admin role during impersonation session`,
+        undefined,
+        [adminUser.name],
       );
 
       return res.status(403).json({ error: 'Original user is not an admin' });
@@ -122,7 +130,9 @@ export default withAuth({
     logger.info(`Admin ${impersonatingAdminId} (${adminUser.name}) stopped impersonating user ${req.user._id} (${req.user.name})`);
     await queueDiscordWebhook(
       DiscordChannel.DevPriv,
-      `🔚 **Impersonation Stopped**\nAdmin: ${adminUser.name} (${impersonatingAdminId})\nWas impersonating: ${req.user.name} (${req.user._id})`
+      `🔚 **Impersonation Stopped**\nAdmin: ${adminUser.name} (${impersonatingAdminId})\nWas impersonating: ${req.user.name} (${req.user._id})`,
+      undefined,
+      [adminUser.name, req.user.name],
     );
 
     return res.status(200).json({ success: true });

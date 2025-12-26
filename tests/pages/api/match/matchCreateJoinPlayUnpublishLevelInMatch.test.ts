@@ -363,11 +363,11 @@ describe('matchUnpublishLevelInMatch', () => {
     const levels = match.levels;
 
     expect(levels).toHaveLength(6); // see 3+3 comment above
-    
+
     // Store the level USER (TestId.USER) is currently on (should be the second level, index 1)
     const userCurrentLevelIndex = 1; // User A completed level 0, now on level 1
     const userCurrentLevel = levels[userCurrentLevelIndex];
-    
+
     await testApiHandler({
       pagesHandler: async (_, res) => {
         await handler({
@@ -390,33 +390,35 @@ describe('matchUnpublishLevelInMatch', () => {
         expect(response.success).toBe(true);
       }
     });
-    
+
     // Verify that the skip was recorded correctly
     const updatedMatch = await MultiplayerMatchModel.findOne({ matchId: matchId });
     const userGameTable = updatedMatch.gameTable.get(TestId.USER);
-    
+
     // Should have 2 entries: the completed level and the skip marker
     expect(userGameTable).toHaveLength(2);
     expect(userGameTable[0].toString()).toBe(levels[0]._id.toString()); // First completed level
     expect(userGameTable[1].toString()).toBe('000000000000000000000000'); // Skip marker
-    
+
     // Check the match log to verify the correct level was marked as skipped
     const skipLogEntry = updatedMatch.matchLog.find((log: MatchLog) => log.type === MatchAction.SKIP_LEVEL && log.data?.userId?.toString() === TestId.USER);
+
     expect(skipLogEntry).toBeDefined();
     expect((skipLogEntry.data as any).levelId.toString()).toBe(userCurrentLevel._id.toString());
-    
+
     // Check chat messages for the skip action
     const skipChatMessage = updatedMatch.chatMessages[updatedMatch.chatMessages.length - 1];
+
     expect(skipChatMessage.systemData.type).toBe('level_action');
     expect(skipChatMessage.systemData.action).toBe('skipped');
     expect(skipChatMessage.systemData.level._id.toString()).toBe(userCurrentLevel._id.toString());
   });
   test('user A completes another level then skips (verifying skip records correct level)', async () => {
     MockDate.set(new Date().getTime() + 2000); // two seconds later
-    
+
     const match = await MultiplayerMatchModel.findOne({ matchId: matchId });
     const levels = match.levels;
-    
+
     // User A should be on level 2 now (after completing level 0 and skipping level 1)
     // Let's have them complete level 2
     await testApiHandler({
@@ -447,10 +449,10 @@ describe('matchUnpublishLevelInMatch', () => {
         expect(res.status).toBe(200);
       }
     });
-    
+
     // Now User A is on level 3, let's skip it
     const userACurrentLevel = levels[3];
-    
+
     await testApiHandler({
       pagesHandler: async (_, res) => {
         await handler({
@@ -473,17 +475,17 @@ describe('matchUnpublishLevelInMatch', () => {
       }
     });
   });
-  
+
   test('user B skips their first level', async () => {
     MockDate.set(new Date().getTime() + 2000); // two seconds later
 
     const match = await MultiplayerMatchModel.findOne({ matchId: matchId });
     const levels = match.levels;
-    
+
     // User B is on their first level (index 0)
     const userBCurrentLevelIndex = 0;
     const userBCurrentLevel = levels[userBCurrentLevelIndex];
-    
+
     await testApiHandler({
       pagesHandler: async (_, res) => {
         await handler({
@@ -509,22 +511,24 @@ describe('matchUnpublishLevelInMatch', () => {
         expect(response.success).toBe(true);
       }
     });
-    
+
     // Verify that User B's skip was recorded correctly
     const updatedMatch = await MultiplayerMatchModel.findOne({ matchId: matchId });
     const userBGameTable = updatedMatch.gameTable.get(TestId.USER_B);
-    
+
     // Should have 1 entry: just the skip marker
     expect(userBGameTable).toHaveLength(1);
     expect(userBGameTable[0].toString()).toBe('000000000000000000000000'); // Skip marker
-    
+
     // Check the match log to verify the correct level was marked as skipped for User B
     const skipLogEntry = updatedMatch.matchLog.find((log: MatchLog) => log.type === MatchAction.SKIP_LEVEL && log.data?.userId?.toString() === TestId.USER_B);
+
     expect(skipLogEntry).toBeDefined();
     expect((skipLogEntry.data as any).levelId.toString()).toBe(userBCurrentLevel._id.toString());
-    
+
     // Check chat messages for User B's skip action
     const chatMessages = updatedMatch.chatMessages;
+
     interface ChatMessage {
       userId?: string;
       message: string;
@@ -536,16 +540,17 @@ describe('matchUnpublishLevelInMatch', () => {
       };
       createdAt: Date;
     }
-    const userBSkipMessage = chatMessages.find((msg: ChatMessage) => 
-      msg.systemData && 
-      msg.systemData.type === 'level_action' && 
+    const userBSkipMessage = chatMessages.find((msg: ChatMessage) =>
+      msg.systemData &&
+      msg.systemData.type === 'level_action' &&
       msg.systemData.userId === TestId.USER_B &&
       msg.systemData.action === 'skipped'
     );
+
     expect(userBSkipMessage).toBeDefined();
     expect(userBSkipMessage.systemData.level._id.toString()).toBe(userBCurrentLevel._id.toString());
   });
-  
+
   test('user B match skip via api again', async () => {
     MockDate.set(new Date().getTime() + 2000); // two seconds later
 
@@ -598,7 +603,7 @@ describe('matchUnpublishLevelInMatch', () => {
 
         expect(response.matchId).toBeDefined();
         expect(response.scoreTable).toEqual({
-          [TestId.USER]: 2,  // User A completed level 0 and level 2 (skipped level 1)
+          [TestId.USER]: 2, // User A completed level 0 and level 2 (skipped level 1)
           [TestId.USER_B]: 0, // User B skipped level 0
         });
         expect(response.winners).toHaveLength(0);
@@ -647,7 +652,7 @@ describe('matchUnpublishLevelInMatch', () => {
 
         expect(response.matchId).toBeDefined();
         expect(response.scoreTable).toEqual({
-          [TestId.USER]: 2,  // User A completed level 0 and level 2 (skipped level 1)
+          [TestId.USER]: 2, // User A completed level 0 and level 2 (skipped level 1)
           [TestId.USER_B]: 0, // User B skipped level 0
         });
         expect(response.winners).toHaveLength(0);

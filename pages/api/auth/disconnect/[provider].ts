@@ -1,10 +1,10 @@
 import { NextApiResponse } from 'next';
 import PrivateTagType from '../../../../constants/privateTagType';
 import { ValidType } from '../../../../helpers/apiWrapper';
-import { getUserAuthProviders, removeUserAuthProvider } from '../../../../helpers/userAuthHelpers';
+import { removeUserAuthProvider } from '../../../../helpers/userAuthHelpers';
 import withAuth, { NextApiRequestWithAuth } from '../../../../lib/withAuth';
-import { AuthProvider } from '../../../../models/db/userAuth';
-import { UserModel } from '../../../../models/mongoose';
+import UserAuth, { AuthProvider } from '../../../../models/db/userAuth';
+import { UserAuthModel, UserModel } from '../../../../models/mongoose';
 
 export default withAuth({
   DELETE: {
@@ -21,8 +21,7 @@ export default withAuth({
   }
 
   try {
-    // Get current auth providers
-    const authProviders = await getUserAuthProviders(req.user._id);
+    const authProviders = await UserAuthModel.find({ userId: req.user._id }).lean<UserAuth[]>();
     const currentProvider = authProviders.find(p => p.provider === provider);
 
     if (!currentProvider) {

@@ -168,14 +168,18 @@ export async function refreshAchievements(pGameId: GameId, userId: Types.ObjectI
           if (achievementInfo.discordNotification) {
           // Should be "<User.name> just unlocked <Achievement.name> achievement!" where <User.name> is a link to the user's profile and <Achievement.name> is a link to the achievement's page
             const userName = user?.name;
-            const userLinkDiscord = `${userName}`;
             const achievementHref = game.baseUrl + '/achievement/' + achievementType;
             const achievementLinkDiscord = `[${achievementInfo.name}](${achievementHref})`;
-            const message = `${userLinkDiscord} just unlocked the ${achievementLinkDiscord} ${achievementInfo.emoji} achievement!`;
+            const message = `${userName} just unlocked the ${achievementLinkDiscord} ${achievementInfo.emoji} achievement!`;
             const discordChannel = game.id === GameId.SOKOPATH ? DiscordChannel.Sokopath : DiscordChannel.Pathology;
 
             // Pass the username for potential Discord mention lookup
-            achievementsCreatedPromises.push(queueDiscordWebhook(discordChannel, message, undefined, userName ? [userName] : []));
+            achievementsCreatedPromises.push(queueDiscordWebhook(
+              discordChannel,
+              message,
+              undefined,
+              userName ? [userName] : [],
+            ));
           }
         }
       }
