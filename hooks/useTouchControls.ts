@@ -119,7 +119,7 @@ export default function useTouchControls({
     const timeSince = Date.now() - touchStartTimestamp.current;
     const { tapSlop, swipeDistance, tileMargin, tileSize } = getTileMetrics();
 
-    if (!isSwiping.current && !swipeHandled.current && touchXDown !== undefined && touchYDown !== undefined) {
+    if (!swipeHandled.current && touchXDown !== undefined && touchYDown !== undefined) {
       const { clientX, clientY } = event.changedTouches[0];
       const dxFromStart: number = clientX - touchXDown.current;
       const dyFromStart: number = clientY - touchYDown.current;
@@ -143,7 +143,10 @@ export default function useTouchControls({
       if (!longPressActive.current) {
         return;
       }
+    }
 
+    if ((longPressActive.current || swipeHandled.current) && touchXDown !== undefined && touchYDown !== undefined) {
+      const { clientX, clientY } = event.changedTouches[0];
       const dx: number = clientX - lastTouchX.current;
       const dy: number = clientY - lastTouchY.current;
 
