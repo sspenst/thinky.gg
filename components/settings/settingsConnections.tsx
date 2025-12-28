@@ -1,4 +1,5 @@
 import { AppContext } from '@root/contexts/appContext';
+import isPro from '@root/helpers/isPro';
 import User from '@root/models/db/user';
 import { AuthProvider } from '@root/models/db/userAuth';
 import Image from 'next/image';
@@ -22,6 +23,7 @@ export default function SettingsConnections({ user }: SettingsConnectionsProps) 
   const [authProviders, setAuthProviders] = useState<AuthProviderData[]>([]);
   const [authProvidersLoading, setAuthProvidersLoading] = useState<boolean>(true);
   const [connectingProvider, setConnectingProvider] = useState<AuthProvider | null>(null);
+  const [syncingDiscordRoles, setSyncingDiscordRoles] = useState<boolean>(false);
 
   // Fetch auth providers
   useEffect(() => {
@@ -159,6 +161,34 @@ export default function SettingsConnections({ user }: SettingsConnectionsProps) 
     window.location.href = `/api/auth/${provider}`;
   }
 
+  function syncDiscordRoles() {
+    if (syncingDiscordRoles) {
+      return;
+    }
+
+    toast.dismiss();
+    const toastId = toast.loading('Syncing Discord roles...');
+
+    setSyncingDiscordRoles(true);
+
+    fetch('/api/user/discord/sync-roles', {
+      method: 'POST',
+      credentials: 'include',
+    })
+      .then(async res => {
+        const data = await res.json();
+
+        toast.success(data.message || 'Discord roles synced!', { id: toastId });
+      })
+      .catch(err => {
+        console.error('Error syncing Discord roles:', err);
+        toast.error('Failed to sync Discord roles', { id: toastId });
+      })
+      .finally(() => {
+        setSyncingDiscordRoles(false);
+      });
+  }
+
   function getProviderData(provider: AuthProvider) {
     return authProviders.find(p => p.provider === provider);
   }
@@ -192,38 +222,72 @@ export default function SettingsConnections({ user }: SettingsConnectionsProps) 
     return (
       <div className='bg-gray-50 dark:bg-gray-700 rounded-lg p-6'>
         {isConnected ? (
-          <div className='flex items-center justify-between'>
-            <div className='flex items-center space-x-3'>
-              <div className={`w-12 h-12 ${color} rounded-full flex items-center justify-center`}>
-                {providerData.providerAvatarUrl ? (
-                  <Image
-                    src={providerData.providerAvatarUrl}
-                    alt={`${name} Avatar`}
-                    className='w-12 h-12 rounded-full'
-                    unoptimized
-                    width={48}
-                    height={48}
-                  />
-                ) : (
-                  icon
-                )}
+          <div className='flex flex-col gap-4'>
+            <div className='flex items-center justify-between'>
+              <div className='flex items-center space-x-3'>
+                <div className={`w-12 h-12 ${color} rounded-full flex items-center justify-center`}>
+                  {providerData.providerAvatarUrl ? (
+                    <Image
+                      src={providerData.providerAvatarUrl}
+                      alt={`${name} Avatar`}
+                      className='w-12 h-12 rounded-full'
+                      unoptimized
+                      width={48}
+                      height={48}
+                    />
+                  ) : (
+                    icon
+                  )}
+                </div>
+                <div>
+                  <p className='font-medium text-gray-900 dark:text-white'>
+                    {providerData.providerUsername || providerData.providerId}
+                  </p>
+                  <p className='text-sm text-green-600 dark:text-green-400'>Connected via {name}</p>
+                  <p className='text-xs text-gray-500 dark:text-gray-400'>
+                    Connected {new Date(providerData.connectedAt * 1000).toLocaleDateString()}
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className='font-medium text-gray-900 dark:text-white'>
-                  {providerData.providerUsername || providerData.providerId}
-                </p>
-                <p className='text-sm text-green-600 dark:text-green-400'>Connected via {name}</p>
-                <p className='text-xs text-gray-500 dark:text-gray-400'>
-                  Connected {new Date(providerData.connectedAt * 1000).toLocaleDateString()}
-                </p>
-              </div>
+              <button
+                onClick={() => disconnectProvider(provider)}
+                className='bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800'
+              >
+                Disconnect
+              </button>
             </div>
-            <button
-              onClick={() => disconnectProvider(provider)}
-              className='bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800'
-            >
-              Disconnect
-            </button>
+            {/* Show Pro role sync button for Discord if user has Pro */}
+            {provider === AuthProvider.DISCORD && isPro(user) && (
+              <div className='border-t border-gray-200 dark:border-gray-600 pt-4'>
+                <div className='flex items-center justify-between'>
+                  <div>
+                    <p className='text-sm font-medium text-gray-900 dark:text-white'>Pro Role</p>
+                    <p className='text-xs text-gray-600 dark:text-gray-400'>
+                      Sync your Pro role in the Discord server
+                    </p>
+                  </div>
+                  <button
+                    onClick={syncDiscordRoles}
+                    disabled={syncingDiscordRoles}
+                    className='inline-flex items-center bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-medium py-2 px-4 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800'
+                  >
+                    {syncingDiscordRoles ? (
+                      <>
+                        <div className='animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2' />
+                        Syncing...
+                      </>
+                    ) : (
+                      <>
+                        <svg className='w-4 h-4 mr-2' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                          <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15' />
+                        </svg>
+                        Refresh Roles
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         ) : (
           <div className='text-center'>

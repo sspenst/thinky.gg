@@ -1,6 +1,7 @@
 import { NextApiResponse } from 'next';
 import PrivateTagType from '../../../../constants/privateTagType';
 import { ValidType } from '../../../../helpers/apiWrapper';
+import { updateDiscordProRole } from '../../../../helpers/syncDiscordProRole';
 import { removeUserAuthProvider } from '../../../../helpers/userAuthHelpers';
 import withAuth, { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import UserAuth, { AuthProvider } from '../../../../models/db/userAuth';
@@ -42,6 +43,10 @@ export default withAuth({
           requiresPassword: true
         });
       }
+    }
+
+    if (provider === AuthProvider.DISCORD) {
+      await updateDiscordProRole(currentProvider.providerId, false);
     }
 
     const success = await removeUserAuthProvider(req.user._id, provider as AuthProvider);

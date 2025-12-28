@@ -1,6 +1,7 @@
 import { NextApiResponse } from 'next';
 import apiWrapper, { NextApiRequestWrapper, ValidType } from '../../../../helpers/apiWrapper';
 import { logger } from '../../../../helpers/logger';
+import syncDiscordProRole from '../../../../helpers/syncDiscordProRole';
 import { getUserByProviderId, upsertUserAuthProvider } from '../../../../helpers/userAuthHelpers';
 import dbConnect from '../../../../lib/dbConnect';
 import getTokenCookie from '../../../../lib/getTokenCookie';
@@ -86,7 +87,7 @@ const handleDiscordCallback = apiWrapper({
 
       try {
         errorData = await tokenResponse.text();
-      } catch (e) {
+      } catch (_e) {
         errorData = 'Failed to read error response';
       }
 
@@ -179,6 +180,8 @@ const handleDiscordCallback = apiWrapper({
         provider_username: discordUser.username,
         is_linking: true,
       });
+
+      await syncDiscordProRole(user);
 
       // Redirect to settings with success message
       res.redirect(`${origin}/settings?discord_connected=true#connections`);

@@ -13,6 +13,7 @@ import Stripe from 'stripe';
 import Role from '../../../constants/role';
 import apiWrapper from '../../../helpers/apiWrapper';
 import { logger } from '../../../helpers/logger';
+import syncDiscordProRole from '../../../helpers/syncDiscordProRole';
 import User from '../../../models/db/user';
 import { KeyValueModel, StripeEventModel, UserConfigModel, UserModel } from '../../../models/mongoose';
 import { stripe, STRIPE_WEBHOOK_SECRET } from '../subscription';
@@ -86,6 +87,9 @@ async function subscriptionDeleted(userToDowngrade: User, subscription: Stripe.S
       await Promise.all(promises);
     });
     session.endSession();
+
+    // Sync Discord Pro role after successful subscription deletion
+    await syncDiscordProRole(userToDowngrade);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     logger.error(err);
@@ -239,6 +243,8 @@ async function checkoutSessionGift(giftFromUser: User, giftToUser: User, subscri
       });
       session.endSession();
 
+      // Sync Discord Pro role after successful gift
+      await syncDiscordProRole(giftToUser);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       logger.error(err);
@@ -318,6 +324,9 @@ async function checkoutSessionComplete(userToUpgrade: User, properties: Stripe.C
       });
 
       session.endSession();
+
+      // Sync Discord Pro role after successful checkout
+      await syncDiscordProRole(userToUpgrade);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       logger.error(err);
@@ -591,6 +600,9 @@ export default apiWrapper({
             });
 
             session.endSession();
+
+            // Sync Discord Pro role after successful subscription
+            await syncDiscordProRole(userTarget);
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           } catch (err: any) {
             logger.error(err);
