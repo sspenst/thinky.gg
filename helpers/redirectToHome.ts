@@ -3,7 +3,7 @@ import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { getUserFromToken } from '../lib/withAuth';
 import { getGameIdFromReq } from './getGameIdFromReq';
 
-// if logged in, redirect to home page
+// if logged in, redirect to home page for non-thinky pages
 export default async function redirectToHome(context: GetServerSidePropsContext, props = {}) {
   const token = context.req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
