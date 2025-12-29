@@ -50,42 +50,36 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, le
     <div className='grow flex flex-col max-w-full select-none h-full ph-no-capture' id='game-layout' style={{
       backgroundColor: 'var(--bg-color)',
     }}>
-      {/* Navigation buttons */}
-      <div className='mx-4 m-1'>
-        <div className='flex justify-between items-center'>
-          {controls.find(c => c.id === 'btn-prev') && (
-            <button
-              className='flex items-center hover:bg-color-2 rounded-lg transition-colors duration-200 '
-              onClick={() => controls.find(c => c.id === 'btn-prev')?.action()}
-            >
-              <LucideMoveLeft className='mr-2' />
-              <span className='max-w-32 md:max-w-60 flex flex-col items-start'>
-                <span>{prevLevel ? <><u>P</u>rev Level</> : 'Back'}</span>
-                {prevLevel && (
-                  <span className='hidden md:inline'>
-                    <FormattedLevelLink id='prev' level={prevLevel} />
-                  </span>
-                )}
+      {/* next/prev level buttons */}
+      <div className='flex justify-between items-center gap-8 mx-3 m-1'>
+        {controls.find(c => c.id === 'btn-prev') && (
+          <button
+            className='flex items-center gap-2'
+            onClick={() => controls.find(c => c.id === 'btn-prev')?.action()}
+          >
+            <LucideMoveLeft />
+            <span className='truncate'>{prevLevel ? <><u>P</u>rev Level</> : 'Back'}</span>
+            {prevLevel && (
+              <span className='hidden md:block truncate'>
+                <FormattedLevelLink id='prev' level={prevLevel} />
               </span>
-            </button>
-          )}
-          {controls.find(c => c.id === 'btn-next') && (
-            <button
-              className='flex items-center  hover:bg-color-2 rounded-lg transition-colors duration-200'
-              onClick={() => controls.find(c => c.id === 'btn-next')?.action()}
-            >
-              <span className='max-w-32 md:max-w-60 flex flex-col items-end'>
-                <span><u>N</u>ext Level</span>
-                {nextLevel && (
-                  <span className='hidden md:inline'>
-                    <FormattedLevelLink id='next' level={nextLevel} />
-                  </span>
-                )}
+            )}
+          </button>
+        )}
+        {controls.find(c => c.id === 'btn-next') && (
+          <button
+            className='flex items-center gap-2'
+            onClick={() => controls.find(c => c.id === 'btn-next')?.action()}
+          >
+            {nextLevel && (
+              <span className='hidden md:block truncate'>
+                <FormattedLevelLink id='next' level={nextLevel} />
               </span>
-              <LucideMoveRight className='ml-2' />
-            </button>
-          )}
-        </div>
+            )}
+            <span className='truncate'>{nextLevel ? <><u>N</u>ext Level</> : 'Back'}</span>
+            <LucideMoveRight />
+          </button>
+        )}
       </div>
 
       <Grid
