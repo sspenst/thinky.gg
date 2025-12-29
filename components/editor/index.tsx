@@ -13,7 +13,7 @@ import Control from '../../models/control';
 import Level from '../../models/db/level';
 import { ICON_REDO, ICON_RESIZE, ICON_UNDO } from '../icons/gameIcons';
 import BasicLayout from '../level/basicLayout';
-import GameRefactored from '../level/game-refactored';
+import Game from '../level/game';
 import CreateLevelModal from '../modal/createLevelModal';
 import DataModal from '../modal/dataModal';
 import EditLevelModal from '../modal/editLevelModal';
@@ -22,8 +22,6 @@ import PublishLevelModal from '../modal/publishLevelModal';
 import SchedulePublishModal from '../modal/schedulePublishModal';
 import SizeModal from '../modal/sizeModal';
 import StyledTooltip from '../page/styledTooltip';
-
-const DEBUG_PAINT = false;
 
 interface EditorProps {
   isDirty: boolean;
@@ -795,7 +793,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, originalL
             </div>
           )}
         </div>
-        <GameRefactored
+        <Game
           disablePlayAttempts={true}
           disableCheckpoints={isUnsaved} // Only disable checkpoints for unsaved levels
           disableStats={true} // Always disable automatic stats - we'll handle it manually

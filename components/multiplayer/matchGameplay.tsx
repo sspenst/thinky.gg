@@ -1,4 +1,4 @@
-import GameRefactored from '@root/components/level/game-refactored';
+import Game from '@root/components/level/game';
 import { GameState, MatchGameState } from '@root/helpers/gameStateHelpers';
 import { MatchAction } from '@root/models/constants/multiplayer';
 import Control from '@root/models/control';
@@ -70,7 +70,7 @@ export default function MatchGameplay({ activeLevel, matchId, usedSkip, onMove, 
 
   return (
     <div className='grow h-full w-full' key={'div-' + activeLevel._id.toString()}>
-      <GameRefactored
+      <Game
         disableCheckpoints={true}
         enableSessionCheckpoint={false}
         extraControls={[skipControl(usedSkip)]}

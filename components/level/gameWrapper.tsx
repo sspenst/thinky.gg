@@ -15,7 +15,7 @@ import Modal from '../modal';
 import LevelInfoModal from '../modal/levelInfoModal';
 import PostGameModal from '../modal/postGameModal';
 import { dropConfetti } from '../page/confetti';
-import GameRefactored from './game-refactored';
+import Game from './game';
 import FormattedLevelInfo from './info/formattedLevelInfo';
 import Solved from './info/solved';
 
@@ -143,8 +143,6 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
       !isCollectionLoading.current ? collection.levels[collection.levels.findIndex(l => l._id === level._id) - 1] : undefined
   ) : undefined;
 
-  const GameComponent = GameRefactored;
-
   return (
     <div className='flex h-full'>
       <div className='flex flex-col grow max-w-full'>
@@ -210,7 +208,7 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
             level={level}
           />
         </div>
-        <GameComponent
+        <Game
           disablePlayAttempts={!user}
           disableStats={!user}
           enableSessionCheckpoint={true}

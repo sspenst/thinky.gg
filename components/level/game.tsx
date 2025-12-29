@@ -46,7 +46,7 @@ export interface GameProps {
   hasCollection?: boolean;
 }
 
-export default function GameRefactored({
+export default function Game({
   disableAutoUndo,
   disableCheckpoints,
   disablePlayAttempts,

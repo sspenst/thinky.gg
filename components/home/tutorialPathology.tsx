@@ -20,7 +20,7 @@ import Position from '../../models/position';
 import SteppedUsernameSelector from '../forms/steppedUsernameSelector';
 import BasicLayout from '../level/basicLayout';
 import Controls from '../level/controls';
-import GameRefactored from '../level/game-refactored';
+import Game from '../level/game';
 import { dropConfetti } from '../page/confetti';
 import Page from '../page/page';
 import DismissToast from '../toasts/dismissToast';
@@ -170,7 +170,7 @@ export default function TutorialPathology({ recaptchaPublicKey }: TutorialPathol
         toast.dismiss();
         toast.error(errorData.error || 'Failed to create account');
       }
-    } catch (error) {
+    } catch (_) {
       toast.dismiss();
       toast.error('Failed to create account. Please try again.');
     } finally {
@@ -997,7 +997,7 @@ export default function TutorialPathology({ recaptchaPublicKey }: TutorialPathol
         )}
         {tutorialStep.gameGrid && tutorialStep.level && (
           <div id='game-div-parent' key={'div-' + tutorialStep.key} className={classNames('grow', tutorialStep.gameClasses)}>
-            <GameRefactored
+            <Game
               disableCheckpoints={true}
               disablePlayAttempts={true}
               disableStats={true}

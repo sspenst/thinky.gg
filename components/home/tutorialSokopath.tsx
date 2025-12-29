@@ -13,7 +13,7 @@ import Control from '../../models/control';
 import Level from '../../models/db/level';
 import BasicLayout from '../level/basicLayout';
 import Controls from '../level/controls';
-import GameRefactored from '../level/game-refactored';
+import Game from '../level/game';
 import Page from '../page/page';
 import DismissToast from '../toasts/dismissToast';
 
@@ -528,7 +528,7 @@ export default function TutorialSokopath({ recaptchaPublicKey }: TutorialSokopat
         )}
         {tutorialStep.gameGrid && tutorialStep.level && (
           <div id='game-div-parent' key={'div-' + tutorialStep.key} className={classNames('grow', tutorialStep.gameClasses)}>
-            <GameRefactored
+            <Game
               disableCheckpoints={true}
               disablePlayAttempts={true}
               disableStats={true}

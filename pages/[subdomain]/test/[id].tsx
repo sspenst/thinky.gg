@@ -1,6 +1,6 @@
 /* istanbul ignore file */
 
-import GameRefactored from '@root/components/level/game-refactored';
+import Game from '@root/components/level/game';
 import { getEnrichUserConfigPipelineStage } from '@root/helpers/enrich';
 import { getGameFromId, getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { redirectToLogin } from '@root/helpers/redirectToLogin';
@@ -112,7 +112,7 @@ export default function Test({ level }: TestProps) {
         <h2 className='whitespace-nowrap font-bold truncate text-center p-1'>
           {level?.name}
         </h2>
-        <GameRefactored
+        <Game
           disablePlayAttempts={true}
           level={level}
           onStatsSuccess={() => router.replace(router.asPath)}
