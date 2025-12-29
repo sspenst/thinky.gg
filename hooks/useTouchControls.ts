@@ -145,7 +145,7 @@ export default function useTouchControls({
       }
     }
 
-    if ((longPressActive.current || swipeHandled.current) && touchXDown !== undefined && touchYDown !== undefined) {
+    if (longPressActive.current && touchXDown !== undefined && touchYDown !== undefined) {
       const { clientX, clientY } = event.changedTouches[0];
       const dx: number = clientX - lastTouchX.current;
       const dy: number = clientY - lastTouchY.current;
