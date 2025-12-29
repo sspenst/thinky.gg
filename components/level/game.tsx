@@ -64,8 +64,6 @@ export default function Game({
   disableScrubber,
   nextLevel,
   prevLevel,
-  isCollectionViewHidden,
-  hasCollection,
 }: GameProps) {
   const levelContext = useContext(LevelContext);
   const { game, deviceInfo, mutateUser, shouldAttemptAuth, user } = useContext(AppContext);
@@ -510,8 +508,6 @@ export default function Game({
         isPro={pro}
         nextLevel={nextLevel}
         prevLevel={prevLevel}
-        isCollectionViewHidden={isCollectionViewHidden}
-        hasCollection={hasCollection}
       />
     </GameContext.Provider>
   );
