@@ -5,7 +5,7 @@ import User from '@root/models/db/user';
 import { SubscriptionGiftData } from '@root/pages/api/subscription/gift';
 import classNames from 'classnames';
 import dayjs from 'dayjs';
-import { Spline } from 'lucide-react';
+import { History } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import React, { JSX, useContext, useEffect, useRef, useState } from 'react';
@@ -414,7 +414,7 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
           <ProFeature
             description='Easily navigate through your moves with a timeline scrubber'
             icon={
-              <Spline className='w-6 h-6' />
+              <History className='w-6 h-6' />
             }
             title='Timeline Scrubber'
           />

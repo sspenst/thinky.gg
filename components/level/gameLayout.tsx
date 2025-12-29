@@ -1,7 +1,7 @@
 import { AppContext } from '@root/contexts/appContext';
 import { PageContext } from '@root/contexts/pageContext';
 import { GameState } from '@root/helpers/gameStateHelpers';
-import { LucideMoveLeft, LucideMoveRight } from 'lucide-react';
+import { ChevronDown, History, LucideMoveLeft, LucideMoveRight } from 'lucide-react';
 import { useContext, useEffect, useState } from 'react';
 import Control from '../../models/control';
 import { EnrichedLevel } from '../../models/db/level';
@@ -27,6 +27,7 @@ interface GameLayoutProps {
 export default function GameLayout({ controls, disableCheckpoints, gameState, level, onCellClick, onScrub, isPro, nextLevel, prevLevel }: GameLayoutProps) {
   const [fullScreen, setFullScreen] = useState(false);
   const [isCheckpointOpen, setIsCheckpointOpen] = useState(false);
+  const [isScrubberOpen, setIsScrubberOpen] = useState(false);
   const { setPreventKeyDownEvent, setShowHeader } = useContext(PageContext);
   const { deviceInfo } = useContext(AppContext);
 
@@ -46,16 +47,20 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, le
     setShowHeader(!fullScreen);
   }, [fullScreen, setShowHeader]);
 
+  const nextControl = controls.find(c => c.id === 'btn-next');
+  const prevControl = controls.find(c => c.id === 'btn-prev');
+  const remainingControls = controls.filter(c => c.id !== 'btn-prev' && c.id !== 'btn-next');
+
   return (
     <div className='grow flex flex-col max-w-full select-none h-full ph-no-capture' id='game-layout' style={{
       backgroundColor: 'var(--bg-color)',
     }}>
       {/* next/prev level buttons */}
-      <div className='flex justify-between items-center gap-8 mx-3 m-1'>
-        {controls.find(c => c.id === 'btn-prev') && (
+      {nextControl && prevControl && (
+        <div className='flex justify-between items-center gap-8 mx-3 m-1'>
           <button
             className='flex items-center gap-2'
-            onClick={() => controls.find(c => c.id === 'btn-prev')?.action()}
+            onClick={() => prevControl.action()}
           >
             <LucideMoveLeft />
             <span className='truncate'>{prevLevel ? <><u>P</u>rev Level</> : 'Back'}</span>
@@ -65,11 +70,9 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, le
               </span>
             )}
           </button>
-        )}
-        {controls.find(c => c.id === 'btn-next') && (
           <button
             className='flex items-center gap-2'
-            onClick={() => controls.find(c => c.id === 'btn-next')?.action()}
+            onClick={() => nextControl.action()}
           >
             {nextLevel && (
               <span className='hidden md:block truncate'>
@@ -79,8 +82,8 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, le
             <span className='truncate'>{nextLevel ? <><u>N</u>ext Level</> : 'Back'}</span>
             <LucideMoveRight />
           </button>
-        )}
-      </div>
+        </div>
+      )}
 
       <Grid
         gameState={gameState}
@@ -95,12 +98,15 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, le
       />
 
       {/* Bottom controls */}
-      <div className='gap-2 mx-3 py-2 transition-opacity flex flex-col'>
-        {onScrub && <div className='mb-2'><Scrubber
-          gameState={gameState}
-          onScrub={onScrub}
-          isPro={isPro}
-        /></div>}
+      <div className='mx-3 py-2 transition-opacity flex flex-col'>
+        {onScrub && (
+          <Scrubber
+            gameState={gameState}
+            isScrubberOpen={isScrubberOpen}
+            onScrub={onScrub}
+            isPro={isPro}
+          />
+        )}
         <div className='gap-2 flex'>
           {!disableCheckpoints && !fullScreen &&
             <>
@@ -128,8 +134,16 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, le
             </>
           }
           <div className='grow'>
-            <Controls controls={controls.filter(c => c.id !== 'btn-prev' && c.id !== 'btn-next')} />
+            <Controls controls={remainingControls} />
           </div>
+          {onScrub && (
+            <button
+              onClick={() => setIsScrubberOpen(!isScrubberOpen)}
+              className='self-center p-2 hover-bg-2 rounded-full transition-colors duration-200'
+            >
+              {!isScrubberOpen ? <History /> : <ChevronDown />}
+            </button>
+          )}
           {!deviceInfo.isMobile &&
             <>
               <button

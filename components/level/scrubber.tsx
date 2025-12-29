@@ -2,20 +2,19 @@ import { AppContext } from '@root/contexts/appContext';
 import { GameState } from '@root/helpers/gameStateHelpers';
 import { ScreenSize } from '@root/hooks/useDeviceCheck';
 import classNames from 'classnames';
-import { ChevronDown, Spline } from 'lucide-react';
 import Link from 'next/link';
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import Modal from '../modal';
 
 interface ScrubberProps {
     gameState: GameState;
+    isScrubberOpen: boolean;
     onScrub: (moveIndex: number) => void;
     isPro: boolean;
 }
 
-export default function Scrubber({ gameState, onScrub, isPro }: ScrubberProps) {
+export default function Scrubber({ gameState, isScrubberOpen, onScrub, isPro }: ScrubberProps) {
   const [showProModal, setShowProModal] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const scrubberRef = useRef<HTMLDivElement>(null);
   const totalMoves = gameState.moves.length + gameState.redoStack.length;
@@ -28,7 +27,9 @@ export default function Scrubber({ gameState, onScrub, isPro }: ScrubberProps) {
     if (!scrubberRef.current) return;
 
     const rect = scrubberRef.current.getBoundingClientRect();
-    const position = (clientX - rect.left) / rect.width;
+    const padding = 12; // px-3 = 12px on each side
+    const effectiveWidth = rect.width - (padding * 2);
+    const position = (clientX - rect.left - padding) / effectiveWidth;
     const moveIndex = Math.round(position * totalMoves);
 
     // Clamp value between 0 and total moves
@@ -176,65 +177,54 @@ export default function Scrubber({ gameState, onScrub, isPro }: ScrubberProps) {
 
   return (
     <>
-      <div className='w-full flex flex-col'>
-        <button
-          onClick={() => setIsExpanded(!isExpanded)}
-          className='self-center p-2 hover:bg-color-2 rounded-full transition-colors duration-200'
+      <div className={classNames(
+        'transition-all duration-300 ease-in-out overflow-hidden',
+        isScrubberOpen ? 'max-h-32 opacity-100 mb-2' : 'max-h-0 opacity-0'
+      )}>
+        <div
+          className={classNames(
+            'flex flex-col gap-2 w-full px-3 pb-2',
+            { 'cursor-not-allowed opacity-50': !isPro }
+          )}
+          ref={scrubberRef}
         >
-          {!isExpanded ? <div className='flex flex-row text-xs items-center'><span><Spline /></span></div> : <ChevronDown />}
-        </button>
-        <div className={classNames(
-          'transition-all duration-300 ease-in-out overflow-hidden',
-          isExpanded ? 'max-h-32 opacity-100' : 'max-h-0 opacity-0'
-        )}>
+          <div className='flex justify-between text-sm'>
+            <span>Move {currentMove}</span>
+            <span>Total {totalMoves}</span>
+          </div>
           <div
-            className={classNames(
-              'w-full px-6 bg-color-2 rounded-lg p-2',
-              { 'cursor-not-allowed opacity-50': !isPro }
-            )}
-            ref={scrubberRef}
+            className='h-4 bg-color-3 rounded-full cursor-pointer relative'
+            onMouseDown={handleMouseDown}
+            onTouchStart={handleTouchStart}
           >
-            <div className='flex flex-col gap-2'>
-              <div className='flex justify-between text-sm'>
-                <span>Move {currentMove}</span>
-                <span>Total {totalMoves}</span>
-              </div>
+            {/* Faded circles for all possible positions */}
+            {gameState.redoStack.length > 0 && (
               <div
-                className='h-4 bg-color-3 rounded-full cursor-pointer relative'
-                onMouseDown={handleMouseDown}
-                onTouchStart={handleTouchStart}
-              >
-                {/* Faded circles for all possible positions */}
-
-                {gameState.redoStack.length > 0 && (
-                  <div
-                    className='absolute h-full bg-blue-500/30 rounded-full'
-                    style={{
-                      width: `${((currentMove + gameState.redoStack.length) / totalMoves) * 100}%`,
-                    }}
-                  />
+                className='absolute h-full bg-blue-500/30 rounded-full'
+                style={{
+                  width: `${((currentMove + gameState.redoStack.length) / totalMoves) * 100}%`,
+                }}
+              />
+            )}
+            <div
+              className={classNames(
+                'h-full rounded-full relative transition-all duration-100 ease-in-out',
+                { 'transition-none': isDragging }
+              )}
+              style={{
+                backgroundColor: 'var(--bg-color-3)',
+                width: `${progress}%`
+              }}
+            >
+              <div
+                className={classNames(
+                  'absolute right-0 top-1/2 -translate-y-1/2 w-6 h-6 bg-blue-600 rounded-full transform translate-x-1/2',
+                  'transition-all duration-300 ease-in-out',
+                  { 'transition-none': isDragging }
                 )}
-                <div
-                  className={classNames(
-                    'h-full rounded-full relative transition-all duration-300 ease-in-out',
-                    { 'transition-none': isDragging }
-                  )}
-                  style={{
-                    backgroundColor: 'var(--bg-color-3)',
-                    width: `${progress}%`
-                  }}
-                >
-                  <div
-                    className={classNames(
-                      'absolute right-0 top-1/2 -translate-y-1/2 w-6 h-6 bg-blue-600 rounded-full transform translate-x-1/2',
-                      'transition-all duration-300 ease-in-out',
-                      { 'transition-none': isDragging }
-                    )}
-                  />
-                </div>
-                {markers}
-              </div>
+              />
             </div>
+            {markers}
           </div>
         </div>
       </div>
