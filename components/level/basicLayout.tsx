@@ -1,6 +1,5 @@
-import { AppContext } from '@root/contexts/appContext';
 import { initGameState } from '@root/helpers/gameStateHelpers';
-import React, { useContext } from 'react';
+import React from 'react';
 import Control from '../../models/control';
 import Level from '../../models/db/level';
 import Controls from './controls';
@@ -18,7 +17,6 @@ interface BasicLayoutProps {
 
 export default function BasicLayout({ cellClassName, cellStyle, controls, hideText, id, level, onClick }: BasicLayoutProps) {
   const gameState = initGameState(level.data);
-  const { deviceInfo } = useContext(AppContext);
 
   return (
     <>
@@ -30,6 +28,9 @@ export default function BasicLayout({ cellClassName, cellStyle, controls, hideTe
         hideText={hideText}
         id={id}
         leastMoves={level.leastMoves}
+        // Mobile uses onCellMouseDown via touch events, desktop uses it via mouse events
+        // We don't need onCellClick since onCellMouseDown handles single taps/clicks
+        onCellClick={undefined}
         onCellDrag={(x, y, isDragging) => {
           if (onClick) {
             const index = y * (level.width + 1) + x;
@@ -44,9 +45,6 @@ export default function BasicLayout({ cellClassName, cellStyle, controls, hideTe
             onClick(index, rightClick);
           }
         }}
-        // Mobile uses onCellMouseDown via touch events, desktop uses it via mouse events
-        // We don't need onCellClick since onCellMouseDown handles single taps/clicks
-        onCellClick={undefined}
 
       />
       {!controls ? null : <Controls controls={controls} />}
