@@ -13,8 +13,6 @@
       "react": {
         "runtime": "automatic"
       }
-    },    
-  },
-  
+    }
+  }
 }
-

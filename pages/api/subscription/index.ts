@@ -13,7 +13,7 @@ import { UserModel } from '../../../models/mongoose';
 const STRIPE_SECRET = (process.env.STRIPE_SECRET as string) ?? 'sk_test_...';
 
 export const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET as string;
-export const stripe = new Stripe(STRIPE_SECRET, { apiVersion: '2025-02-24.acacia' });
+export const stripe = new Stripe(STRIPE_SECRET, { apiVersion: '2025-12-15.clover' });
 
 export interface SubscriptionData {
   cancel_at: number | null;
@@ -82,16 +82,16 @@ export async function getSubscriptions(req: NextApiRequestWithAuth): Promise<[nu
     }
 
     subscriptionData.push({
-      paymentMethod: paymentMethod,
-      cancel_at_period_end: subscription.cancel_at_period_end,
-      current_period_end: subscription.current_period_end,
       cancel_at: subscription.cancel_at,
-      current_period_start: subscription.current_period_start,
+      cancel_at_period_end: subscription.cancel_at_period_end,
+      current_period_end: subscription.items.data.at(0)?.current_period_end ?? 0,
+      current_period_start: subscription.items.data.at(0)?.current_period_start ?? 0,
+      giftToUser: giftToUser,
+      paymentMethod: paymentMethod,
       plan: plan,
       planName: planName,
       status: subscription.status,
       subscriptionId: subscription.id,
-      giftToUser: giftToUser,
     });
   }
 
