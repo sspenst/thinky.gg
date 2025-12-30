@@ -57,15 +57,15 @@ export default withAuth({
       const giftFromUser = await UserModel.findById(subscription.metadata.giftFromId, USER_DEFAULT_PROJECTION).lean<User>();
 
       subscriptionData.push( {
-        subscriptionId: subscription.id,
-        planName: planName,
-        giftFromUser: giftFromUser,
-        metadata: subscription.metadata,
-        current_period_end: subscription.current_period_end,
-        current_period_start: subscription.current_period_start,
-        status: subscription.status,
         cancel_at: subscription.cancel_at,
         cancel_at_period_end: subscription.cancel_at_period_end,
+        current_period_end: subscription.items.data.at(0)?.current_period_end ?? 0,
+        current_period_start: subscription.items.data.at(0)?.current_period_start ?? 0,
+        giftFromUser: giftFromUser,
+        metadata: subscription.metadata,
+        planName: planName,
+        status: subscription.status,
+        subscriptionId: subscription.id,
       } as SubscriptionGiftData
       );
     }
