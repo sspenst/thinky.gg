@@ -14,6 +14,7 @@ const mockSubscription: Stripe.Subscription = {
   billing_cycle_anchor: 1690174333,
   billing_cycle_anchor_config: null,
   billing_mode: {
+    flexible: null,
     type: 'classic',
   },
   billing_thresholds: null,
