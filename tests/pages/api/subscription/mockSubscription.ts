@@ -21,6 +21,7 @@ const mockSubscription: Stripe.Subscription = {
   cancel_at: null,
   cancel_at_period_end: false,
   canceled_at: null,
+  customer_account: null,
   cancellation_details: {
     comment: null,
     feedback: null,
