@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  A platform dedicated to high-quality puzzle games.
+  A platform dedicated to high-quality puzzle games
 </p>
 
 <p align="center">
