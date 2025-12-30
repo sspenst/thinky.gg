@@ -11,7 +11,7 @@
     "@headlessui/react": "^2.2.9",
     "@headlessui/tailwindcss": "^0.2.1",
     "@next/third-parties": "^15.3.1",
-    "@openreplay/tracker": "^16.2.1",
+    "@openreplay/tracker": "^17.1.0",
     "@popperjs/core": "^2.11.8",
     "@socket.io/mongo-adapter": "^0.4.0",
     "@socket.io/mongo-emitter": "^0.2.0",

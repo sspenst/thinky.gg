@@ -2,7 +2,8 @@
 import 'react-tooltip/dist/react-tooltip.css';
 import '../styles/global.css';
 import CookieConsentBanner from '@root/components/app/CookieConsentBanner';
-import ToasterPortal from '@root/components/app/ToasterPortal';
+import OpenReplay from '@root/components/openReplay';
+import { Confetti } from '@root/components/page/confetti';
 import { DEFAULT_GAME_ID } from '@root/constants/GameId';
 import { Game, Games } from '@root/constants/Games';
 import MusicContextProvider from '@root/contexts/musicContext';
@@ -23,6 +24,7 @@ import { ThemeProvider } from 'next-themes';
 import posthog from 'posthog-js';
 import { PostHogProvider } from 'posthog-js/react';
 import { useState } from 'react';
+import { Toaster } from 'react-hot-toast';
 import Theme from '../constants/theme';
 import { AppContext } from '../contexts/appContext';
 import useUser from '../hooks/useUser';
@@ -119,23 +121,18 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
             user: isLoading ? undefined : !user ? null : user,
             userConfig: isLoading ? undefined : !user?.config ? null : user.config,
           }}>
+            <Toaster toastOptions={{ duration: 1500 }} />
+            <Confetti />
+            <OpenReplay />
             <div className={getFontFromGameId(selectedGame.id)} style={{
               backgroundColor: router.pathname === '/' && !user ? 'transparent' : 'var(--bg-color)',
               color: 'var(--color)',
             }}>
-              {/**
-                * NB: using a portal here to mitigate issues clicking toasts with open modals
-                * ideally we could have a Toaster component as a child of a modal so that clicking the
-                * toast does not close the modal, but react-hot-toast currently does not support this:
-                * https://github.com/timolins/react-hot-toast/issues/158
-                */}
-              <ToasterPortal />
               <MusicContextProvider>
                 <Component {...pageProps} />
                 <CookieConsentBanner />
               </MusicContextProvider>
             </div>
-
           </AppContext.Provider>
         </ThemeProvider>
       </PostHogProvider>
