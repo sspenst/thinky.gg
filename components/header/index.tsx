@@ -72,7 +72,7 @@ export default function Header({
                 setImpersonatingUser(user);
               }
             }
-          } catch (e) {
+          } catch {
             // Ignore decoding errors
           }
         }

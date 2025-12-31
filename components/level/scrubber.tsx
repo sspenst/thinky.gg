@@ -141,7 +141,7 @@ export default function Scrubber({ gameState, isScrubberOpen, onScrub, isPro }: 
       for (let i = 0; i <= totalMoves; i += interval) {
         majorMarkers.push(
           <div key={i} className='absolute top-1/2 -translate-y-1/2' style={{ left: `${(i / totalMoves) * 100}%` }}>
-            <div className='z-100 absolute text-xs text-white' style={{ transform: 'translate(-50%, -50%)' }}>
+            <div className='absolute text-xs text-white' style={{ transform: 'translate(-50%, -50%)' }}>
               {i}
             </div>
           </div>
@@ -157,7 +157,7 @@ export default function Scrubber({ gameState, isScrubberOpen, onScrub, isPro }: 
         if (i % interval === 0) {
           allMarkers.push(
             <div key={i} className='absolute top-1/2 -translate-y-1/2' style={{ left: `${(i / totalMoves) * 100}%` }}>
-              <div className='z-100 absolute text-xs text-white' style={{ transform: 'translate(-50%, -50%)' }}>
+              <div className='absolute text-xs text-white' style={{ transform: 'translate(-50%, -50%)' }}>
                 {i}
               </div>
             </div>
