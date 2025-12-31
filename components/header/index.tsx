@@ -1,7 +1,10 @@
+import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
 import { GameType } from '@root/constants/Games';
 import Role from '@root/constants/role';
+import getFontFromGameId from '@root/helpers/getFont';
 import { ScreenSize } from '@root/hooks/useDeviceCheck';
 import User from '@root/models/db/user';
+import classNames from 'classnames';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useContext, useEffect, useState } from 'react';
@@ -34,7 +37,6 @@ export default function Header({
   const { deviceInfo, game, setShowNav, user, mutateUser } = useContext(AppContext);
   const [impersonatingUser, setImpersonatingUser] = useState<User | null>(null);
   const [isImpersonating, setIsImpersonating] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const isNavDropdown = deviceInfo.screenSize < ScreenSize.XL || isFullScreen;
 
   useEffect(() => {
@@ -94,35 +96,25 @@ export default function Header({
       <div className='flex items-center truncate z-20 gap-4'>
         {game.isNotAGame ? null :
           isNavDropdown ?
-            <>
-              <button
-                className='w-full'
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              >
+            <Menu>
+              <MenuButton className='w-full focus:outline-hidden'>
                 <svg xmlns='http://www.w3.org/2000/svg' className='h-5 w-5 hover:opacity-70' fill='none' viewBox='0 0 24 24' stroke='currentColor' strokeWidth={2}>
                   <path strokeLinecap='round' strokeLinejoin='round' d='M4 6h16M4 12h16M4 18h16' />
                 </svg>
-              </button>
-              {isMobileMenuOpen && (
-                <>
-                  <div
-                    className='fixed inset-0 z-40'
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  />
-                  <div
-                    className='fixed left-0 m-1 z-50 origin-top rounded-[10px] shadow-lg border overflow-y-auto border-color-3 bg-1'
-                    style={{
-                      maxHeight: 'calc(100% - 56px)',
-                      top: Dimensions.MenuHeight,
-                    }}
-                  >
-                    <div className='px-1 py-1'>
-                      <Nav isDropdown onGameChange={() => setIsMobileMenuOpen(false)} />
-                    </div>
-                  </div>
-                </>
-              )}
-            </>
+              </MenuButton>
+              <MenuItems
+                anchor={{
+                  to: 'bottom end',
+                  gap: '17px', // move down
+                  padding: '4px', // Minimum padding from viewport edges
+                }}
+                className={classNames('p-1 w-fit origin-top-left rounded-[10px] shadow-lg border overflow-y-auto bg-1 border-color-3 transition duration-100 ease-out focus:outline-hidden data-closed:scale-95 data-closed:opacity-0 z-40', getFontFromGameId(game.id))}
+                modal={false}
+                transition
+              >
+                <Nav isDropdown />
+              </MenuItems>
+            </Menu>
             :
             <button onClick={() => setShowNav(showNav => !showNav)}>
               <svg xmlns='http://www.w3.org/2000/svg' className='h-5 w-5 hover:opacity-70' fill='none' viewBox='0 0 24 24' stroke='currentColor' strokeWidth={2}>

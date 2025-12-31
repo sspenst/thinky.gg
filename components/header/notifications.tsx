@@ -1,14 +1,14 @@
+import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
+import getFontFromGameId from '@root/helpers/getFont';
+import classNames from 'classnames';
 import { Bell } from 'lucide-react';
 import Link from 'next/link';
-import { useContext, useEffect, useRef, useState } from 'react';
-import Dimensions from '../../constants/dimensions';
+import { useContext, useEffect } from 'react';
 import { AppContext } from '../../contexts/appContext';
 import NotificationList from '../notification/notificationList';
 
 export default function Notifications() {
-  const { notifications, setNotifications, user } = useContext(AppContext);
-  const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const { game, notifications, setNotifications, user } = useContext(AppContext);
 
   useEffect(() => {
     if (user) {
@@ -16,42 +16,15 @@ export default function Notifications() {
     }
   }, [setNotifications, user]);
 
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    }
-
-    function handleEscapeKey(event: KeyboardEvent) {
-      if (event.key === 'Escape') {
-        setIsOpen(false);
-      }
-    }
-
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      document.addEventListener('keydown', handleEscapeKey);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('keydown', handleEscapeKey);
-    };
-  }, [isOpen]);
-
   if (!user) {
     return null;
   }
 
-  const closeDropdown = () => setIsOpen(false);
-
   return (
-    <div ref={dropdownRef} className='relative'>
-      <button
+    <Menu>
+      <MenuButton
         aria-label='notifications'
-        onClick={() => setIsOpen(!isOpen)}
-        className='flex items-start hover:opacity-70'
+        className='flex items-start hover:opacity-70 focus:outline-hidden'
         id='notificationsBtn'
       >
         <Bell className='h-6 w-5' />
@@ -67,20 +40,20 @@ export default function Notifications() {
             }}
           />
         )}
-      </button>
-      {isOpen && (
-        <div
-          className={`fixed right-0 m-1 w-96 max-w-fit z-10 origin-top-right rounded-md shadow-lg border overflow-y-auto bg-1 border-color-3 h-fit transition-all duration-100 ${
-            isOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
-          }`}
-          style={{
-            maxHeight: 'calc(100% - 56px)',
-            top: Dimensions.MenuHeight,
-          }}
-        >
+      </MenuButton>
+      <MenuItems
+        anchor={{
+          to: 'bottom start',
+          gap: '15px', // move down
+          padding: '4px', // Minimum padding from viewport edges
+        }}
+        className={classNames('p-1 w-96 origin-top-right rounded-[10px] shadow-lg border overflow-y-auto bg-1 border-color-3 transition duration-100 ease-out focus:outline-hidden data-closed:scale-95 data-closed:opacity-0 z-20', getFontFromGameId(game.id))}
+        modal={false}
+        transition
+      >
+        <MenuItem>
           <div className='flex flex-col gap-2'>
             <NotificationList
-              close={closeDropdown}
               notifications={notifications}
               setNotifications={setNotifications}
             />
@@ -90,8 +63,8 @@ export default function Notifications() {
               </Link>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        </MenuItem>
+      </MenuItems>
+    </Menu>
   );
 }

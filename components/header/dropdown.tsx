@@ -76,10 +76,9 @@ export default function Dropdown() {
       </MenuButton>
       <MenuItems
         anchor={{
-          to: 'bottom end',
-          gap: '10px', // move down
-          offset: '12px', // move right
-          padding: '3px', // Minimum padding from viewport edges
+          to: 'bottom start',
+          gap: '9px', // move down
+          padding: '4px', // Minimum padding from viewport edges
         }}
         className={classNames('p-1 w-fit origin-top-right rounded-[10px] shadow-lg border overflow-y-auto bg-1 border-color-3 transition duration-100 ease-out focus:outline-hidden data-closed:scale-95 data-closed:opacity-0 z-20', getFontFromGameId(game.id))}
         modal={false}

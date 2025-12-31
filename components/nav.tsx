@@ -1,8 +1,6 @@
-import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
 import GameLogo from '@root/components/gameLogo';
 import { Game, Games } from '@root/constants/Games';
 import { AppContext } from '@root/contexts/appContext';
-import getFontFromGameId from '@root/helpers/getFont';
 import getProfileSlug from '@root/helpers/getProfileSlug';
 import isPro from '@root/helpers/isPro';
 import useUrl from '@root/hooks/useUrl';
@@ -51,37 +49,46 @@ interface NavGameMenuProps {
 
 function NavGameMenu({ onGameChange }: NavGameMenuProps) {
   const { game: currentGame } = useContext(AppContext);
+  const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <Menu>
-      <MenuButton className='focus:outline-hidden'>
-        <div className='flex w-full items-center rounded-md cursor-pointer px-3 py-2 justify-between hover-bg-3'>
-          <div className='flex items-center gap-5'>
-            <GameLogoAndLabel gameId={currentGame.id} id={currentGame.id} size={20} />
-          </div>
-          <svg className='h-5 w-5' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor' aria-hidden='true'>
-            <path fillRule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z' clipRule='evenodd' />
-          </svg>
-        </div>
-      </MenuButton>
-      <MenuItems
-        anchor={{
-          to: 'bottom start',
-          gap: '4px', // move down
-          offset: '-4px', // move right
-          padding: '3px', // Minimum padding from viewport edges
+    <div className='relative'>
+      <button
+        className='focus:outline-hidden flex w-full items-center rounded-md px-3 py-2 justify-between hover-bg-3'
+        onClick={(e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          setIsOpen(!isOpen);
         }}
-        className={classNames('p-1 w-58 origin-top rounded-[10px] shadow-lg border overflow-y-auto bg-1 border-color-3 transition duration-100 ease-out focus:outline-hidden data-closed:scale-95 data-closed:opacity-0', getFontFromGameId(currentGame.id))}
-        modal={false}
-        transition
       >
-        {Object.values(Games).filter(game => game.id !== currentGame.id).map((game) => (
-          <MenuItem key={game.id}>
-            <NavGameMenuItem game={game} onGameChange={onGameChange} />
-          </MenuItem>
-        ))}
-      </MenuItems>
-    </Menu>
+        <div className='flex items-center gap-5'>
+          <GameLogoAndLabel gameId={currentGame.id} id={currentGame.id} size={20} />
+        </div>
+        <svg
+          className={classNames('h-5 w-5 transition-transform', isOpen && 'rotate-180')}
+          xmlns='http://www.w3.org/2000/svg'
+          viewBox='0 0 20 20'
+          fill='currentColor'
+          aria-hidden='true'
+        >
+          <path fillRule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z' clipRule='evenodd' />
+        </svg>
+      </button>
+      {isOpen && (
+        <div className='flex flex-col gap-1 mt-1'>
+          {Object.values(Games).filter(game => game.id !== currentGame.id).map((game) => (
+            <NavGameMenuItem
+              key={game.id}
+              game={game}
+              onGameChange={() => {
+                setIsOpen(false);
+                onGameChange?.();
+              }}
+            />
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 
