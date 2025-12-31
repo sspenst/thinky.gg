@@ -1,6 +1,34 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+
+@plugin '@headlessui/tailwindcss';
+
+@custom-variant dark (&:is([data-theme-dark="true"] *));
+
+@theme {
+  --flex-basis-22: 5.5rem;
+
+  --width-22: 5.5rem;
+  --width-100: 25rem;
+  --width-112: 28rem;
+}
+
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
+}
 
 @layer base {
 
@@ -20,6 +48,13 @@
       border-color: var(--color-incomplete);
       border-width: 6px;
     }
+  }
+}
+
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
   }
 }
 

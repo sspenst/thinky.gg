@@ -34,7 +34,7 @@ export default function MarkReadyButton({ match, user, onMarkReady, onUnmarkRead
       <div className='relative animate-fadeInUp w-full flex justify-center' style={{ animationDelay: '0.4s' }}>
         <div className='relative'>
           {/* Glassmorphism background effect for unready */}
-          <div className='absolute -inset-4 bg-gradient-to-r from-orange-600/20 to-red-600/20 blur-lg opacity-50' />
+          <div className='absolute -inset-4 bg-linear-to-r from-orange-600/20 to-red-600/20 blur-lg opacity-50' />
           <div className='relative bg-white/8 backdrop-blur-xl rounded-xl p-6 shadow-lg border border-white/20'>
             <div className='flex flex-col gap-4 justify-center items-center'>
               {/* Check mark icon */}
@@ -44,14 +44,14 @@ export default function MarkReadyButton({ match, user, onMarkReady, onUnmarkRead
 
               {/* Unready button */}
               <button
-                className={`group relative overflow-hidden bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-bold py-4 px-8 rounded-xl shadow-2xl transform hover:scale-105 transition-all duration-300 text-lg ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                className={`group relative overflow-hidden bg-linear-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-bold py-4 px-8 rounded-xl shadow-2xl transform hover:scale-105 transition-all duration-300 text-lg ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                 disabled={isLoading}
                 onClick={() => {
                   setIsLoading(true);
                   onUnmarkReady();
                 }}
               >
-                <div className='absolute inset-0 bg-gradient-to-r from-white to-transparent opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-transform duration-700' />
+                <div className='absolute inset-0 bg-linear-to-r from-white to-transparent opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-transform duration-700' />
                 <div className='relative flex items-center gap-3 justify-center'>
                   <span className='text-xl'>✗</span>
                   <span>{isLoading ? 'Unmarking...' : 'Not Ready'}</span>
@@ -73,7 +73,7 @@ export default function MarkReadyButton({ match, user, onMarkReady, onUnmarkRead
     <div className='relative animate-fadeInUp w-full flex justify-center' style={{ animationDelay: '0.4s' }}>
       <div className='relative'>
         {/* Glassmorphism background effect */}
-        <div className='absolute -inset-4 bg-gradient-to-r from-green-600/20 to-emerald-600/20 blur-lg opacity-50' />
+        <div className='absolute -inset-4 bg-linear-to-r from-green-600/20 to-emerald-600/20 blur-lg opacity-50' />
         <div className='relative bg-white/8 backdrop-blur-xl rounded-xl p-6 shadow-lg border border-white/20'>
           <div className='flex flex-col gap-4 justify-center items-center'>
             {/* Animated arrow pointing down */}
@@ -83,14 +83,14 @@ export default function MarkReadyButton({ match, user, onMarkReady, onUnmarkRead
 
             {/* Ready button with enhanced styling */}
             <button
-              className={`group relative overflow-hidden bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-4 px-8 rounded-xl shadow-2xl transform hover:scale-105 transition-all duration-300 text-lg ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`group relative overflow-hidden bg-linear-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-4 px-8 rounded-xl shadow-2xl transform hover:scale-105 transition-all duration-300 text-lg ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
               disabled={isLoading}
               onClick={() => {
                 setIsLoading(true);
                 onMarkReady();
               }}
             >
-              <div className='absolute inset-0 bg-gradient-to-r from-white to-transparent opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-transform duration-700' />
+              <div className='absolute inset-0 bg-linear-to-r from-white to-transparent opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-transform duration-700' />
               <div className='relative flex items-center gap-3 justify-center'>
                 <span className='text-xl'>✓</span>
                 <span>{isLoading ? 'Marking...' : 'I\'m Ready!'}</span>

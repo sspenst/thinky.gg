@@ -117,7 +117,7 @@ export default function RankedPage({ levelsByDifficulty, rankedSolvesByDifficult
           </div>
 
           {/* Title */}
-          <h1 className='text-4xl sm:text-6xl lg:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 mb-6 text-center leading-tight px-2 animate-fadeInScale' style={{ animationDelay: '0.5s' }}>
+          <h1 className='text-4xl sm:text-6xl lg:text-8xl font-black text-transparent bg-clip-text bg-linear-to-r from-yellow-400 via-orange-400 to-red-400 mb-6 text-center leading-tight px-2 animate-fadeInScale' style={{ animationDelay: '0.5s' }}>
             Ranked Arena
           </h1>
 
@@ -178,7 +178,7 @@ export default function RankedPage({ levelsByDifficulty, rankedSolvesByDifficult
           {/* Current Rank Display */}
           {highestDifficultyAchieved && (
             <div className='mb-8 animate-fadeInUp' style={{ animationDelay: '1.1s' }}>
-              <div className='bg-black/20 backdrop-blur-sm border border-white/20 rounded-xl px-6 py-4 text-white text-center'>
+              <div className='bg-black/20 backdrop-blur-xs border border-white/20 rounded-xl px-6 py-4 text-white text-center'>
                 <div className='text-xs opacity-70 mb-2'>HIGHEST DIFFICULTY</div>
                 <div className='flex items-center justify-center gap-3'>
                   <span className='text-2xl'>{highestDifficultyAchieved.emoji}</span>
@@ -199,10 +199,10 @@ export default function RankedPage({ levelsByDifficulty, rankedSolvesByDifficult
                 timeRange: TimeRange[TimeRange.All],
               },
             }}
-            className='group relative overflow-hidden bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700 text-white font-black py-4 sm:py-6 px-8 sm:px-12 rounded-2xl shadow-2xl transform hover:scale-105 transition-all duration-300 mb-12 animate-fadeInUp'
+            className='group relative overflow-hidden bg-linear-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700 text-white font-black py-4 sm:py-6 px-8 sm:px-12 rounded-2xl shadow-2xl transform hover:scale-105 transition-all duration-300 mb-12 animate-fadeInUp'
             style={{ animationDelay: '1.3s' }}
           >
-            <div className='absolute inset-0 bg-gradient-to-r from-white to-transparent opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-transform duration-700' />
+            <div className='absolute inset-0 bg-linear-to-r from-white to-transparent opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-transform duration-700' />
             <div className='relative flex items-center gap-3 sm:gap-4 justify-center'>
               <div className='text-2xl sm:text-3xl'>📊</div>
               <div className='text-center'>
@@ -232,7 +232,7 @@ export default function RankedPage({ levelsByDifficulty, rankedSolvesByDifficult
 
               return (
                 <Link
-                  className='group relative overflow-hidden bg-black/20 backdrop-blur-sm border border-white/20 hover:border-white/30 rounded-xl p-4 sm:p-6 transition-all duration-300 hover:scale-[1.02]'
+                  className='group relative overflow-hidden bg-black/20 backdrop-blur-xs border border-white/20 hover:border-white/30 rounded-xl p-4 sm:p-6 transition-all duration-300 hover:scale-[1.02]'
                   href={{
                     pathname: '/search',
                     query: {

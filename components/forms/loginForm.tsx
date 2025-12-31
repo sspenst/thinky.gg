@@ -156,7 +156,7 @@ export default function LoginForm() {
           <div className='space-y-3'>
             <button
               onClick={() => handleOAuthLogin('discord')}
-              className='w-full flex items-center justify-center gap-3 bg-[#5865F2] hover:bg-[#4752C4] text-white font-medium py-3 px-4 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-[#5865F2] focus:ring-offset-2'
+              className='w-full flex items-center justify-center gap-3 bg-[#5865F2] hover:bg-[#4752C4] text-white font-medium py-3 px-4 rounded-lg transition-colors focus:outline-hidden focus:ring-2 focus:ring-[#5865F2] focus:ring-offset-2'
               type='button'
             >
               <svg className='w-5 h-5' fill='currentColor' viewBox='0 0 24 24'>
@@ -166,7 +166,7 @@ export default function LoginForm() {
             </button>
             <button
               onClick={() => handleOAuthLogin('google')}
-              className='w-full flex items-center justify-center gap-3 bg-white hover:bg-gray-50 text-gray-900 font-medium py-3 px-4 rounded-lg border border-gray-300 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-white dark:border-gray-600'
+              className='w-full flex items-center justify-center gap-3 bg-white hover:bg-gray-50 text-gray-900 font-medium py-3 px-4 rounded-lg border border-gray-300 transition-colors focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-white dark:border-gray-600'
               type='button'
             >
               <svg className='w-5 h-5' viewBox='0 0 24 24'>

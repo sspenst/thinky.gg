@@ -98,7 +98,7 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
 
   const paymentMethodsDropdown = (
     <select
-      className='border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent p-1 w-fit'
+      className='border rounded-md text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-600 focus:border-transparent p-1 w-fit'
       id='paymentMethod'
       name='paymentMethod'
       defaultValue={paymentMethodOptions?.[0]?.props.value}
@@ -127,7 +127,7 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
     <div className='flex flex-col gap-2'>
       { paymentMethodsDropdown }
       <button
-        className='bg-green-300 hover:bg-green-500 text-black font-bold py-2 px-4 rounded-3xl focus:outline-none focus:shadow-outline cursor-pointer w-full text-center'
+        className='bg-green-300 hover:bg-green-500 text-black font-bold py-2 px-4 rounded-3xl focus:outline-hidden focus:shadow-outline cursor-pointer w-full text-center'
         onClick={() => {
           if (!confirm(`Are you sure you want to subscribe to ${game.displayName} Pro? You will be billed ${plan}ly.`)) {
             return;
@@ -170,7 +170,7 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
 
     : (
       <Link
-        className='bg-green-300 hover:bg-green-500 text-black font-bold py-2 px-4 rounded-3xl focus:outline-none focus:shadow-outline cursor-pointer w-full text-center'
+        className='bg-green-300 hover:bg-green-500 text-black font-bold py-2 px-4 rounded-3xl focus:outline-hidden focus:shadow-outline cursor-pointer w-full text-center'
         href={`${plan === 'year' ? stripePaymentYearlyLink : stripePaymentLink}?client_reference_id=${user?._id}&prefilled_email=${user?.email}`}
         rel='noreferrer'
         target='_blank'
@@ -197,7 +197,7 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
                 {paymentMethodsDropdown}
                 <div className='flex gap-2 items-center'>
                   <select
-                    className='border border-color-4 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent p-1 w-fit'
+                    className='border border-color-4 rounded-md text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-600 focus:border-transparent p-1 w-fit'
                     id='paymentMethod'
                     name='paymentMethod'
                     onChange={(e) => {
@@ -211,7 +211,7 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
                     <option value={'year'}>Years</option>
                   </select>
                   <input
-                    className='text-center justify-center items-center h-6 p-0 w-10 border border-color-4 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent'
+                    className='text-center justify-center items-center h-6 p-0 w-10 border border-color-4 rounded-md text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-600 focus:border-transparent'
                     id='quantity'
                     max={24}
                     min={1}
@@ -228,7 +228,7 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
                 </div>
               </div>
               <button
-                className='bg-green-300 hover:bg-green-500 text-black font-bold py-2 px-4 rounded-2xl focus:outline-none focus:shadow-outline cursor-pointer w-fit h-fit text-center disabled:opacity-50 disabled:cursor-not-allowed'
+                className='bg-green-300 hover:bg-green-500 text-black font-bold py-2 px-4 rounded-2xl focus:outline-hidden focus:shadow-outline cursor-pointer w-fit h-fit text-center disabled:opacity-50 disabled:cursor-not-allowed'
                 disabled={!giftUserSelected || !paymentMethod}
                 onClick={() => {
                   if (!confirm(`Are you sure you want to gift ${game.displayName} Pro to ${giftUserSelected?.name}? You will be billed ${giftInterval}ly for ${giftQuantity} ${giftInterval}${giftQuantity === 1 ? '' : 's'}.`)) {
@@ -297,7 +297,7 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
       {giftsLoading ? <LoadingSpinner /> : null}
       {hasAPaymentMethod && (
         <Link
-          className='py-2.5 px-3.5 mt-2 inline-flex justify-center items-center gap-2 rounded-md border font-medium align-middle focus:z-10 focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all text-sm whitespace-nowrap bg-green-100 dark:bg-gray-800 hover:bg-gray-50 hover:dark:bg-slate-600 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300'
+          className='py-2.5 px-3.5 mt-2 inline-flex justify-center items-center gap-2 rounded-md border font-medium align-middle focus:z-10 focus:outline-hidden focus:ring-2 focus:ring-blue-600 transition-all text-sm whitespace-nowrap bg-green-100 dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-slate-600 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300'
           href={stripeCustomerPortalLink || ''}
           rel='noreferrer'
           target='_blank'

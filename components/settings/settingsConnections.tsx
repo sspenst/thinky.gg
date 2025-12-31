@@ -251,7 +251,7 @@ export default function SettingsConnections({ user }: SettingsConnectionsProps) 
               </div>
               <button
                 onClick={() => disconnectProvider(provider)}
-                className='bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800'
+                className='bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-colors focus:outline-hidden focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800'
               >
                 Disconnect
               </button>
@@ -269,7 +269,7 @@ export default function SettingsConnections({ user }: SettingsConnectionsProps) 
                   <button
                     onClick={syncDiscordRoles}
                     disabled={syncingDiscordRoles}
-                    className='inline-flex items-center bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-medium py-2 px-4 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800'
+                    className='inline-flex items-center bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-medium py-2 px-4 rounded-lg transition-colors focus:outline-hidden focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800'
                   >
                     {syncingDiscordRoles ? (
                       <>
@@ -305,7 +305,7 @@ export default function SettingsConnections({ user }: SettingsConnectionsProps) 
                 connectingProvider === provider
                   ? 'bg-gray-400 cursor-not-allowed'
                   : getButtonStyles(name)
-              } text-white font-medium py-3 px-6 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-50`}
+              } text-white font-medium py-3 px-6 rounded-lg transition-colors focus:outline-hidden focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-50`}
             >
               {connectingProvider === provider ? (
                 <div className='animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2' />

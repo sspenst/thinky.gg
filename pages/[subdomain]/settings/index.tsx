@@ -142,7 +142,7 @@ export default function Settings({ user }: SettingsProps) {
             </nav>
           </div>
           {/* Tab Content */}
-          <div className='bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-8 overflow-hidden'>
+          <div className='bg-white dark:bg-gray-800 rounded-xl shadow-xs border border-gray-200 dark:border-gray-700 p-4 sm:p-8 overflow-hidden'>
             {activeTab === 'general' && (
               <div className='flex justify-center'>
                 <SettingsGeneral user={user} />

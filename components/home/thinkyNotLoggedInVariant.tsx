@@ -20,7 +20,7 @@ interface FeatureCardProps {
 
 function FeatureCard({ description, title, icon }: FeatureCardProps) {
   return (
-    <div className='w-full rounded-xl p-5 flex flex-col gap-3 items-start text-left border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition'>
+    <div className='w-full rounded-xl p-5 flex flex-col gap-3 items-start text-left border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-xs hover:shadow-md transition'>
       <div className='bg-blue-100 dark:bg-blue-900 p-3 rounded-lg'>
         <span className='text-2xl'>{icon}</span>
       </div>
@@ -38,7 +38,7 @@ function FeatureCard({ description, title, icon }: FeatureCardProps) {
 function LearningStep({ number, title, description }: { number: number; title: string; description: string }) {
   return (
     <div className='flex gap-4 p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700'>
-      <div className='flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-semibold text-sm'>
+      <div className='shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-semibold text-sm'>
         {number}
       </div>
       <div>
@@ -64,7 +64,7 @@ function GameCard({ game, levelData, instructions, leastMoves, theme }: GameCard
 
   return (
     <div className='bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all duration-300'>
-      <div className='bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 p-6 flex flex-col items-center text-center'>
+      <div className='bg-linear-to-r from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 p-6 flex flex-col items-center text-center'>
         <GameLogo gameId={game.id} id={game.id} size={64} />
         <h3
           className='font-semibold text-3xl mt-4 cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition-colors'
@@ -263,7 +263,7 @@ export default function ThinkyHomePageNotLoggedInVariant() {
         </div>
       </div>
       {/* Final CTA - Simple and Direct */}
-      <div className='bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-2xl p-12 text-center'>
+      <div className='bg-linear-to-r from-blue-600 to-purple-600 text-white rounded-2xl p-12 text-center'>
         <h2 className='text-4xl font-bold mb-4'>Ready to Start Learning?</h2>
         <p className='text-xl mb-8 opacity-90 max-w-2xl mx-auto'>
           The best way to understand these puzzles is to try them. Start with a tutorial and see what makes them special.
@@ -276,7 +276,7 @@ export default function ThinkyHomePageNotLoggedInVariant() {
 
             return (
               <Link
-                className='group relative flex items-center gap-3 px-6 py-3 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-lg font-medium transition shadow-md hover:shadow-lg'
+                className='group relative flex items-center gap-3 px-6 py-3 bg-white/20 hover:bg-white/30 backdrop-blur-xs text-white rounded-lg font-medium transition shadow-md hover:shadow-lg'
                 key={`final-cta-${game.id}`}
                 href={user ? getUrl(game.id, '/') : getUrl(game.id, '/tutorial')}
                 role='button'

@@ -214,7 +214,7 @@ function TimeRangeMenu({ onTimeRangeClick, timeRange }: TimeRangeMenuProps) {
   return (
     <Menu as='div' className='relative inline-block text-left'>
       <MenuButton
-        className='flex items-center justify-center rounded px-3 py-2 text-sm font-medium gap-2 border border-gray-300  transition-colors'
+        className='flex items-center justify-center rounded-sm px-3 py-2 text-sm font-medium gap-2 border border-gray-300  transition-colors'
       >
         <span>{timeRangeStrings[timeRange]}</span>
         <svg className='h-4 w-4' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor'>
@@ -230,7 +230,7 @@ function TimeRangeMenu({ onTimeRangeClick, timeRange }: TimeRangeMenuProps) {
         leaveFrom='transform opacity-100 scale-100'
         leaveTo='transform opacity-0 scale-95'
       >
-        <MenuItems className='absolute right-0 z-10 mt-1 rounded overflow-hidden border shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none border-color-1' style={{ backgroundColor: 'var(--bg-color)' }}>
+        <MenuItems className='absolute right-0 z-10 mt-1 rounded-sm overflow-hidden border shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-hidden border-color-1' style={{ backgroundColor: 'var(--bg-color)' }}>
           <div>
             {Object.keys(timeRangeStrings).map(timeRangeKey => (
               <MenuItem key={`time-range-${timeRangeKey}`}>
@@ -269,20 +269,20 @@ function StatFilterMenu({ onStatFilterClick, query }: StatFilterMenuProps) {
 
   return (
     <div className='flex items-center gap-2'>
-      <label className='flex items-center gap-2 cursor-pointer px-3 py-2 border border-gray-300 rounded transition-colors'>
+      <label className='flex items-center gap-2 cursor-pointer px-3 py-2 border border-gray-300 rounded-sm transition-colors'>
         <input
           checked={query.statFilter === quickFilter}
           onChange={() => {
             onStatFilterClick(query.statFilter === quickFilter ? StatFilter.All : quickFilter);
           }}
           type='checkbox'
-          className='rounded border-gray-300 text-blue-600 focus:ring-0 focus:ring-offset-0'
+          className='rounded-sm border-gray-300 text-blue-600 focus:ring-0 focus:ring-offset-0'
         />
         <span className='text-sm font-medium whitespace-nowrap'>{quickFilterLabel}</span>
       </label>
       <Menu as='div' className='relative inline-block text-left'>
         <MenuButton
-          className='flex items-center justify-center rounded px-3 py-2 text-sm font-medium gap-2 border border-gray-300 hover:bg-gray-700 transition-colors'
+          className='flex items-center justify-center rounded-sm px-3 py-2 text-sm font-medium gap-2 border border-gray-300 hover:bg-gray-700 transition-colors'
         >
           <span>{query.statFilter && query.statFilter !== quickFilter && query.statFilter in statFilterStrings ? statFilterStrings[query.statFilter] : 'Filter by...'}</span>
           <svg className='h-4 w-4' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor'>
@@ -298,7 +298,7 @@ function StatFilterMenu({ onStatFilterClick, query }: StatFilterMenuProps) {
           leaveFrom='transform opacity-100 scale-100'
           leaveTo='transform opacity-0 scale-95'
         >
-          <MenuItems className='absolute right-0 z-10 mt-1 rounded overflow-hidden border shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none border-color-1' style={{ backgroundColor: 'var(--bg-color)' }}>
+          <MenuItems className='absolute right-0 z-10 mt-1 rounded-sm overflow-hidden border shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-hidden border-color-1' style={{ backgroundColor: 'var(--bg-color)' }}>
             <div>
               {Object.entries(statFilterStrings)
                 .filter(([key]) => key !== quickFilter) // Exclude the quick filter from dropdown
@@ -656,10 +656,10 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
                 placeholder='Level name...'
                 type='search'
                 defaultValue={query.search}
-                className='w-full pl-10 pr-3 py-2 text-base border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+                className='w-full pl-10 pr-3 py-2 text-base border border-gray-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent'
               />
             </div>
-            <div className='w-full sm:w-48 flex-shrink-0'>
+            <div className='w-full sm:w-48 shrink-0'>
               <MultiSelectUser
                 key={'search-author-input-' + searchAuthor?._id.toString()}
                 placeholder='Author...'
@@ -673,7 +673,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
             </div>
             <button
               type='submit'
-              className='flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors whitespace-nowrap mt-3 md:mt-0 sm:pt-2'
+              className='flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-sm hover:bg-blue-700 transition-colors whitespace-nowrap mt-3 md:mt-0 sm:pt-2'
             >
               <SearchIcon className='h-4 w-4' />
               Search
@@ -687,7 +687,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
           {reqUser && <StatFilterMenu onStatFilterClick={onStatFilterClick} query={query} />}
           <Menu as='div' className='relative inline-block text-left'>
             <MenuButton
-              className='flex items-center justify-center rounded px-3 py-2 text-sm font-medium gap-2 border border-gray-300 transition-colors'
+              className='flex items-center justify-center rounded-sm px-3 py-2 text-sm font-medium gap-2 border border-gray-300 transition-colors'
               style={{
                 backgroundColor: difficulty ? getDifficultyColor(difficulty.name === 'Pending' ? -1 : difficulty.value * 1.5 + 30, 70) : undefined,
                 color: 'black',
@@ -714,7 +714,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
               leaveFrom='transform opacity-100 scale-100'
               leaveTo='transform opacity-0 scale-95'
             >
-              <MenuItems className='absolute right-0 z-10 mt-1 rounded overflow-hidden border shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none border-color-1' style={{ backgroundColor: 'var(--bg-color)' }}>
+              <MenuItems className='absolute right-0 z-10 mt-1 rounded-sm overflow-hidden border shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-hidden border-color-1' style={{ backgroundColor: 'var(--bg-color)' }}>
                 <div>
                   <MenuItem>
                     <button
@@ -769,7 +769,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
           <TimeRangeMenu onTimeRangeClick={onTimeRangeClick} timeRange={query.timeRange} />
           {/* Ranked Toggle */}
           {!game.disableRanked && (
-            <label className='flex items-center gap-2 cursor-pointer px-3 py-2 border border-gray-300 rounded transition-colors'>
+            <label className='flex items-center gap-2 cursor-pointer px-3 py-2 border border-gray-300 rounded-sm transition-colors'>
               <input
                 checked={query.isRanked === 'true'}
                 onChange={() => {
@@ -781,7 +781,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
                   });
                 }}
                 type='checkbox'
-                className='rounded border-gray-300 text-blue-600 focus:ring-0 focus:ring-offset-0'
+                className='rounded-sm border-gray-300 text-blue-600 focus:ring-0 focus:ring-offset-0'
               />
               <span className='text-sm font-medium whitespace-nowrap'>🏅 Ranked</span>
             </label>
@@ -831,7 +831,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
                 <label className='block text-sm font-medium'>Steps Range</label>
                 <div className='flex items-center gap-2'>
                   <input
-                    className='w-20 text-sm px-2 py-1 border border-gray-300 rounded'
+                    className='w-20 text-sm px-2 py-1 border border-gray-300 rounded-sm'
                     placeholder='Min'
                     max='2500'
                     min='1'
@@ -842,7 +842,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
                   />
                   <span className='text-gray-500'>to</span>
                   <input
-                    className='w-20 text-sm px-2 py-1 border border-gray-300 rounded'
+                    className='w-20 text-sm px-2 py-1 border border-gray-300 rounded-sm'
                     placeholder='Max'
                     max='2500'
                     min='1'
@@ -864,7 +864,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
                     </label>
                     <div className='flex items-center gap-2 text-sm'>
                       <input
-                        className='w-12 px-2 py-1 border border-gray-300 rounded text-center'
+                        className='w-12 px-2 py-1 border border-gray-300 rounded-sm text-center'
                         placeholder='Min W'
                         max='40'
                         min='1'
@@ -875,7 +875,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
                       />
                       <span>×</span>
                       <input
-                        className='w-12 px-2 py-1 border border-gray-300 rounded text-center'
+                        className='w-12 px-2 py-1 border border-gray-300 rounded-sm text-center'
                         placeholder='Min H'
                         max='40'
                         min='1'
@@ -886,7 +886,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
                       />
                       <span className='text-gray-500'>to</span>
                       <input
-                        className='w-12 px-2 py-1 border border-gray-300 rounded text-center'
+                        className='w-12 px-2 py-1 border border-gray-300 rounded-sm text-center'
                         placeholder='Max W'
                         max='40'
                         min='1'
@@ -897,7 +897,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
                       />
                       <span>×</span>
                       <input
-                        className='w-12 px-2 py-1 border border-gray-300 rounded text-center'
+                        className='w-12 px-2 py-1 border border-gray-300 rounded-sm text-center'
                         placeholder='Max H'
                         max='40'
                         min='1'
@@ -986,7 +986,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
             <div className='mt-4 flex justify-end'>
               <button
                 type='submit'
-                className='px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors'
+                className='px-4 py-2 bg-blue-600 text-white rounded-sm hover:bg-blue-700 transition-colors'
               >
                 Apply Filters
               </button>
@@ -1000,7 +1000,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
           <div className='flex flex-wrap items-center gap-2'>
             <span className='text-sm font-medium'>Active filters:</span>
             {filtersSelected.map((filter, i) => (
-              <div className='flex items-center gap-1 text-xs font-medium px-2 py-1 rounded bg-blue-100 text-blue-800' key={`filter-${i}`}>
+              <div className='flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-sm bg-blue-100 text-blue-800' key={`filter-${i}`}>
                 <span>{getFilterDisplay(game, filter, query)}</span>
                 <button
                   className='ml-1 text-blue-600 hover:text-blue-800 font-bold'

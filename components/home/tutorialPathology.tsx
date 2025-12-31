@@ -725,7 +725,7 @@ export default function TutorialPathology({ recaptchaPublicKey }: TutorialPathol
                     onUsernameConfirmed={() => {}}
                     className='w-full'
                     usernameFieldProps={{
-                      className: 'w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500',
+                      className: 'w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-sm text-white placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500',
                       labelClassName: 'text-sm font-medium text-white'
                     }}
                   >
@@ -737,7 +737,7 @@ export default function TutorialPathology({ recaptchaPublicKey }: TutorialPathol
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder='Email'
-                        className='w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500'
+                        className='w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-sm text-white placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500'
                       />
                     </div>
                     <div>
@@ -748,7 +748,7 @@ export default function TutorialPathology({ recaptchaPublicKey }: TutorialPathol
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder='Password (8+ characters)'
-                        className='w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500'
+                        className='w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-sm text-white placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500'
                       />
                     </div>
                     <div className='flex justify-center'>

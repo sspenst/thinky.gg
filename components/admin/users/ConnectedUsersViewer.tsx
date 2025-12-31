@@ -91,7 +91,7 @@ export default function ConnectedUsersViewer({
         {otherUsers.map((connectedUser) => (
           <div
             key={connectedUser._id}
-            className='p-3 bg-white dark:bg-gray-900 rounded border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors'
+            className='p-3 bg-white dark:bg-gray-900 rounded-sm border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors'
             onClick={() => switchToUser(connectedUser._id)}
           >
             <div className='flex items-center justify-between mb-2'>
@@ -110,7 +110,7 @@ export default function ConnectedUsersViewer({
               </div>
               <div className='flex items-center gap-2'>
                 {connectedUser.roles.length > 0 && (
-                  <span className='text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded'>
+                  <span className='text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded-sm'>
                     {connectedUser.roles.join(', ')}
                   </span>
                 )}
@@ -121,13 +121,13 @@ export default function ConnectedUsersViewer({
             <div className='flex items-center gap-4 mb-2 text-xs text-gray-600 dark:text-gray-400'>
               <div className='flex items-center gap-1'>
                 <span className='font-medium'>Levels:</span>
-                <span className='bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 px-2 py-0.5 rounded'>
+                <span className='bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 px-2 py-0.5 rounded-sm'>
                   {connectedUser.publishedLevelsCount}
                 </span>
               </div>
               <div className='flex items-center gap-1'>
                 <span className='font-medium'>Reviews:</span>
-                <span className='bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 px-2 py-0.5 rounded'>
+                <span className='bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 px-2 py-0.5 rounded-sm'>
                   {connectedUser.reviewsCount}
                 </span>
               </div>

@@ -10,7 +10,7 @@ export default function OnlineUsers() {
 
   return (
     <Link href='/multiplayer' passHref>
-      <div className='relative inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg hover:bg-white/15 transition-colors duration-200'>
+      <div className='relative inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-xs border border-white/20 rounded-lg hover:bg-white/15 transition-colors duration-200'>
         {!isConnected && <span className='animate-ping absolute inline-flex rounded-full bg-yellow-400 opacity-75 h-2.5 w-2.5' />}
         <span className={classNames(
           'h-2.5 w-2.5 rounded-full',

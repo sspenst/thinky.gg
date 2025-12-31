@@ -28,7 +28,7 @@ export default function LevelManagementTab({
 }: LevelManagementTabProps) {
   return (
     <div className='space-y-8'>
-      <div className='bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6'>
+      <div className='bg-white dark:bg-gray-800 rounded-xl shadow-xs border border-gray-200 dark:border-gray-700 p-6'>
         <div className='flex items-center gap-3 mb-6'>
           <Box className='w-6 h-6 text-green-500' />
           <h2 className='text-xl font-semibold text-gray-900 dark:text-white'>Level Management</h2>

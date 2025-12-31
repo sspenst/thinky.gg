@@ -62,7 +62,7 @@ export default function PlayAsGuest({ recaptchaPublicKey }: PlayAsGuestProps) {
       <button
         data-tooltip-content='Copy to clipboard'
         data-tooltip-id={'copy-to-clipboard-' + text}
-        className='bg-neutral-500 hover:bg-neutral-600 text-white font-bold py-1 px-1 rounded focus:outline-none focus:shadow-outline cursor-pointer'
+        className='bg-neutral-500 hover:bg-neutral-600 text-white font-bold py-1 px-1 rounded-sm focus:outline-hidden focus:shadow-outline cursor-pointer'
         onClick={handleCopy}
       > <StyledTooltip id={'copy-to-clipboard-' + text} />
         {isCopied ? <svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' className='bi bi-clipboard-check-fill' viewBox='0 0 16 16'>
@@ -197,7 +197,7 @@ export default function PlayAsGuest({ recaptchaPublicKey }: PlayAsGuestProps) {
                 Please save your password as you <span className='font-bold underline'>will not be able to recover it</span> unless you convert to a regular account.
               </span>
               <Link
-                className='bg-blue-500 hover:bg-blue-600 text-white text-center w-full font-medium py-2 px-3 rounded'
+                className='bg-blue-500 hover:bg-blue-600 text-white text-center w-full font-medium py-2 px-3 rounded-sm'
                 href={userConfig?.tutorialCompletedAt ? '/play' : '/tutorial'}
               >
                 Continue

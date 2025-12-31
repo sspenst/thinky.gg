@@ -26,7 +26,7 @@ export default function SystemOperationsTab({
   return (
     <div className='space-y-8'>
       {/* General Commands */}
-      <div className='bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6'>
+      <div className='bg-white dark:bg-gray-800 rounded-xl shadow-xs border border-gray-200 dark:border-gray-700 p-6'>
         <div className='flex items-center gap-3 mb-6'>
           <Settings className='w-6 h-6 text-purple-500' />
           <h2 className='text-xl font-semibold text-gray-900 dark:text-white'>System Operations</h2>
@@ -45,7 +45,7 @@ export default function SystemOperationsTab({
         </div>
       </div>
       {/* Admin Messages */}
-      <div className='bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6'>
+      <div className='bg-white dark:bg-gray-800 rounded-xl shadow-xs border border-gray-200 dark:border-gray-700 p-6'>
         <SendAdminMessage
           selectedUserCommand={selectedUserCommand}
           setRunningCommand={setRunningCommand}

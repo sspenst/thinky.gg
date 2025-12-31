@@ -752,7 +752,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, originalL
             <div className='flex gap-2'>
               {(isUnsaved || isDirty) && (
                 <button
-                  className='px-4 py-2 bg-green-500 hover:bg-green-600 rounded flex items-center gap-2'
+                  className='px-4 py-2 bg-green-500 hover:bg-green-600 rounded-sm flex items-center gap-2'
                   onClick={() => {
                     if (isUnsaved) {
                       setIsTestMode(false);
@@ -768,7 +768,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, originalL
                 </button>
               )}
               <button
-                className='px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded'
+                className='px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-sm'
                 onClick={() => {
                   setIsTestMode(false);
 
@@ -783,12 +783,12 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, originalL
             </div>
           </div>
           {isUnsaved && (
-            <div className='bg-yellow-600/20 border border-yellow-500/50 rounded px-3 py-2 text-sm text-yellow-200'>
+            <div className='bg-yellow-600/20 border border-yellow-500/50 rounded-sm px-3 py-2 text-sm text-yellow-200'>
               ⚠️ This level is not saved. Progress will not be recorded until you save the level.
             </div>
           )}
           {!isUnsaved && isDirty && (
-            <div className='bg-yellow-600/20 border border-yellow-500/50 rounded px-3 py-2 text-sm text-yellow-200'>
+            <div className='bg-yellow-600/20 border border-yellow-500/50 rounded-sm px-3 py-2 text-sm text-yellow-200'>
               ⚠️ This level has unsaved changes. Stats will not be submitted until you save your changes.
             </div>
           )}
@@ -944,7 +944,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, originalL
                         e.stopPropagation();
                         setIsPublishDropdownOpen(!isPublishDropdownOpen);
                       }}
-                      className='flex items-center p-1 hover:bg-purple-600/20 hover:border-purple-500/50 border border-transparent rounded transition-all duration-200 cursor-pointer'
+                      className='flex items-center p-1 hover:bg-purple-600/20 hover:border-purple-500/50 border border-transparent rounded-sm transition-all duration-200 cursor-pointer'
                       role='button'
                       tabIndex={0}
                       onKeyDown={(e) => {
@@ -958,7 +958,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, originalL
                       <ChevronDown size={16} className={`transition-transform duration-200 ${isPublishDropdownOpen ? 'rotate-180' : ''}`} />
                     </div>
                     {isPublishDropdownOpen && (
-                      <div className='absolute right-0 bottom-full mb-2 w-56 bg-gradient-to-br from-gray-900 to-gray-800 border border-purple-500/30 rounded-lg shadow-2xl z-50 backdrop-blur-sm'>
+                      <div className='absolute right-0 bottom-full mb-2 w-56 bg-linear-to-br from-gray-900 to-gray-800 border border-purple-500/30 rounded-lg shadow-2xl z-50 backdrop-blur-xs'>
                         <div className='py-2'>
                           <div
                             onClick={() => {
@@ -969,7 +969,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, originalL
                             className={`w-full text-left px-4 py-3 transition-all duration-200 flex items-center gap-3 group ${
                               isDirty || level.leastMoves === 0
                                 ? 'opacity-50 cursor-not-allowed'
-                                : 'hover:bg-gradient-to-r hover:from-purple-600/20 hover:to-blue-600/20 cursor-pointer'
+                                : 'hover:bg-linear-to-r hover:from-purple-600/20 hover:to-blue-600/20 cursor-pointer'
                             }`}
                             title={isDirty ? 'Save and test before scheduling publish' : level.leastMoves === 0 ? 'Test before scheduling publish' : undefined}
                             role='button'
@@ -982,8 +982,8 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, originalL
                               }
                             }}
                           >
-                            <div className='flex items-center justify-center w-8 h-8 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg group-hover:scale-110 transition-transform duration-200'>
-                              <svg width='16' height='16' viewBox='0 0 24 24' fill='white' className='drop-shadow-sm'>
+                            <div className='flex items-center justify-center w-8 h-8 bg-linear-to-br from-purple-500 to-blue-500 rounded-lg group-hover:scale-110 transition-transform duration-200'>
+                              <svg width='16' height='16' viewBox='0 0 24 24' fill='white' className='drop-shadow-xs'>
                                 <path d='M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.89-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.11-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z' />
                               </svg>
                             </div>

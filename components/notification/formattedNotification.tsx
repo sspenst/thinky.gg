@@ -263,7 +263,7 @@ export default function FormattedNotification({ close, notification, notificatio
 
   return (
     <div
-      className='p-3 border rounded shadow flex flex-cols-2 justify-between gap-2 items-center'
+      className='p-3 border rounded-sm shadow-sm flex flex-cols-2 justify-between gap-2 items-center'
       style={{
         borderColor: 'var(--bg-color-4)',
         color: notification.read ? 'var(--color-gray)' : undefined,
@@ -287,7 +287,7 @@ export default function FormattedNotification({ close, notification, notificatio
           }
         </div>
         <div className='flex items-center justify-between'>
-          <div className='focus:outline-none text-sm whitespace-normal truncate flex items-center gap-1 flex-wrap'>
+          <div className='focus:outline-hidden text-sm whitespace-normal truncate flex items-center gap-1 flex-wrap'>
             <NotificationMessage
               notification={notification}
               onMarkAsRead={handleMarkAsReadAndClose}
@@ -304,7 +304,7 @@ export default function FormattedNotification({ close, notification, notificatio
           'w-4 h-4 border rounded-2xl',
           notification.read ? 'hover:bg-green-500 focus:bg-inherit' : 'bg-green-500 hover:bg-green-300'
         )} />
-        <div aria-label='close icon' role='button' className='focus:outline-none cursor-pointer' />
+        <div aria-label='close icon' role='button' className='focus:outline-hidden cursor-pointer' />
       </div>
     </div>
   );

@@ -332,7 +332,7 @@ export default function Create({ levels, user, page, totalCount, levelsPerPage, 
               placeholder={`Search ${totalCount} draft level${totalCount !== 1 ? 's' : ''}...`}
               type='search'
               value={searchText}
-              className='px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+              className='px-3 py-2 border border-gray-300 rounded-md focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent'
             />
           </div>
         </div>
@@ -403,7 +403,7 @@ export default function Create({ levels, user, page, totalCount, levelsPerPage, 
                     <div className='flex gap-2 justify-center mt-2'>
                       <div
                         onClick={() => cancelScheduledPublish(level._id.toString())}
-                        className='text-xs bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded cursor-pointer'
+                        className='text-xs bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded-sm cursor-pointer'
                         role='button'
                         tabIndex={0}
                         onKeyDown={(e) => {

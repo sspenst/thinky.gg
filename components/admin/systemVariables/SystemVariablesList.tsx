@@ -60,7 +60,7 @@ export default function SystemVariablesList({
                   </div>
                   <div className='flex items-start gap-2'>
                     <span className='text-sm font-medium text-gray-600 dark:text-gray-400 mt-1'>Value:</span>
-                    <pre className='flex-1 text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-900 p-2 rounded border border-gray-300 dark:border-gray-600 whitespace-pre-wrap'>
+                    <pre className='flex-1 text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-900 p-2 rounded-sm border border-gray-300 dark:border-gray-600 whitespace-pre-wrap'>
                       {variable.value}
                     </pre>
                   </div>
@@ -75,13 +75,13 @@ export default function SystemVariablesList({
               <div className='flex items-center gap-2 ml-4'>
                 <button
                   onClick={() => onEdit(variable._id)}
-                  className='px-3 py-1 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded transition-colors'
+                  className='px-3 py-1 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-sm transition-colors'
                 >
                   Edit
                 </button>
                 <button
                   onClick={() => onDelete(variable._id)}
-                  className='px-3 py-1 text-sm bg-red-500 hover:bg-red-600 text-white rounded transition-colors'
+                  className='px-3 py-1 text-sm bg-red-500 hover:bg-red-600 text-white rounded-sm transition-colors'
                 >
                   Delete
                 </button>

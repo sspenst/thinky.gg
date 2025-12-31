@@ -51,7 +51,7 @@ export default function SteppedUsernameSelector({
           {...usernameFieldProps}
         />
         <button
-          className='bg-blue-500 enabled:hover:bg-blue-600 text-white w-full font-medium py-2 px-3 rounded disabled:opacity-50'
+          className='bg-blue-500 enabled:hover:bg-blue-600 text-white w-full font-medium py-2 px-3 rounded-sm disabled:opacity-50'
           disabled={isExistsLoading || !isValidUsername || usernameExists}
           onClick={handleContinue}
           type='button'

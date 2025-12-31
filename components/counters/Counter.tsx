@@ -12,7 +12,7 @@ export function Counter({ value }: { value: number }) {
   return (
     <div
       style={{ fontSize }}
-      className='flex space-x-1 overflow-hidden rounded bg-white px-2 leading-none text-gray-900'
+      className='flex space-x-1 overflow-hidden rounded-sm bg-white px-2 leading-none text-gray-900'
     >
       {displayValue.split('').map((digit, i) => (
         <Digit key={i} place={Math.pow(10, displayValue.length - i - 1)} value={value} />

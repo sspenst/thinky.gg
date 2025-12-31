@@ -121,7 +121,7 @@ export default function AchievementsDisplay({
                   <div className='flex flex-row items-center gap-2'>
                     <div className='w-32 h-3 bg-3 rounded-full overflow-hidden'>
                       <div
-                        className='h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-500'
+                        className='h-full bg-linear-to-r from-blue-500 to-purple-500 transition-all duration-500'
                         style={{ width: `${totalAvailableCount > 0 ? Math.round((totalUnlockedCount / totalAvailableCount) * 100) : 0}%` }}
                       />
                     </div>
@@ -145,7 +145,7 @@ export default function AchievementsDisplay({
                     }`}
                   >
                     <div className='flex flex-col items-center gap-3'>
-                      <div className='w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded flex items-center justify-center'>
+                      <div className='w-10 h-10 bg-linear-to-br from-blue-500 to-purple-500 rounded-sm flex items-center justify-center'>
                         <span className='text-white font-bold text-sm'>All</span>
                       </div>
                       <div className='text-center'>
@@ -160,7 +160,7 @@ export default function AchievementsDisplay({
                         </div>
                         <div className='w-full h-2 bg-color-base rounded-full overflow-hidden'>
                           <div
-                            className='h-full bg-gradient-to-r from-green-500 to-blue-500 transition-all duration-500'
+                            className='h-full bg-linear-to-r from-green-500 to-blue-500 transition-all duration-500'
                             style={{ width: `${totalAvailableCount > 0 ? Math.round((totalUnlockedCount / totalAvailableCount) * 100) : 0}%` }}
                           />
                         </div>
@@ -183,7 +183,7 @@ export default function AchievementsDisplay({
                           alt={gameData.name}
                           width={40}
                           height={40}
-                          className='rounded'
+                          className='rounded-sm'
                         />
                         <div className='text-center'>
                           <div className='font-semibold text-sm'>{gameData.name}</div>
@@ -197,7 +197,7 @@ export default function AchievementsDisplay({
                           </div>
                           <div className='w-full h-2 bg-color-base rounded-full overflow-hidden'>
                             <div
-                              className='h-full bg-gradient-to-r from-green-500 to-blue-500 transition-all duration-500'
+                              className='h-full bg-linear-to-r from-green-500 to-blue-500 transition-all duration-500'
                               style={{ width: `${gameData.percentage}%` }}
                             />
                           </div>
@@ -225,7 +225,7 @@ export default function AchievementsDisplay({
               }`}
             >
               <div className='flex flex-col items-center gap-3'>
-                <div className='w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded flex items-center justify-center'>
+                <div className='w-10 h-10 bg-linear-to-br from-blue-500 to-purple-500 rounded-sm flex items-center justify-center'>
                   <span className='text-white font-bold text-sm'>All</span>
                 </div>
                 <div className='text-center'>
@@ -240,7 +240,7 @@ export default function AchievementsDisplay({
                   </div>
                   <div className='w-full h-2 bg-color-base rounded-full overflow-hidden'>
                     <div
-                      className='h-full bg-gradient-to-r from-green-500 to-blue-500 transition-all duration-500'
+                      className='h-full bg-linear-to-r from-green-500 to-blue-500 transition-all duration-500'
                       style={{ width: `${totalAvailableCount > 0 ? Math.round((totalUnlockedCount / totalAvailableCount) * 100) : 0}%` }}
                     />
                   </div>
@@ -263,7 +263,7 @@ export default function AchievementsDisplay({
                     alt={gameData.name}
                     width={40}
                     height={40}
-                    className='rounded'
+                    className='rounded-sm'
                   />
                   <div className='text-center'>
                     <div className='font-semibold text-sm'>{gameData.name}</div>
@@ -277,7 +277,7 @@ export default function AchievementsDisplay({
                     </div>
                     <div className='w-full h-2 bg-color-base rounded-full overflow-hidden'>
                       <div
-                        className='h-full bg-gradient-to-r from-green-500 to-blue-500 transition-all duration-500'
+                        className='h-full bg-linear-to-r from-green-500 to-blue-500 transition-all duration-500'
                         style={{ width: `${gameData.percentage}%` }}
                       />
                     </div>

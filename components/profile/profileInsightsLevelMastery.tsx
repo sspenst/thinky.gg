@@ -187,9 +187,9 @@ export default function ProfileInsightsLevelMastery({ user, reqUser, timeFilter 
   const LoadingSkeleton = ({ height = 'h-64' }: { height?: string }) => (
     <div className={`bg-gray-800 rounded-lg animate-pulse ${height}`}>
       <div className='p-4 space-y-2'>
-        <div className='h-4 bg-gray-700 rounded w-3/4' />
-        <div className='h-4 bg-gray-700 rounded w-1/2' />
-        <div className='h-4 bg-gray-700 rounded w-2/3' />
+        <div className='h-4 bg-gray-700 rounded-sm w-3/4' />
+        <div className='h-4 bg-gray-700 rounded-sm w-1/2' />
+        <div className='h-4 bg-gray-700 rounded-sm w-2/3' />
       </div>
     </div>
   );
@@ -241,7 +241,7 @@ export default function ProfileInsightsLevelMastery({ user, reqUser, timeFilter 
             <select
               value={timelineMode}
               onChange={(e) => setTimelineMode(e.target.value as 'max' | 'average')}
-              className='bg-gray-800 text-white border border-gray-600 rounded px-3 py-1 text-sm focus:outline-none focus:border-blue-400'
+              className='bg-gray-800 text-white border border-gray-600 rounded-sm px-3 py-1 text-sm focus:outline-hidden focus:border-blue-400'
             >
               <option value='average'>Average Difficulty</option>
               <option value='max'>Maximum Difficulty</option>

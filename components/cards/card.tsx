@@ -16,7 +16,7 @@ export default function Card({ children, id, title, tooltip }: CardProps) {
       id={id}
     >
       <h2 className='text-2xl font-bold text-center' data-tooltip-id={tooltipId} data-tooltip-content={tooltip}>
-        <span className='bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent'>
+        <span className='bg-linear-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent'>
           {title}
         </span>
       </h2>

@@ -116,14 +116,14 @@ export default function LevelResultsSection({ match }: LevelResultsSectionProps)
   return (
     <div className='w-full max-w-4xl'>
       <h2 className='text-2xl font-bold text-center mb-6'>
-        <span className='bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent'>
+        <span className='bg-linear-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent'>
           Level Breakdown
         </span>
       </h2>
       <div className='flex flex-col gap-6'>
         {levelResults.reverse().map((result, index) => (
           <div key={index} className='relative animate-fadeInUp' style={{ animationDelay: `${index * 0.1}s` }}>
-            <div className='absolute -inset-2 bg-gradient-to-r from-purple-600/15 to-pink-600/15 blur-lg opacity-40' />
+            <div className='absolute -inset-2 bg-linear-to-r from-purple-600/15 to-pink-600/15 blur-lg opacity-40' />
             <div className='relative bg-white/8 backdrop-blur-xl rounded-xl p-6 shadow-lg border border-white/20'>
               {result}
             </div>

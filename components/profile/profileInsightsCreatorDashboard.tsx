@@ -320,9 +320,9 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser, timeFil
   const LoadingSkeleton = ({ height = 'h-64' }: { height?: string }) => (
     <div className={`bg-gray-800 rounded-lg animate-pulse ${height}`}>
       <div className='p-4 space-y-2'>
-        <div className='h-4 bg-gray-700 rounded w-3/4' />
-        <div className='h-4 bg-gray-700 rounded w-1/2' />
-        <div className='h-4 bg-gray-700 rounded w-2/3' />
+        <div className='h-4 bg-gray-700 rounded-sm w-3/4' />
+        <div className='h-4 bg-gray-700 rounded-sm w-1/2' />
+        <div className='h-4 bg-gray-700 rounded-sm w-2/3' />
       </div>
     </div>
   );
@@ -334,9 +334,9 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser, timeFil
         <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
           {Array.from({ length: 3 }).map((_, i) => (
             <div key={i} className='bg-gray-800 rounded-lg p-4 animate-pulse'>
-              <div className='h-4 bg-gray-700 rounded mb-2' />
-              <div className='h-8 bg-gray-700 rounded mb-2' />
-              <div className='h-3 bg-gray-700 rounded w-2/3' />
+              <div className='h-4 bg-gray-700 rounded-sm mb-2' />
+              <div className='h-8 bg-gray-700 rounded-sm mb-2' />
+              <div className='h-3 bg-gray-700 rounded-sm w-2/3' />
             </div>
           ))}
         </div>
@@ -595,7 +595,7 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser, timeFil
                           }
                         >
                           {/* Tooltip */}
-                          <div className='absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-10 whitespace-nowrap pointer-events-none'>
+                          <div className='absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded-sm shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-10 whitespace-nowrap pointer-events-none'>
                             <div className='font-medium'>{dayLabel} {hourLabels[hour]}</div>
                             <div className='text-gray-300'>
                               {hasEnoughData
@@ -634,9 +634,9 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser, timeFil
         </div>
       </div>}
       {/* Creator Insights */}
-      <div className='bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-6 border border-gray-700 shadow-lg'>
+      <div className='bg-linear-to-br from-gray-800 to-gray-900 rounded-xl p-6 border border-gray-700 shadow-lg'>
         <div className='flex items-center gap-3 mb-6'>
-          <div className='w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg flex items-center justify-center'>
+          <div className='w-10 h-10 bg-linear-to-br from-purple-500 to-blue-500 rounded-lg flex items-center justify-center'>
             <span className='text-xl'>🚀</span>
           </div>
           <div>
@@ -646,7 +646,7 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser, timeFil
         </div>
         <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
           {/* What's Working Well */}
-          <div className='bg-gradient-to-br from-green-900/30 to-emerald-900/20 rounded-lg p-4 border border-green-500/20'>
+          <div className='bg-linear-to-br from-green-900/30 to-emerald-900/20 rounded-lg p-4 border border-green-500/20'>
             <div className='flex items-center gap-2 mb-4'>
               <div className='w-6 h-6 bg-green-500 rounded-full flex items-center justify-center'>
                 <span className='text-xs'>✓</span>
@@ -763,7 +763,7 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser, timeFil
             </div>
           </div>
           {/* Growth Opportunities */}
-          <div className='bg-gradient-to-br from-amber-900/30 to-orange-900/20 rounded-lg p-4 border border-amber-500/20'>
+          <div className='bg-linear-to-br from-amber-900/30 to-orange-900/20 rounded-lg p-4 border border-amber-500/20'>
             <div className='flex items-center gap-2 mb-4'>
               <div className='w-6 h-6 bg-amber-500 rounded-full flex items-center justify-center'>
                 <span className='text-xs'>💡</span>

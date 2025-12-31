@@ -389,7 +389,7 @@ export default function Match({ initialMatch }: MatchProps) {
           {!matchInProgress && !loadingHeadToHead && currentMatch.players.length === 2 && headToHead && (
             <div className='flex justify-center animate-fadeInUp' style={{ animationDelay: '0.2s' }}>
               <div className='relative'>
-                <div className='absolute -inset-2 bg-gradient-to-r from-blue-600/15 to-purple-600/15 blur-lg opacity-40' />
+                <div className='absolute -inset-2 bg-linear-to-r from-blue-600/15 to-purple-600/15 blur-lg opacity-40' />
                 <div className='relative bg-white/8 backdrop-blur-xl rounded-xl p-6 shadow-lg border border-white/20'>
                   <HeadToHeadDisplay
                     player1Name={currentMatch.players[0].name}
@@ -413,10 +413,10 @@ export default function Match({ initialMatch }: MatchProps) {
 
               <div className='text-center mt-4'>
                 <Link
-                  className='group relative inline-flex items-center justify-center gap-2 overflow-hidden bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-300'
+                  className='group relative inline-flex items-center justify-center gap-2 overflow-hidden bg-linear-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-300'
                   href='/multiplayer'
                 >
-                  <div className='absolute inset-0 bg-gradient-to-r from-white to-transparent opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-transform duration-700' />
+                  <div className='absolute inset-0 bg-linear-to-r from-white to-transparent opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-transform duration-700' />
                   <span className='relative'>←</span>
                   <span className='relative'>Back to Multiplayer</span>
                 </Link>
@@ -446,13 +446,13 @@ export default function Match({ initialMatch }: MatchProps) {
                     getLevelIndexByPlayerId={(playerId: string) => getLevelIndexByPlayerId(currentMatch, playerId)}
                   />
 
-                  <div className='w-full max-w-screen-lg flex flex-col md:flex-row items-center md:items-center gap-8 mx-auto'>
+                  <div className='w-full max-w-(--breakpoint-lg) flex flex-col md:flex-row items-center md:items-center gap-8 mx-auto'>
                     <div className='flex-1'>
                       <div className='relative'>
-                        <div className='absolute -inset-2 bg-gradient-to-r from-cyan-600/15 to-blue-600/15 blur-lg opacity-40' />
+                        <div className='absolute -inset-2 bg-linear-to-r from-cyan-600/15 to-blue-600/15 blur-lg opacity-40' />
                         <div className='relative bg-white/8 backdrop-blur-xl rounded-xl p-6 shadow-lg border border-white/20'>
                           <h2 className='text-xl font-bold text-center mb-4'>
-                            <span className='bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent'>
+                            <span className='bg-linear-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent'>
                               Match Progress
                             </span>
                           </h2>
@@ -503,16 +503,16 @@ export default function Match({ initialMatch }: MatchProps) {
                       {!showInvitePanel ? (
                         <button
                           onClick={() => setShowInvitePanel(true)}
-                          className='group relative overflow-hidden bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-300 flex items-center gap-2'
+                          className='group relative overflow-hidden bg-linear-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-300 flex items-center gap-2'
                         >
-                          <div className='absolute inset-0 bg-gradient-to-r from-white to-transparent opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-transform duration-700' />
+                          <div className='absolute inset-0 bg-linear-to-r from-white to-transparent opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-transform duration-700' />
                           <svg className='w-4 h-4 relative z-10' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
                             <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 4v16m8-8H4' />
                           </svg>
                           <span className='relative z-10'>Invite Player</span>
                         </button>
                       ) : (
-                        <div className='flex flex-col gap-2 items-center bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20'>
+                        <div className='flex flex-col gap-2 items-center bg-white/10 backdrop-blur-xs rounded-lg p-4 border border-white/20'>
                           <h3 className='text-sm font-medium'>Invite a player</h3>
                           <div className='w-64'>
                             <MultiSelectUser
@@ -524,7 +524,7 @@ export default function Match({ initialMatch }: MatchProps) {
                             <button
                               onClick={() => setShowInvitePanel(false)}
                               disabled={isInviting}
-                              className='px-3 py-1 text-xs bg-gray-600 hover:bg-gray-700 text-white rounded transition-colors disabled:opacity-50'
+                              className='px-3 py-1 text-xs bg-gray-600 hover:bg-gray-700 text-white rounded-sm transition-colors disabled:opacity-50'
                             >
                               Cancel
                             </button>

@@ -122,7 +122,7 @@ export default function AchievementCard({
             <div
               key={gameId}
               className={classNames(
-                'w-6 h-6 rounded border-2 flex items-center justify-center',
+                'w-6 h-6 rounded-sm border-2 flex items-center justify-center',
                 {
                   'border-green-500 bg-green-500/20': isEarnedInGame,
                   'border-gray-400 bg-gray-400/10 opacity-50': !isEarnedInGame,
@@ -135,7 +135,7 @@ export default function AchievementCard({
                 alt={gameInfo.displayName}
                 width={16}
                 height={16}
-                className={classNames('rounded', {
+                className={classNames('rounded-sm', {
                   'opacity-100': isEarnedInGame,
                   'opacity-30': !isEarnedInGame
                 })}
@@ -156,12 +156,12 @@ export default function AchievementCard({
           {
             'opacity-50': !isUnlocked,
             'bg-3 hover:bg-4': !isUnlocked,
-            'bg-gradient-to-r from-blue-500/10 to-purple-500/10 hover:from-blue-500/20 hover:to-purple-500/20': isUnlocked,
+            'bg-linear-to-r from-blue-500/10 to-purple-500/10 hover:from-blue-500/20 hover:to-purple-500/20': isUnlocked,
           }
         )}
         style={achievementInfo.secret ? glowingBorderCSS : {}}
       >
-        <div className='text-3xl flex-shrink-0'>{achievementInfo.emoji}</div>
+        <div className='text-3xl shrink-0'>{achievementInfo.emoji}</div>
         <div className='flex-1 min-w-0'>
           <div className='flex items-center gap-2 mb-1'>
             <h3 className='font-bold text-lg truncate'>{achievementInfo.name}</h3>
@@ -221,7 +221,7 @@ export default function AchievementCard({
         {
           'opacity-60': !isUnlocked,
           'bg-3 hover:bg-4': !isUnlocked,
-          'bg-gradient-to-br from-blue-500/10 to-purple-500/10 hover:from-blue-500/20 hover:to-purple-500/20': isUnlocked,
+          'bg-linear-to-br from-blue-500/10 to-purple-500/10 hover:from-blue-500/20 hover:to-purple-500/20': isUnlocked,
         }
       )}
       style={achievementInfo.secret ? glowingBorderCSS : {}}

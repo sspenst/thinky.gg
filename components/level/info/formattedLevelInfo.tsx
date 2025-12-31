@@ -98,7 +98,7 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
   return (<>
     <div className='flex flex-col gap-4'>
       <div className='flex justify-between w-full items-start gap-2'>
-        <div className='flex flex-col gap-1 overflow-hidden break-words'>
+        <div className='flex flex-col gap-1 overflow-hidden wrap-break-word'>
           <span className='text-2xl font-bold'>
             {level.name}
           </span>
@@ -164,31 +164,31 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
         </div>
       )}
       <TabGroup className='flex flex-col gap-2'>
-        <TabList className='flex flex-wrap gap-x-1 items-start rounded text-sm'>
-          <Tab id='leastStepsTab' className='ui-selected:border-b-2 border-blue-500 focus:outline-none' onKeyDown={(e: React.KeyboardEvent) => {
+        <TabList className='flex flex-wrap gap-x-1 items-start rounded-sm text-sm'>
+          <Tab id='leastStepsTab' className='ui-selected:border-b-2 border-blue-500 focus:outline-hidden' onKeyDown={(e: React.KeyboardEvent) => {
             if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
               e.preventDefault();
             }
           }}>
-            <div className='mb-1 py-1 px-2 tab rounded'>
+            <div className='mb-1 py-1 px-2 tab rounded-sm'>
               Least Steps
             </div>
           </Tab>
-          <Tab id='completionsTab' className='ui-selected:border-b-2 border-blue-500 focus:outline-none' onKeyDown={(e: React.KeyboardEvent) => {
+          <Tab id='completionsTab' className='ui-selected:border-b-2 border-blue-500 focus:outline-hidden' onKeyDown={(e: React.KeyboardEvent) => {
             if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
               e.preventDefault();
             }
           }}>
-            <div className='mb-1 py-1 px-2 tab rounded'>
+            <div className='mb-1 py-1 px-2 tab rounded-sm'>
               Completions
             </div>
           </Tab>
-          <Tab id='timePlayedTab' className='ui-selected:border-b-2 border-blue-500 focus:outline-none' onKeyDown={(e: React.KeyboardEvent) => {
+          <Tab id='timePlayedTab' className='ui-selected:border-b-2 border-blue-500 focus:outline-hidden' onKeyDown={(e: React.KeyboardEvent) => {
             if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
               e.preventDefault();
             }
           }}>
-            <div className='mb-1 py-1 px-2 tab rounded flex flex-row items-center gap-2'>
+            <div className='mb-1 py-1 px-2 tab rounded-sm flex flex-row items-center gap-2'>
               <Image alt='pro' src='/pro.svg' width='16' height='16' />
               <span>Time Played</span>
             </div>

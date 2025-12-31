@@ -15,7 +15,7 @@ export default function CommandMenu({ commands, selectedCommand, onSelect, disab
       <MenuButton
         disabled={disabled}
         className={`
-          inline-flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors
+          inline-flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-xs focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors
           ${disabled
       ? 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed'
       : 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700'

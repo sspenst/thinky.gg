@@ -181,7 +181,7 @@ export default function CollectionScrollList({ collection, id, isHidden, onLoadi
       {!isLoading && !isAutoScrolling && !noMoreBefore &&
         <div className='flex flex-col justify-center items-center pt-3'>
           <button
-            className='text-sm bg-gray-600 p-1 rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-75'
+            className='text-sm bg-gray-600 p-1 rounded-lg hover:bg-gray-700 focus:outline-hidden focus:ring-2 focus:ring-gray-400 focus:ring-opacity-75'
             onClick={() => updateList('before')}
           >
             Load more
@@ -206,7 +206,7 @@ export default function CollectionScrollList({ collection, id, isHidden, onLoadi
       {!isLoading && !isAutoScrolling && !noMoreAfter &&
         <div className='flex flex-col justify-center items-center pb-3'>
           <button
-            className='text-sm bg-gray-600 p-1 rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-75'
+            className='text-sm bg-gray-600 p-1 rounded-lg hover:bg-gray-700 focus:outline-hidden focus:ring-2 focus:ring-gray-400 focus:ring-opacity-75'
             onClick={() => updateList('after')}
           >
             Load more

@@ -84,7 +84,7 @@ export default function FormattedReview({ hideBorder, inModal, level, onEditClic
   const { game } = useContext(AppContext);
 
   return (
-    <div className='flex align-center justify-center text-left break-words'>
+    <div className='flex align-center justify-center text-left wrap-break-word'>
       <div className={classNames('block w-full', { 'py-2 px-3 rounded-lg border border-color-3': !hideBorder })}>
         <div className='flex gap-x-2 items-center flex-wrap'>
           <div className='flex justify-between w-full items-center'>

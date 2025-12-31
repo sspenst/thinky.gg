@@ -91,7 +91,7 @@ export default function UserPropertiesViewer({ user, formatDate, getTimeAgo }: U
             <div>
               <label className='text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider'>Bio</label>
               <div className='mt-1'>
-                <p className='text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-900 p-2 rounded border border-gray-300 dark:border-gray-600'>
+                <p className='text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-900 p-2 rounded-sm border border-gray-300 dark:border-gray-600'>
                   {user.bio}
                 </p>
               </div>

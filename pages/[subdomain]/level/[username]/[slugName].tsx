@@ -373,7 +373,7 @@ export default function LevelPage({ _collection, _level, reqUser }: LevelProps) 
           title={level.name ?? 'Loading...'}
         >
           {isDemoLevel && !isPro(reqUser) && !isDemoBannerClosed && (
-            <div className='bg-gradient-to-r from-blue-600 to-purple-600 border-b border-blue-400 p-3 text-center relative'>
+            <div className='bg-linear-to-r from-blue-600 to-purple-600 border-b border-blue-400 p-3 text-center relative'>
               <div className='flex items-center justify-center gap-2 text-white max-w-4xl mx-auto pr-8'>
                 <span className='text-yellow-300'>✨</span>
                 <span className='text-sm font-medium'>

@@ -101,7 +101,7 @@ export default function MatchStatus({ isMatchPage, match, onJoinClick, onLeaveCl
 
   return (
     <div className='relative'>
-      <div className='absolute -inset-1 bg-gradient-to-r from-blue-600/20 to-purple-600/20 blur-sm opacity-50' />
+      <div className='absolute -inset-1 bg-linear-to-r from-blue-600/20 to-purple-600/20 blur-xs opacity-50' />
       <div
         className='relative flex flex-col gap-2 py-2 px-3 bg-white/8 backdrop-blur-xl rounded-xl shadow-lg border border-white/20 w-full'
       >
@@ -112,14 +112,14 @@ export default function MatchStatus({ isMatchPage, match, onJoinClick, onLeaveCl
             {match.players.some(player => user?._id.toString() !== player._id.toString()) && (match.state === MultiplayerMatchState.OPEN) &&
               <>
                 <button
-                  className='bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-1 px-2 sm:py-2 sm:px-4 rounded-lg shadow-md transform hover:scale-105 transition-all duration-200 text-sm sm:text-base'
+                  className='bg-linear-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-1 px-2 sm:py-2 sm:px-4 rounded-lg shadow-md transform hover:scale-105 transition-all duration-200 text-sm sm:text-base'
                   onClick={joinMatch}
                 >
                   Join
                 </button>
                 {!isMatchPage && (
                   <Link
-                    className='bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-1 px-2 sm:py-2 sm:px-4 rounded-lg shadow-md transform hover:scale-105 transition-all duration-200 text-center text-sm sm:text-base'
+                    className='bg-linear-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-1 px-2 sm:py-2 sm:px-4 rounded-lg shadow-md transform hover:scale-105 transition-all duration-200 text-center text-sm sm:text-base'
                     href={`/match/${match.matchId}`}
                   >
                     View
@@ -131,7 +131,7 @@ export default function MatchStatus({ isMatchPage, match, onJoinClick, onLeaveCl
               <>
                 {!isMatchPage && (
                   <Link
-                    className='bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-1 px-2 sm:py-2 sm:px-4 rounded-lg shadow-md transform hover:scale-105 transition-all duration-200 text-center text-sm sm:text-base'
+                    className='bg-linear-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-1 px-2 sm:py-2 sm:px-4 rounded-lg shadow-md transform hover:scale-105 transition-all duration-200 text-center text-sm sm:text-base'
                     href={`/match/${match.matchId}`}
                   >
                     View
@@ -141,7 +141,7 @@ export default function MatchStatus({ isMatchPage, match, onJoinClick, onLeaveCl
             }
             {!isMatchPage && !match.players.some(player => user?._id.toString() === player._id.toString()) && (match.state === MultiplayerMatchState.ACTIVE) &&
               <Link
-                className='bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-1 px-2 sm:py-2 sm:px-4 rounded-lg shadow-md transform hover:scale-105 transition-all duration-200 text-center text-sm sm:text-base'
+                className='bg-linear-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-1 px-2 sm:py-2 sm:px-4 rounded-lg shadow-md transform hover:scale-105 transition-all duration-200 text-center text-sm sm:text-base'
                 href={`/match/${match.matchId}`}
               >
                 View
@@ -152,8 +152,8 @@ export default function MatchStatus({ isMatchPage, match, onJoinClick, onLeaveCl
           {/* Mobile: Match info + Players in horizontal row, Desktop: Match info only */}
           <div className='flex flex-row  gap-2 w-full'>
             {/* Match type and badges - fixed width on mobile */}
-            <div className='flex flex-col gap-1  flex-shrink-0'>
-              <div className='bg-gradient-to-r from-blue-500/20 to-purple-500/20 backdrop-blur-sm rounded-lg px-2 py-0.5 sm:px-3 sm:py-1 border border-white/20 w-fit'>
+            <div className='flex flex-col gap-1  shrink-0'>
+              <div className='bg-linear-to-r from-blue-500/20 to-purple-500/20 backdrop-blur-xs rounded-lg px-2 py-0.5 sm:px-3 sm:py-1 border border-white/20 w-fit'>
                 <span className='font-bold whitespace-nowrap text-white text-xs sm:text-sm'>
                   {multiplayerMatchTypeToText(match.type)}
                 </span>
@@ -172,7 +172,7 @@ export default function MatchStatus({ isMatchPage, match, onJoinClick, onLeaveCl
               {match.players.some(player => user?._id.toString() === player._id.toString()) && (match.state === MultiplayerMatchState.OPEN || match.state === MultiplayerMatchState.ACTIVE) && (
                 <div className='flex justify-center'>
                   <button
-                    className='bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white font-bold py-1 px-2 sm:py-2 sm:px-4 rounded-lg shadow-md transform hover:scale-105 transition-all duration-200 text-sm sm:text-base'
+                    className='bg-linear-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white font-bold py-1 px-2 sm:py-2 sm:px-4 rounded-lg shadow-md transform hover:scale-105 transition-all duration-200 text-sm sm:text-base'
                     onClick={leaveMatch}
                   >
                     Leave
@@ -190,17 +190,17 @@ export default function MatchStatus({ isMatchPage, match, onJoinClick, onLeaveCl
                   key={player._id.toString()}
                 >
                   {player._id.toString() in match.scoreTable &&
-                    <div className='bg-gradient-to-r from-yellow-500/20 to-orange-500/20 rounded-lg px-1.5 py-0.5 sm:px-2 sm:py-1 min-w-[2rem] sm:min-w-[2.5rem] text-center flex-shrink-0'>
+                    <div className='bg-linear-to-r from-yellow-500/20 to-orange-500/20 rounded-lg px-1.5 py-0.5 sm:px-2 sm:py-1 min-w-8 sm:min-w-10 text-center shrink-0'>
                       <span className='font-bold text-base sm:text-lg text-yellow-300'>
                         {match.scoreTable[player._id.toString()]}
                       </span>
                     </div>
                   }
-                  <span className='text-xs sm:text-sm flex-shrink-0'>🎮</span>
+                  <span className='text-xs sm:text-sm shrink-0'>🎮</span>
                   <div className='flex-1 min-w-0'>
                     <FormattedUser size={Dimensions.AvatarSizeSmall} id='match-status' user={player} />
                   </div>
-                  <div className='flex items-center gap-1 flex-shrink-0'>
+                  <div className='flex items-center gap-1 shrink-0'>
                     <MultiplayerRating hideType profile={player.multiplayerProfile} type={match.type} />
                     {recap?.winner?.userId.toString() === player._id.toString() &&
                       <span className='text-xs text-green-400 whitespace-nowrap'>

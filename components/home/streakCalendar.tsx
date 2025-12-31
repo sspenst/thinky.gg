@@ -74,7 +74,7 @@ export function StreakCalendar() {
   }
 
   return (
-    <div className='bg-white dark:bg-gray-800 rounded-lg shadow-sm p-3 flex flex-col items-center'>
+    <div className='bg-white dark:bg-gray-800 rounded-lg shadow-xs p-3 flex flex-col items-center'>
       <div
         className='flex items-center justify-between w-full cursor-pointer'
         onClick={() => setIsExpanded(!isExpanded)}

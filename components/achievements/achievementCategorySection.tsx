@@ -70,7 +70,7 @@ export default function AchievementCategorySection({
             <div className='text-sm font-semibold'>{progressPercentage}%</div>
             <div className='w-20 h-2 bg-color-base rounded-full overflow-hidden'>
               <div
-                className='h-full bg-gradient-to-r from-green-500 to-blue-500 transition-all duration-500'
+                className='h-full bg-linear-to-r from-green-500 to-blue-500 transition-all duration-500'
                 style={{ width: `${progressPercentage}%` }}
               />
             </div>

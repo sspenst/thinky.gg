@@ -404,9 +404,9 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
   const LoadingSkeleton = ({ height = 'h-64' }: { height?: string }) => (
     <div className={`bg-gray-800 rounded-lg animate-pulse ${height}`}>
       <div className='p-4 space-y-2'>
-        <div className='h-4 bg-gray-700 rounded w-3/4' />
-        <div className='h-4 bg-gray-700 rounded w-1/2' />
-        <div className='h-4 bg-gray-700 rounded w-2/3' />
+        <div className='h-4 bg-gray-700 rounded-sm w-3/4' />
+        <div className='h-4 bg-gray-700 rounded-sm w-1/2' />
+        <div className='h-4 bg-gray-700 rounded-sm w-2/3' />
       </div>
     </div>
   );
@@ -453,7 +453,7 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
             <select
               value={selectedTimezone}
               onChange={(e) => setSelectedTimezone(e.target.value)}
-              className='text-xs bg-gray-800 border border-gray-600 rounded px-2 py-1 text-white focus:outline-none focus:border-blue-500'
+              className='text-xs bg-gray-800 border border-gray-600 rounded-sm px-2 py-1 text-white focus:outline-hidden focus:border-blue-500'
             >
               <optgroup label='Common Timezones'>
                 <option value={dayjs.tz.guess()}>Browser Default ({dayjs.tz.guess()})</option>
@@ -645,7 +645,7 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
                   {[20, 35, 50, 65, 80].map((val, i) => (
                     <div
                       key={i}
-                      className='w-6 h-4 rounded'
+                      className='w-6 h-4 rounded-sm'
                       style={{
                         backgroundColor: val >= 80 ? '#10B981' :
                           val >= 65 ? '#22C55E' :
@@ -779,7 +779,7 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
                             />
                           </td>
                           <td className='text-center p-3'>
-                            <span className='px-2 py-1 rounded text-xs' style={{
+                            <span className='px-2 py-1 rounded-sm text-xs' style={{
                               backgroundColor: getDifficultyColor(level.difficulty) + '20',
                               color: getDifficultyColor(level.difficulty),
                             }}>
@@ -824,7 +824,7 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
                       <button
                         onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                         disabled={currentPage === 1}
-                        className='px-3 py-1 bg-gray-700 text-white rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-600'
+                        className='px-3 py-1 bg-gray-700 text-white rounded-sm text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-600'
                       >
                         Previous
                       </button>
@@ -859,7 +859,7 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
                       <button
                         onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                         disabled={currentPage === totalPages}
-                        className='px-3 py-1 bg-gray-700 text-white rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-600'
+                        className='px-3 py-1 bg-gray-700 text-white rounded-sm text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-600'
                       >
                         Next
                       </button>

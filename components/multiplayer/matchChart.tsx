@@ -167,7 +167,7 @@ export default function MatchChart({ match }: MatchChartProps) {
   return (
     <div className='flex flex-col h-full'>
       <div className='flex justify-center mb-4'>
-        <div className='inline-flex rounded-md shadow-sm' role='group'>
+        <div className='inline-flex rounded-md shadow-xs' role='group'>
           {Object.values(ChartView).map((view) => (
             <button
               key={view}
@@ -175,7 +175,7 @@ export default function MatchChart({ match }: MatchChartProps) {
               onClick={() => setActiveView(view)}
               className={classNames(
                 'px-4 py-2 text-sm font-medium border',
-                'focus:z-10 focus:ring-2 focus:ring-blue-500 focus:outline-none',
+                'focus:z-10 focus:ring-2 focus:ring-blue-500 focus:outline-hidden',
                 activeView === view
                   ? 'bg-blue-500 text-white border-blue-500'
                   : 'bg-transparent hover:bg-blue-500/10 border-gray-500',
@@ -233,7 +233,7 @@ export default function MatchChart({ match }: MatchChartProps) {
                       }
 
                       return (
-                        <div className={classNames('px-2 py-1 border rounded', payloadObj.type === MatchAction.COMPLETE_LEVEL ? 'border-green-500' : 'border-blue-500')} style={{
+                        <div className={classNames('px-2 py-1 border rounded-sm', payloadObj.type === MatchAction.COMPLETE_LEVEL ? 'border-green-500' : 'border-blue-500')} style={{
                           backgroundColor: 'var(--bg-color)',
                         }}>
                           {`${dayjs(payloadObj.time).format('m:ss')} [${payloadObj[payloadObj.user]}] ${payloadObj.user}`}  <span className='font-bold'>{payloadObj.type === MatchAction.COMPLETE_LEVEL ? 'completed' : 'skipped'}</span> {`${payloadObj.name}`}
@@ -270,7 +270,7 @@ export default function MatchChart({ match }: MatchChartProps) {
                 content={({ active, payload }) => {
                   if (active && payload && payload.length) {
                     return (
-                      <div className='px-2 py-1 border rounded border-gray-500' style={{
+                      <div className='px-2 py-1 border rounded-sm border-gray-500' style={{
                         backgroundColor: 'var(--bg-color)',
                       }}>
                         <div className='font-medium'>{payload[0].payload.level}</div>

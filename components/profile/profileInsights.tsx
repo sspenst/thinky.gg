@@ -189,7 +189,7 @@ export default function ProfileInsights({ reqUser, user }: ProfileInsightsProps)
   if (!hasAccess) {
     return (
       <div className='flex flex-col items-center justify-center min-h-96 p-8'>
-        <div className='bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl p-8 max-w-2xl w-full text-center shadow-xl'>
+        <div className='bg-linear-to-br from-blue-600 to-purple-600 rounded-2xl p-8 max-w-2xl w-full text-center shadow-xl'>
           <div className='text-6xl mb-4'>📊</div>
           <h2 className='text-2xl font-bold text-white mb-4'>
             Unlock Advanced Insights

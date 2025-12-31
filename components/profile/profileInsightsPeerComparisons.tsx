@@ -360,9 +360,9 @@ export default function ProfileInsightsPeerComparisons({ user, reqUser, timeFilt
   const LoadingSkeleton = ({ height = 'h-64' }: { height?: string }) => (
     <div className={`bg-gray-800 rounded-lg animate-pulse ${height}`}>
       <div className='p-4 space-y-2'>
-        <div className='h-4 bg-gray-700 rounded w-3/4' />
-        <div className='h-4 bg-gray-700 rounded w-1/2' />
-        <div className='h-4 bg-gray-700 rounded w-2/3' />
+        <div className='h-4 bg-gray-700 rounded-sm w-3/4' />
+        <div className='h-4 bg-gray-700 rounded-sm w-1/2' />
+        <div className='h-4 bg-gray-700 rounded-sm w-2/3' />
       </div>
     </div>
   );
@@ -386,9 +386,9 @@ export default function ProfileInsightsPeerComparisons({ user, reqUser, timeFilt
         {/* Competition Score Loading */}
         <div className='bg-gray-800 rounded-lg p-6 animate-pulse'>
           <div className='text-center'>
-            <div className='h-6 bg-gray-700 rounded mb-2 w-40 mx-auto' />
+            <div className='h-6 bg-gray-700 rounded-sm mb-2 w-40 mx-auto' />
             <div className='h-16 w-16 bg-gray-700 rounded-full mx-auto mb-2' />
-            <div className='h-4 bg-gray-700 rounded w-64 mx-auto' />
+            <div className='h-4 bg-gray-700 rounded-sm w-64 mx-auto' />
           </div>
         </div>
         <LoadingSkeleton height='h-80' />
@@ -414,7 +414,7 @@ export default function ProfileInsightsPeerComparisons({ user, reqUser, timeFilt
           </p>
           <button
             onClick={() => setShowTooltip(!showTooltip)}
-            className='text-blue-400 hover:text-blue-300 text-sm underline focus:outline-none'
+            className='text-blue-400 hover:text-blue-300 text-sm underline focus:outline-hidden'
           >
             {showTooltip ? 'Hide Calculation' : 'Show Calculation'}
           </button>
@@ -435,7 +435,7 @@ export default function ProfileInsightsPeerComparisons({ user, reqUser, timeFilt
               </div>
               <div className='mb-4'>
                 <div className='font-semibold mb-2 text-blue-400'>{user.name}&apos;s breakdown:</div>
-                <div className='bg-gray-800 rounded p-3 space-y-1'>
+                <div className='bg-gray-800 rounded-sm p-3 space-y-1'>
                   {Object.entries(competitionScoreDetails.breakdown)
                     .sort((a, b) => (a[1].weight - (a[1].bonusWeight || 0)) - (b[1].weight - (b[1].bonusWeight || 0)))
                     .map(([difficulty, data]) => (
@@ -462,7 +462,7 @@ export default function ProfileInsightsPeerComparisons({ user, reqUser, timeFilt
               </div>
               <div className='border-t border-gray-600 pt-3'>
                 <div className='font-semibold mb-2 text-green-400'>Final calculation:</div>
-                <div className='bg-gray-800 rounded p-3 font-mono text-sm'>
+                <div className='bg-gray-800 rounded-sm p-3 font-mono text-sm'>
                   <div className='mb-2'>
                     <div className='text-xs text-gray-400 mb-1'>Weighted sum calculation:</div>
                     <div className='text-xs'>
@@ -626,15 +626,15 @@ export default function ProfileInsightsPeerComparisons({ user, reqUser, timeFilt
           <div className='bg-gray-800 rounded-lg p-3 mt-2'>
             <div className='flex items-center justify-center gap-6 text-sm flex-wrap'>
               <div className='flex items-center gap-2'>
-                <div className='w-3 h-3 bg-green-500 rounded' />
+                <div className='w-3 h-3 bg-green-500 rounded-sm' />
                 <span className='text-gray-300'>Above average (above baseline)</span>
               </div>
               <div className='flex items-center gap-2'>
-                <div className='w-3 h-3 bg-red-500 rounded' />
+                <div className='w-3 h-3 bg-red-500 rounded-sm' />
                 <span className='text-gray-300'>Below average (below baseline)</span>
               </div>
               <div className='flex items-center gap-2'>
-                <div className='w-4 h-1 bg-gray-500 rounded border-t border-dashed border-gray-500' />
+                <div className='w-4 h-1 bg-gray-500 rounded-sm border-t border-dashed border-gray-500' />
                 <span className='text-gray-300'>Average baseline (50 score)</span>
               </div>
             </div>
@@ -741,7 +741,7 @@ export default function ProfileInsightsPeerComparisons({ user, reqUser, timeFilt
                       />
                     </td>
                     <td className='text-center p-3'>
-                      <span className='px-2 py-1 rounded text-xs' style={{
+                      <span className='px-2 py-1 rounded-sm text-xs' style={{
                         backgroundColor: getDifficultyColor(difficultyList.find(d => d.name === level.difficulty)?.value || 0) + '20',
                         color: getDifficultyColor(difficultyList.find(d => d.name === level.difficulty)?.value || 0),
                       }}>

@@ -63,14 +63,14 @@ export default function LevelInfoPlayTime() {
 
   return (
     <TabGroup className='flex flex-col gap-2'>
-      <TabList className='flex flex-wrap gap-x-1 items-start rounded text-sm' >
+      <TabList className='flex flex-wrap gap-x-1 items-start rounded-sm text-sm' >
         <Tab as={Fragment}>
           {({ selected }) => (
             <button className={classNames(
-              'border-blue-500 focus:outline-none',
+              'border-blue-500 focus:outline-hidden',
               { 'border-b-2 ': selected }
             )}>
-              <div className='mb-1 py-1 px-2 tab rounded'>
+              <div className='mb-1 py-1 px-2 tab rounded-sm'>
                 Table
               </div>
             </button>
@@ -79,10 +79,10 @@ export default function LevelInfoPlayTime() {
         <Tab as={Fragment}>
           {({ selected }) => (
             <button className={classNames(
-              'border-blue-500 focus:outline-none',
+              'border-blue-500 focus:outline-hidden',
               { 'border-b-2 ': selected }
             )}>
-              <div className='mb-1 py-1 px-2 tab rounded'>
+              <div className='mb-1 py-1 px-2 tab rounded-sm'>
                 Graph
               </div>
             </button>
@@ -156,7 +156,7 @@ export default function LevelInfoPlayTime() {
                       const display = getTimePlayedStr(payloadObj.sum);
 
                       return (
-                        <div className='px-2 py-1 border rounded text-sm' style={{
+                        <div className='px-2 py-1 border rounded-sm text-sm' style={{
                           backgroundColor: 'var(--bg-color)',
                         }}>
                           {`${dayjs(new Date(payloadObj.date)).format('M/D/YY')} - ${display}`}

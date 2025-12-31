@@ -328,11 +328,11 @@ export default function ChapterPage({ enrichedCollections, reqUser, solvedLevels
         {/* Floating Current Rank Display */}
         <div className='w-full pt-4 justify-center flex items-center align-middle items-center z-20 animate-fadeInDown' style={{ animationDelay: '0.5s' }}>
           <Link href='/achievements#category-LEVEL_COMPLETION' className='block hover:scale-105 transition-transform duration-300'>
-            <div className='bg-black/20 backdrop-blur-sm border border-white/20 rounded-xl px-4 py-3 sm:px-6 sm:py-4 text-white text-center cursor-pointer hover:bg-black/30 transition-colors duration-300'>
+            <div className='bg-black/20 backdrop-blur-xs border border-white/20 rounded-xl px-4 py-3 sm:px-6 sm:py-4 text-white text-center cursor-pointer hover:bg-black/30 transition-colors duration-300'>
               <div className='text-xs opacity-70 mb-2'>CURRENT RANK</div>
               <div className='flex items-center justify-center gap-2 mb-1'>
                 <span className='text-lg sm:text-2xl'>{currentRank.emoji}</span>
-                <span className='text-lg sm:text-xl font-black bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent'>
+                <span className='text-lg sm:text-xl font-black bg-linear-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent'>
                   {currentRank.name}
                 </span>
               </div>
@@ -360,9 +360,9 @@ export default function ChapterPage({ enrichedCollections, reqUser, solvedLevels
         {/* Floating Next Chapter Info */}
         {solvedLevels < totalLevels && (
           <div className='absolute bottom-24 right-4 sm:bottom-32 sm:right-6 lg:bottom-40 lg:right-12 animate-fadeInRight' style={{ animationDelay: '0.9s' }}>
-            <div className='bg-black/20 backdrop-blur-sm border border-white/20 rounded-xl px-3 py-2 sm:px-4 sm:py-3 text-white text-right'>
+            <div className='bg-black/20 backdrop-blur-xs border border-white/20 rounded-xl px-3 py-2 sm:px-4 sm:py-3 text-white text-right'>
               <div className='text-xs opacity-70 mb-1'>TO NEXT CHAPTER</div>
-              <div className='text-sm sm:text-lg font-black bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent'>
+              <div className='text-sm sm:text-lg font-black bg-linear-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent'>
                 {totalLevels - solvedLevels} levels
               </div>
             </div>
@@ -377,7 +377,7 @@ export default function ChapterPage({ enrichedCollections, reqUser, solvedLevels
           </div>
 
           {/* Dramatic Title */}
-          <h1 className='text-4xl sm:text-6xl lg:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 mb-6 text-center leading-tight px-2 animate-fadeInScale' style={{ animationDelay: '0.5s' }}>
+          <h1 className='text-4xl sm:text-6xl lg:text-8xl font-black text-transparent bg-clip-text bg-linear-to-r from-cyan-400 via-purple-400 to-pink-400 mb-6 text-center leading-tight px-2 animate-fadeInScale' style={{ animationDelay: '0.5s' }}>
             {config.subtitle}
           </h1>
 
@@ -428,9 +428,9 @@ export default function ChapterPage({ enrichedCollections, reqUser, solvedLevels
             {solvedLevels < totalLevels && (
               <Link
                 href={`/chapter/${chapterNumber}?continue=true`}
-                className='group relative overflow-hidden bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-black py-4 sm:py-6 px-8 sm:px-12 rounded-2xl shadow-2xl transform hover:scale-105 transition-all duration-300'
+                className='group relative overflow-hidden bg-linear-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-black py-4 sm:py-6 px-8 sm:px-12 rounded-2xl shadow-2xl transform hover:scale-105 transition-all duration-300'
               >
-                <div className='absolute inset-0 bg-gradient-to-r from-white to-transparent opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-transform duration-700' />
+                <div className='absolute inset-0 bg-linear-to-r from-white to-transparent opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-transform duration-700' />
                 <div className='relative flex items-center gap-3 sm:gap-4 justify-center'>
                   <div className='text-2xl sm:text-3xl'>⚡</div>
                   <div className='text-center'>
@@ -443,9 +443,9 @@ export default function ChapterPage({ enrichedCollections, reqUser, solvedLevels
 
             <Link
               href={chapterUnlocked > 3 ? '/ranked' : '/play'}
-              className='group relative overflow-hidden bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-black py-4 sm:py-6 px-8 sm:px-12 rounded-2xl shadow-2xl transform hover:scale-105 transition-all duration-300'
+              className='group relative overflow-hidden bg-linear-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-black py-4 sm:py-6 px-8 sm:px-12 rounded-2xl shadow-2xl transform hover:scale-105 transition-all duration-300'
             >
-              <div className='absolute inset-0 bg-gradient-to-r from-white to-transparent opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-transform duration-700' />
+              <div className='absolute inset-0 bg-linear-to-r from-white to-transparent opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-transform duration-700' />
               <div className='relative flex items-center gap-3 sm:gap-4 justify-center'>
                 <div className='text-2xl sm:text-3xl'>{chapterUnlocked > 3 ? '🏆' : '🏠'}</div>
                 <div className='text-center'>
@@ -459,9 +459,9 @@ export default function ChapterPage({ enrichedCollections, reqUser, solvedLevels
 
         {/* Floating Chapter Progress */}
         <div className='md:absolute bottom-24 left-4 sm:bottom-32 sm:left-6 lg:bottom-40 lg:left-12 animate-fadeInLeft' style={{ animationDelay: '0.7s' }}>
-          <div className='bg-black/20 backdrop-blur-sm border border-white/20 rounded-xl px-3 py-2 sm:px-4 sm:py-3 text-white'>
+          <div className='bg-black/20 backdrop-blur-xs border border-white/20 rounded-xl px-3 py-2 sm:px-4 sm:py-3 text-white'>
             <div className='text-xs opacity-70 mb-1'>CHAPTER {chapterNumber}</div>
-            <div className='text-sm sm:text-lg font-black bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent'>
+            <div className='text-sm sm:text-lg font-black bg-linear-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent'>
               {Math.round((solvedLevels / totalLevels) * 100)}% Complete
             </div>
           </div>

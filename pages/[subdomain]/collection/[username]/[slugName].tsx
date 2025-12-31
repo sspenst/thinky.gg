@@ -230,7 +230,7 @@ export default function CollectionPage({ collection, numLevels, pageStr }: Colle
     >
       <div className='flex flex-col gap-2 justify-center'>
         <div className='flex flex-wrap gap-2 text-center justify-center items-center pt-3 px-3'>
-          <h1 className='text-2xl font-bold break-words max-w-full'>
+          <h1 className='text-2xl font-bold wrap-break-word max-w-full'>
             {collection.name}
           </h1>
           <div className='flex flex-row gap-2 justify-center items-center truncate'>
@@ -335,7 +335,7 @@ export default function CollectionPage({ collection, numLevels, pageStr }: Colle
       </div>
       <div className='flex flex-row gap-4 text-center justify-center items-center'>
         <button
-          className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded'
+          className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-sm'
           id='prevPage'
           onClick={() => setPage(page - 1)}
           style={{
@@ -345,7 +345,7 @@ export default function CollectionPage({ collection, numLevels, pageStr }: Colle
           Prev
         </button>
         <button
-          className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded'
+          className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-sm'
           id='nextPage'
           onClick={() => setPage(page + 1)}
           style={{

@@ -51,9 +51,9 @@ export default function ChapterLevelPortal({ href, id, level, onClick }: Chapter
     <div className='group relative transform hover:scale-105 hover:-translate-y-1 transition-all duration-300'>
       {/* Card Glow Effect */}
       <div className={`absolute inset-0 rounded-xl blur-lg opacity-30 transition-all duration-300 ${
-        isComplete ? 'bg-gradient-to-br from-green-400 to-emerald-500' :
-          isAttempted ? 'bg-gradient-to-br from-yellow-400 to-orange-500' :
-            'bg-gradient-to-br from-purple-400 to-pink-500'
+        isComplete ? 'bg-linear-to-br from-green-400 to-emerald-500' :
+          isAttempted ? 'bg-linear-to-br from-yellow-400 to-orange-500' :
+            'bg-linear-to-br from-purple-400 to-pink-500'
       } group-hover:opacity-50`} />
       {/* Main Level Card */}
       <div className='relative bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-lg border-2 transition-all duration-300 group-hover:shadow-2xl w-28 h-[70px] sm:w-32 sm:h-20 lg:w-36 lg:h-[90px]' style={{
@@ -73,13 +73,13 @@ export default function ChapterLevelPortal({ href, id, level, onClick }: Chapter
           />
 
           {/* Gradient Overlay */}
-          <div className={`absolute inset-0 bg-gradient-to-br opacity-40 ${
+          <div className={`absolute inset-0 bg-linear-to-br opacity-40 ${
             isComplete ? 'from-green-400/30 to-emerald-500/30' :
               isAttempted ? 'from-yellow-400/30 to-orange-500/30' :
                 'from-purple-400/30 to-pink-500/30'
           }`} />
           {/* Hover Overlay with Title */}
-          <div className='absolute inset-0 bg-black/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20 flex items-center justify-center p-1 sm:p-2'>
+          <div className='absolute inset-0 bg-black/80 backdrop-blur-xs opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20 flex items-center justify-center p-1 sm:p-2'>
             <div className='text-white text-center'>
               <div className='text-xs sm:text-sm font-bold leading-tight'>
                 {level.name}
@@ -109,7 +109,7 @@ export default function ChapterLevelPortal({ href, id, level, onClick }: Chapter
 
             {/* Bottom Row - Move Counter */}
             <div className='flex justify-between items-end'>
-              <div className={'text-xs font-bold px-2 py-1 rounded bg-black/70 text-white'}>
+              <div className={'text-xs font-bold px-2 py-1 rounded-sm bg-black/70 text-white'}>
                 {level.userMoves === undefined ? '?' : level.userMoves}/{level.leastMoves}
               </div>
 

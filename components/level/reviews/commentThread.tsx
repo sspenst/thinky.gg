@@ -241,7 +241,7 @@ export default function CommentThread({ className, comment, mutateComments, onSe
           </button>
         )}
       </div>
-      <span className='break-words'>{comment.text}</span>
+      <span className='wrap-break-word'>{comment.text}</span>
       {!user ? null : !reply ?
         <button
           className='gray hover-color w-fit text-xs ml-auto'

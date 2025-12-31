@@ -426,7 +426,7 @@ export default function AchievementsBrowser({
                       </div>
                       <div className='w-full h-2 bg-color-base rounded-full overflow-hidden mt-1'>
                         <div
-                          className='h-full bg-gradient-to-r from-green-500 to-blue-500 transition-all duration-500'
+                          className='h-full bg-linear-to-r from-green-500 to-blue-500 transition-all duration-500'
                           style={{ width: `${category.percentage}%` }}
                         />
                       </div>
@@ -458,7 +458,7 @@ export default function AchievementsBrowser({
               <input
                 type='text'
                 placeholder='Search achievements...'
-                className='w-full px-3 py-2 rounded-lg bg-3 border border-color-4 focus:border-blue-500 focus:outline-none transition-colors'
+                className='w-full px-3 py-2 rounded-lg bg-3 border border-color-4 focus:border-blue-500 focus:outline-hidden transition-colors'
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -467,7 +467,7 @@ export default function AchievementsBrowser({
               {/* Status Filter */}
               {reqUser && (
                 <select
-                  className='px-3 py-2 rounded-lg bg-3 border border-color-4 focus:border-blue-500 focus:outline-none transition-colors min-w-[150px]'
+                  className='px-3 py-2 rounded-lg bg-3 border border-color-4 focus:border-blue-500 focus:outline-hidden transition-colors min-w-[150px]'
                   value={filterUnlocked}
                   onChange={(e) => setFilterUnlocked(e.target.value as 'all' | 'unlocked' | 'locked')}
                 >
@@ -478,7 +478,7 @@ export default function AchievementsBrowser({
               )}
               {/* Rarity Filter */}
               <select
-                className='px-3 py-2 rounded-lg bg-3 border border-color-4 focus:border-blue-500 focus:outline-none transition-colors min-w-[150px]'
+                className='px-3 py-2 rounded-lg bg-3 border border-color-4 focus:border-blue-500 focus:outline-hidden transition-colors min-w-[150px]'
                 value={filterRarity}
                 onChange={(e) => setFilterRarity(e.target.value as 'all' | 'legendary' | 'epic' | 'rare' | 'uncommon' | 'common')}
               >

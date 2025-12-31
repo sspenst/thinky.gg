@@ -192,7 +192,7 @@ export default function ReportsTab({ formatDate, getTimeAgo }: ReportsTabProps) 
 
   return (
     <div className='space-y-6'>
-      <div className='bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6'>
+      <div className='bg-white dark:bg-gray-800 rounded-xl shadow-xs border border-gray-200 dark:border-gray-700 p-6'>
         <div className='flex items-center justify-between mb-6'>
           <div className='flex items-center gap-3'>
             <Flag className='w-6 h-6 text-orange-500' />
@@ -200,7 +200,7 @@ export default function ReportsTab({ formatDate, getTimeAgo }: ReportsTabProps) 
           </div>
           {/* Status Filter */}
           <select
-            className='px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-orange-500'
+            className='px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-hidden focus:ring-2 focus:ring-orange-500'
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
           >
@@ -246,7 +246,7 @@ export default function ReportsTab({ formatDate, getTimeAgo }: ReportsTabProps) 
                       <div>
                         <span className='text-sm font-medium text-gray-700 dark:text-gray-300'>Reported User: </span>
                         <FormattedUser id='admin-reports' user={report.reportedUser as any} size={16} />
-                        <span className='ml-2 text-xs bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300 px-2 py-1 rounded'>
+                        <span className='ml-2 text-xs bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300 px-2 py-1 rounded-sm'>
                           {report.reportedUserTotalReports} reports total
                         </span>
                       </div>
@@ -321,7 +321,7 @@ export default function ReportsTab({ formatDate, getTimeAgo }: ReportsTabProps) 
                   fetchReports(pagination.page - 1, filterStatus);
                 }}
                 disabled={pagination.page <= 1}
-                className='px-3 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed'
+                className='px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-sm text-sm disabled:opacity-50 disabled:cursor-not-allowed'
               >
                 Previous
               </button>
@@ -332,7 +332,7 @@ export default function ReportsTab({ formatDate, getTimeAgo }: ReportsTabProps) 
                   fetchReports(pagination.page + 1, filterStatus);
                 }}
                 disabled={pagination.page >= pagination.totalPages}
-                className='px-3 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed'
+                className='px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-sm text-sm disabled:opacity-50 disabled:cursor-not-allowed'
               >
                 Next
               </button>
@@ -361,7 +361,7 @@ export default function ReportsTab({ formatDate, getTimeAgo }: ReportsTabProps) 
                 Resolution Reason
               </label>
               <textarea
-                className='w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-orange-500'
+                className='w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-hidden focus:ring-2 focus:ring-orange-500'
                 value={closeReason}
                 onChange={(e) => setCloseReason(e.target.value)}
                 placeholder="Explain the resolution (e.g., 'resolved - content removed', 'no action needed - not a violation', etc.)"

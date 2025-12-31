@@ -22,7 +22,7 @@ export default function ProfileInsightsLevelPlayLog({ user, timeFilter }: { user
 
   return (
     <div className='flex flex-col gap-1'>
-      <h2 className='text-xl font-bold break-words max-w-full'>Play Log for {user.name}&apos;s Levels</h2>
+      <h2 className='text-xl font-bold wrap-break-word max-w-full'>Play Log for {user.name}&apos;s Levels</h2>
       {timeFilter && timeFilter !== 'all' && (
         <p className='text-xs text-gray-400 mb-2'>
           Showing activity from the {timeFilter === '7d' ? 'last 7 days' : timeFilter === '30d' ? 'last 30 days' : timeFilter === '1y' ? 'last year' : 'selected period'}

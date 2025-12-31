@@ -27,7 +27,7 @@ export function ThinkyHomePageLoggedIn({ user }: { user: User }) {
   return (
     <div className='flex flex-col gap-8 items-center max-w-7xl mx-auto '>
       {/* User Profile Section */}
-      <div className='w-full bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl p-3 shadow-lg text-white md:mt-8 mt-2'>
+      <div className='w-full bg-linear-to-r from-purple-600 to-blue-600 rounded-xl p-3 shadow-lg text-white md:mt-8 mt-2'>
         <div className='flex flex-col md:flex-row justify-between items-center gap-4'>
           <div className='flex items-center gap-4'>
             <div className='bg-white/20 p-3 rounded-full'>
@@ -39,12 +39,12 @@ export function ThinkyHomePageLoggedIn({ user }: { user: User }) {
             </div>
           </div>
           <div className='flex gap-3'>
-            <div className='bg-white/10 p-3 rounded-lg backdrop-blur-sm'>
+            <div className='bg-white/10 p-3 rounded-lg backdrop-blur-xs'>
               <StreakCalendar />
             </div>
             <Link
               href='/achievements'
-              className='bg-white/10 p-3 rounded-lg backdrop-blur-sm hover:bg-white/20 transition-colors flex flex-col items-center justify-center min-w-[100px]'
+              className='bg-white/10 p-3 rounded-lg backdrop-blur-xs hover:bg-white/20 transition-colors flex flex-col items-center justify-center min-w-[100px]'
             >
               <span className='text-2xl mb-1'>🏆</span>
               <span className='text-sm font-medium text-center'>Achievements</span>
@@ -72,7 +72,7 @@ export function ThinkyHomePageLoggedIn({ user }: { user: User }) {
                 className='bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden border border-gray-200 dark:border-gray-700'
               >
                 {/* Game Header */}
-                <div className='bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 p-4 flex items-center'>
+                <div className='bg-linear-to-r from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 p-4 flex items-center'>
                   <div className='flex items-center gap-3'>
                     <GameLogo gameId={game.id} id={game.id} size={36} />
                     <h3
@@ -151,7 +151,7 @@ export function ThinkyHomePageLoggedIn({ user }: { user: User }) {
       {/* Global Quick Actions Section */}
       <div className='w-full'>
         <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
-          <div className='flex flex-col items-center justify-center p-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition'>
+          <div className='flex flex-col items-center justify-center p-2 bg-white dark:bg-gray-800 rounded-lg shadow-xs border border-gray-200 dark:border-gray-700 hover:shadow-md transition'>
             <span className='text-2xl mb-2'>👥</span>
             <span className='font-medium mb-2'>Users</span>
             <MultiSelectUser
@@ -164,21 +164,21 @@ export function ThinkyHomePageLoggedIn({ user }: { user: User }) {
           </div>
           <Link
             href='/achievements'
-            className='flex flex-col items-center justify-center p-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition'
+            className='flex flex-col items-center justify-center p-2 bg-white dark:bg-gray-800 rounded-lg shadow-xs border border-gray-200 dark:border-gray-700 hover:shadow-md transition'
           >
             <span className='text-2xl mb-2'>🏆</span>
             <span className='font-medium'>Achievements</span>
           </Link>
           <Link
             href='/pro'
-            className='flex flex-col items-center justify-center p-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition'
+            className='flex flex-col items-center justify-center p-2 bg-white dark:bg-gray-800 rounded-lg shadow-xs border border-gray-200 dark:border-gray-700 hover:shadow-md transition'
           >
             <span className='text-2xl mb-2'>⭐</span>
             <span className='font-medium'>Pro Features</span>
           </Link>
           <Link
             href='/settings'
-            className='flex flex-col items-center justify-center p-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition'
+            className='flex flex-col items-center justify-center p-2 bg-white dark:bg-gray-800 rounded-lg shadow-xs border border-gray-200 dark:border-gray-700 hover:shadow-md transition'
           >
             <span className='text-2xl mb-2'>⚙️</span>
             <span className='font-medium'>Settings</span>

@@ -72,7 +72,7 @@ export default function PublishLevelModal({ closeModal, isOpen, level }: Publish
         isOpen={isOpen}
         title={'Publish Level'}
       >
-        <div className='break-words space-y-4'>
+        <div className='wrap-break-word space-y-4'>
           <div>
             <span className='font-bold'>Name:</span> {level.name}
             <br />
@@ -98,7 +98,7 @@ export default function PublishLevelModal({ closeModal, isOpen, level }: Publish
             <button
               onClick={onSchedule}
               disabled={isPublishing}
-              className='inline-flex items-center justify-center gap-2 px-6 py-2 text-sm font-medium border border-transparent rounded-md bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white'
+              className='inline-flex items-center justify-center gap-2 px-6 py-2 text-sm font-medium border border-transparent rounded-md bg-linear-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white'
             >
               <Image alt='pro' src='/pro.svg' width={16} height={16} className='opacity-90' />
               Schedule

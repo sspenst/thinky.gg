@@ -55,7 +55,7 @@ export default function StreakSection({ gameId, userConfig, hideHeader, compact 
           `}
         >
           {!hideHeader && (
-            <div className='bg-gradient-to-r from-purple-600 to-blue-600 p-2 text-white'>
+            <div className='bg-linear-to-r from-purple-600 to-blue-600 p-2 text-white'>
               <div className='flex items-center justify-between'>
                 <div className='flex items-center gap-2'>
                   <GameLogo gameId={gameId} id={gameId + '-streak'} size={16} />
@@ -99,7 +99,7 @@ export default function StreakSection({ gameId, userConfig, hideHeader, compact 
                     </div>
                     <div className='w-full bg-white/20 rounded-full h-2'>
                       <div
-                        className='bg-gradient-to-r from-cyan-400 to-blue-400 h-2 rounded-full transition-all duration-300'
+                        className='bg-linear-to-r from-cyan-400 to-blue-400 h-2 rounded-full transition-all duration-300'
                         style={{ width: `${progressPercent}%` }}
                       />
                     </div>
@@ -138,7 +138,7 @@ export default function StreakSection({ gameId, userConfig, hideHeader, compact 
       : 'hover:shadow-md hover:scale-[1.01]'}
         `}
       >
-        <div className='bg-gradient-to-r from-purple-600 to-blue-600 p-4 text-white'>
+        <div className='bg-linear-to-r from-purple-600 to-blue-600 p-4 text-white'>
           <div className='flex items-center justify-between'>
             <div className='flex items-center gap-2'>
               <GameLogo gameId={gameId} id={gameId + '-streak'} size={16} />
@@ -177,7 +177,7 @@ export default function StreakSection({ gameId, userConfig, hideHeader, compact 
                 <div className='space-y-1'>
                   <div className='h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden'>
                     <div
-                      className='h-full bg-gradient-to-r from-purple-500 to-blue-500 transition-all duration-500'
+                      className='h-full bg-linear-to-r from-purple-500 to-blue-500 transition-all duration-500'
                       style={{ width: `${progressPercent}%` }}
                     />
                   </div>

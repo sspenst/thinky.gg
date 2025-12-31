@@ -22,14 +22,14 @@ export default function MatchLoadingScreen({ initialMatch }: MatchLoadingScreenP
         <div className='relative max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12'>
           <div className='flex flex-col items-center justify-center min-h-[400px] gap-4 animate-fadeInDown'>
             <div className='relative'>
-              <div className='absolute -inset-2 bg-gradient-to-r from-blue-600/20 to-purple-600/20 blur-lg opacity-50' />
+              <div className='absolute -inset-2 bg-linear-to-r from-blue-600/20 to-purple-600/20 blur-lg opacity-50' />
               <div className='relative bg-white/8 backdrop-blur-xl rounded-xl p-8 shadow-lg border border-white/20'>
                 <div className='text-center'>
-                  <div className='w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-4'>
+                  <div className='w-16 h-16 bg-linear-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-4'>
                     <span className='text-3xl text-white'>⚔️</span>
                   </div>
                   <h1 className='text-2xl font-bold mb-2'>
-                    <span className='bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent'>
+                    <span className='bg-linear-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent'>
                       Loading Match
                     </span>
                   </h1>

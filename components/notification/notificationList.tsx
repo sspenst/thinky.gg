@@ -32,11 +32,11 @@ export default function NotificationList({ close, notifications, setNotification
   return (
     <div className='px-3 py-2 flex flex-col gap-2'>
       <div className='flex flex-cols-2 justify-between gap-2'>
-        <h2 className='focus:outline-none text-xl font-semibold'>Notifications</h2>
+        <h2 className='focus:outline-hidden text-xl font-semibold'>Notifications</h2>
         <button
           disabled={!anyUnread}
           className={classNames(
-            'focus:outline-none text-sm',
+            'focus:outline-hidden text-sm',
             anyUnread ? styles['unread'] : undefined,
           )}
           onClick={() => {

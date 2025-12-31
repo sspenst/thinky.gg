@@ -16,14 +16,14 @@ export default function AbortedMatchInfo({ match }: AbortedMatchInfoProps) {
   return (
     <div className='flex justify-center mb-6 animate-fadeInUp' style={{ animationDelay: '0.3s' }}>
       <div className='relative'>
-        <div className='absolute -inset-2 bg-gradient-to-r from-red-600/15 to-pink-600/15 blur-lg opacity-40' />
+        <div className='absolute -inset-2 bg-linear-to-r from-red-600/15 to-pink-600/15 blur-lg opacity-40' />
         <div className='relative bg-white/8 backdrop-blur-xl rounded-xl p-6 shadow-lg border border-white/20'>
           <div className='text-center'>
-            <div className='w-12 h-12 bg-gradient-to-br from-red-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-3'>
+            <div className='w-12 h-12 bg-linear-to-br from-red-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-3'>
               <span className='text-2xl text-white'>❌</span>
             </div>
             <h3 className='text-lg font-bold mb-2'>
-              <span className='bg-gradient-to-r from-red-400 to-pink-400 bg-clip-text text-transparent'>
+              <span className='bg-linear-to-r from-red-400 to-pink-400 bg-clip-text text-transparent'>
                 Match Aborted
               </span>
             </h3>

@@ -53,7 +53,7 @@ export default function useGameKeyboardControls({
     document.addEventListener('keyup', handleKeyUpEvent);
 
     return () => {
-      window.removeEventListener('blur', handleBlurEvent);
+      window.removeEventListener('blur-sm', handleBlurEvent);
       document.removeEventListener('keydown', handleKeyDownEvent);
       document.removeEventListener('keyup', handleKeyUpEvent);
     };

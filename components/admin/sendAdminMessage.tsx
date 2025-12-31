@@ -68,7 +68,7 @@ export default function SendAdminMessage({ runningCommand, selectedUserCommand, 
         <div>
           <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>Message</label>
           <ReactTextareaAutosize
-            className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+            className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-xs bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
             onChange={(e) => setAdminMessage(e.currentTarget.value)}
             placeholder='Admin message...'
             value={adminMessage}
@@ -78,7 +78,7 @@ export default function SendAdminMessage({ runningCommand, selectedUserCommand, 
         <div>
           <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>Link (Optional)</label>
           <ReactTextareaAutosize
-            className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+            className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-xs bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
             onChange={(e) => setAdminHref(e.currentTarget.value)}
             placeholder='Href (eg: "/pro")...'
             value={adminHref}
@@ -91,7 +91,7 @@ export default function SendAdminMessage({ runningCommand, selectedUserCommand, 
             <MenuButton
               aria-expanded='true'
               aria-haspopup='true'
-              className='inline-flex items-center justify-center rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800'
+              className='inline-flex items-center justify-center rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 shadow-xs hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800'
               id='menu-button'
             >
               {adminMessageRole ?? 'All'}
@@ -108,12 +108,12 @@ export default function SendAdminMessage({ runningCommand, selectedUserCommand, 
               leaveFrom='transform opacity-100 scale-100'
               leaveTo='transform opacity-0 scale-95'
             >
-              <MenuItems className='absolute right-0 z-10 mt-2 w-32 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none'>
+              <MenuItems className='absolute right-0 z-10 mt-2 w-32 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-hidden'>
                 <div>
                   {Object.values(Role).map(role => (
                     <MenuItem key={`role-${role}`}>
                       <button
-                        className='text-gray-700 dark:text-gray-300 px-4 py-2 text-sm w-full flex items-center justify-center data-[active]:bg-gray-100 dark:data-[active]:bg-gray-700 transition-colors'
+                        className='text-gray-700 dark:text-gray-300 px-4 py-2 text-sm w-full flex items-center justify-center data-active:bg-gray-100 dark:data-active:bg-gray-700 transition-colors'
                         onClick={() => setAdminMessageRole(role)}
                         role='menuitem'
                       >
@@ -123,7 +123,7 @@ export default function SendAdminMessage({ runningCommand, selectedUserCommand, 
                   ))}
                   <MenuItem key='role-all'>
                     <button
-                      className='text-gray-700 dark:text-gray-300 px-4 py-2 text-sm w-full flex items-center justify-center data-[active]:bg-gray-100 dark:data-[active]:bg-gray-700 transition-colors border-t border-gray-200 dark:border-gray-600'
+                      className='text-gray-700 dark:text-gray-300 px-4 py-2 text-sm w-full flex items-center justify-center data-active:bg-gray-100 dark:data-active:bg-gray-700 transition-colors border-t border-gray-200 dark:border-gray-600'
                       onClick={() => setAdminMessageRole(null)}
                       role='menuitem'
                     >

@@ -41,7 +41,7 @@ export default function SystemVariablesTab({
 }: SystemVariablesTabProps) {
   return (
     <div className='space-y-8'>
-      <div className='bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6'>
+      <div className='bg-white dark:bg-gray-800 rounded-xl shadow-xs border border-gray-200 dark:border-gray-700 p-6'>
         <div className='flex items-center justify-between mb-6'>
           <div className='flex items-center gap-3'>
             <Database className='w-6 h-6 text-indigo-500' />
@@ -59,7 +59,7 @@ export default function SystemVariablesTab({
           <input
             type='text'
             placeholder='Search variables...'
-            className='w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500'
+            className='w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-hidden focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500'
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
           />
@@ -74,7 +74,7 @@ export default function SystemVariablesTab({
                 <input
                   type='text'
                   placeholder='Enter variable key...'
-                  className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500'
+                  className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-hidden focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500'
                   value={newVariable.key}
                   onChange={(e) => onNewVariableChange({ ...newVariable, key: e.target.value })}
                   maxLength={50}
@@ -84,7 +84,7 @@ export default function SystemVariablesTab({
                 <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>Value</label>
                 <textarea
                   placeholder='Enter variable value...'
-                  className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500'
+                  className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-hidden focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500'
                   value={newVariable.value}
                   onChange={(e) => onNewVariableChange({ ...newVariable, value: e.target.value })}
                   rows={3}

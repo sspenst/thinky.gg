@@ -103,7 +103,7 @@ export default function Multiplayer() {
       {/* Header Section */}
       <div className='text-center mb-8 animate-fadeInDown'>
         <h1 className='font-bold text-3xl sm:text-4xl lg:text-5xl mb-4'>
-          <span className='bg-gradient-to-r from-blue-400 via-green-400 to-purple-400 bg-clip-text text-transparent'>
+          <span className='bg-linear-to-r from-blue-400 via-green-400 to-purple-400 bg-clip-text text-transparent'>
             Multiplayer Arena
           </span>
         </h1>
@@ -117,10 +117,10 @@ export default function Multiplayer() {
         <OnlineUsers />
         {!hasCreatedMatch && (
           <button
-            className='group relative overflow-hidden bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-300'
+            className='group relative overflow-hidden bg-linear-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-300'
             onClick={btnCreateMatchClick}
           >
-            <div className='absolute inset-0 bg-gradient-to-r from-white to-transparent opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-transform duration-700' />
+            <div className='absolute inset-0 bg-linear-to-r from-white to-transparent opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-transform duration-700' />
             <div className='relative flex items-center gap-2 justify-center'>
               <span className='text-lg'>⚔️</span>
               <span className='text-sm sm:text-base'>Create Match</span>
@@ -133,14 +133,14 @@ export default function Multiplayer() {
         {/* Left Column - Your Stats */}
         <div className='lg:col-span-1 animate-fadeInLeft' style={{ animationDelay: '0.4s' }}>
           <div className='relative'>
-            <div className='absolute -inset-2 bg-gradient-to-r from-blue-600/15 to-purple-600/15 blur-lg opacity-40' />
+            <div className='absolute -inset-2 bg-linear-to-r from-blue-600/15 to-purple-600/15 blur-lg opacity-40' />
             <div className='relative bg-white/8 backdrop-blur-xl rounded-xl p-6 shadow-lg border border-white/20'>
               <div className='text-center mb-4'>
-                <div className='w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-3'>
+                <div className='w-12 h-12 bg-linear-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-3'>
                   <span className='text-2xl text-white'>⚔️</span>
                 </div>
                 <h3 className='text-lg font-bold'>
-                  <span className='bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent'>
+                  <span className='bg-linear-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent'>
                     Your Ratings
                   </span>
                 </h3>
@@ -167,14 +167,14 @@ export default function Multiplayer() {
           </div>
           {/* How to Play */}
           <div className='relative mt-6'>
-            <div className='absolute -inset-2 bg-gradient-to-r from-green-600/15 to-emerald-600/15 blur-lg opacity-40' />
+            <div className='absolute -inset-2 bg-linear-to-r from-green-600/15 to-emerald-600/15 blur-lg opacity-40' />
             <div className='relative bg-white/8 backdrop-blur-xl rounded-xl p-6 shadow-lg border border-white/20'>
               <div className='text-center mb-4'>
-                <div className='w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-3'>
+                <div className='w-12 h-12 bg-linear-to-br from-green-500 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-3'>
                   <span className='text-2xl text-white'>📖</span>
                 </div>
                 <h3 className='text-lg font-bold'>
-                  <span className='bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent'>
+                  <span className='bg-linear-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent'>
                     How to Play
                   </span>
                 </h3>
@@ -197,14 +197,14 @@ export default function Multiplayer() {
           </div>
           {/* Currently Online Players */}
           <div className='relative mt-6'>
-            <div className='absolute -inset-2 bg-gradient-to-r from-purple-600/15 to-pink-600/15 blur-lg opacity-40' />
+            <div className='absolute -inset-2 bg-linear-to-r from-purple-600/15 to-pink-600/15 blur-lg opacity-40' />
             <div className='relative bg-white/8 backdrop-blur-xl rounded-xl p-6 shadow-lg border border-white/20'>
               <div className='text-center mb-4'>
-                <div className='w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-3'>
+                <div className='w-12 h-12 bg-linear-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-3'>
                   <span className='text-2xl text-white'>👥</span>
                 </div>
                 <h3 className='text-lg font-bold'>
-                  <span className='bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent'>
+                  <span className='bg-linear-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent'>
                     Players Online
                   </span>
                 </h3>
@@ -235,7 +235,7 @@ export default function Multiplayer() {
           {openMatches.length > 0 && (
             <div className='mb-6'>
               <h2 className='text-xl font-bold mb-4'>
-                <span className='bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent'>
+                <span className='bg-linear-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent'>
                   Open Matches
                 </span>
               </h2>
@@ -250,7 +250,7 @@ export default function Multiplayer() {
           {activeMatches.length > 0 && (
             <div className='mb-6'>
               <h2 className='text-xl font-bold mb-4'>
-                <span className='bg-gradient-to-r from-red-400 to-pink-400 bg-clip-text text-transparent'>
+                <span className='bg-linear-to-r from-red-400 to-pink-400 bg-clip-text text-transparent'>
                   Active Matches
                 </span>
               </h2>
@@ -264,7 +264,7 @@ export default function Multiplayer() {
           {/* Recent Matches */}
           <div>
             <h2 className='text-xl font-bold mb-4'>
-              <span className='bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent'>
+              <span className='bg-linear-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent'>
                 Recent Matches
               </span>
             </h2>

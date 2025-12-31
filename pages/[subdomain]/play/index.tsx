@@ -68,7 +68,7 @@ export default function PlayPage({ reqUser }: PlayPageProps) {
         <div className='relative max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12'>
           <div className='text-center mb-8'>
             <h1 className='font-bold text-3xl sm:text-4xl lg:text-5xl mb-4 animate-fadeInDown'>
-              <span className='bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent'>
+              <span className='bg-linear-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent'>
                 {game.displayName} Official Campaign
               </span>
             </h1>
@@ -83,7 +83,7 @@ export default function PlayPage({ reqUser }: PlayPageProps) {
             {/* Chapters Section - Show first on mobile */}
             <div className='order-1 lg:order-2 w-full'>
               <h2 className='text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 text-center'>
-                <span className='bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent'>
+                <span className='bg-linear-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent'>
                   Choose Your Chapter
                 </span>
               </h2>
@@ -98,7 +98,7 @@ export default function PlayPage({ reqUser }: PlayPageProps) {
             {/* Progress Section - Show second on mobile */}
             <div className='order-2 lg:order-1 w-full'>
               <h2 className='text-2xl sm:text-3xl font-bold mb-4 text-center'>
-                <span className='bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent'>
+                <span className='bg-linear-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent'>
                   Your Progress
                 </span>
               </h2>
@@ -115,14 +115,14 @@ export default function PlayPage({ reqUser }: PlayPageProps) {
 
             {/* Thinky Academy Card */}
             <div className='relative'>
-              <div className='absolute -inset-2 bg-gradient-to-r from-purple-600/15 to-blue-600/15 blur-lg opacity-40' />
+              <div className='absolute -inset-2 bg-linear-to-r from-purple-600/15 to-blue-600/15 blur-lg opacity-40' />
               <div className='relative bg-white/8 backdrop-blur-xl rounded-xl p-6 shadow-lg border border-white/20'>
                 <div className='text-center mb-4'>
-                  <div className='w-12 h-12 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-3'>
+                  <div className='w-12 h-12 bg-linear-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-3'>
                     <span className='text-2xl text-white'>🎓</span>
                   </div>
                   <h3 className='text-lg font-bold'>
-                    <span className='bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent'>
+                    <span className='bg-linear-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent'>
                       Thinky Academy
                     </span>
                   </h3>
@@ -131,7 +131,7 @@ export default function PlayPage({ reqUser }: PlayPageProps) {
                   <p className='text-sm text-white/80 mb-4'>
                     Master advanced strategies and techniques from top players
                   </p>
-                  <div className='bg-white/10 backdrop-blur-sm rounded-lg p-3 mb-3 border border-white/15'>
+                  <div className='bg-white/10 backdrop-blur-xs rounded-lg p-3 mb-3 border border-white/15'>
                     <span className='text-lg font-bold text-purple-300'>Coming Soon!</span>
                   </div>
                   <p className='text-xs text-white/50'>
@@ -142,14 +142,14 @@ export default function PlayPage({ reqUser }: PlayPageProps) {
             </div>
           {/* Community Card */}
           <div className='relative'>
-            <div className='absolute -inset-2 bg-gradient-to-r from-green-600/15 to-emerald-600/15 blur-lg opacity-40' />
+            <div className='absolute -inset-2 bg-linear-to-r from-green-600/15 to-emerald-600/15 blur-lg opacity-40' />
             <div className='relative bg-white/8 backdrop-blur-xl rounded-xl p-6 shadow-lg border border-white/20'>
               <div className='text-center mb-4'>
-                <div className='w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-3'>
+                <div className='w-12 h-12 bg-linear-to-br from-green-500 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-3'>
                   <span className='text-2xl text-white'>👥</span>
                 </div>
                 <h3 className='text-lg font-bold'>
-                  <span className='bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent'>
+                  <span className='bg-linear-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent'>
                     Community
                   </span>
                 </h3>
@@ -184,14 +184,14 @@ export default function PlayPage({ reqUser }: PlayPageProps) {
           {/* Thinky Pro Card */}
           {!isPro(reqUser) && (
             <div className='relative'>
-              <div className='absolute -inset-2 bg-gradient-to-r from-blue-600/15 to-cyan-600/15 blur-lg opacity-40' />
+              <div className='absolute -inset-2 bg-linear-to-r from-blue-600/15 to-cyan-600/15 blur-lg opacity-40' />
               <div className='relative bg-white/8 backdrop-blur-xl rounded-xl p-6 shadow-lg border border-white/20'>
                 <div className='text-center mb-4'>
-                  <div className='w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center mx-auto mb-3'>
+                  <div className='w-12 h-12 bg-linear-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center mx-auto mb-3'>
                     <Image alt='pro' src='/pro.svg' width='24' height='24' />
                   </div>
                   <h3 className='text-lg font-bold'>
-                    <span className='bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent'>
+                    <span className='bg-linear-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent'>
                       Thinky Pro
                     </span>
                   </h3>
@@ -217,14 +217,14 @@ export default function PlayPage({ reqUser }: PlayPageProps) {
           {/* Achievement Card for Pro users */}
           {isPro(reqUser) && (
             <div className='relative'>
-              <div className='absolute -inset-2 bg-gradient-to-r from-yellow-600/15 to-orange-600/15 blur-lg opacity-40' />
+              <div className='absolute -inset-2 bg-linear-to-r from-yellow-600/15 to-orange-600/15 blur-lg opacity-40' />
               <div className='relative bg-white/8 backdrop-blur-xl rounded-xl p-6 shadow-lg border border-white/20'>
                 <div className='text-center mb-4'>
-                  <div className='w-12 h-12 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-3'>
+                  <div className='w-12 h-12 bg-linear-to-br from-yellow-500 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-3'>
                     <span className='text-2xl text-white'>🏆</span>
                   </div>
                   <h3 className='text-lg font-bold'>
-                    <span className='bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent'>
+                    <span className='bg-linear-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent'>
                       Achievements
                     </span>
                   </h3>

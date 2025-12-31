@@ -201,7 +201,7 @@ export default function Leaderboards({ gmLeaderboard, rankedLeaderboard, reqUser
     if (users.length === 0) {
       return (
         <div className='max-w-4xl mx-auto w-full'>
-          <div className='bg-black/20 backdrop-blur-sm border border-white/20 rounded-xl p-8 sm:p-12 text-center'>
+          <div className='bg-black/20 backdrop-blur-xs border border-white/20 rounded-xl p-8 sm:p-12 text-center'>
             <div className='text-6xl sm:text-7xl mb-4'>🌟</div>
             <h3 className='text-xl sm:text-2xl font-bold text-white mb-2'>No Champions Yet</h3>
             <p className='text-gray-400 text-base sm:text-lg'>
@@ -226,24 +226,24 @@ export default function Leaderboards({ gmLeaderboard, rankedLeaderboard, reqUser
               {/* Shine effect container with overflow hidden */}
               {isYou && (
                 <div className='absolute inset-0 rounded-xl overflow-hidden pointer-events-none'>
-                  <div className='absolute inset-0 bg-gradient-to-r from-transparent via-yellow-400/20 to-transparent transform -skew-x-12 translate-x-full group-hover:-translate-x-full transition-transform duration-1000' />
+                  <div className='absolute inset-0 bg-linear-to-r from-transparent via-yellow-400/20 to-transparent transform -skew-x-12 translate-x-full group-hover:-translate-x-full transition-transform duration-1000' />
                 </div>
               )}
 
               {/* Main content container */}
               <div
-                className={`relative bg-black/20 backdrop-blur-sm border border-white/20 rounded-xl p-3 sm:p-4 hover:bg-black/30 transition-all duration-300 ${
+                className={`relative bg-black/20 backdrop-blur-xs border border-white/20 rounded-xl p-3 sm:p-4 hover:bg-black/30 transition-all duration-300 ${
                   isYou ? 'ring-2 ring-yellow-400 shadow-2xl shadow-yellow-400/20' : ''
                 }`}
               >
                 <div className='relative flex items-center justify-between'>
                   <div className='flex items-center gap-3 sm:gap-4 flex-1 min-w-0'>
                     {/* Rank with modern styling */}
-                    <div className={`flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full font-black text-lg sm:text-xl flex-shrink-0 ${
-                      i === 0 ? 'bg-gradient-to-br from-yellow-400 to-orange-500 text-black' :
-                        i === 1 ? 'bg-gradient-to-br from-gray-300 to-gray-500 text-black' :
-                          i === 2 ? 'bg-gradient-to-br from-orange-400 to-red-500 text-black' :
-                            'bg-gradient-to-br from-purple-500 to-blue-500 text-white'
+                    <div className={`flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full font-black text-lg sm:text-xl shrink-0 ${
+                      i === 0 ? 'bg-linear-to-br from-yellow-400 to-orange-500 text-black' :
+                        i === 1 ? 'bg-linear-to-br from-gray-300 to-gray-500 text-black' :
+                          i === 2 ? 'bg-linear-to-br from-orange-400 to-red-500 text-black' :
+                            'bg-linear-to-br from-purple-500 to-blue-500 text-white'
                     }`}>
                       {i + 1}
                     </div>
@@ -255,7 +255,7 @@ export default function Leaderboards({ gmLeaderboard, rankedLeaderboard, reqUser
                   </div>
 
                 {/* Score with glass morphism effect */}
-                  <div className={`bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg px-3 sm:px-4 py-2 font-bold text-base sm:text-lg flex-shrink-0 ${
+                  <div className={`bg-white/10 backdrop-blur-xs border border-white/20 rounded-lg px-3 sm:px-4 py-2 font-bold text-base sm:text-lg shrink-0 ${
                     isYou ? 'text-yellow-400 bg-yellow-400/20 border-yellow-400/40' : 'text-white'
                   }`}>
                     <span className='text-sm font-normal opacity-80'>
@@ -283,7 +283,7 @@ export default function Leaderboards({ gmLeaderboard, rankedLeaderboard, reqUser
         <div className='flex flex-col text-center gap-6 sm:gap-8 max-w-4xl mx-auto px-4'>
           <div className='flex flex-col items-center gap-3 sm:gap-4'>
             <Link className='group' href='/ranked'>
-              <h2 className='font-black text-2xl sm:text-3xl md:text-4xl bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent hover:from-yellow-300 hover:to-orange-400 transition-all duration-300 transform group-hover:scale-105'>
+              <h2 className='font-black text-2xl sm:text-3xl md:text-4xl bg-linear-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent hover:from-yellow-300 hover:to-orange-400 transition-all duration-300 transform group-hover:scale-105'>
                 Ranked Solves 🏅
               </h2>
             </Link>
@@ -296,10 +296,10 @@ export default function Leaderboards({ gmLeaderboard, rankedLeaderboard, reqUser
       return (
         <div className='flex flex-col items-center text-center gap-6 sm:gap-8 max-w-4xl mx-auto px-4'>
           <div className='flex flex-col items-center gap-3 sm:gap-4'>
-            <h2 className='font-black text-2xl sm:text-3xl md:text-4xl bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent' style={{ color: sgmColor }}>
+            <h2 className='font-black text-2xl sm:text-3xl md:text-4xl bg-linear-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent' style={{ color: sgmColor }}>
               {game.displayName} Super Grandmasters 🧠
             </h2>
-            <div className='text-gray-300 text-sm sm:text-base md:text-lg bg-black/20 backdrop-blur-sm border border-white/20 rounded-lg px-4 sm:px-6 py-2 sm:py-3'>
+            <div className='text-gray-300 text-sm sm:text-base md:text-lg bg-black/20 backdrop-blur-xs border border-white/20 rounded-lg px-4 sm:px-6 py-2 sm:py-3'>
               Masters who have conquered at least 7 Super Grandmaster levels
             </div>
           </div>
@@ -310,10 +310,10 @@ export default function Leaderboards({ gmLeaderboard, rankedLeaderboard, reqUser
       return (
         <div className='flex flex-col items-center text-center gap-6 sm:gap-8 max-w-4xl mx-auto px-4'>
           <div className='flex flex-col items-center gap-3 sm:gap-4'>
-            <h2 className='font-black text-2xl sm:text-3xl md:text-4xl bg-gradient-to-r from-emerald-400 to-cyan-500 bg-clip-text text-transparent' style={{ color: gmColor }}>
+            <h2 className='font-black text-2xl sm:text-3xl md:text-4xl bg-linear-to-r from-emerald-400 to-cyan-500 bg-clip-text text-transparent' style={{ color: gmColor }}>
               {game.displayName} Grandmasters 📜
             </h2>
-            <div className='text-gray-300 text-sm sm:text-base md:text-lg bg-black/20 backdrop-blur-sm border border-white/20 rounded-lg px-4 sm:px-6 py-2 sm:py-3'>
+            <div className='text-gray-300 text-sm sm:text-base md:text-lg bg-black/20 backdrop-blur-xs border border-white/20 rounded-lg px-4 sm:px-6 py-2 sm:py-3'>
               Legends who have solved at least 7 Grandmaster (or harder) levels
             </div>
           </div>
@@ -331,17 +331,17 @@ export default function Leaderboards({ gmLeaderboard, rankedLeaderboard, reqUser
         <div className='flex flex-col items-center justify-center min-h-screen px-4 py-8'>
           {/* Epic Title Section */}
           <div className='mb-8 sm:mb-12 text-center animate-fadeInDown px-4' style={{ animationDelay: '0.3s' }}>
-            <h1 className='text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 mb-4 sm:mb-6 leading-tight'>
+            <h1 className='text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-black text-transparent bg-clip-text bg-linear-to-r from-cyan-400 via-purple-400 to-pink-400 mb-4 sm:mb-6 leading-tight'>
               LEADERBOARDS
             </h1>
-            <div className='text-lg sm:text-xl md:text-2xl text-gray-300 font-bold bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent'>
+            <div className='text-lg sm:text-xl md:text-2xl text-gray-300 font-bold bg-linear-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent'>
               {game.displayName} Hall of Fame
             </div>
           </div>
 
           {/* Tab Navigation */}
           <div className='mb-8 sm:mb-12 animate-fadeInScale px-4' style={{ animationDelay: '0.5s' }}>
-            <div className='flex gap-2 sm:gap-4 bg-black/20 backdrop-blur-sm p-1.5 rounded-2xl border border-white/20'>
+            <div className='flex gap-2 sm:gap-4 bg-black/20 backdrop-blur-xs p-1.5 rounded-2xl border border-white/20'>
               {Object.keys(leaderboardStrings).map((leaderboardKey) => (
                 <button
                   key={`tab-${leaderboardKey}`}
@@ -349,13 +349,13 @@ export default function Leaderboards({ gmLeaderboard, rankedLeaderboard, reqUser
                   className={`
                     relative overflow-hidden px-3 sm:px-6 py-2 sm:py-3.5 rounded-xl font-bold text-sm sm:text-lg transition-all duration-300 whitespace-nowrap
                     ${leaderboard === leaderboardKey
-                  ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-xl transform scale-105'
+                  ? 'bg-linear-to-r from-purple-500 to-pink-500 text-white shadow-xl transform scale-105'
                   : 'text-gray-300 hover:text-white hover:bg-white/10'
                 }
                   `}
                 >
                   {leaderboard === leaderboardKey && (
-                    <div className='absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-30' />
+                    <div className='absolute inset-0 bg-linear-to-r from-white/20 to-transparent opacity-30' />
                   )}
                   <span className='relative'>
                     <span className='sm:hidden'>{leaderboardStringsMobile[leaderboardKey]}</span>

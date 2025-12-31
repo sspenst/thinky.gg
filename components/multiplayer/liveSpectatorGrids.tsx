@@ -27,7 +27,7 @@ export default function LiveSpectatorGrids({ match, matchGameStateMap, getLevelI
   return (
     <div className='w-full max-w-6xl'>
       <h2 className='text-2xl font-bold text-center mb-6'>
-        <span className='bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent'>
+        <span className='bg-linear-to-r from-green-400 to-blue-400 bg-clip-text text-transparent'>
           Live Match View
         </span>
       </h2>
@@ -49,7 +49,7 @@ export default function LiveSpectatorGrids({ match, matchGameStateMap, getLevelI
 
           return (
             <div className='relative' key={`match-game-state-${player._id.toString()}-${level._id.toString()}`}>
-              <div className='absolute -inset-2 bg-gradient-to-r from-green-600/15 to-blue-600/15 blur-lg opacity-40' />
+              <div className='absolute -inset-2 bg-linear-to-r from-green-600/15 to-blue-600/15 blur-lg opacity-40' />
               <div className='relative bg-white/8 backdrop-blur-xl rounded-xl p-4 shadow-lg border border-white/20'>
                 <div className='flex flex-col items-center gap-3'>
                   <div className='flex items-center gap-2'>

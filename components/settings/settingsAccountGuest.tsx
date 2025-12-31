@@ -68,7 +68,7 @@ export default function SettingsAccountGuest() {
       {/* Info Card */}
       <div className='bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4 mb-6'>
         <div className='flex items-start space-x-3'>
-          <div className='flex-shrink-0'>
+          <div className='shrink-0'>
             <svg className='w-5 h-5 text-amber-600 dark:text-amber-400 mt-0.5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
               <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z' />
             </svg>
@@ -88,25 +88,25 @@ export default function SettingsAccountGuest() {
         <h3 className='text-sm font-medium text-gray-900 dark:text-white mb-3'>Benefits of converting:</h3>
         <ul className='space-y-2 text-sm text-gray-600 dark:text-gray-400'>
           <li className='flex items-center space-x-2'>
-            <svg className='w-4 h-4 text-green-500 flex-shrink-0' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+            <svg className='w-4 h-4 text-green-500 shrink-0' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
               <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M5 13l4 4L19 7' />
             </svg>
             <span>Permanent account that won&apos;t be lost</span>
           </li>
           <li className='flex items-center space-x-2'>
-            <svg className='w-4 h-4 text-green-500 flex-shrink-0' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+            <svg className='w-4 h-4 text-green-500 shrink-0' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
               <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M5 13l4 4L19 7' />
             </svg>
             <span>Access from any device</span>
           </li>
           <li className='flex items-center space-x-2'>
-            <svg className='w-4 h-4 text-green-500 flex-shrink-0' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+            <svg className='w-4 h-4 text-green-500 shrink-0' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
               <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M5 13l4 4L19 7' />
             </svg>
             <span>Email notifications and updates</span>
           </li>
           <li className='flex items-center space-x-2'>
-            <svg className='w-4 h-4 text-green-500 flex-shrink-0' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+            <svg className='w-4 h-4 text-green-500 shrink-0' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
               <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M5 13l4 4L19 7' />
             </svg>
             <span>Full profile customization</span>
@@ -161,7 +161,7 @@ export default function SettingsAccountGuest() {
           </p>
         </div>
         <button
-          className='w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed'
+          className='w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-colors focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed'
           type='submit'
           disabled={!username || !email || !password}
         >

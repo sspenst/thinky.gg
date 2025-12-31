@@ -330,7 +330,7 @@ export default function AdminPage({ adminQuery, level, user }: AdminPageProps) {
               </div>
               <div className='mb-4'>
                 <textarea
-                  className='w-full h-40 p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-mono text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500'
+                  className='w-full h-40 p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-mono text-sm resize-none focus:outline-hidden focus:ring-2 focus:ring-blue-500'
                   value={ipList.join('\n')}
                   readOnly
                   onClick={(e) => {
@@ -368,7 +368,7 @@ export default function AdminPage({ adminQuery, level, user }: AdminPageProps) {
               </div>
               <div className='mb-4'>
                 <textarea
-                  className='w-full h-40 p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-mono text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500'
+                  className='w-full h-40 p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-mono text-sm resize-none focus:outline-hidden focus:ring-2 focus:ring-blue-500'
                   value={emailDomainList.join('\n')}
                   readOnly
                   onClick={(e) => {

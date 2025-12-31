@@ -76,7 +76,7 @@ export default function PlayerRankProgress({ className = '', customCta }: Player
 
   if (error) {
     return (
-      <div className={`bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded ${className}`}>
+      <div className={`bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-sm ${className}`}>
         Failed to load rank information
       </div>
     );
@@ -202,7 +202,7 @@ export default function PlayerRankProgress({ className = '', customCta }: Player
   return (
     <div className={`relative overflow-hidden ${className}`}>
       {/* Floating Island Effect */}
-      <div className='absolute -inset-4 bg-gradient-to-r from-purple-600/30 via-cyan-500/30 to-pink-500/30 blur-xl opacity-60' />
+      <div className='absolute -inset-4 bg-linear-to-r from-purple-600/30 via-cyan-500/30 to-pink-500/30 blur-xl opacity-60' />
 
       {/* Vertical rank progression */}
       <div className='relative'>
@@ -217,7 +217,7 @@ export default function PlayerRankProgress({ className = '', customCta }: Player
               <div key={rankPos.isNewb ? 'newb' : rankPos.rank.emoji} className='flex items-center gap-4'>
                 {/* Connection dot */}
                 <div
-                  className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                  className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 ${
                     rankPos.isCurrent
                       ? 'bg-purple-500/80 border-purple-400/80 shadow-lg shadow-purple-500/50'
                       : rankPos.isAchieved
@@ -236,12 +236,12 @@ export default function PlayerRankProgress({ className = '', customCta }: Player
                 <div
                   className={`flex flex-col gap-3 p-4 rounded-2xl border w-full transition-all duration-300 backdrop-blur-md ${
                     rankPos.isCurrent
-                      ? 'bg-gradient-to-br from-purple-900/60 to-purple-800/40 border-purple-400/50 shadow-lg shadow-purple-500/20'
+                      ? 'bg-linear-to-br from-purple-900/60 to-purple-800/40 border-purple-400/50 shadow-lg shadow-purple-500/20'
                       : rankPos.isAchieved
-                        ? 'bg-gradient-to-br from-emerald-900/50 to-emerald-800/30 border-emerald-400/40 shadow-md shadow-emerald-500/15'
+                        ? 'bg-linear-to-br from-emerald-900/50 to-emerald-800/30 border-emerald-400/40 shadow-md shadow-emerald-500/15'
                         : rankPos.isNext
-                          ? 'bg-gradient-to-br from-cyan-900/30 to-blue-900/20 border-cyan-400/20 shadow-sm shadow-cyan-400/10'
-                          : 'bg-gradient-to-br from-gray-900/30 to-gray-800/20 border-white/15 opacity-60'
+                          ? 'bg-linear-to-br from-cyan-900/30 to-blue-900/20 border-cyan-400/20 shadow-xs shadow-cyan-400/10'
+                          : 'bg-linear-to-br from-gray-900/30 to-gray-800/20 border-white/15 opacity-60'
                   }`}
                 >
                   {/* Top row: rank info and status */}
@@ -276,7 +276,7 @@ export default function PlayerRankProgress({ className = '', customCta }: Player
                     {/* Status for all ranks */}
                     <div className='text-right'>
                       {rankPos.isCurrent ? (
-                        <div className='px-3 py-1 bg-gradient-to-r from-purple-600/90 to-pink-600/90 backdrop-blur-sm text-white text-sm rounded-full font-semibold border border-white/30'>
+                        <div className='px-3 py-1 bg-linear-to-r from-purple-600/90 to-pink-600/90 backdrop-blur-xs text-white text-sm rounded-full font-semibold border border-white/30'>
                           Current
                         </div>
                       ) : rankPos.isAchieved ? (
@@ -286,7 +286,7 @@ export default function PlayerRankProgress({ className = '', customCta }: Player
                         </div>
                       ) : rankPos.isNext ? (
                         <div className='flex flex-col items-end gap-1'>
-                          <div className='px-3 py-1 bg-gradient-to-r from-cyan-800/80 to-blue-800/80 backdrop-blur-sm text-white text-sm rounded-full font-semibold border border-cyan-400/30 animate-pulse'>
+                          <div className='px-3 py-1 bg-linear-to-r from-cyan-800/80 to-blue-800/80 backdrop-blur-xs text-white text-sm rounded-full font-semibold border border-cyan-400/30 animate-pulse'>
                               Next Goal
                           </div>
                           {rankPos.requirement && (
@@ -350,7 +350,7 @@ export default function PlayerRankProgress({ className = '', customCta }: Player
                     return (
                       <Link
                         href={ctaInfo.href}
-                        className='group relative w-full px-4 py-3 bg-gradient-to-r from-purple-800/80 to-pink-800/80 backdrop-blur-md hover:bg-gradient-to-r hover:from-purple-700/80 hover:to-pink-700/80 text-white text-base font-bold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 border border-purple-400/30 text-center'
+                        className='group relative w-full px-4 py-3 bg-linear-to-r from-purple-800/80 to-pink-800/80 backdrop-blur-md hover:bg-linear-to-r hover:from-purple-700/80 hover:to-pink-700/80 text-white text-base font-bold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 border border-purple-400/30 text-center'
                       >
                         <span className='relative z-10 flex items-center justify-center gap-2'>
                           {ctaInfo.text}
@@ -358,7 +358,7 @@ export default function PlayerRankProgress({ className = '', customCta }: Player
                             <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M13 7l5 5m0 0l-5 5m5-5H6' />
                           </svg>
                         </span>
-                        <div className='absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-xl' />
+                        <div className='absolute inset-0 bg-linear-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-xl' />
                       </Link>
                     );
                   })()}

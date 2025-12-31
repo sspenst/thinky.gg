@@ -58,13 +58,13 @@ export default function CreateMatchModal({ closeModal, isOpen, onConfirm }: Crea
 
             {/* Private Match Toggle */}
             <div className='relative'>
-              <div className='absolute -inset-1 bg-gradient-to-r from-purple-600/20 to-pink-600/20 blur-sm opacity-50' />
-              <div className='relative bg-white/5 backdrop-blur-sm rounded-lg p-4 border border-white/20'>
+              <div className='absolute -inset-1 bg-linear-to-r from-purple-600/20 to-pink-600/20 blur-xs opacity-50' />
+              <div className='relative bg-white/5 backdrop-blur-xs rounded-lg p-4 border border-white/20'>
                 <div className='flex items-center gap-3'>
                   <input
                     id='chk_private'
                     checked={isPrivate}
-                    className='w-4 h-4 text-purple-600 bg-gray-800 border-gray-600 rounded focus:ring-purple-500 focus:ring-2'
+                    className='w-4 h-4 text-purple-600 bg-gray-800 border-gray-600 rounded-sm focus:ring-purple-500 focus:ring-2'
                     name='private'
                     type='checkbox'
                     onChange={(checkbox: React.ChangeEvent<HTMLInputElement>) => {
@@ -81,13 +81,13 @@ export default function CreateMatchModal({ closeModal, isOpen, onConfirm }: Crea
             </div>
             {/* Rated Match Toggle */}
             <div className='relative'>
-              <div className='absolute -inset-1 bg-gradient-to-r from-green-600/20 to-emerald-600/20 blur-sm opacity-50' />
-              <div className='relative bg-white/5 backdrop-blur-sm rounded-lg p-4 border border-white/20'>
+              <div className='absolute -inset-1 bg-linear-to-r from-green-600/20 to-emerald-600/20 blur-xs opacity-50' />
+              <div className='relative bg-white/5 backdrop-blur-xs rounded-lg p-4 border border-white/20'>
                 <div className='flex items-center gap-3'>
                   <input
                     id='chk_rated'
                     checked={isRated}
-                    className='w-4 h-4 text-green-600 bg-gray-800 border-gray-600 rounded focus:ring-green-500 focus:ring-2'
+                    className='w-4 h-4 text-green-600 bg-gray-800 border-gray-600 rounded-sm focus:ring-green-500 focus:ring-2'
                     name='rated'
                     type='checkbox'
                     onChange={(checkbox: React.ChangeEvent<HTMLInputElement>) => {
@@ -107,8 +107,8 @@ export default function CreateMatchModal({ closeModal, isOpen, onConfirm }: Crea
           <div className='space-y-4'>
             <h3 className='text-lg font-semibold text-white mb-3'>Game Type</h3>
             <div className='relative'>
-              <div className='absolute -inset-1 bg-gradient-to-r from-blue-600/20 to-cyan-600/20 blur-sm opacity-50' />
-              <div className='relative bg-white/5 backdrop-blur-sm rounded-lg p-4 border border-white/20'>
+              <div className='absolute -inset-1 bg-linear-to-r from-blue-600/20 to-cyan-600/20 blur-xs opacity-50' />
+              <div className='relative bg-white/5 backdrop-blur-xs rounded-lg p-4 border border-white/20'>
                 <Select
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   onChange={(option: any) => {

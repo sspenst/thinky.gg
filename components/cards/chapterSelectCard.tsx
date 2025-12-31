@@ -49,18 +49,18 @@ export function ChapterSelectCardBase({
           {/* Dynamic Floating Island Effect based on state */}
           <div className={classNames(
             'absolute -inset-4 blur-3xl transition-all duration-700 opacity-60',
-            complete ? 'bg-gradient-to-r from-green-500/40 to-emerald-500/40' :
-            disabled ? 'bg-gradient-to-r from-gray-600/30 to-gray-500/30' :
-            highlight ? 'bg-gradient-to-r from-yellow-500/40 to-orange-500/40 animate-pulse' :
-            'bg-gradient-to-r from-cyan-500/40 via-purple-500/40 to-pink-500/40'
+            complete ? 'bg-linear-to-r from-green-500/40 to-emerald-500/40' :
+            disabled ? 'bg-linear-to-r from-gray-600/30 to-gray-500/30' :
+            highlight ? 'bg-linear-to-r from-yellow-500/40 to-orange-500/40 animate-pulse' :
+            'bg-linear-to-r from-cyan-500/40 via-purple-500/40 to-pink-500/40'
           )} />
 
           {/* Main card container */}
-          <div className='relative rounded-3xl overflow-hidden border border-white/30 bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl shadow-2xl hover:shadow-3xl group-hover:scale-[1.02] group-hover:border-white/40 transform transition-all duration-500' style={{
+          <div className='relative rounded-3xl overflow-hidden border border-white/30 bg-linear-to-br from-white/10 to-white/5 backdrop-blur-xl shadow-2xl hover:shadow-3xl group-hover:scale-[1.02] group-hover:border-white/40 transform transition-all duration-500' style={{
             height: Dimensions.OptionHeightSmall + 30,
           }}>
             {/* Animated gradient overlay */}
-            <div className='absolute inset-0 bg-gradient-to-tr from-purple-600/10 via-transparent to-cyan-600/10 opacity-60 group-hover:opacity-80 transition-opacity duration-500' />
+            <div className='absolute inset-0 bg-linear-to-tr from-purple-600/10 via-transparent to-cyan-600/10 opacity-60 group-hover:opacity-80 transition-opacity duration-500' />
 
             {/* Level preview background with animation */}
             <div
@@ -77,7 +77,7 @@ export function ChapterSelectCardBase({
 
             {/* Shimmer effect */}
             {!disabled && (
-              <div className='absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000' />
+              <div className='absolute inset-0 bg-linear-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000' />
             )}
 
             <Link
@@ -90,24 +90,24 @@ export function ChapterSelectCardBase({
               passHref
             >
               {/* Decorative orb */}
-              <div className='absolute -top-10 -right-10 w-32 h-32 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-full blur-2xl' />
+              <div className='absolute -top-10 -right-10 w-32 h-32 bg-linear-to-br from-purple-500/20 to-pink-500/20 rounded-full blur-2xl' />
 
               {/* Status badge */}
               <div className='absolute top-4 right-4'>
                 {complete ? (
-                  <div className='p-3 bg-gradient-to-br from-green-400/30 to-emerald-500/30 backdrop-blur-xl rounded-2xl border border-green-400/30'>
+                  <div className='p-3 bg-linear-to-br from-green-400/30 to-emerald-500/30 backdrop-blur-xl rounded-2xl border border-green-400/30'>
                     <Trophy className='w-6 h-6 text-green-300' style={{ filter: 'drop-shadow(0 0 8px rgba(34, 197, 94, 0.6))' }} />
                   </div>
                 ) : disabled ? (
-                  <div className='p-3 bg-gradient-to-br from-gray-500/30 to-gray-600/30 backdrop-blur-xl rounded-2xl border border-gray-500/30'>
+                  <div className='p-3 bg-linear-to-br from-gray-500/30 to-gray-600/30 backdrop-blur-xl rounded-2xl border border-gray-500/30'>
                     <Lock className='w-6 h-6 text-gray-400' />
                   </div>
                 ) : highlight ? (
-                  <div className='p-3 bg-gradient-to-br from-yellow-400/30 to-orange-500/30 backdrop-blur-xl rounded-2xl border border-yellow-400/30 animate-pulse'>
+                  <div className='p-3 bg-linear-to-br from-yellow-400/30 to-orange-500/30 backdrop-blur-xl rounded-2xl border border-yellow-400/30 animate-pulse'>
                     <Sparkles className='w-6 h-6 text-yellow-300' style={{ filter: 'drop-shadow(0 0 8px rgba(250, 204, 21, 0.6))' }} />
                   </div>
                 ) : (
-                  <div className='p-3 bg-gradient-to-br from-purple-400/30 to-pink-500/30 backdrop-blur-xl rounded-2xl border border-purple-400/30'>
+                  <div className='p-3 bg-linear-to-br from-purple-400/30 to-pink-500/30 backdrop-blur-xl rounded-2xl border border-purple-400/30'>
                     <Zap className='w-6 h-6 text-purple-300' style={{ filter: 'drop-shadow(0 0 8px rgba(168, 85, 247, 0.6))' }} />
                   </div>
                 )}
@@ -116,7 +116,7 @@ export function ChapterSelectCardBase({
               {disabled && (
                 <>
                   {/* Enhanced lock overlay with pattern */}
-                  <div className='absolute inset-0 bg-gradient-to-br from-gray-900/90 via-gray-800/85 to-gray-900/90 backdrop-blur-md rounded-3xl' />
+                  <div className='absolute inset-0 bg-linear-to-br from-gray-900/90 via-gray-800/85 to-gray-900/90 backdrop-blur-md rounded-3xl' />
                   <div className='absolute inset-0 opacity-10'>
                     <div className='w-full h-full' style={{
                       backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(255,255,255,.05) 35px, rgba(255,255,255,.05) 70px)',
@@ -125,7 +125,7 @@ export function ChapterSelectCardBase({
                 </>
               )}
 
-              <div className={classNames('font-bold break-words flex-1 flex flex-col justify-center gap-2 relative z-10', disabled ? 'opacity-50' : '')}>
+              <div className={classNames('font-bold wrap-break-word flex-1 flex flex-col justify-center gap-2 relative z-10', disabled ? 'opacity-50' : '')}>
                 <div className={classNames(
                   'text-2xl font-black tracking-tight',
                   complete ? 'text-green-300' : 'text-white'
@@ -152,7 +152,7 @@ export function ChapterSelectCardBase({
       </div>
       {disabled && disabledStr &&
         <div className='flex justify-center -mt-3 relative z-20'>
-          <div className='inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-red-900/40 to-orange-900/40 backdrop-blur-xl border border-red-500/40 rounded-2xl shadow-lg'>
+          <div className='inline-flex items-center gap-2 px-5 py-2.5 bg-linear-to-r from-red-900/40 to-orange-900/40 backdrop-blur-xl border border-red-500/40 rounded-2xl shadow-lg'>
             <Lock className='w-4 h-4 text-red-300' />
             <span className='text-sm font-semibold text-red-200 tracking-wide'>
               {disabledStr}
@@ -171,18 +171,18 @@ export function ChapterSelectCardBase({
         {/* Dynamic Floating Island Effect based on state */}
         <div className={classNames(
           'absolute -inset-6 blur-3xl transition-all duration-700 opacity-70',
-          complete ? 'bg-gradient-to-r from-green-500/50 to-emerald-500/50' :
-          disabled ? 'bg-gradient-to-r from-gray-600/40 to-gray-500/40' :
-          highlight ? 'bg-gradient-to-r from-yellow-500/50 to-orange-500/50 animate-pulse' :
-          'bg-gradient-to-r from-cyan-500/50 via-purple-500/50 to-pink-500/50'
+          complete ? 'bg-linear-to-r from-green-500/50 to-emerald-500/50' :
+          disabled ? 'bg-linear-to-r from-gray-600/40 to-gray-500/40' :
+          highlight ? 'bg-linear-to-r from-yellow-500/50 to-orange-500/50 animate-pulse' :
+          'bg-linear-to-r from-cyan-500/50 via-purple-500/50 to-pink-500/50'
         )} />
 
         {/* Main card container */}
-        <div className='relative rounded-3xl overflow-hidden border-2 border-white/40 bg-gradient-to-br from-white/15 to-white/8 backdrop-blur-xl shadow-2xl hover:shadow-3xl group-hover:scale-[1.02] group-hover:border-white/50 transform transition-all duration-500' style={{
+        <div className='relative rounded-3xl overflow-hidden border-2 border-white/40 bg-linear-to-br from-white/15 to-white/8 backdrop-blur-xl shadow-2xl hover:shadow-3xl group-hover:scale-[1.02] group-hover:border-white/50 transform transition-all duration-500' style={{
           height: Dimensions.OptionHeightLarge,
         }}>
           {/* Animated gradient overlay */}
-          <div className='absolute inset-0 bg-gradient-to-tr from-purple-600/15 via-transparent to-cyan-600/15 opacity-70 group-hover:opacity-90 transition-opacity duration-500' />
+          <div className='absolute inset-0 bg-linear-to-tr from-purple-600/15 via-transparent to-cyan-600/15 opacity-70 group-hover:opacity-90 transition-opacity duration-500' />
 
           {/* Level preview background with animation */}
           <div
@@ -199,12 +199,12 @@ export function ChapterSelectCardBase({
 
           {/* Shimmer effect */}
           {!disabled && (
-            <div className='absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1200' />
+            <div className='absolute inset-0 bg-linear-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1200' />
           )}
 
           {/* Decorative elements */}
-          <div className='absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400' />
-          <div className='absolute -top-12 -right-12 w-40 h-40 bg-gradient-to-br from-purple-500/15 to-pink-500/15 rounded-full blur-3xl' />
+          <div className='absolute top-0 left-0 w-full h-1 bg-linear-to-r from-cyan-400 via-purple-400 to-pink-400' />
+          <div className='absolute -top-12 -right-12 w-40 h-40 bg-linear-to-br from-purple-500/15 to-pink-500/15 rounded-full blur-3xl' />
 
           <Link
             className={classNames(
@@ -218,19 +218,19 @@ export function ChapterSelectCardBase({
             {/* Status badge */}
             <div className='absolute top-6 right-6'>
               {complete ? (
-                <div className='p-4 bg-gradient-to-br from-green-400/40 to-emerald-500/40 backdrop-blur-xl rounded-3xl border border-green-400/40 shadow-lg'>
+                <div className='p-4 bg-linear-to-br from-green-400/40 to-emerald-500/40 backdrop-blur-xl rounded-3xl border border-green-400/40 shadow-lg'>
                   <Trophy className='w-8 h-8 text-green-300' style={{ filter: 'drop-shadow(0 0 12px rgba(34, 197, 94, 0.8))' }} />
                 </div>
               ) : disabled ? (
-                <div className='p-4 bg-gradient-to-br from-gray-500/40 to-gray-600/40 backdrop-blur-xl rounded-3xl border border-gray-500/40'>
+                <div className='p-4 bg-linear-to-br from-gray-500/40 to-gray-600/40 backdrop-blur-xl rounded-3xl border border-gray-500/40'>
                   <Lock className='w-8 h-8 text-gray-400' />
                 </div>
               ) : highlight ? (
-                <div className='p-4 bg-gradient-to-br from-yellow-400/40 to-orange-500/40 backdrop-blur-xl rounded-3xl border border-yellow-400/40 animate-pulse shadow-lg'>
+                <div className='p-4 bg-linear-to-br from-yellow-400/40 to-orange-500/40 backdrop-blur-xl rounded-3xl border border-yellow-400/40 animate-pulse shadow-lg'>
                   <Sparkles className='w-8 h-8 text-yellow-300' style={{ filter: 'drop-shadow(0 0 12px rgba(250, 204, 21, 0.8))' }} />
                 </div>
               ) : (
-                <div className='p-4 bg-gradient-to-br from-purple-400/40 to-pink-500/40 backdrop-blur-xl rounded-3xl border border-purple-400/40 shadow-lg'>
+                <div className='p-4 bg-linear-to-br from-purple-400/40 to-pink-500/40 backdrop-blur-xl rounded-3xl border border-purple-400/40 shadow-lg'>
                   <Zap className='w-8 h-8 text-purple-300' style={{ filter: 'drop-shadow(0 0 12px rgba(168, 85, 247, 0.8))' }} />
                 </div>
               )}
@@ -239,7 +239,7 @@ export function ChapterSelectCardBase({
             {disabled && (
               <>
                 {/* Enhanced lock overlay with pattern */}
-                <div className='absolute inset-0 bg-gradient-to-br from-gray-900/95 via-gray-800/90 to-gray-900/95 backdrop-blur-lg rounded-3xl' />
+                <div className='absolute inset-0 bg-linear-to-br from-gray-900/95 via-gray-800/90 to-gray-900/95 backdrop-blur-lg rounded-3xl' />
                 <div className='absolute inset-0 opacity-10'>
                   <div className='w-full h-full' style={{
                     backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(255,255,255,.05) 40px, rgba(255,255,255,.05) 80px)',
@@ -248,7 +248,7 @@ export function ChapterSelectCardBase({
               </>
             )}
 
-            <div className={classNames('font-bold break-words flex-1 flex flex-col justify-center items-center gap-3 relative z-10 py-6', disabled ? 'opacity-50' : '')}>
+            <div className={classNames('font-bold wrap-break-word flex-1 flex flex-col justify-center items-center gap-3 relative z-10 py-6', disabled ? 'opacity-50' : '')}>
               <div className={classNames(
                 'text-4xl font-black tracking-tight text-center',
                 complete ? 'text-green-300' : 'text-white'
@@ -268,7 +268,7 @@ export function ChapterSelectCardBase({
     </div>
     {disabled && disabledStr &&
       <div className='flex justify-center -mt-4 relative z-20'>
-        <div className='inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-red-900/50 to-orange-900/50 backdrop-blur-xl border border-red-500/50 rounded-2xl shadow-xl'>
+        <div className='inline-flex items-center gap-3 px-6 py-3 bg-linear-to-r from-red-900/50 to-orange-900/50 backdrop-blur-xl border border-red-500/50 rounded-2xl shadow-xl'>
           <Lock className='w-5 h-5 text-red-300' />
           <span className='text-base font-bold text-red-200 tracking-wide'>
             {disabledStr}

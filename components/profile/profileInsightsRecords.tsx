@@ -15,14 +15,14 @@ export default function ProfileInsightsRecords({ user }: {user: User}) {
   if (!proStatsUser || !proStatsUser[ProStatsUserType.Records]) {
     return (
       <div className='flex flex-col gap-4'>
-        <div className='h-6 bg-gray-700 rounded w-48 animate-pulse' />
+        <div className='h-6 bg-gray-700 rounded-sm w-48 animate-pulse' />
         <div className='bg-gray-800 rounded-lg p-4'>
           <div className='space-y-3'>
             {Array.from({ length: 5 }).map((_, i) => (
               <div key={i} className='flex justify-between items-center'>
-                <div className='h-4 bg-gray-700 rounded w-32 animate-pulse' />
-                <div className='h-4 bg-gray-700 rounded w-24 animate-pulse' />
-                <div className='h-4 bg-gray-700 rounded w-20 animate-pulse' />
+                <div className='h-4 bg-gray-700 rounded-sm w-32 animate-pulse' />
+                <div className='h-4 bg-gray-700 rounded-sm w-24 animate-pulse' />
+                <div className='h-4 bg-gray-700 rounded-sm w-20 animate-pulse' />
               </div>
             ))}
           </div>
@@ -36,7 +36,7 @@ export default function ProfileInsightsRecords({ user }: {user: User}) {
   });
 
   return (<>
-    <h2 className='text-xl font-bold break-words max-w-full'>Level Records by {user.name}</h2>
+    <h2 className='text-xl font-bold wrap-break-word max-w-full'>Level Records by {user.name}</h2>
     <div className='w-full'>
       <DataTableOffline
         columns={[

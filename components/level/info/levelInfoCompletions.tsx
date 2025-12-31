@@ -157,14 +157,14 @@ export default function LevelInfoCompletions() {
   return (
     <TabGroup className='flex flex-col gap-2'>
       {levelContext?.level && hasProAccessForLevel(user, levelContext?.level) && <>
-        <TabList className='flex flex-wrap gap-x-1 items-start rounded text-sm'>
+        <TabList className='flex flex-wrap gap-x-1 items-start rounded-sm text-sm'>
           <Tab as={Fragment}>
             {({ selected }) => (
               <button className={classNames(
-                'border-blue-500 focus:outline-none',
+                'border-blue-500 focus:outline-hidden',
                 { 'border-b-2 ': selected }
               )}>
-                <div className='mb-1 py-1 px-2 tab rounded'>
+                <div className='mb-1 py-1 px-2 tab rounded-sm'>
                   Table
                 </div>
               </button>
@@ -173,10 +173,10 @@ export default function LevelInfoCompletions() {
           <Tab as={Fragment}>
             {({ selected }) => (
               <button className={classNames(
-                'border-blue-500 focus:outline-none',
+                'border-blue-500 focus:outline-hidden',
                 { 'border-b-2 ': selected }
               )}>
-                <div className='mb-1 py-1 px-2 tab rounded'>
+                <div className='mb-1 py-1 px-2 tab rounded-sm'>
                   Graph
                 </div>
               </button>
@@ -232,7 +232,7 @@ export default function LevelInfoCompletions() {
                       const display = payloadObj.count;
 
                       return (
-                        <div className='px-2 py-1 border rounded text-sm' style={{
+                        <div className='px-2 py-1 border rounded-sm text-sm' style={{
                           backgroundColor: 'var(--bg-color)',
                         }}>
                           {`${display} user${display === 1 ? '' : 's'} at ${payloadObj.moves} step${payloadObj.moves === 1 ? '' : 's'}`}

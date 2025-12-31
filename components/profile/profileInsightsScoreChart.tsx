@@ -72,9 +72,9 @@ export default function ProfileInsightsScoreChart({ user, timeFilter }: { user: 
   if (!scoreChartData || !scoreChartData[ProStatsUserType.ScoreHistory]) {
     return (
       <div className='flex flex-col gap-2'>
-        <div className='h-6 bg-gray-700 rounded w-32 animate-pulse' />
-        <div className='h-4 bg-gray-700 rounded w-96 animate-pulse' />
-        <div className='h-4 bg-gray-700 rounded w-80 animate-pulse' />
+        <div className='h-6 bg-gray-700 rounded-sm w-32 animate-pulse' />
+        <div className='h-4 bg-gray-700 rounded-sm w-96 animate-pulse' />
+        <div className='h-4 bg-gray-700 rounded-sm w-80 animate-pulse' />
         <div className='bg-gray-800 rounded-lg animate-pulse h-80 mt-4' />
       </div>
     );
@@ -84,7 +84,7 @@ export default function ProfileInsightsScoreChart({ user, timeFilter }: { user: 
   return (<>
     <div className='flex flex-col gap-2 max-w-full'>
       <h2 className='text-xl font-bold'>Score Chart</h2>
-      <p className='text-sm break-words'>
+      <p className='text-sm wrap-break-word'>
         This chart shows the daily & cumulative solves over the last 90 days for {user.name}.<br />You can compare these stats against another user by selecting them below.
       </p>
     </div>
@@ -177,7 +177,7 @@ export default function ProfileInsightsScoreChart({ user, timeFilter }: { user: 
                   );}
 
                   return (
-                    <div className='p-2 border rounded flex flex-col'
+                    <div className='p-2 border rounded-sm flex flex-col'
                       style={{
                         backgroundColor: 'var(--bg-color)',
                       }}>

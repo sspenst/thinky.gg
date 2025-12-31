@@ -307,7 +307,7 @@ export default function AchievementPage({
                       alt={gameStat.name}
                       width={40}
                       height={40}
-                      className='rounded'
+                      className='rounded-sm'
                     />
                     <div className='text-center'>
                       <div className='font-semibold text-sm'>{gameStat.name}</div>

@@ -106,7 +106,7 @@ const SpaceBackground = React.memo(function SpaceBackground({
   }, [starCount]);
 
   return (
-    <div className={`relative ${useFullHeight ? 'h-full' : 'min-h-screen'} bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 overflow-hidden ${className}`}>
+    <div className={`relative ${useFullHeight ? 'h-full' : 'min-h-screen'} bg-linear-to-br from-slate-900 via-purple-900 to-slate-900 overflow-hidden ${className}`}>
       {/* Animated Star Field Background */}
       <div className='absolute inset-0 animate-fadeIn'>
         {/* Regular stars */}
@@ -152,7 +152,7 @@ const SpaceBackground = React.memo(function SpaceBackground({
         {/* Special champion star for leaderboard */}
         {constellationPattern === 'leaderboard' && (
           <div
-            className='absolute bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full animate-pulse'
+            className='absolute bg-linear-to-r from-yellow-400 to-orange-500 rounded-full animate-pulse'
             style={{
               left: '85%',
               top: '20%',
@@ -169,15 +169,15 @@ const SpaceBackground = React.memo(function SpaceBackground({
       {showGeometricShapes && (
         <div className='absolute inset-0 animate-fadeIn' style={{ animationDelay: '0.3s' }}>
           <div className='absolute top-10 left-5 w-32 h-32 border-4 border-cyan-400 transform rotate-45 animate-spin opacity-10' style={{ animationDuration: '25s' }} />
-          <div className='absolute top-20 right-5 w-24 h-24 bg-gradient-to-r from-purple-500 to-pink-500 transform rotate-12 animate-bounce opacity-10' style={{ animationDelay: '1s' }} />
-          <div className='absolute bottom-10 right-10 w-20 h-20 bg-gradient-to-r from-blue-500 to-green-500 transform -rotate-12 animate-bounce opacity-10' style={{ animationDelay: '1.5s' }} />
+          <div className='absolute top-20 right-5 w-24 h-24 bg-linear-to-r from-purple-500 to-pink-500 transform rotate-12 animate-bounce opacity-10' style={{ animationDelay: '1s' }} />
+          <div className='absolute bottom-10 right-10 w-20 h-20 bg-linear-to-r from-blue-500 to-green-500 transform -rotate-12 animate-bounce opacity-10' style={{ animationDelay: '1.5s' }} />
           <div className='absolute top-3/4 left-5 w-28 h-28 border-4 border-pink-400 transform rotate-12 animate-spin opacity-10' style={{ animationDuration: '30s' }} />
         </div>
       )}
 
       {/* Bottom Gradient Overlay */}
       {showBottomGradient && (
-        <div className='absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-indigo-900 via-purple-900/50 to-transparent z-5' />
+        <div className='absolute bottom-0 left-0 right-0 h-40 bg-linear-to-t from-indigo-900 via-purple-900/50 to-transparent z-5' />
       )}
 
       {/* Content */}

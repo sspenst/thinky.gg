@@ -50,7 +50,7 @@ export default function DeleteCollectionModal({ collection, closeModal, isOpen }
       onConfirm={onConfirm}
       title={'Delete Collection'}
     >
-      <div className='break-words text-center'>
+      <div className='wrap-break-word text-center'>
         {`Are you sure you want to delete your collection '${collection.name}'?`}
         <br />
         {'Levels within this collection will not be deleted.'}

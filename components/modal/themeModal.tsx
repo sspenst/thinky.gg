@@ -171,13 +171,13 @@ export default function ThemeModal({ closeModal, isOpen }: ThemeModalProps) {
         {isProUser &&
           <div className='flex justify-center gap-2'>
             <button
-              className={`px-3 py-1.5 rounded-md tab ${activeTab === 'Presets' ? 'bg-2' : 'bg-1'} focus:outline-none`}
+              className={`px-3 py-1.5 rounded-md tab ${activeTab === 'Presets' ? 'bg-2' : 'bg-1'} focus:outline-hidden`}
               onClick={() => setActiveTab('Presets')}
             >
               Presets
             </button>
             <button
-              className={`px-3 py-1.5 rounded-md tab ${activeTab === 'Custom' ? 'bg-2' : 'bg-1'} focus:outline-none`}
+              className={`px-3 py-1.5 rounded-md tab ${activeTab === 'Custom' ? 'bg-2' : 'bg-1'} focus:outline-hidden`}
               onClick={() => {
                 setThemeWrapper(Theme.Custom);
                 setActiveTab('Custom');

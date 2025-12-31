@@ -41,7 +41,7 @@ export default function SpectatorCount({ connectedPlayersInRoom, matchState }: S
 
   return (
     <div className='absolute top-4 right-4 animate-fadeInRight' style={{ zIndex: 100 }}>
-      <div className='bg-white/10 backdrop-blur-sm rounded-lg px-3 py-1 border border-white/20'>
+      <div className='bg-white/10 backdrop-blur-xs rounded-lg px-3 py-1 border border-white/20'>
         <span className='text-sm text-white/80'>
           👁️ {count} {label}
         </span>

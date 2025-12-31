@@ -34,7 +34,7 @@ export default function SettingsDelete() {
 
   return (
     <div className='flex flex-col gap-4 justify-center items-center'>
-      <button onClick={deleteAccount} className='bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-3 rounded' type='button'>
+      <button onClick={deleteAccount} className='bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-3 rounded-sm' type='button'>
         Delete Account
       </button>
       <span className='text-sm'>This cannot be undone!</span>

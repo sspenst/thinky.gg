@@ -148,7 +148,7 @@ export default function Header({
           {(isImpersonating || (user && user.roles?.includes(Role.ADMIN))) && (
             <div className='hidden sm:flex items-center gap-2'>
               {isImpersonating && (
-                <div className='bg-red-600 text-white px-2 py-1 rounded text-sm font-medium'>
+                <div className='bg-red-600 text-white px-2 py-1 rounded-sm text-sm font-medium'>
                   Impersonating
                 </div>
               )}

@@ -95,7 +95,7 @@ export default function CommentWall({ userId }: CommentWallProps) {
   }
 
   return (
-    <div className='bg-black/20 backdrop-blur-sm border border-white/20 rounded-xl p-6 w-full'>
+    <div className='bg-black/20 backdrop-blur-xs border border-white/20 rounded-xl p-6 w-full'>
       <h2 className='text-2xl font-bold text-white mb-6 flex items-center gap-3'>
         <span>💬</span>
         Comments
@@ -106,9 +106,9 @@ export default function CommentWall({ userId }: CommentWallProps) {
 
       {user && (
         <div className='mb-6'>
-          <div className='bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-4'>
+          <div className='bg-white/5 backdrop-blur-xs border border-white/10 rounded-lg p-4'>
             <ReactTextareaAutosize
-              className='w-full bg-transparent text-white placeholder-gray-400 resize-none focus:outline-none'
+              className='w-full bg-transparent text-white placeholder-gray-400 resize-none focus:outline-hidden'
               onChange={(e) => setText(e.currentTarget.value)}
               placeholder='Share your thoughts...'
               value={text}
@@ -117,11 +117,11 @@ export default function CommentWall({ userId }: CommentWallProps) {
             {text.length !== 0 && (
               <div className='flex gap-3 mt-3 pt-3 border-t border-white/10'>
                 <button
-                  className='group relative overflow-hidden bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold py-2 px-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed'
+                  className='group relative overflow-hidden bg-linear-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold py-2 px-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed'
                   disabled={isUpdating || (text?.length === 0 || text?.length > 500)}
                   onClick={onPostComment}
                 >
-                  <div className='absolute inset-0 bg-gradient-to-r from-white to-transparent opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-transform duration-700' />
+                  <div className='absolute inset-0 bg-linear-to-r from-white to-transparent opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-transform duration-700' />
                   <div className='relative flex items-center gap-2'>
                     <span>💾</span>
                     <span>Save</span>

@@ -68,7 +68,7 @@ export default function Modal({
           leaveFrom='opacity-100'
           leaveTo='opacity-0'
         >
-          <div className='fixed inset-0 bg-black/60 backdrop-blur-sm' />
+          <div className='fixed inset-0 bg-black/60 backdrop-blur-xs' />
         </TransitionChild>
         <div className='flex min-h-full px-4 text-center items-center justify-center'>
           <TransitionChild
@@ -95,13 +95,13 @@ export default function Modal({
               }}
             >
               <DialogPanel className={classNames('relative py-6 px-6 my-8 text-left align-middle transition-all transform shadow-2xl rounded-xl flex flex-col gap-6 border border-white/20 bg-white/10 backdrop-blur-xl overflow-hidden max-w-2xl w-full', getFontFromGameId(game.id))}>
-                <div className='absolute -inset-2 bg-gradient-to-r from-blue-600/20 to-purple-600/20 blur-lg opacity-50' />
+                <div className='absolute -inset-2 bg-linear-to-r from-blue-600/20 to-purple-600/20 blur-lg opacity-50' />
                 <DialogTitle as='div' className='relative flex gap-4 text-center items-center'>
-                  <div className='w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center'>
+                  <div className='w-12 h-12 bg-linear-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center'>
                     <span className='text-2xl text-white'>⚔️</span>
                   </div>
                   <span className='grow text-2xl font-bold'>
-                    <span className='bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent'>
+                    <span className='bg-linear-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent'>
                       {title}
                     </span>
                   </span>
@@ -121,14 +121,14 @@ export default function Modal({
                   {onConfirm ?
                     <>
                       <ModalButton
-                        className='group relative overflow-hidden bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-2 px-6 rounded-lg shadow-md transform hover:scale-105 transition-all duration-200'
+                        className='group relative overflow-hidden bg-linear-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-2 px-6 rounded-lg shadow-md transform hover:scale-105 transition-all duration-200'
                         disabled={disabled}
                         onClick={() => {}}
                         text={confirmText || submitLabel || 'Confirm'}
                         type='submit'
                       />
                       <ModalButton
-                        className='group relative overflow-hidden bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white font-bold py-2 px-6 rounded-lg shadow-md transform hover:scale-105 transition-all duration-200'
+                        className='group relative overflow-hidden bg-linear-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white font-bold py-2 px-6 rounded-lg shadow-md transform hover:scale-105 transition-all duration-200'
                         disabled={disabled}
                         onClick={closeModal}
                         text={closeLabel || 'Cancel'}
@@ -137,14 +137,14 @@ export default function Modal({
                     : onSubmit ?
                       <>
                         <ModalButton
-                          className='group relative overflow-hidden bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-2 px-6 rounded-lg shadow-md transform hover:scale-105 transition-all duration-200'
+                          className='group relative overflow-hidden bg-linear-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-2 px-6 rounded-lg shadow-md transform hover:scale-105 transition-all duration-200'
                           disabled={disabled}
                           onClick={() => {}}
                           text={submitLabel || 'Submit'}
                           type='submit'
                         />
                         <ModalButton
-                          className='group relative overflow-hidden bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white font-bold py-2 px-6 rounded-lg shadow-md transform hover:scale-105 transition-all duration-200'
+                          className='group relative overflow-hidden bg-linear-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white font-bold py-2 px-6 rounded-lg shadow-md transform hover:scale-105 transition-all duration-200'
                           disabled={disabled}
                           onClick={(e) => {
                             e?.preventDefault();
@@ -155,7 +155,7 @@ export default function Modal({
                       </>
                       :
                       <ModalButton
-                        className='group relative overflow-hidden bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-2 px-6 rounded-lg shadow-md transform hover:scale-105 transition-all duration-200'
+                        className='group relative overflow-hidden bg-linear-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-2 px-6 rounded-lg shadow-md transform hover:scale-105 transition-all duration-200'
                         disabled={disabled}
                         onClick={(e) => {
                           e?.preventDefault();

@@ -83,7 +83,7 @@ export default function ProfileInsightsSolveTimeComparison({ user, timeFilter }:
   return (<>
     <div className='flex flex-col gap-2 max-w-full'>
       <h2 className='text-xl font-bold'>{difficutlyType} Time Comparisons</h2>
-      <p className='text-sm break-words'>
+      <p className='text-sm wrap-break-word'>
         This chart shows solve time vs average {difficutlyType.toLowerCase()} time for the levels {user.name} has solved
         {timeFilter && timeFilter !== 'all' ? (
           timeFilter === '30d' ? ' in the last 30 days' :

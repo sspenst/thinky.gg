@@ -93,13 +93,13 @@ export default function Home({
     );
   }
 
-  const buttonClassNames = 'px-4 py-3 inline-flex justify-center items-center gap-2 rounded-xl font-medium align-middle focus:z-10 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all text-sm whitespace-nowrap bg-white/10 backdrop-blur-sm hover:bg-white/20 border border-white/20 text-white hover:scale-105 transform';
+  const buttonClassNames = 'px-4 py-3 inline-flex justify-center items-center gap-2 rounded-xl font-medium align-middle focus:z-10 focus:outline-hidden focus:ring-2 focus:ring-purple-500 transition-all text-sm whitespace-nowrap bg-white/10 backdrop-blur-xs hover:bg-white/20 border border-white/20 text-white hover:scale-105 transform';
   const { connectedPlayersCount, matches, socket } = multiplayerSocket;
 
   const buttonsSection = user && (
     <div className='animate-fadeInUp flex flex-col gap-4 w-full' style={{ animationDelay: '1s' }}>
       <h2 className='text-2xl font-bold text-center mb-4'>
-        <span className='bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent'>
+        <span className='bg-linear-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent'>
           Quick Actions
         </span>
       </h2>
@@ -153,9 +153,9 @@ export default function Home({
   const latestLevelsSection = <div className='lg:w-8/12 h-min flex flex-col gap-4 max-w-full animate-fadeInUp' style={{ animationDelay: '0.4s' }}>
     <div className='relative'>
       {/* Floating Island Effect */}
-      <div className='absolute inset-0 bg-gradient-to-r from-purple-600/20 to-blue-600/20 blur-xl' />
-      <div className='relative rounded-2xl overflow-hidden border border-white/20 backdrop-blur-sm bg-white/5'>
-        <div className='bg-gradient-to-r from-purple-600/80 to-blue-600/80 p-4 backdrop-blur-md'>
+      <div className='absolute inset-0 bg-linear-to-r from-purple-600/20 to-blue-600/20 blur-xl' />
+      <div className='relative rounded-2xl overflow-hidden border border-white/20 backdrop-blur-xs bg-white/5'>
+        <div className='bg-linear-to-r from-purple-600/80 to-blue-600/80 p-4 backdrop-blur-md'>
           <div id='latest-levels' className='flex justify-center items-center gap-3'>
             <Sparkles className='w-6 h-6 text-yellow-300' />
             <Link
@@ -218,9 +218,9 @@ export default function Home({
     <div className='animate-fadeInRight flex flex-col gap-4 w-full px-0' style={{ animationDelay: '0.6s' }}>
       <div className='relative'>
         {/* Floating Island Effect */}
-        <div className='absolute inset-0 bg-gradient-to-r from-yellow-600/20 to-orange-600/20 blur-xl' />
-        <div className='relative rounded-2xl overflow-hidden border border-white/20 backdrop-blur-sm bg-white/5'>
-          <div className='bg-gradient-to-r from-yellow-600/80 to-orange-600/80 p-4 backdrop-blur-md'>
+        <div className='absolute inset-0 bg-linear-to-r from-yellow-600/20 to-orange-600/20 blur-xl' />
+        <div className='relative rounded-2xl overflow-hidden border border-white/20 backdrop-blur-xs bg-white/5'>
+          <div className='bg-linear-to-r from-yellow-600/80 to-orange-600/80 p-4 backdrop-blur-md'>
             <div id='top-levels-of-month' className='flex justify-center items-center gap-3'>
               <Trophy className='w-6 h-6 text-white' />
               <Link
@@ -271,9 +271,9 @@ export default function Home({
   const latestReviewSection = <div id='latest-reviews' className='animate-fadeInUp flex flex-col gap-4 w-full px-0' style={{ animationDelay: '0.8s' }}>
     <div className='relative'>
       {/* Floating Island Effect */}
-      <div className='absolute inset-0 bg-gradient-to-r from-cyan-600/20 to-blue-600/20 blur-xl' />
-      <div className='relative rounded-2xl overflow-hidden border border-white/20 backdrop-blur-sm bg-white/5'>
-        <div className='bg-gradient-to-r from-cyan-600/80 to-blue-600/80 p-4 backdrop-blur-md'>
+      <div className='absolute inset-0 bg-linear-to-r from-cyan-600/20 to-blue-600/20 blur-xl' />
+      <div className='relative rounded-2xl overflow-hidden border border-white/20 backdrop-blur-xs bg-white/5'>
+        <div className='bg-linear-to-r from-cyan-600/80 to-blue-600/80 p-4 backdrop-blur-md'>
           <h2 className='font-bold text-2xl text-center text-white flex items-center justify-center gap-3'>
             <Activity className='w-6 h-6' />
             Latest Reviews
@@ -312,7 +312,7 @@ export default function Home({
     {/* Glassmorphism search container with MultiSelectUser */}
     <div className='bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-4 h-full flex flex-col'>
       <div className='flex items-center gap-3 mb-3'>
-        <div className='p-2 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg'>
+        <div className='p-2 bg-linear-to-r from-purple-600 to-pink-600 rounded-lg'>
           <Search className='w-5 h-5 text-white' />
         </div>
         <h3 className='text-lg font-bold text-white'>Search</h3>
@@ -351,11 +351,11 @@ export default function Home({
               value={levelSearch}
               onChange={(e) => setLevelSearch(e.target.value)}
               placeholder='🎯 Search levels...'
-              className='w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:border-purple-400/50 transition-all duration-200'
+              className='w-full px-4 py-3 bg-white/10 backdrop-blur-xs border border-white/20 rounded-xl text-white placeholder-white/60 focus:outline-hidden focus:ring-2 focus:ring-purple-400/50 focus:border-purple-400/50 transition-all duration-200'
             />
             <button
               type='submit'
-              className='absolute right-2 top-1/2 transform -translate-y-1/2 p-2 bg-gradient-to-r from-purple-600/80 to-pink-600/80 hover:from-purple-700/80 hover:to-pink-700/80 rounded-lg transition-all duration-200 hover:scale-105'
+              className='absolute right-2 top-1/2 transform -translate-y-1/2 p-2 bg-linear-to-r from-purple-600/80 to-pink-600/80 hover:from-purple-700/80 hover:to-pink-700/80 rounded-lg transition-all duration-200 hover:scale-105'
             >
               <ArrowRight className='w-4 h-4 text-white' />
             </button>
@@ -380,7 +380,7 @@ export default function Home({
           window.scrollTo({ top: y, behavior: 'smooth' });
         }
       }}
-      className='group px-4 py-2.5 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 text-sm font-medium flex items-center gap-2 shadow-sm hover:shadow-md'
+      className='group px-4 py-2.5 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 text-sm font-medium flex items-center gap-2 shadow-xs hover:shadow-md'
     >
       <span>Latest Levels</span>
       <ChevronsDown />
@@ -395,7 +395,7 @@ export default function Home({
           window.scrollTo({ top: y, behavior: 'smooth' });
         }
       }}
-      className='group px-4 py-2.5 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 text-sm font-medium flex items-center gap-2 shadow-sm hover:shadow-md'
+      className='group px-4 py-2.5 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 text-sm font-medium flex items-center gap-2 shadow-xs hover:shadow-md'
     >
       <span>Top Levels</span>
       <ChevronsDown />
@@ -430,11 +430,11 @@ export default function Home({
       showGeometricShapes={true}
     >
       <div className='flex justify-center px-4 sm:px-6 py-12 text-center'>
-        <div className='flex flex-col items-center gap-8 w-full max-w-screen-2xl'>
+        <div className='flex flex-col items-center gap-8 w-full max-w-(--breakpoint-2xl)'>
         {/* Hero Section */}
         <div className='animate-fadeInDown relative z-20 mb-12'>
           <h1 className='text-4xl sm:text-5xl lg:text-7xl font-black mb-4'>
-            <span className='bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent'>
+            <span className='bg-linear-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent'>
               Welcome to {game.displayName}
             </span>
           </h1>
@@ -484,7 +484,7 @@ export default function Home({
               <div className='bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-4 h-full'>
                 <div className='flex items-center justify-between mb-3'>
                   <div className='flex items-center gap-3'>
-                    <div className='p-2 bg-gradient-to-r from-cyan-600 to-blue-600 rounded-lg'>
+                    <div className='p-2 bg-linear-to-r from-cyan-600 to-blue-600 rounded-lg'>
                       <GameLogo gameId={game.id} id={game.id + '-streak-home'} size={20} />
                     </div>
                     <h3 className='text-lg font-bold text-white'>{game.displayName} Streak</h3>

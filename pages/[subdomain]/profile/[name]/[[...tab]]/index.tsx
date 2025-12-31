@@ -575,7 +575,7 @@ export default function ProfilePage({
 
             {/* User name and role */}
             <div className='flex items-center justify-center gap-3 mb-4'>
-              <h1 className='text-4xl sm:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400'>
+              <h1 className='text-4xl sm:text-6xl font-black text-transparent bg-clip-text bg-linear-to-r from-cyan-400 via-purple-400 to-pink-400'>
                 {user.name}
               </h1>
               <RoleIcons id='profile' size={32} user={user} />
@@ -609,10 +609,10 @@ export default function ProfilePage({
                     user={user}
                   />
                   <button
-                    className='group relative overflow-hidden bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold py-3 px-6 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-300'
+                    className='group relative overflow-hidden bg-linear-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold py-3 px-6 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-300'
                     onClick={toggleBlockUser}
                   >
-                    <div className='absolute inset-0 bg-gradient-to-r from-white to-transparent opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-transform duration-700' />
+                    <div className='absolute inset-0 bg-linear-to-r from-white to-transparent opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-transform duration-700' />
                     <div className='relative flex items-center gap-2'>
                       <span>🚫</span>
                       <span>Block</span>
@@ -653,7 +653,7 @@ export default function ProfilePage({
 
           {/* Blocked user message */}
           {reqUserHasBlocked ? (
-            <div className='bg-red-900/50 backdrop-blur-sm border border-red-500/30 rounded-xl p-6 text-center max-w-md mx-auto animate-fadeInUp' style={{ animationDelay: '0.5s' }}>
+            <div className='bg-red-900/50 backdrop-blur-xs border border-red-500/30 rounded-xl p-6 text-center max-w-md mx-auto animate-fadeInUp' style={{ animationDelay: '0.5s' }}>
               <h3 className='font-bold text-xl text-red-400 mb-4'>You have blocked {user.name}</h3>
               <p className='text-red-200 mb-4'>
                 Their user generated content is hidden and they cannot view your content.
@@ -674,7 +674,7 @@ export default function ProfilePage({
                 {/* Two Column Layout: Stats and Difficulty */}
                 <div className='grid grid-cols-1 lg:grid-cols-2 gap-8 animate-fadeInUp' style={{ animationDelay: '0.7s' }}>
                   {/* Left Column - Game Statistics or Game Profiles */}
-                  <div className='bg-black/20 backdrop-blur-sm border border-white/20 rounded-xl p-6'>
+                  <div className='bg-black/20 backdrop-blur-xs border border-white/20 rounded-xl p-6'>
                     <h3 className='text-2xl font-bold text-white mb-6 flex items-center gap-3'>
                       <span>{game.id === GameId.THINKY ? '🎮' : '📊'}</span>
                       {game.id === GameId.THINKY ? 'View Game Profiles' : 'Game Statistics'}
@@ -775,7 +775,7 @@ export default function ProfilePage({
                   </div>
 
                   {/* Right Column - User Info for THINKY or Difficulty Breakdown for Games */}
-                  <div className='bg-black/20 backdrop-blur-sm border border-white/20 rounded-xl p-6'>
+                  <div className='bg-black/20 backdrop-blur-xs border border-white/20 rounded-xl p-6'>
                     {game.id === GameId.THINKY ? (
                       /* User Activity Info for THINKY */
                       <>
@@ -859,7 +859,7 @@ export default function ProfilePage({
       >
         <div className='flex flex-col items-center min-h-screen px-4 py-8'>
           <div className='text-center mb-8 animate-fadeInDown' style={{ animationDelay: '0.3s' }}>
-            <h1 className='text-4xl sm:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-green-400 via-blue-400 to-purple-400 mb-4'>
+            <h1 className='text-4xl sm:text-6xl font-black text-transparent bg-clip-text bg-linear-to-r from-green-400 via-blue-400 to-purple-400 mb-4'>
               📈 Analytics Hub
             </h1>
             <p className='text-gray-300 text-lg max-w-2xl mx-auto'>
@@ -882,7 +882,7 @@ export default function ProfilePage({
       >
         <div className='flex flex-col items-center min-h-screen px-4 py-8'>
           <div className='text-center mb-8 animate-fadeInDown' style={{ animationDelay: '0.3s' }}>
-            <h1 className='text-4xl sm:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-orange-400 to-yellow-400 mb-4'>
+            <h1 className='text-4xl sm:text-6xl font-black text-transparent bg-clip-text bg-linear-to-r from-red-400 via-orange-400 to-yellow-400 mb-4'>
               ⚔️ Battle Arena
             </h1>
             <p className='text-gray-300 text-lg max-w-2xl mx-auto'>
@@ -905,7 +905,7 @@ export default function ProfilePage({
       >
         <div className='flex flex-col items-center min-h-screen px-4 py-8'>
           <div className='text-center mb-8 animate-fadeInDown' style={{ animationDelay: '0.3s' }}>
-            <h1 className='text-4xl sm:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-red-400 mb-4'>
+            <h1 className='text-4xl sm:text-6xl font-black text-transparent bg-clip-text bg-linear-to-r from-purple-400 via-pink-400 to-red-400 mb-4'>
               📚 Collections Vault
             </h1>
             <p className='text-gray-300 text-lg max-w-2xl mx-auto'>
@@ -917,12 +917,12 @@ export default function ProfilePage({
             {reqUser?._id === user._id && (
               <div className='text-center mb-6'>
                 <button
-                  className='group relative overflow-hidden bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-300'
+                  className='group relative overflow-hidden bg-linear-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-300'
                   onClick={() => {
                     setIsAddCollectionOpen(true);
                   }}
                 >
-                  <div className='absolute inset-0 bg-gradient-to-r from-white to-transparent opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-transform duration-700' />
+                  <div className='absolute inset-0 bg-linear-to-r from-white to-transparent opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-transform duration-700' />
                   <div className='relative flex items-center gap-2'>
                     <span>➕</span>
                     <span>Create Collection</span>
@@ -960,14 +960,14 @@ export default function ProfilePage({
       >
         <div className='flex flex-col items-center min-h-screen px-4 py-8'>
           <div className='text-center mb-8 animate-fadeInDown' style={{ animationDelay: '0.3s' }}>
-            <h1 className='text-4xl sm:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-green-400 to-blue-400 mb-4'>
+            <h1 className='text-4xl sm:text-6xl font-black text-transparent bg-clip-text bg-linear-to-r from-cyan-400 via-green-400 to-blue-400 mb-4'>
               🎨 Created Levels
             </h1>
             <p className='text-gray-300 text-lg max-w-2xl mx-auto mb-4'>
               Explore the levels crafted by {user.name}
             </p>
             {reqUser && (
-              <div className='bg-black/20 backdrop-blur-sm border border-white/20 rounded-xl px-6 py-3 inline-block'>
+              <div className='bg-black/20 backdrop-blur-xs border border-white/20 rounded-xl px-6 py-3 inline-block'>
                 <div
                   className='font-bold text-xl flex items-center gap-2'
                   style={{
@@ -982,7 +982,7 @@ export default function ProfilePage({
           </div>
 
           <div className='w-full max-w-6xl space-y-6 animate-fadeInUp' style={{ animationDelay: '0.5s' }}>
-            <div className='bg-black/20 backdrop-blur-sm border border-white/20 rounded-xl p-6'>
+            <div className='bg-black/20 backdrop-blur-xs border border-white/20 rounded-xl p-6'>
               <SelectFilter
                 filter={showLevelFilter}
                 onFilterClick={onFilterLevelClick}
@@ -998,10 +998,10 @@ export default function ProfilePage({
             <div className='flex flex-wrap justify-center gap-4 mb-6'>
               {reqUser?._id === user._id && (
                 <Link
-                  className='group relative overflow-hidden bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-300 flex items-center gap-2'
+                  className='group relative overflow-hidden bg-linear-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-300 flex items-center gap-2'
                   href='/create'
                 >
-                  <div className='absolute inset-0 bg-gradient-to-r from-white to-transparent opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-transform duration-700' />
+                  <div className='absolute inset-0 bg-linear-to-r from-white to-transparent opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-transform duration-700' />
                   <div className='relative flex items-center gap-2'>
                     <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='2 2 20 20' strokeWidth={1.5} stroke='currentColor' className='w-5 h-5'>
                       <path strokeLinecap='round' strokeLinejoin='round' d='M12 4.5v15m7.5-7.5h-15' />
@@ -1040,7 +1040,7 @@ export default function ProfilePage({
                     ← Previous
                   </Link>
                 )}
-                <div className='bg-black/20 backdrop-blur-sm border border-white/20 rounded-lg px-4 py-2 text-white font-medium'>
+                <div className='bg-black/20 backdrop-blur-xs border border-white/20 rounded-lg px-4 py-2 text-white font-medium'>
                   {page} of {Math.ceil(totalRows / 20)}
                 </div>
                 {totalRows > (page * 20) && (
@@ -1067,7 +1067,7 @@ export default function ProfilePage({
       >
         <div className='flex flex-col items-center min-h-screen px-4 py-8'>
           <div className='text-center mb-8 animate-fadeInDown' style={{ animationDelay: '0.3s' }}>
-            <h1 className='text-4xl sm:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-blue-400 to-cyan-400 mb-4'>
+            <h1 className='text-4xl sm:text-6xl font-black text-transparent bg-clip-text bg-linear-to-r from-purple-400 via-blue-400 to-cyan-400 mb-4'>
               ✍️ Review Chronicles
             </h1>
             <p className='text-gray-300 text-lg max-w-2xl mx-auto'>
@@ -1077,7 +1077,7 @@ export default function ProfilePage({
 
           <div className='w-full max-w-4xl space-y-6 animate-fadeInUp' style={{ animationDelay: '0.5s' }}>
             {reqUserHasBlocked ? (
-              <div className='bg-red-900/50 backdrop-blur-sm border border-red-500/30 rounded-xl p-6 text-center'>
+              <div className='bg-red-900/50 backdrop-blur-xs border border-red-500/30 rounded-xl p-6 text-center'>
                 <p className='font-bold text-xl text-red-400 mb-2'>Reviews Hidden</p>
                 <p className='text-red-200'>You have blocked this user, so their reviews are hidden.</p>
               </div>
@@ -1114,7 +1114,7 @@ export default function ProfilePage({
                     ← Previous
                   </Link>
                 )}
-                <div className='bg-black/20 backdrop-blur-sm border border-white/20 rounded-lg px-4 py-2 text-white font-medium'>
+                <div className='bg-black/20 backdrop-blur-xs border border-white/20 rounded-lg px-4 py-2 text-white font-medium'>
                   {page} of {Math.ceil(reviewsWrittenCount / 10)}
                 </div>
                 {reviewsWrittenCount > (page * 10) && (
@@ -1140,7 +1140,7 @@ export default function ProfilePage({
       >
         <div className='flex flex-col items-center min-h-screen px-4 py-8'>
           <div className='text-center mb-8 animate-fadeInDown' style={{ animationDelay: '0.3s' }}>
-            <h1 className='text-4xl sm:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-green-400 via-teal-400 to-blue-400 mb-4'>
+            <h1 className='text-4xl sm:text-6xl font-black text-transparent bg-clip-text bg-linear-to-r from-green-400 via-teal-400 to-blue-400 mb-4'>
               💌 Feedback Gallery
             </h1>
             <p className='text-gray-300 text-lg max-w-2xl mx-auto'>
@@ -1150,7 +1150,7 @@ export default function ProfilePage({
 
           <div className='w-full max-w-4xl space-y-6 animate-fadeInUp' style={{ animationDelay: '0.5s' }}>
             {reqUserHasBlocked ? (
-              <div className='bg-red-900/50 backdrop-blur-sm border border-red-500/30 rounded-xl p-6 text-center'>
+              <div className='bg-red-900/50 backdrop-blur-xs border border-red-500/30 rounded-xl p-6 text-center'>
                 <p className='font-bold text-xl text-red-400 mb-2'>Reviews Hidden</p>
                 <p className='text-red-200'>You have blocked this user, so their reviews are hidden.</p>
               </div>
@@ -1187,7 +1187,7 @@ export default function ProfilePage({
                     ← Previous
                   </Link>
                 )}
-                <div className='bg-black/20 backdrop-blur-sm border border-white/20 rounded-lg px-4 py-2 text-white font-medium'>
+                <div className='bg-black/20 backdrop-blur-xs border border-white/20 rounded-lg px-4 py-2 text-white font-medium'>
                   {page} of {Math.ceil(reviewsReceivedCount / 10)}
                 </div>
                 {reviewsReceivedCount > (page * 10) && (
@@ -1213,7 +1213,7 @@ export default function ProfilePage({
       >
         <div className='flex flex-col items-center min-h-screen px-4 py-8'>
           <div className='text-center mb-8 animate-fadeInDown' style={{ animationDelay: '0.3s' }}>
-            <h1 className='text-4xl sm:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 mb-4'>
+            <h1 className='text-4xl sm:text-6xl font-black text-transparent bg-clip-text bg-linear-to-r from-yellow-400 via-orange-400 to-red-400 mb-4'>
               🏆 Trophy Hall
             </h1>
             <p className='text-gray-300 text-lg max-w-2xl mx-auto'>
@@ -1234,8 +1234,8 @@ export default function ProfilePage({
       'group relative overflow-hidden transition-all duration-300 transform hover:scale-105',
       'inline-block px-4 py-3 rounded-xl font-medium',
       tab == tabId
-        ? 'bg-gradient-to-r from-cyan-600/80 to-purple-600/80 backdrop-blur-sm border border-cyan-400/30 text-white shadow-lg shadow-cyan-500/25'
-        : 'bg-black/20 backdrop-blur-sm border border-white/20 text-gray-300 hover:bg-black/30 hover:border-white/30 hover:text-white'
+        ? 'bg-linear-to-r from-cyan-600/80 to-purple-600/80 backdrop-blur-xs border border-cyan-400/30 text-white shadow-lg shadow-cyan-500/25'
+        : 'bg-black/20 backdrop-blur-xs border border-white/20 text-gray-300 hover:bg-black/30 hover:border-white/30 hover:text-white'
     );
   }, [tab]);
 
@@ -1300,7 +1300,7 @@ export default function ProfilePage({
             className={getTabClassNames(ProfileTab.Profile)}
             href={`/profile/${user.name}`}
           >
-            <div className='absolute inset-0 bg-gradient-to-r from-white to-transparent opacity-0 group-hover:opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-all duration-700' />
+            <div className='absolute inset-0 bg-linear-to-r from-white to-transparent opacity-0 group-hover:opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-all duration-700' />
             <div className='relative flex flex-row items-center gap-2'>
               <ProfileAvatar size={24} user={user} />
               <span>Profile</span>
@@ -1312,7 +1312,7 @@ export default function ProfilePage({
                 className={getTabClassNames(ProfileTab.Insights)}
                 href={`/profile/${user.name}/${ProfileTab.Insights}`}
               >
-                <div className='absolute inset-0 bg-gradient-to-r from-white to-transparent opacity-0 group-hover:opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-all duration-700' />
+                <div className='absolute inset-0 bg-linear-to-r from-white to-transparent opacity-0 group-hover:opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-all duration-700' />
                 <div className='relative flex flex-row items-center gap-2'>
                   <Image alt='pro' src='/pro.svg' width='16' height='16' />
                   <span>Insights</span>
@@ -1324,7 +1324,7 @@ export default function ProfilePage({
             className={getTabClassNames(ProfileTab.Achievements)}
             href={`/profile/${user.name}/${ProfileTab.Achievements}`}
           >
-            <div className='absolute inset-0 bg-gradient-to-r from-white to-transparent opacity-0 group-hover:opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-all duration-700' />
+            <div className='absolute inset-0 bg-linear-to-r from-white to-transparent opacity-0 group-hover:opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-all duration-700' />
             <div className='relative flex flex-row items-center gap-2'>
               <span>🏆</span>
               <span>Achievements ({achievementsCount})</span>
@@ -1336,7 +1336,7 @@ export default function ProfilePage({
                 className={getTabClassNames(ProfileTab.Levels)}
                 href={`/profile/${user.name}/${ProfileTab.Levels}`}
               >
-                <div className='absolute inset-0 bg-gradient-to-r from-white to-transparent opacity-0 group-hover:opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-all duration-700' />
+                <div className='absolute inset-0 bg-linear-to-r from-white to-transparent opacity-0 group-hover:opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-all duration-700' />
                 <div className='relative flex flex-row items-center gap-2'>
                   <span>🎨</span>
                   <span>Levels ({levelsCount})</span>
@@ -1346,7 +1346,7 @@ export default function ProfilePage({
                 className={getTabClassNames(ProfileTab.Collections)}
                 href={`/profile/${user.name}/${ProfileTab.Collections}`}
               >
-                <div className='absolute inset-0 bg-gradient-to-r from-white to-transparent opacity-0 group-hover:opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-all duration-700' />
+                <div className='absolute inset-0 bg-linear-to-r from-white to-transparent opacity-0 group-hover:opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-all duration-700' />
                 <div className='relative flex flex-row items-center gap-2'>
                   <span>📚</span>
                   <span>Collections ({collectionsCount})</span>
@@ -1356,7 +1356,7 @@ export default function ProfilePage({
                 className={getTabClassNames(ProfileTab.Multiplayer)}
                 href={`/profile/${user.name}/${ProfileTab.Multiplayer}`}
               >
-                <div className='absolute inset-0 bg-gradient-to-r from-white to-transparent opacity-0 group-hover:opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-all duration-700' />
+                <div className='absolute inset-0 bg-linear-to-r from-white to-transparent opacity-0 group-hover:opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-all duration-700' />
                 <div className='relative flex flex-row items-center gap-2'>
                   <span>⚔️</span>
                   <span>Multiplayer ({multiplayerCount})</span>
@@ -1366,7 +1366,7 @@ export default function ProfilePage({
                 className={getTabClassNames(ProfileTab.ReviewsWritten)}
                 href={`/profile/${user.name}/${ProfileTab.ReviewsWritten}`}
               >
-                <div className='absolute inset-0 bg-gradient-to-r from-white to-transparent opacity-0 group-hover:opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-all duration-700' />
+                <div className='absolute inset-0 bg-linear-to-r from-white to-transparent opacity-0 group-hover:opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-all duration-700' />
                 <div className='relative flex flex-row items-center gap-2'>
                   <span>✍️</span>
                   <span>Reviews Written ({reviewsWrittenCount})</span>
@@ -1376,7 +1376,7 @@ export default function ProfilePage({
                 className={getTabClassNames(ProfileTab.ReviewsReceived)}
                 href={`/profile/${user.name}/${ProfileTab.ReviewsReceived}`}
               >
-                <div className='absolute inset-0 bg-gradient-to-r from-white to-transparent opacity-0 group-hover:opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-all duration-700' />
+                <div className='absolute inset-0 bg-linear-to-r from-white to-transparent opacity-0 group-hover:opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-all duration-700' />
                 <div className='relative flex flex-row items-center gap-2'>
                   <span>💌</span>
                   <span>Reviews Received ({reviewsReceivedCount})</span>

@@ -15,10 +15,10 @@ export default function ReadyStatus({ match, user }: ReadyStatusProps) {
 
   return (
     <div className='w-80 relative animate-fadeInUp' style={{ animationDelay: '0.2s' }}>
-      <div className='absolute -inset-2 bg-gradient-to-r from-green-600/15 to-blue-600/15 blur-lg opacity-40' />
+      <div className='absolute -inset-2 bg-linear-to-r from-green-600/15 to-blue-600/15 blur-lg opacity-40' />
       <div className='relative bg-white/8 backdrop-blur-xl rounded-xl p-3 shadow-lg border border-white/20'>
         <div className='text-center'>
-          <div className='w-12 h-12 bg-gradient-to-br from-green-500 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-3'>
+          <div className='w-12 h-12 bg-linear-to-br from-green-500 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-3'>
             {match.markedReady.length == 2 ? (
               <span className='text-2xl text-white'>✅</span>
             ) : (

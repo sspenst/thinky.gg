@@ -101,7 +101,7 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
     }
 
     return (
-      <Link className='text-xl font-bold hover:underline overflow-hidden break-words' href={href}>
+      <Link className='text-xl font-bold hover:underline overflow-hidden wrap-break-word' href={href}>
         {collection.name}
       </Link>
     );
@@ -266,7 +266,7 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
           {getCollectionLevelList('sidebar')}
         </div>
       }
-      <div className='hidden xl:flex flex-col border-l border-color-3 break-words z-10 h-full w-100'>
+      <div className='hidden xl:flex flex-col border-l border-color-3 wrap-break-word z-10 h-full w-100'>
         {collection && isCollectionViewHidden &&
           <button
             className='flex items-center gap-4 w-full border-b border-color-3 hover-bg-3 transition px-4 py-3'

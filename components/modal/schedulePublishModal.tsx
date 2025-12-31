@@ -215,7 +215,7 @@ export default function SchedulePublishModal({ closeModal, isOpen, level }: Sche
             </p>
           </div>
 
-          <div className='bg-gradient-to-r from-purple-500/20 to-blue-500/20 rounded-lg p-4 border border-purple-500/30'>
+          <div className='bg-linear-to-r from-purple-500/20 to-blue-500/20 rounded-lg p-4 border border-purple-500/30'>
             <h4 className='font-bold text-purple-300 mb-2'>Pro Features Include:</h4>
             <ul className='text-sm text-gray-300 space-y-1'>
               <li>• Schedule levels up to 1 month in advance</li>
@@ -227,7 +227,7 @@ export default function SchedulePublishModal({ closeModal, isOpen, level }: Sche
           <div className='text-center'>
             <Link
               href='/pro'
-              className='inline-block bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-bold py-2 px-6 rounded-lg transition-all duration-200'
+              className='inline-block bg-linear-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-bold py-2 px-6 rounded-lg transition-all duration-200'
               onClick={closeModal}
             >
               Upgrade to Pro
@@ -247,7 +247,7 @@ export default function SchedulePublishModal({ closeModal, isOpen, level }: Sche
       onConfirm={handleSchedule}
       title='Schedule Level Publishing'
     >
-      <div className='break-words space-y-4'>
+      <div className='wrap-break-word space-y-4'>
         <div>
           <span className='font-bold'>Level:</span> {level.name}
           <br />
