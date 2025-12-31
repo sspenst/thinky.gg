@@ -94,16 +94,16 @@ export default function LevelInfoCompletions() {
   const solves = proStatsLevel[ProStatsLevelType.CommunityStepData][0].count;
   let completions = 0;
 
+  // Create chart data with fill colors (immutable transformation)
+  const chartData = (proStatsLevel[ProStatsLevelType.CommunityStepData] as ProStatsCommunityStepData[]).map((item, index) => ({
+    ...item,
+    fill: index === 0 ? 'rgb(21 128 61)' : 'var(--bg-color-4)'
+  }));
+
   for (let i = 0; i < (proStatsLevel[ProStatsLevelType.CommunityStepData] as ProStatsCommunityStepData[]).length; i++) {
     const completion = (proStatsLevel[ProStatsLevelType.CommunityStepData] as ProStatsCommunityStepData[])[i];
 
     completions += completion.count;
-
-    // green bar fill for the users that completed the level
-    if (i === 0) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (completion as any).fill = 'rgb(21 128 61)';
-    }
 
     for (let j = 0; j < completion.users.length; j++) {
       const userAndStatTs = completion.users[j];
@@ -201,11 +201,11 @@ export default function LevelInfoCompletions() {
         <TabPanel tabIndex={-1}>
           <ResponsiveContainer width='100%' height={300}>
             <BarChart
-              data={proStatsLevel[ProStatsLevelType.CommunityStepData]}
+              data={chartData}
               margin={{ top: 8, right: 8, left: -16 }}
               maxBarSize={30}
             >
-              <Bar dataKey='count' fill='var(--bg-color-4)' />
+              <Bar dataKey='count' />
               <CartesianGrid
                 stroke='var(--bg-color-4)'
                 strokeDasharray='1 4'

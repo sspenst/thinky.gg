@@ -16,7 +16,7 @@ interface MatchChartProps {
 const CustomizedDot = (props: any) => {
   const { cx, cy, payload } = props;
 
-  if (cy !== null) {
+  if (!isNaN(cy)) {
     if (payload.type === MatchAction.COMPLETE_LEVEL) {
       return (<>
         <svg x={cx - 5} y={cy - 5} width={20} height={20} fill='var(--bg-color)' viewBox='0 0 32 32'>
@@ -266,7 +266,7 @@ export default function MatchChart({ match }: MatchChartProps) {
                 tickFormatter={value => dayjs(value).format('m:ss')}
               />
               <Tooltip
-                formatter={(value: number) => dayjs(value).format('m:ss')}
+                formatter={(value: number | undefined) => dayjs(value).format('m:ss')}
                 content={({ active, payload }) => {
                   if (active && payload && payload.length) {
                     return (

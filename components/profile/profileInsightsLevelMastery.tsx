@@ -261,13 +261,14 @@ export default function ProfileInsightsLevelMastery({ user, reqUser, timeFilter 
               <LineChart
                 data={difficultyTimeline}
                 margin={{ top: 10, right: 30, left: 0, bottom: 30 }}
-                onClick={(data) => {
-                  if (data && data.activePayload && data.activePayload[0]) {
-                    const payload = data.activePayload[0].payload;
+                // TODO: add back?
+                // onClick={(data) => {
+                //   if (data && data.activePayload && data.activePayload[0]) {
+                //     const payload = data.activePayload[0].payload;
 
-                    setSelectedMonth(selectedMonth === payload.monthKey ? null : payload.monthKey);
-                  }
-                }}
+                //     setSelectedMonth(selectedMonth === payload.monthKey ? null : payload.monthKey);
+                //   }
+                // }}
               >
                 <XAxis
                   dataKey='date'
@@ -289,7 +290,7 @@ export default function ProfileInsightsLevelMastery({ user, reqUser, timeFilter 
                     color: 'rgb(229, 231, 235)',
                     boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
                   }}
-                  formatter={(value: number, name: string, props: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
+                  formatter={(value: number | undefined, name: string | undefined, props: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
                     const data = props.payload; // eslint-disable-line react/prop-types
 
                     return [
@@ -297,7 +298,7 @@ export default function ProfileInsightsLevelMastery({ user, reqUser, timeFilter 
                         <div className='font-bold text-blue-400 mb-2'>{data.date /* eslint-disable-line react/prop-types */}</div>
                         <div className='space-y-1'>
                           <div>{timelineMode === 'average' ? 'Average' : 'Maximum'} Difficulty:
-                            <span className='font-bold text-green-400 ml-1'>{getDifficultyFromEstimate(value).name}</span>
+                            {value !== undefined && <span className='font-bold text-green-400 ml-1'>{getDifficultyFromEstimate(value).name}</span>}
                           </div>
                           <div>Levels solved this month: <span className='font-bold text-yellow-400'>{data.levelCount /* eslint-disable-line react/prop-types */}</span></div>
                           {timelineMode === 'average' && data.maxDifficulty /* eslint-disable-line react/prop-types */ !== value && (

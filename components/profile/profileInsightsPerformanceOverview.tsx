@@ -514,11 +514,12 @@ export default function ProfileInsightsPerformanceOverview({ user, reqUser, time
                 data={difficultyTimeline}
                 margin={{ top: 10, right: 30, left: 0, bottom: 30 }}
                 onClick={(data) => {
-                  if (data && data.activePayload && data.activePayload[0]) {
-                    const payload = data.activePayload[0].payload;
+                  // TODO: add back?
+                  // if (data && data.activePayload && data.activePayload[0]) {
+                  //   const payload = data.activePayload[0].payload;
 
-                    setSelectedMonth(selectedMonth === payload.monthKey ? null : payload.monthKey);
-                  }
+                  //   setSelectedMonth(selectedMonth === payload.monthKey ? null : payload.monthKey);
+                  // }
                 }}
               >
                 <XAxis
@@ -541,7 +542,7 @@ export default function ProfileInsightsPerformanceOverview({ user, reqUser, time
                     color: 'rgb(229, 231, 235)',
                     boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
                   }}
-                  formatter={(value: number, name: string, props: any) => {
+                  formatter={(value: number | undefined, name: string | undefined, props: any) => {
                     const data = props.payload;
 
                     return [
@@ -549,7 +550,7 @@ export default function ProfileInsightsPerformanceOverview({ user, reqUser, time
                         <div className='font-bold text-blue-400 mb-2'>{data.date}</div>
                         <div className='space-y-1'>
                           <div>{timelineMode === 'average' ? 'Average' : 'Maximum'} Difficulty:
-                            <span className='font-bold text-green-400 ml-1'>{getDifficultyFromEstimate(value).name}</span>
+                            {value !== undefined && <span className='font-bold text-green-400 ml-1'>{getDifficultyFromEstimate(value).name}</span>}
                           </div>
                           <div>Levels solved this month: <span className='font-bold text-yellow-400'>{data.levelCount}</span></div>
                           {timelineMode === 'average' && data.maxDifficulty !== value && (
