@@ -1,4 +1,4 @@
-import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
+import { Menu, MenuButton, MenuItems } from '@headlessui/react';
 import { GameType } from '@root/constants/Games';
 import Role from '@root/constants/role';
 import getFontFromGameId from '@root/helpers/getFont';
@@ -226,7 +226,7 @@ export default function Header({
           {user && <div className='hidden sm:block h-6 w-px bg-neutral-500' />}
           <div className='flex gap-3 items-center'>
             {user && !game.isNotAGame && <>
-              {!game.disableRanked && <div className='flex flex-row gap-2'>
+              {!game.disableRanked && <>
                 <Link
                   className='hidden sm:block'
                   data-tooltip-content='Ranked Solves'
@@ -237,7 +237,7 @@ export default function Header({
                   <StyledTooltip id='ranked-solves-header' />
                 </Link>
                 <div className='hidden sm:block h-6 w-px bg-neutral-500 mr-1' />
-              </div>}
+              </>}
               <Link
                 className='hidden sm:block mr-1'
                 data-tooltip-content={game.type === GameType.COMPLETE_AND_SHORTEST ? 'Levels Completed' : 'Levels Solved'}

@@ -107,7 +107,7 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, le
             isPro={isPro}
           />
         )}
-        <div className='gap-2 flex'>
+        <div className='gap-4 flex'>
           {!disableCheckpoints && !fullScreen &&
             <>
               <button
@@ -136,14 +136,16 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, le
           <div className='grow'>
             <Controls controls={remainingControls} />
           </div>
-          {onScrub && (
+          {onScrub && (<>
             <button
+              data-tooltip-content='Timeline scrubber'
+              data-tooltip-id='scrubber-tooltip'
               onClick={() => setIsScrubberOpen(!isScrubberOpen)}
-              className='self-center p-2 hover-bg-2 rounded-full transition-colors duration-200'
             >
               {!isScrubberOpen ? <History /> : <ChevronDown />}
             </button>
-          )}
+            <StyledTooltip id='scrubber-tooltip' />
+          </>)}
           {!deviceInfo.isMobile &&
             <>
               <button
