@@ -13,13 +13,9 @@
 </p>
 
 <p align="center">
-  <a href="https://discord.gg/j6RxRdqq4A">
-    <img src="https://dcbadge.limes.pink/api/server/https://discord.gg/j6RxRdqq4A?style=flat&theme=default-inverted" />
-  </a>
-  <img src="https://github.com/sspenst/thinky.gg/actions/workflows/node.js.yml/badge.svg" />
-  <a href="https://codecov.io/gh/sspenst/thinky.gg">
-    <img src="https://codecov.io/gh/sspenst/thinky.gg/branch/main/graph/badge.svg?token=BX0RSQ9R57" />
-  </a>
+  <a href="https://discord.gg/j6RxRdqq4A"><img src="https://dcbadge.limes.pink/api/server/https://discord.gg/j6RxRdqq4A?style=flat&theme=default-inverted" alt="Discord"></a>
+  <a href="https://github.com/sspenst/thinky.gg/actions/workflows/node.js.yml"><img src="https://github.com/sspenst/thinky.gg/actions/workflows/node.js.yml/badge.svg" alt="Tests"></a>
+  <a href="https://codecov.io/gh/sspenst/thinky.gg"><img src="https://codecov.io/gh/sspenst/thinky.gg/branch/main/graph/badge.svg?token=BX0RSQ9R57" alt="codecov"></a>
 </p>
 
 ## Dev Environment
