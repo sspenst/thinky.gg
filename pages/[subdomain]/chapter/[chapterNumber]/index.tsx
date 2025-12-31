@@ -3,6 +3,7 @@ import AchievementCategory from '@root/constants/achievements/achievementCategor
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { refreshAchievements } from '@root/helpers/refreshAchievements';
 import useSWRHelper from '@root/hooks/useSWRHelper';
+import { EnrichedCollection } from '@root/models/db/collection';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Link from 'next/link';
 import FormattedCampaign from '../../../../components/formatted/formattedCampaign';
@@ -35,6 +36,12 @@ const chapterConfig = {
     subtitle: 'Brain Busters',
     campaign: 'chapter3',
   },
+  // NB: this is not actually a chapter, just a placeholder so we can do some logic below
+  4: {
+    title: 'Play',
+    subtitle: 'All Chapters',
+    campaign: 'play',
+  },
 };
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
@@ -55,7 +62,10 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   // Validate chapter number
   if (!chapterConfig[chapterNumber as keyof typeof chapterConfig]) {
     return {
-      notFound: true,
+      redirect: {
+        destination: '/play',
+        permanent: false,
+      },
     };
   }
 
@@ -128,6 +138,50 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       UserConfigModel.updateOne({ userId: reqUser._id, gameId: gameId }, { $set: { chapterUnlocked: 3 } }),
       refreshAchievements(gameId, reqUser._id, [AchievementCategory.PROGRESS, AchievementCategory.CHAPTER_COMPLETION])
     ]);
+  } else if (chapterNumber === 4 && chapterUnlocked <= 3) {
+    if (chapterUnlocked <= 2) {
+      return {
+        redirect: {
+          destination: '/play',
+          permanent: false,
+        },
+      };
+    }
+
+    const { props } = await getCampaignProps(gameId, reqUser, 'chapter3');
+
+    if (!props) {
+      return {
+        redirect: {
+          destination: '/play',
+          permanent: false,
+        },
+      };
+    }
+
+    // more strict requirement for chapter 3 achievement, ch 1-2 just need 75% of all levels + 50% of all themed collections
+    const isChapter3Complete = props.totalLevels === props.solvedLevels;
+
+    if (!isChapter3Complete) {
+      return {
+        redirect: {
+          destination: '/play',
+          permanent: false,
+        },
+      };
+    }
+
+    await Promise.all([
+      UserConfigModel.updateOne({ userId: reqUser._id, gameId: gameId }, { $set: { chapterUnlocked: 4 } }),
+      refreshAchievements(gameId, reqUser._id, [AchievementCategory.PROGRESS, AchievementCategory.CHAPTER_COMPLETION])
+    ]);
+
+    return {
+      redirect: {
+        destination: '/play',
+        permanent: false,
+      },
+    };
   }
 
   // Check if user has access to this chapter
@@ -175,7 +229,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 }
 
 // Helper function to find the first unsolved level in collections
-function findFirstUnsolvedLevel(enrichedCollections: any[]): EnrichedLevel | null {
+function findFirstUnsolvedLevel(enrichedCollections: EnrichedCollection[]): EnrichedLevel | null {
   for (const collection of enrichedCollections) {
     if (!collection.levels) continue;
 
@@ -231,16 +285,16 @@ export default function ChapterPage({ enrichedCollections, reqUser, solvedLevels
   const currentRank = getCurrentRankFromData(rankData);
 
   const getNextChapterHref = () => {
-    if (chapterNumber < 3) {
-      return `/chapter/${chapterNumber + 1}`;
-    }
-
-    return '/ranked';
+    return `/chapter/${chapterNumber + 1}`;
   };
 
   const getNextChapterTitle = () => {
-    if (chapterNumber < 3 && chapterUnlocked <= chapterNumber) {
-      return `Unlock Chapter ${chapterNumber + 1}`;
+    if (chapterUnlocked <= chapterNumber) {
+      if (chapterNumber === 3) {
+        return 'Claim Chapter 3 achievement';
+      } else {
+        return `Unlock Chapter ${chapterNumber + 1}`;
+      }
     }
 
     return undefined;
@@ -291,29 +345,6 @@ export default function ChapterPage({ enrichedCollections, reqUser, solvedLevels
     return constellations;
   };
 
-  const getSolvedElement = () => {
-    const nextChapter = chapterNumber + 1;
-    const hasNextChapter = nextChapter <= 3;
-    const nextHref = hasNextChapter ? `/chapter/${nextChapter}` : '/ranked';
-    const nextTitle = hasNextChapter ? `Chapter ${nextChapter}` : 'Ranked Levels';
-
-    return (
-      <div className='flex flex-col items-center justify-center text-center mt-2 bg-2 border-color-3 border p-3 m-3 rounded-lg'>
-        <div className='text-xl'>
-          Congratulations!
-          <br /><br />
-          You&apos;ve solved every level in {config.title}.
-          <br /><br />
-          {hasNextChapter ? (
-            <>Try out <Link className='font-bold underline text-blue-500' href={nextHref} passHref>{nextTitle}</Link> next!</>
-          ) : (
-            <>Try out <Link className='font-bold underline text-blue-500' href={nextHref} passHref>Ranked 🏅</Link> levels next!</>
-          )}
-        </div>
-      </div>
-    );
-  };
-
   return (
     <Page folders={[new LinkInfo('Play', '/play')]} title={config.title}>
       <UpsellFullAccount user={reqUser} />
@@ -326,7 +357,7 @@ export default function ChapterPage({ enrichedCollections, reqUser, solvedLevels
         className=''
       >
         {/* Floating Current Rank Display */}
-        <div className='w-full pt-4 justify-center flex items-center align-middle items-center z-20 animate-fadeInDown' style={{ animationDelay: '0.5s' }}>
+        <div className='w-full pt-4 justify-center flex items-center align-middle z-20 animate-fadeInDown' style={{ animationDelay: '0.5s' }}>
           <Link href='/achievements#category-LEVEL_COMPLETION' className='block hover:scale-105 transition-transform duration-300'>
             <div className='bg-black/20 backdrop-blur-xs border border-white/20 rounded-xl px-4 py-3 sm:px-6 sm:py-4 text-white text-center cursor-pointer hover:bg-black/30 transition-colors duration-300'>
               <div className='text-xs opacity-70 mb-2'>CURRENT RANK</div>
@@ -474,9 +505,7 @@ export default function ChapterPage({ enrichedCollections, reqUser, solvedLevels
         levelHrefQuery={`chapter=${chapterNumber}`}
         nextHref={getNextChapterHref()}
         nextTitle={getNextChapterTitle()}
-        solvedElement={getSolvedElement()}
         solvedLevels={solvedLevels}
-        subtitle={config.subtitle}
         title={config.title}
         totalLevels={totalLevels}
       />

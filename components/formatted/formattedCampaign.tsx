@@ -5,52 +5,22 @@ import { EnrichedLevel } from '../../models/db/level';
 import SelectOptionStats from '../../models/selectOptionStats';
 import ChapterLevelPortal from '../cards/chapterLevelPortal';
 
-function getCompleteIcon(complete: boolean) {
-  if (complete) {
-    return (
-      <div className='rounded-full bg-green-500 border' style={{
-        borderColor: 'var(--bg-color-4)',
-      }}>
-        <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
-          <path strokeLinecap='round' strokeLinejoin='round' d='M9 12.75L11.25 15 15 9.75M21 12' />
-        </svg>
-      </div>
-    );
-  } else {
-    return (
-      <div className='rounded-full bg-neutral-500 border' style={{
-        borderColor: 'var(--bg-color-4)',
-      }}>
-        <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
-          <path strokeLinecap='round' strokeLinejoin='round' d='M16 12H8' />
-        </svg>
-      </div>
-    );
-  }
-}
-
 interface FormattedCampaignProps {
   enrichedCollections: EnrichedCollection[];
-  hideUnlockRequirements?: boolean;
   levelHrefQuery: string;
   nextHref?: string;
   nextTitle?: string;
-  solvedElement: JSX.Element;
   solvedLevels: number;
-  subtitle?: string;
   title: string;
   totalLevels: number;
 }
 
 export default function FormattedCampaign({
   enrichedCollections,
-  hideUnlockRequirements,
   levelHrefQuery,
   nextHref,
   nextTitle,
-  solvedElement,
   solvedLevels,
-  subtitle,
   title,
   totalLevels,
 }: FormattedCampaignProps) {
@@ -236,7 +206,6 @@ export default function FormattedCampaign({
     return options;
   }, [enrichedCollections, getLevelOptions]);
 
-  const totalStats = new SelectOptionStats(totalLevels, solvedLevels);
   const remainingLevels = Math.ceil(totalLevels * 0.75) - solvedLevels;
   const isCampaignComplete = remainingLevels <= 0 && enrichedCollections.filter(c => !c.isThemed).every(c => Math.ceil(c.levelCount * 0.5) - c.userSolvedCount <= 0);
 
