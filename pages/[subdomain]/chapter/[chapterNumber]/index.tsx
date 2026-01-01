@@ -97,10 +97,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       };
     }
 
-    await Promise.all([
-      UserConfigModel.updateOne({ userId: reqUser._id, gameId: gameId }, { $set: { chapterUnlocked: 2 } }),
-      refreshAchievements(gameId, reqUser._id, [AchievementCategory.PROGRESS, AchievementCategory.CHAPTER_COMPLETION])
-    ]);
+    await UserConfigModel.updateOne({ userId: reqUser._id, gameId: gameId }, { $set: { chapterUnlocked: 2 } });
+    await refreshAchievements(gameId, reqUser._id, [AchievementCategory.PROGRESS, AchievementCategory.CHAPTER_COMPLETION]);
   } else if (chapterNumber === 3 && chapterUnlocked <= 2) {
     if (chapterUnlocked === 1) {
       return {
@@ -134,10 +132,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       };
     }
 
-    await Promise.all([
-      UserConfigModel.updateOne({ userId: reqUser._id, gameId: gameId }, { $set: { chapterUnlocked: 3 } }),
-      refreshAchievements(gameId, reqUser._id, [AchievementCategory.PROGRESS, AchievementCategory.CHAPTER_COMPLETION])
-    ]);
+    await UserConfigModel.updateOne({ userId: reqUser._id, gameId: gameId }, { $set: { chapterUnlocked: 3 } });
+    await refreshAchievements(gameId, reqUser._id, [AchievementCategory.PROGRESS, AchievementCategory.CHAPTER_COMPLETION]);
   } else if (chapterNumber === 4 && chapterUnlocked <= 3) {
     if (chapterUnlocked <= 2) {
       return {
@@ -171,11 +167,10 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       };
     }
 
-    await Promise.all([
-      UserConfigModel.updateOne({ userId: reqUser._id, gameId: gameId }, { $set: { chapterUnlocked: 4 } }),
-      refreshAchievements(gameId, reqUser._id, [AchievementCategory.PROGRESS, AchievementCategory.CHAPTER_COMPLETION])
-    ]);
+    await UserConfigModel.updateOne({ userId: reqUser._id, gameId: gameId }, { $set: { chapterUnlocked: 4 } });
+    await refreshAchievements(gameId, reqUser._id, [AchievementCategory.PROGRESS, AchievementCategory.CHAPTER_COMPLETION]);
 
+    // there is no chapter 4, so just go back to the play page
     return {
       redirect: {
         destination: '/play',

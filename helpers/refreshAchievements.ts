@@ -110,7 +110,7 @@ const AchievementCategoryFetch = {
 };
 
 /**
-*  Creates a new achievement for the user
+ * Creates a new achievement for the user
  * @param userId
  * @return null if user not found
  */
