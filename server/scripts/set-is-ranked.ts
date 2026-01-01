@@ -1,4 +1,4 @@
-// npx ts-node  --transpile-only -r tsconfig-paths/register --files server/scripts/set-is-ranked.ts
+// npx ts-node --transpile-only -r tsconfig-paths/register --files server/scripts/set-is-ranked.ts
 
 import { GameId } from '@root/constants/GameId';
 import { switchIsRanked } from '@root/pages/api/admin';
