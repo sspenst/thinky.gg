@@ -1118,30 +1118,6 @@ export default function ProfilePage({
               <span>Profile</span>
             </div>
           </Link>
-          {!game.isNotAGame && !reqUserHasBlocked &&
-            <>
-              <Link
-                className={getTabClassNames(ProfileTab.Insights)}
-                href={`/profile/${user.name}/${ProfileTab.Insights}`}
-              >
-                <div className='absolute inset-0 bg-linear-to-r from-white to-transparent opacity-0 group-hover:opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-all duration-700' />
-                <div className='relative flex flex-row items-center gap-2'>
-                  <Image alt='pro' src='/pro.svg' width='16' height='16' />
-                  <span>Insights</span>
-                </div>
-              </Link>
-            </>
-          }
-          <Link
-            className={getTabClassNames(ProfileTab.Achievements)}
-            href={`/profile/${user.name}/${ProfileTab.Achievements}`}
-          >
-            <div className='absolute inset-0 bg-linear-to-r from-white to-transparent opacity-0 group-hover:opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-all duration-700' />
-            <div className='relative flex flex-row items-center gap-2'>
-              <span>🏆</span>
-              <span>Achievements ({achievementsCount})</span>
-            </div>
-          </Link>
           {!reqUserHasBlocked &&
             <>
               <Link
@@ -1172,6 +1148,30 @@ export default function ProfilePage({
                 <div className='relative flex flex-row items-center gap-2'>
                   <span>⚔️</span>
                   <span>Multiplayer ({multiplayerCount})</span>
+                </div>
+              </Link>
+            </>
+          }
+          <Link
+            className={getTabClassNames(ProfileTab.Achievements)}
+            href={`/profile/${user.name}/${ProfileTab.Achievements}`}
+          >
+            <div className='absolute inset-0 bg-linear-to-r from-white to-transparent opacity-0 group-hover:opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-all duration-700' />
+            <div className='relative flex flex-row items-center gap-2'>
+              <span>🏆</span>
+              <span>Achievements ({achievementsCount})</span>
+            </div>
+          </Link>
+          {!game.isNotAGame && !reqUserHasBlocked &&
+            <>
+              <Link
+                className={getTabClassNames(ProfileTab.Insights)}
+                href={`/profile/${user.name}/${ProfileTab.Insights}`}
+              >
+                <div className='absolute inset-0 bg-linear-to-r from-white to-transparent opacity-0 group-hover:opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-all duration-700' />
+                <div className='relative flex flex-row items-center gap-2'>
+                  <Image alt='pro' src='/pro.svg' width='16' height='16' />
+                  <span>Insights</span>
                 </div>
               </Link>
             </>
