@@ -353,7 +353,7 @@ export default function ChapterPage({ enrichedCollections, reqUser, solvedLevels
       >
         {/* Floating Current Rank Display */}
         <div className='w-full pt-4 justify-center flex items-center align-middle z-20 animate-fadeInDown' style={{ animationDelay: '0.5s' }}>
-          <Link href='/achievements#category-LEVEL_COMPLETION' className='block hover:scale-105 transition-transform duration-300'>
+          <Link href={`/profile/${reqUser.name.toLowerCase()}/achievements#category-LEVEL_COMPLETION`} className='block hover:scale-105 transition-transform duration-300'>
             <div className='bg-black/20 backdrop-blur-xs border border-white/20 rounded-xl px-4 py-3 sm:px-6 sm:py-4 text-white text-center cursor-pointer hover:bg-black/30 transition-colors duration-300'>
               <div className='text-xs opacity-70 mb-2'>CURRENT RANK</div>
               <div className='flex items-center justify-center gap-2 mb-1'>

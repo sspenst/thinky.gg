@@ -11,10 +11,11 @@ import { useRouter } from 'next/router';
 import React, { useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import GameLogoAndLabel from './gameLogoAndLabel';
+import Footer from './page/footer';
 
 function NavDivider() {
   return (
-    <div className='h-px mx-2 my-1 bg-3' style={{ minHeight: 1 }} />
+    <div className='h-px mx-2 my-1 bg-3 w-full' style={{ minHeight: 1 }} />
   );
 }
 
@@ -106,7 +107,9 @@ function NavLink({ hidden, href, icon, label, onClick, special }: NavLinkProps) 
   const router = useRouter();
 
   useEffect(() => {
-    setIsActive(router.asPath === href);
+    const pathWithoutQuery = router.asPath.split('?')[0];
+
+    setIsActive(pathWithoutQuery === href);
   }, [href, router.asPath]);
 
   if (hidden) {
@@ -126,31 +129,6 @@ function NavLink({ hidden, href, icon, label, onClick, special }: NavLinkProps) 
       {icon}
       <span>{label}</span>
     </Link>
-  );
-}
-
-interface ExternalNavLinkProps {
-  href: string;
-  icon: React.ReactNode;
-  label: React.ReactNode;
-}
-
-function ExternalNavLink({ href, icon, label }: ExternalNavLinkProps) {
-  return (
-    <a
-      className='flex w-full items-center rounded-md cursor-pointer px-3 py-2 justify-between hover-bg-3'
-      href={href}
-      rel='noreferrer'
-      target='_blank'
-    >
-      <div className='flex items-center gap-5'>
-        {icon}
-        <span>{label}</span>
-      </div>
-      <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-4 h-5 pb-1'>
-        <path strokeLinecap='round' strokeLinejoin='round' d='M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25' />
-      </svg>
-    </a>
   );
 }
 
@@ -216,17 +194,7 @@ export default function Nav({ isDropdown, onGameChange }: NavProps) {
         <path d='M15.3477 21.8557L15.1909 21.1223L15.3477 21.8557ZM14.1443 20.6523L14.8777 20.8091L14.1443 20.6523ZM15.0207 18.1117L14.4903 17.5814L15.0207 18.1117ZM17.8883 20.9793L17.358 20.449L17.8883 20.9793ZM21.7963 15.4773L22.4458 15.1023V15.1023L21.7963 15.4773ZM21.1961 17.6715L21.7265 18.2018L21.1961 17.6715ZM21.7963 16.9981L22.4458 17.3731L21.7963 16.9981ZM20.5227 14.2037L20.8977 13.5542V13.5542L20.5227 14.2037ZM18.3285 14.8039L18.8588 15.3342L18.3285 14.8039ZM19.0019 14.2037L18.6269 13.5542V13.5542L19.0019 14.2037ZM20.6658 17.1412L17.358 20.449L18.4186 21.5097L21.7265 18.2018L20.6658 17.1412ZM15.551 18.642L18.8588 15.3342L17.7982 14.2735L14.4903 17.5814L15.551 18.642ZM15.1909 21.1223C15.0155 21.1598 14.8753 21.1897 14.7548 21.2121C14.6333 21.2347 14.5536 21.2454 14.4996 21.2488C14.4441 21.2524 14.4479 21.2458 14.4825 21.2547C14.5296 21.2669 14.5936 21.2972 14.6482 21.3518L13.5876 22.4124C13.9113 22.7362 14.3158 22.7636 14.5948 22.7458C14.8603 22.7289 15.1839 22.6577 15.5045 22.5891L15.1909 21.1223ZM13.4109 20.4955C13.3423 20.8161 13.2711 21.1397 13.2542 21.4052C13.2364 21.6842 13.2638 22.0887 13.5876 22.4124L14.6482 21.3518C14.7028 21.4064 14.7331 21.4704 14.7453 21.5175C14.7542 21.5521 14.7476 21.5559 14.7512 21.5004C14.7546 21.4464 14.7653 21.3667 14.7879 21.2452C14.8103 21.1247 14.8402 20.9845 14.8777 20.8091L13.4109 20.4955ZM20.6658 15.3342C21.0333 15.7017 21.1084 15.786 21.1467 15.8523L22.4458 15.1023C22.2839 14.8218 22.0257 14.5728 21.7265 14.2735L20.6658 15.3342ZM21.7265 18.2018C22.0257 17.9026 22.2839 17.6535 22.4458 17.3731L21.1467 16.6231C21.1084 16.6894 21.0333 16.7737 20.6658 17.1412L21.7265 18.2018ZM21.1467 15.8523C21.2844 16.0908 21.2844 16.3846 21.1467 16.6231L22.4458 17.3731C22.8514 16.6705 22.8514 15.8049 22.4458 15.1023L21.1467 15.8523ZM21.7265 14.2735C21.4272 13.9743 21.1782 13.7161 20.8977 13.5542L20.1477 14.8533C20.214 14.8916 20.2983 14.9667 20.6658 15.3342L21.7265 14.2735ZM18.8588 15.3342C19.2263 14.9667 19.3106 14.8916 19.3769 14.8533L18.6269 13.5542C18.3465 13.7161 18.0974 13.9743 17.7982 14.2735L18.8588 15.3342ZM20.8977 13.5542C20.1951 13.1486 19.3295 13.1486 18.6269 13.5542L19.3769 14.8533C19.6154 14.7156 19.9092 14.7156 20.1477 14.8533L20.8977 13.5542ZM17.358 20.449C17.1624 20.6445 16.8952 20.771 16.5155 20.8679C16.3253 20.9165 16.1224 20.954 15.8963 20.9931C15.679 21.0306 15.4303 21.0711 15.1909 21.1223L15.5045 22.5891C15.7063 22.546 15.9131 22.5124 16.1517 22.4712C16.3814 22.4315 16.6346 22.3856 16.8866 22.3213C17.3914 22.1924 17.9533 21.975 18.4186 21.5097L17.358 20.449ZM14.8777 20.8091C14.9289 20.5697 14.9694 20.321 15.0069 20.1037C15.046 19.8776 15.0835 19.6747 15.1321 19.4845C15.229 19.1048 15.3555 18.8376 15.551 18.642L14.4903 17.5814C14.025 18.0467 13.8076 18.6086 13.6787 19.1134C13.6144 19.3654 13.5685 19.6186 13.5288 19.8483C13.4876 20.0869 13.454 20.2937 13.4109 20.4955L14.8777 20.8091Z' fill='currentColor' />
       </svg>
     }
-    label='Your Draft Levels'
-  />;
-
-  const yourLevelsNavLink = user && <NavLink
-    href={`${getProfileSlug(user)}/levels`}
-    icon={
-      <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='2 2 20 20' strokeWidth={1.5} stroke='currentColor' className='w-5 h-5'>
-        <path strokeLinecap='round' strokeLinejoin='round' d='M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z' />
-      </svg>
-    }
-    label='Your Levels'
+    label='Draft Levels'
   />;
 
   const rankedNavLink = <NavLink
@@ -234,16 +202,6 @@ export default function Nav({ isDropdown, onGameChange }: NavProps) {
     href='/ranked'
     icon={<span className='w-5 h-5 flex justify-center items-center text-xl'>🏅</span>}
     label='Ranked'
-  />;
-
-  const yourCollectionsNavLink = user && <NavLink
-    href={`${getProfileSlug(user)}/collections`}
-    icon={
-      <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-5 h-5'>
-        <path strokeLinecap='round' strokeLinejoin='round' d='M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z' />
-      </svg>
-    }
-    label='Your Collections'
   />;
 
   const playLaterNavLink = user && <NavLink
@@ -287,12 +245,6 @@ export default function Nav({ isDropdown, onGameChange }: NavProps) {
     label='Campaigns'
   />;
 
-  const achievementsNavLink = <NavLink
-    href='/achievements'
-    icon={<span className='w-5 h-5 flex justify-center items-center text-lg'>🏆</span>}
-    label='Achievements'
-  />;
-
   const leaderboardNavLink = <NavLink
     href='/leaderboards'
     icon={
@@ -301,6 +253,16 @@ export default function Nav({ isDropdown, onGameChange }: NavProps) {
       </svg>
     }
     label='Leaderboards'
+  />;
+
+  const reviewsNavLink = <NavLink
+    href='/reviews'
+    icon={
+      <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-5 h-5'>
+        <path strokeLinecap='round' strokeLinejoin='round' d='M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z' />
+      </svg>
+    }
+    label='Reviews'
   />;
 
   const usersNavLink = <NavLink
@@ -326,16 +288,6 @@ export default function Nav({ isDropdown, onGameChange }: NavProps) {
     label='Find Levels'
   />;
 
-  const homeNavLink = <NavLink
-    href='/'
-    icon={
-      <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-5 h-5'>
-        <path strokeLinecap='round' strokeLinejoin='round' d='M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25' />
-      </svg>
-    }
-    label='Home'
-  />;
-
   const profileNavLink = user && <NavLink
     href={getProfileSlug(user)}
     icon={
@@ -344,14 +296,6 @@ export default function Nav({ isDropdown, onGameChange }: NavProps) {
       </svg>
     }
     label='Your Profile'
-  />;
-
-  const discordNavLink = <ExternalNavLink
-    href='https://discord.gg/j6RxRdqq4A'
-    icon={
-      <Image alt='discord' src='/discord.svg' width='20' height='20' />
-    }
-    label='Discord'
   />;
 
   const playNavLink = <NavLink
@@ -379,14 +323,17 @@ export default function Nav({ isDropdown, onGameChange }: NavProps) {
   return (
     <nav
       className={classNames(
-        'w-60 bg-1 flex flex-col gap-1 overflow-y-auto',
+        'w-60 bg-1 flex flex-col items-center gap-1 overflow-y-auto',
         isDropdown ? 'p-1' : 'fixed p-2',
       )}
       style={{
         height: 'calc(100% - 48px)',
       }}
     >
-      {homeNavLink}
+      <div className='flex flex-col gap-1 xl:hidden'>
+        <NavGameMenu onGameChange={onGameChange} />
+        <NavDivider />
+      </div>
       {user && <>
         {playNavLink}
         {rankedNavLink}
@@ -394,10 +341,9 @@ export default function Nav({ isDropdown, onGameChange }: NavProps) {
       </>}
       {levelSearchNavLink}
       <NavDivider />
-      <NavGameMenu onGameChange={onGameChange} />
-      <NavDivider />
       {!game.isNotAGame && <>
         {usersNavLink}
+        {reviewsNavLink}
         {campaignNavLink}
         {leaderboardNavLink}
         {tutorialNavLink}
@@ -405,12 +351,9 @@ export default function Nav({ isDropdown, onGameChange }: NavProps) {
       </>}
       {user && <>
         {profileNavLink}
-        {user && achievementsNavLink}
         {!game.isNotAGame && <>
           {newNavLink}
           {draftsNavLink}
-          {yourLevelsNavLink}
-          {yourCollectionsNavLink}
           {!isPro(user) && <>
             <NavDivider />
             {proNavLink}
@@ -420,7 +363,7 @@ export default function Nav({ isDropdown, onGameChange }: NavProps) {
         </>}
         <NavDivider />
       </>}
-      {discordNavLink}
+      <Footer />
     </nav>
   );
 }

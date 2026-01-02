@@ -1,5 +1,4 @@
 import { Menu, MenuButton, MenuItems } from '@headlessui/react';
-import { GameType } from '@root/constants/Games';
 import Role from '@root/constants/role';
 import getFontFromGameId from '@root/helpers/getFont';
 import { ScreenSize } from '@root/hooks/useDeviceCheck';
@@ -15,10 +14,11 @@ import LinkInfo from '../formatted/linkInfo';
 import Nav from '../nav';
 import LoadingSpinner from '../page/loadingSpinner';
 import MultiSelectUser from '../page/multiSelectUser';
-import StyledTooltip from '../page/styledTooltip';
 import Directory from './directory';
 import Dropdown from './dropdown';
-import HeaderControls from './headerControls';
+import HeaderGameMenu from './headerGameMenu';
+import HeaderMultiplayer from './headerMultiplayer';
+import Notifications from './notifications';
 
 interface HeaderProps {
   folders?: LinkInfo[];
@@ -122,13 +122,16 @@ export default function Header({
               </svg>
             </button>
         }
-        <div>
-          <Link className='font-bold text-3xl' href='/'>
-            <Image alt='logo' src={game.logo} width='24' height='24' className='h-6 w-6' style={{ minWidth: 24, minHeight: 24 }} />
-          </Link>
-        </div>
-        <div className='-ml-2'>
-          <Directory folders={folders} subtitle={subtitle} title={title} />
+        <div className='flex items-center gap-2'>
+          <div>
+            <Link className='font-bold text-3xl' href='/'>
+              <Image alt='logo' src={game.logo} width='24' height='24' className='h-6 w-6' style={{ minWidth: 24, minHeight: 24 }} />
+            </Link>
+          </div>
+          <HeaderGameMenu />
+          <div className='-ml-2'>
+            <Directory folders={folders} subtitle={subtitle} title={title} />
+          </div>
         </div>
       </div>
       {user === undefined ?
@@ -222,32 +225,9 @@ export default function Header({
               )}
             </div>
           )}
-          <HeaderControls />
-          {user && <div className='hidden sm:block h-6 w-px bg-neutral-500' />}
+          <HeaderMultiplayer />
+          {user && <Notifications />}
           <div className='flex gap-3 items-center'>
-            {user && !game.isNotAGame && <>
-              {!game.disableRanked && <>
-                <Link
-                  className='hidden sm:block'
-                  data-tooltip-content='Ranked Solves'
-                  data-tooltip-id='ranked-solves-header'
-                  href='/ranked'
-                >
-                  <span className='font-bold leading-none'>{user.config.calcRankedSolves} 🏅</span>
-                  <StyledTooltip id='ranked-solves-header' />
-                </Link>
-                <div className='hidden sm:block h-6 w-px bg-neutral-500 mr-1' />
-              </>}
-              <Link
-                className='hidden sm:block mr-1'
-                data-tooltip-content={game.type === GameType.COMPLETE_AND_SHORTEST ? 'Levels Completed' : 'Levels Solved'}
-                data-tooltip-id='levels-solved-header'
-                href='/users'
-              >
-                <span className='font-bold'>{game.type === GameType.COMPLETE_AND_SHORTEST ? user.config.calcLevelsCompletedCount : user.config.calcLevelsSolvedCount}</span>
-                <StyledTooltip id='levels-solved-header' />
-              </Link>
-            </>}
             {user === null &&
               <div className='hidden sm:flex gap-3'>
                 <Link

@@ -232,7 +232,7 @@ export default function PlayPage({ reqUser }: PlayPageProps) {
                 <div className='text-center text-sm text-white/80'>
                   <p className='mb-4'>Track your progress and unlock rewards</p>
                   <Link
-                    href='/achievements'
+                    href={`/profile/${reqUser.name.toLowerCase()}/achievements`}
                     className='inline-flex items-center justify-center px-4 py-2 bg-white/12 backdrop-blur-md hover:bg-white/20 text-white font-bold rounded-lg transition-all duration-200 border border-white/25 hover:scale-105 transform'
                   >
                     View Achievements

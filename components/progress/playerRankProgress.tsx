@@ -250,7 +250,7 @@ export default function PlayerRankProgress({ className = '', customCta }: Player
                       {rankPos.rank.emoji}
                     </div>
                     <div className='flex-1'>
-                      <Link href='/achievements#category-LEVEL_COMPLETION' className='block hover:opacity-80 transition-opacity'>
+                      <Link href={`/profile/${user?.name.toLowerCase()}/achievements#category-LEVEL_COMPLETION`} className='block hover:opacity-80 transition-opacity'>
                         <div className={`font-semibold text-base ${
                           rankPos.isCurrent
                             ? 'text-white'

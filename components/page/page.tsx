@@ -13,7 +13,6 @@ import Footer from './footer';
 interface PageProps {
   children: React.ReactNode;
   folders?: LinkInfo[];
-  hideFooter?: boolean;
   isFullScreen?: boolean;
   style?: React.CSSProperties;
   subtitle?: string;
@@ -25,7 +24,6 @@ interface PageProps {
 export default function Page({
   children,
   folders,
-  hideFooter,
   isFullScreen,
   style,
   subtitle,
@@ -90,7 +88,7 @@ export default function Page({
             <main className='grow h-full'>
               {children}
             </main>
-            {!isFullScreen && !hideFooter && <Footer />}
+            {!isFullScreen && !isNavOnPage && <Footer />}
           </div>
         </div>
       </div>

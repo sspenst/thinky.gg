@@ -962,7 +962,7 @@ export default function TutorialPathology({ recaptchaPublicKey }: TutorialPathol
   }
 
   return (
-    <Page hideFooter={deviceInfo.isMobile} isFullScreen={!!tutorialStep.editorGrid || !!tutorialStep.gameGrid} title={'Tutorial'}>
+    <Page isFullScreen={!!tutorialStep.editorGrid || !!tutorialStep.gameGrid} title={'Tutorial'}>
       <div className='flex flex-col h-full' id='tutorial-container'>
         <div className='w-full bg-gray-200 h-1 mb-1'>
           <div className='bg-blue-600 h-1' style={{
