@@ -197,31 +197,11 @@ export default function Nav({ isDropdown, onGameChange }: NavProps) {
     label='Your Draft Levels'
   />;
 
-  const yourLevelsNavLink = user && <NavLink
-    href={`${getProfileSlug(user)}/levels`}
-    icon={
-      <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='2 2 20 20' strokeWidth={1.5} stroke='currentColor' className='w-5 h-5'>
-        <path strokeLinecap='round' strokeLinejoin='round' d='M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z' />
-      </svg>
-    }
-    label='Your Levels'
-  />;
-
   const rankedNavLink = <NavLink
     hidden={game.disableRanked}
     href='/ranked'
     icon={<span className='w-5 h-5 flex justify-center items-center text-xl'>🏅</span>}
     label='Ranked'
-  />;
-
-  const yourCollectionsNavLink = user && <NavLink
-    href={`${getProfileSlug(user)}/collections`}
-    icon={
-      <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-5 h-5'>
-        <path strokeLinecap='round' strokeLinejoin='round' d='M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z' />
-      </svg>
-    }
-    label='Your Collections'
   />;
 
   const playLaterNavLink = user && <NavLink
@@ -263,12 +243,6 @@ export default function Nav({ isDropdown, onGameChange }: NavProps) {
       </svg>
     }
     label='Campaigns'
-  />;
-
-  const achievementsNavLink = <NavLink
-    href='/achievements'
-    icon={<span className='w-5 h-5 flex justify-center items-center text-lg'>🏆</span>}
-    label='Achievements'
   />;
 
   const leaderboardNavLink = <NavLink
@@ -377,12 +351,9 @@ export default function Nav({ isDropdown, onGameChange }: NavProps) {
       </>}
       {user && <>
         {profileNavLink}
-        {user && achievementsNavLink}
         {!game.isNotAGame && <>
           {newNavLink}
           {draftsNavLink}
-          {yourLevelsNavLink}
-          {yourCollectionsNavLink}
           {!isPro(user) && <>
             <NavDivider />
             {proNavLink}
