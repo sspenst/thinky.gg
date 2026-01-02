@@ -11,10 +11,11 @@ import { useRouter } from 'next/router';
 import React, { useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import GameLogoAndLabel from './gameLogoAndLabel';
+import Footer from './page/footer';
 
 function NavDivider() {
   return (
-    <div className='h-px mx-2 my-1 bg-3' style={{ minHeight: 1 }} />
+    <div className='h-px mx-2 my-1 bg-3 w-full' style={{ minHeight: 1 }} />
   );
 }
 
@@ -126,31 +127,6 @@ function NavLink({ hidden, href, icon, label, onClick, special }: NavLinkProps) 
       {icon}
       <span>{label}</span>
     </Link>
-  );
-}
-
-interface ExternalNavLinkProps {
-  href: string;
-  icon: React.ReactNode;
-  label: React.ReactNode;
-}
-
-function ExternalNavLink({ href, icon, label }: ExternalNavLinkProps) {
-  return (
-    <a
-      className='flex w-full items-center rounded-md cursor-pointer px-3 py-2 justify-between hover-bg-3'
-      href={href}
-      rel='noreferrer'
-      target='_blank'
-    >
-      <div className='flex items-center gap-5'>
-        {icon}
-        <span>{label}</span>
-      </div>
-      <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-4 h-5 pb-1'>
-        <path strokeLinecap='round' strokeLinejoin='round' d='M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25' />
-      </svg>
-    </a>
   );
 }
 
@@ -336,14 +312,6 @@ export default function Nav({ isDropdown, onGameChange }: NavProps) {
     label='Your Profile'
   />;
 
-  const discordNavLink = <ExternalNavLink
-    href='https://discord.gg/j6RxRdqq4A'
-    icon={
-      <Image alt='discord' src='/discord.svg' width='20' height='20' />
-    }
-    label='Discord'
-  />;
-
   const playNavLink = <NavLink
     hidden={game.disableCampaign}
     href='/play'
@@ -369,7 +337,7 @@ export default function Nav({ isDropdown, onGameChange }: NavProps) {
   return (
     <nav
       className={classNames(
-        'w-60 bg-1 flex flex-col gap-1 overflow-y-auto',
+        'w-60 bg-1 flex flex-col items-center gap-1 overflow-y-auto',
         isDropdown ? 'p-1' : 'fixed p-2',
       )}
       style={{
@@ -411,7 +379,7 @@ export default function Nav({ isDropdown, onGameChange }: NavProps) {
         </>}
         <NavDivider />
       </>}
-      {discordNavLink}
+      <Footer />
     </nav>
   );
 }

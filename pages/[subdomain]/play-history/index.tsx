@@ -48,7 +48,7 @@ export default function PlayHistoryPage({ reqUser }: PlayHistoryPageProps): JSX.
   const { game } = useContext(AppContext);
 
   return (
-    <Page hideFooter title='Play History'>
+    <Page title='Play History'>
       {isPro(reqUser) ?
         <PlayHistory />
         :
