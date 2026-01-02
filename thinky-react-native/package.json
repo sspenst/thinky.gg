@@ -38,7 +38,6 @@
     "@tsconfig/react-native": "^3.0.5",
     "@types/jest": "^29.5.14",
     "@types/react": "^19.1.7",
-    "@types/react-test-renderer": "^19.1.0",
     "typescript": "^5.8.3"
   },
   "private": true
