@@ -42,7 +42,6 @@ import FollowButton from '../../../../../components/buttons/followButton';
 import Select from '../../../../../components/cards/select';
 import SelectFilter from '../../../../../components/cards/selectFilter';
 import CommentWall from '../../../../../components/level/reviews/commentWall';
-import FormattedReview from '../../../../../components/level/reviews/formattedReview';
 import AddCollectionModal from '../../../../../components/modal/addCollectionModal';
 import Page from '../../../../../components/page/page';
 import ProfileAvatar from '../../../../../components/profile/profileAvatar';
@@ -51,15 +50,12 @@ import Dimensions from '../../../../../constants/dimensions';
 import GraphType from '../../../../../constants/graphType';
 import TimeRange from '../../../../../constants/timeRange';
 import getProfileSlug from '../../../../../helpers/getProfileSlug';
-import { getReviewsByUserId, getReviewsByUserIdCount } from '../../../../../helpers/getReviewsByUserId';
-import { getReviewsForUserId, getReviewsForUserIdCount } from '../../../../../helpers/getReviewsForUserId';
 import naturalSort, { playLaterCompareFn } from '../../../../../helpers/naturalSort';
 import cleanUser from '../../../../../lib/cleanUser';
 import { getUserFromToken } from '../../../../../lib/withAuth';
 import Achievement from '../../../../../models/db/achievement';
 import { EnrichedCollection } from '../../../../../models/db/collection';
 import { EnrichedLevel } from '../../../../../models/db/level';
-import Review from '../../../../../models/db/review';
 import User from '../../../../../models/db/user';
 import { AchievementModel, CollectionModel, GraphModel, LevelModel, MultiplayerMatchModel, StatModel, UserModel } from '../../../../../models/mongoose';
 import SelectOption from '../../../../../models/selectOption';
@@ -75,8 +71,6 @@ export const enum ProfileTab {
   Profile = '',
   Levels = 'levels',
   Multiplayer = 'multiplayer',
-  ReviewsWritten = 'reviews-written',
-  ReviewsReceived = 'reviews-received',
 }
 
 export interface ProfileParams extends ParsedUrlQuery {
@@ -129,10 +123,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     levelsCount,
     levelsSolvedAgg,
     multiplayerCount,
-    reviewsReceived,
-    reviewsWritten,
-    reviewsReceivedCount,
-    reviewsWrittenCount,
     blockData,
     totalActiveUsers,
     achievementStats,
@@ -172,10 +162,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       { $count: 'count' },
     ]) : undefined,
     MultiplayerMatchModel.countDocuments({ players: userId, state: MultiplayerMatchState.FINISHED, rated: true, ...(gameId !== undefined ? { gameId: gameId } : {}) }),
-    profileTab === ProfileTab.ReviewsReceived ? getReviewsForUserId(gameId, userId, reqUser, { limit: 10, skip: 10 * (page - 1) }) : [] as Review[],
-    profileTab === ProfileTab.ReviewsWritten ? getReviewsByUserId(gameId, userId, reqUser, { limit: 10, skip: 10 * (page - 1) }) : [] as Review[],
-    getReviewsForUserIdCount(gameId, userId),
-    getReviewsByUserIdCount(gameId, userId),
     // Check if the current user has blocked this profile user
     reqUser ? GraphModel.countDocuments({
       source: reqUser._id,
@@ -216,28 +202,9 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     reqUser: reqUser ? JSON.parse(JSON.stringify(reqUser)) : null,
     reqUserIsFollowing: false,
     reqUserHasBlocked: blockData > 0,
-    reviewsReceived: JSON.parse(JSON.stringify(reviewsReceived)),
-    reviewsReceivedCount: reviewsReceivedCount,
-    reviewsWritten: JSON.parse(JSON.stringify(reviewsWritten)),
-    reviewsWrittenCount: reviewsWrittenCount,
     totalActiveUsers: totalActiveUsers,
     user: JSON.parse(JSON.stringify(user)),
   } as ProfilePageProps;
-
-  // Filter out reviews if the user is blocked
-  if (blockData > 0) {
-    // If the user is viewing reviews-written by a blocked user, return empty arrays
-    if (profileTab === ProfileTab.ReviewsWritten) {
-      profilePageProps.reviewsWritten = [];
-      profilePageProps.reviewsWrittenCount = 0;
-    }
-
-    // If the user is viewing reviews-received by a blocked user, return empty arrays
-    if (profileTab === ProfileTab.ReviewsReceived) {
-      profilePageProps.reviewsReceived = [];
-      profilePageProps.reviewsReceivedCount = 0;
-    }
-  }
 
   if (profileTab === ProfileTab.Profile) {
     const [
@@ -399,10 +366,6 @@ interface ProfilePageProps {
   reqUser: User | null;
   reqUserIsFollowing: boolean;
   reqUserHasBlocked: boolean;
-  reviewsReceived?: Review[];
-  reviewsReceivedCount: number;
-  reviewsWritten?: Review[];
-  reviewsWrittenCount: number;
   searchQuery: SearchQuery | undefined;
   totalActiveUsers: number;
   totalRows: number | undefined;
@@ -427,10 +390,6 @@ export default function ProfilePage({
   reqUser,
   reqUserIsFollowing,
   reqUserHasBlocked,
-  reviewsReceived,
-  reviewsReceivedCount,
-  reviewsWritten,
-  reviewsWrittenCount,
   searchQuery,
   totalActiveUsers,
   totalRows,
@@ -1057,153 +1016,6 @@ export default function ProfilePage({
         </div>
       </SpaceBackground>
     ),
-    [ProfileTab.ReviewsWritten]: [
-      <SpaceBackground
-        key='reviews-written-bg'
-        starCount={60}
-        constellationPattern='default'
-        showGeometricShapes={true}
-        className='min-h-0 mx-2 sm:mx-0 rounded-xl'
-      >
-        <div className='flex flex-col items-center min-h-screen px-4 py-8'>
-          <div className='text-center mb-8 animate-fadeInDown' style={{ animationDelay: '0.3s' }}>
-            <h1 className='text-4xl sm:text-6xl font-black text-transparent bg-clip-text bg-linear-to-r from-purple-400 via-blue-400 to-cyan-400 mb-4'>
-              ✍️ Review Chronicles
-            </h1>
-            <p className='text-gray-300 text-lg max-w-2xl mx-auto'>
-              Reviews and feedback shared by {user.name} with the puzzle community
-            </p>
-          </div>
-
-          <div className='w-full max-w-4xl space-y-6 animate-fadeInUp' style={{ animationDelay: '0.5s' }}>
-            {reqUserHasBlocked ? (
-              <div className='bg-red-900/50 backdrop-blur-xs border border-red-500/30 rounded-xl p-6 text-center'>
-                <p className='font-bold text-xl text-red-400 mb-2'>Reviews Hidden</p>
-                <p className='text-red-200'>You have blocked this user, so their reviews are hidden.</p>
-              </div>
-            ) : reviewsWrittenCount === 0 ? (
-              <div className='text-center py-12'>
-                <div className='text-6xl mb-4'>📝</div>
-                <div className='text-xl text-gray-300'>No reviews written yet!</div>
-                <div className='text-gray-400 mt-2'>Be the first to share your thoughts on levels</div>
-              </div>
-            ) : (
-              reviewsWritten?.map((review, index) => (
-                <div
-                  className='animate-fadeInUp'
-                  key={`review-${review._id}`}
-                  style={{ animationDelay: `${0.7 + index * 0.1}s` }}
-                >
-                  <FormattedReview
-                    level={review.levelId}
-                    review={review}
-                    user={user}
-                  />
-                </div>
-              ))
-            )}
-
-            {/* Pagination */}
-            {reviewsWrittenCount > 10 && !reqUserHasBlocked && (
-              <div className='flex justify-center gap-4 mt-8 animate-fadeInUp' style={{ animationDelay: '0.9s' }}>
-                {page > 1 && (
-                  <Link
-                    className='bg-white/10 hover:bg-white/20 text-white font-medium py-2 px-4 rounded-lg transition-all duration-300'
-                    href={`/profile/${user.name}/${ProfileTab.ReviewsWritten}${page !== 2 ? `?page=${page - 1}` : ''}`}
-                  >
-                    ← Previous
-                  </Link>
-                )}
-                <div className='bg-black/20 backdrop-blur-xs border border-white/20 rounded-lg px-4 py-2 text-white font-medium'>
-                  {page} of {Math.ceil(reviewsWrittenCount / 10)}
-                </div>
-                {reviewsWrittenCount > (page * 10) && (
-                  <Link
-                    className='bg-white/10 hover:bg-white/20 text-white font-medium py-2 px-4 rounded-lg transition-all duration-300'
-                    href={`/profile/${user.name}/${ProfileTab.ReviewsWritten}?page=${page + 1}`}
-                  >
-                    Next →
-                  </Link>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-      </SpaceBackground>,
-    ],
-    [ProfileTab.ReviewsReceived]: (
-      <SpaceBackground
-        starCount={60}
-        constellationPattern='default'
-        showGeometricShapes={true}
-        className='min-h-0 mx-2 sm:mx-0 rounded-xl'
-      >
-        <div className='flex flex-col items-center min-h-screen px-4 py-8'>
-          <div className='text-center mb-8 animate-fadeInDown' style={{ animationDelay: '0.3s' }}>
-            <h1 className='text-4xl sm:text-6xl font-black text-transparent bg-clip-text bg-linear-to-r from-green-400 via-teal-400 to-blue-400 mb-4'>
-              💌 Feedback Gallery
-            </h1>
-            <p className='text-gray-300 text-lg max-w-2xl mx-auto'>
-              Reviews and feedback that {user.name} has received from the puzzle community
-            </p>
-          </div>
-
-          <div className='w-full max-w-4xl space-y-6 animate-fadeInUp' style={{ animationDelay: '0.5s' }}>
-            {reqUserHasBlocked ? (
-              <div className='bg-red-900/50 backdrop-blur-xs border border-red-500/30 rounded-xl p-6 text-center'>
-                <p className='font-bold text-xl text-red-400 mb-2'>Reviews Hidden</p>
-                <p className='text-red-200'>You have blocked this user, so their reviews are hidden.</p>
-              </div>
-            ) : reviewsReceivedCount === 0 ? (
-              <div className='text-center py-12'>
-                <div className='text-6xl mb-4'>📭</div>
-                <div className='text-xl text-gray-300'>No reviews received yet!</div>
-                <div className='text-gray-400 mt-2'>Create some levels to start receiving feedback</div>
-              </div>
-            ) : (
-              reviewsReceived?.map((review, index) => (
-                <div
-                  className='animate-fadeInUp'
-                  key={`review-${review._id}`}
-                  style={{ animationDelay: `${0.7 + index * 0.1}s` }}
-                >
-                  <FormattedReview
-                    level={review.levelId}
-                    review={review}
-                    user={review.userId}
-                  />
-                </div>
-              ))
-            )}
-
-            {/* Pagination */}
-            {reviewsReceivedCount > 10 && !reqUserHasBlocked && (
-              <div className='flex justify-center gap-4 mt-8 animate-fadeInUp' style={{ animationDelay: '0.9s' }}>
-                {page > 1 && (
-                  <Link
-                    className='bg-white/10 hover:bg-white/20 text-white font-medium py-2 px-4 rounded-lg transition-all duration-300'
-                    href={`/profile/${user.name}/${ProfileTab.ReviewsReceived}${page !== 2 ? `?page=${page - 1}` : ''}`}
-                  >
-                    ← Previous
-                  </Link>
-                )}
-                <div className='bg-black/20 backdrop-blur-xs border border-white/20 rounded-lg px-4 py-2 text-white font-medium'>
-                  {page} of {Math.ceil(reviewsReceivedCount / 10)}
-                </div>
-                {reviewsReceivedCount > (page * 10) && (
-                  <Link
-                    className='bg-white/10 hover:bg-white/20 text-white font-medium py-2 px-4 rounded-lg transition-all duration-300'
-                    href={`/profile/${user.name}/${ProfileTab.ReviewsReceived}?page=${page + 1}`}
-                  >
-                    Next →
-                  </Link>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-      </SpaceBackground>
-    ),
     [ProfileTab.Achievements]: (
       <SpaceBackground
         starCount={60}
@@ -1360,26 +1172,6 @@ export default function ProfilePage({
                 <div className='relative flex flex-row items-center gap-2'>
                   <span>⚔️</span>
                   <span>Multiplayer ({multiplayerCount})</span>
-                </div>
-              </Link>
-              <Link
-                className={getTabClassNames(ProfileTab.ReviewsWritten)}
-                href={`/profile/${user.name}/${ProfileTab.ReviewsWritten}`}
-              >
-                <div className='absolute inset-0 bg-linear-to-r from-white to-transparent opacity-0 group-hover:opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-all duration-700' />
-                <div className='relative flex flex-row items-center gap-2'>
-                  <span>✍️</span>
-                  <span>Reviews Written ({reviewsWrittenCount})</span>
-                </div>
-              </Link>
-              <Link
-                className={getTabClassNames(ProfileTab.ReviewsReceived)}
-                href={`/profile/${user.name}/${ProfileTab.ReviewsReceived}`}
-              >
-                <div className='absolute inset-0 bg-linear-to-r from-white to-transparent opacity-0 group-hover:opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-all duration-700' />
-                <div className='relative flex flex-row items-center gap-2'>
-                  <span>💌</span>
-                  <span>Reviews Received ({reviewsReceivedCount})</span>
                 </div>
               </Link>
             </>
