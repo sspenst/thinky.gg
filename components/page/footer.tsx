@@ -28,7 +28,7 @@ export default function Footer() {
       rel='noreferrer'
       target='_blank'
     >
-      <Image alt='discord' src='/discord.svg' width='120' height='40' />
+      <Image alt='discord' src='/discord.svg?v=1' width='120' height='40' />
     </a>
   );
 
