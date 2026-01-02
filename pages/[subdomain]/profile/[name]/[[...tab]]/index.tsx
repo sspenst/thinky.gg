@@ -104,7 +104,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   const users = await getUsersWithMultiplayerProfile(gameIdFromReq, { name: name }, { bio: 1, ts: 1, config: 1, lastGame: 1 });
 
-  if (!users || users.length !== 1) {
+  if (users?.length !== 1) {
     return {
       notFound: true
     };
@@ -346,12 +346,12 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
 interface ProfilePageProps {
   achievements: Achievement[];
-  achievementStats: Array<{
+  achievementStats: {
     _id: { type: AchievementType; gameId: GameId };
     count: number;
     firstEarned: Date;
     lastEarned: Date;
-  }>;
+  }[];
   achievementsCount: number;
   collectionsCount: number;
   enrichedCollections: EnrichedCollection[] | undefined;
@@ -488,7 +488,7 @@ export default function ProfilePage({
   };
 
   // TODO: no SWR here
-  const { data: profileDataFetched } = useSWRHelper<{levelsSolvedByDifficulty: {[key: string]: number}}>('/api/user/' + user?._id + '?type=levelsSolvedByDifficulty', {}, {}, tab !== ProfileTab.Profile);
+  const { data: profileDataFetched } = useSWRHelper<{levelsSolvedByDifficulty: Record<string, number>}>('/api/user/' + user?._id + '?type=levelsSolvedByDifficulty', {}, {}, tab !== ProfileTab.Profile);
 
   const levelsSolvedByDifficulty = profileDataFetched?.levelsSolvedByDifficulty;
   const difficultyType = game.type === GameType.COMPLETE_AND_SHORTEST ? 'Completed' : 'Solved';
@@ -1039,7 +1039,7 @@ export default function ProfilePage({
         </div>
       </SpaceBackground>
     ),
-  } as { [key: string]: React.ReactNode | null };
+  } as Record<string, React.ReactNode | null>;
 
   const getTabClassNames = useCallback((tabId: ProfileTab) => {
     return classNames(
@@ -1183,7 +1183,7 @@ export default function ProfilePage({
               <div className='text-center p-4 bg-red-100 dark:bg-red-900 rounded-lg'>
                 <p className='font-bold mb-2'>You have blocked {user.name}</p>
                 <p className='mb-4'>
-              Their user generated content is hidden and they cannot view your content.
+                  Their user generated content is hidden and they cannot view your content.
                   <br />
                   If you believe this person is violating our terms of service, or for more help, visit our <a className='text-blue-500 underline' href='https://discord.gg/j6RxRdqq4A' target='_blank' rel='noopener noreferrer'>Discord server</a>.
                 </p>

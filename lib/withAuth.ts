@@ -53,7 +53,7 @@ export async function getUserFromToken(
   const newrelic = process.env.NODE_ENV === 'test' ? undefined : await import('newrelic');
 
   if (!isLocal()) {
-    newrelic?.addCustomAttribute && newrelic.addCustomAttribute('userId', userId);
+    newrelic?.addCustomAttribute?.('userId', userId);
   }
 
   await dbConnect();
@@ -87,7 +87,7 @@ export async function getUserFromToken(
   ]);
 
   if (user && !isLocal()) {
-    newrelic?.addCustomAttribute && newrelic.addCustomAttribute('userName', user.name);
+    newrelic?.addCustomAttribute?.('userName', user.name);
   }
 
   if (user && userConfig) {

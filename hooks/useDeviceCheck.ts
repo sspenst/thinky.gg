@@ -17,7 +17,7 @@ export enum ScreenSize {
   '3XL',
 }
 
-export type DeviceInfo = {
+export interface DeviceInfo {
   isMobile: boolean;
   isAndroid: boolean;
   isIOS: boolean;
@@ -26,7 +26,7 @@ export type DeviceInfo = {
   isLinux: boolean;
   isMac: boolean;
   screenSize: ScreenSize;
-};
+}
 
 const useDeviceCheck = (initialUserAgentString: string): DeviceInfo => {
   const initialMobile = initialUserAgentString ? /mobile/i.test(initialUserAgentString) : false;

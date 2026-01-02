@@ -30,4 +30,4 @@ export const AchievementCategoryMapping = {
 };
 
 // dynamically calculate
-export const AchievementRulesCombined = Object.assign({}, ...Object.values(AchievementCategoryMapping)) as {[achievementType: string]: IAchievementInfo};
+export const AchievementRulesCombined = Object.assign({}, ...Object.values(AchievementCategoryMapping)) as Record<string, IAchievementInfo>;

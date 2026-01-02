@@ -5,8 +5,8 @@ import GameLogo from '../gameLogo';
 import { Counter } from './Counter';
 
 interface AnimateCounterOneProps {
-    gameId: GameId;
-    value: number;
+  gameId: GameId;
+  value: number;
 }
 
 export const STREAK_RANK_GROUPS = [
@@ -128,7 +128,7 @@ export const AnimateCounterOne: React.FC<AnimateCounterOneProps> = ({ gameId, va
                 />
               </div>
               <div className='text-xs text-gray-500 text-center'>
-                                Next rank {nextRank.min - value === 1 ? 'tomorrow' : `in ${nextRank.min - value} days`}
+                Next rank {nextRank.min - value === 1 ? 'tomorrow' : `in ${nextRank.min - value} days`}
               </div>
             </div>
           )}</div>

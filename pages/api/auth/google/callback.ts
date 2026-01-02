@@ -23,7 +23,7 @@ async function handleGoogleUserAuth(
   req: NextApiRequestWrapper,
   res: NextApiResponse,
   origin: string,
-  isMobile: boolean = false,
+  isMobile = false,
   idToken?: string
 ) {
   // Check if user is logged in to associate Google with their account

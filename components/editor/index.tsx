@@ -166,123 +166,123 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, originalL
 
   const handleKeyDown = useCallback((code: string) => {
     switch (code) {
-    case 'Digit0': {
-      setTileType(TileType.Default);
-      break;
-    }
+      case 'Digit0': {
+        setTileType(TileType.Default);
+        break;
+      }
 
-    case 'Digit1': {
-      setTileType(TileType.Wall);
-      break;
-    }
+      case 'Digit1': {
+        setTileType(TileType.Wall);
+        break;
+      }
 
-    case 'Digit2': {
-      setTileType(TileType.Block);
-      break;
-    }
+      case 'Digit2': {
+        setTileType(TileType.Block);
+        break;
+      }
 
-    case 'Digit3': {
-      setTileType(TileType.Exit);
-      break;
-    }
+      case 'Digit3': {
+        setTileType(TileType.Exit);
+        break;
+      }
 
-    case 'Digit4': {
-      setTileType(TileType.Player);
-      break;
-    }
+      case 'Digit4': {
+        setTileType(TileType.Player);
+        break;
+      }
 
-    case 'Digit5': {
-      setTileType(TileType.Hole);
-      break;
-    }
+      case 'Digit5': {
+        setTileType(TileType.Hole);
+        break;
+      }
 
-    case 'Digit6': {
-      setTileType(TileType.Left);
-      break;
-    }
+      case 'Digit6': {
+        setTileType(TileType.Left);
+        break;
+      }
 
-    case 'Digit7': {
-      setTileType(TileType.Up);
-      break;
-    }
+      case 'Digit7': {
+        setTileType(TileType.Up);
+        break;
+      }
 
-    case 'Digit8': {
-      setTileType(TileType.Right);
-      break;
-    }
+      case 'Digit8': {
+        setTileType(TileType.Right);
+        break;
+      }
 
-    case 'Digit9': {
-      setTileType(TileType.Down);
-      break;
-    }
+      case 'Digit9': {
+        setTileType(TileType.Down);
+        break;
+      }
 
-    case 'KeyA': {
-      setTileType(TileType.UpLeft);
-      break;
-    }
+      case 'KeyA': {
+        setTileType(TileType.UpLeft);
+        break;
+      }
 
-    case 'KeyB': {
-      setTileType(TileType.UpRight);
-      break;
-    }
+      case 'KeyB': {
+        setTileType(TileType.UpRight);
+        break;
+      }
 
-    case 'KeyC': {
-      setTileType(TileType.DownRight);
-      break;
-    }
+      case 'KeyC': {
+        setTileType(TileType.DownRight);
+        break;
+      }
 
-    case 'KeyD': {
-      setTileType(TileType.DownLeft);
-      break;
-    }
+      case 'KeyD': {
+        setTileType(TileType.DownLeft);
+        break;
+      }
 
-    case 'KeyE': {
-      setTileType(TileType.NotLeft);
-      break;
-    }
+      case 'KeyE': {
+        setTileType(TileType.NotLeft);
+        break;
+      }
 
-    case 'KeyF': {
-      setTileType(TileType.NotUp);
-      break;
-    }
+      case 'KeyF': {
+        setTileType(TileType.NotUp);
+        break;
+      }
 
-    case 'KeyG': {
-      setTileType(TileType.NotRight);
-      break;
-    }
+      case 'KeyG': {
+        setTileType(TileType.NotRight);
+        break;
+      }
 
-    case 'KeyH': {
-      setTileType(TileType.NotDown);
-      break;
-    }
+      case 'KeyH': {
+        setTileType(TileType.NotDown);
+        break;
+      }
 
-    case 'KeyI': {
-      setTileType(TileType.LeftRight);
-      break;
-    }
+      case 'KeyI': {
+        setTileType(TileType.LeftRight);
+        break;
+      }
 
-    case 'KeyJ': {
-      setTileType(TileType.UpDown);
-      break;
-    }
+      case 'KeyJ': {
+        setTileType(TileType.UpDown);
+        break;
+      }
 
-    case 'KeyZ': {
-      undo();
-      break;
-    }
+      case 'KeyZ': {
+        undo();
+        break;
+      }
 
-    case 'KeyY': {
-      redo();
-      break;
-    }
+      case 'KeyY': {
+        redo();
+        break;
+      }
 
-    case 'KeyR': {
-      redo();
-      break;
-    }
+      case 'KeyR': {
+        redo();
+        break;
+      }
 
-    default:
-      break;
+      default:
+        break;
     }
   }, [redo, undo]);
 
@@ -547,7 +547,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, originalL
           newTileType = TileType.Default;
         }
       } else {
-        newTileType = getNewTileType() as TileType;
+        newTileType = getNewTileType()!;
       }
 
       // when changing start position the old position needs to be removed

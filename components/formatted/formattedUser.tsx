@@ -35,7 +35,7 @@ interface CacheEntry {
   timestamp: number;
 }
 
-const cache = {} as { [key: string]: CacheEntry };
+const cache = {} as Record<string, CacheEntry>;
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 const MAX_CACHE_SIZE = 100;
 

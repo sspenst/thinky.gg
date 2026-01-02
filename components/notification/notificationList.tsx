@@ -37,7 +37,7 @@ export default function NotificationList({ close, notifications, setNotification
           disabled={!anyUnread}
           className={classNames(
             'focus:outline-hidden text-sm',
-            anyUnread ? styles['unread'] : undefined,
+            anyUnread ? styles.unread : undefined,
           )}
           onClick={() => {
             if (anyUnread) {

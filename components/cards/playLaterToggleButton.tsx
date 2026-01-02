@@ -14,7 +14,7 @@ interface PlayLaterToggleButtonProps {
 
 export function PlayLaterToggleButton({ className, id, level }: PlayLaterToggleButtonProps) {
   const { mutatePlayLater, playLater, user } = useContext(AppContext);
-  const isInPlayLater = !!(playLater && playLater[level._id.toString()]);
+  const isInPlayLater = !!(playLater?.[level._id.toString()]);
   const [isLoading, setIsLoading] = useState(false);
 
   if (!user || !isPro(user) || !playLater) {

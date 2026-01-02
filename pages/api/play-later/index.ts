@@ -48,11 +48,11 @@ export default withAuth(
       }
 
       // map so we can quickly we can quickly check if a level is in playLater
-      const map: { [key: string]: boolean } = (playLater[0].levels).reduce((acc, item) => {
+      const map: Record<string, boolean> = (playLater[0].levels).reduce((acc, item) => {
         acc[item._id.toString()] = true;
 
         return acc;
-      }, {} as { [key: string]: boolean });
+      }, {} as Record<string, boolean>);
 
       return res.status(200).json(map);
     }

@@ -32,34 +32,34 @@ function generateSiteMap(gameId: GameId, users: User[], levels: Level[], collect
        <loc>${URL_BASE}/login</loc>
      </url>
      ${users
-    .map(( user) => {
-      return `
+        .map(( user) => {
+          return `
        <url>
            <loc>${`${URL_BASE}${getProfileSlug(user)}`}</loc>
        </url>
      `;
-    })
-    .join('')}
+        })
+        .join('')}
     ${levels
-    .map(( level) => {
-      return `
+      .map(( level) => {
+        return `
          <url>
              <loc>${`${URL_BASE}/level/${(level.slug)}`}</loc>
              <lastmod>${new Date(level.ts * 1000).toISOString()}</lastmod>
          </url>
        `;
-    })
-    .join('')}
+      })
+      .join('')}
     ${collections
-    .map(( collection) => {
-      return `
+      .map(( collection) => {
+        return `
            <url>
                <loc>${`${URL_BASE}/collection/${(collection.slug)}`}</loc>
                <lastmod>${collection.updatedAt.toISOString()}</lastmod>
            </url>
          `;
-    })
-    .join('')}
+      })
+      .join('')}
    </urlset>
  `;
 }

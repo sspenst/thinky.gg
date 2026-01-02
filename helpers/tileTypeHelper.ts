@@ -11,7 +11,7 @@ interface TileTypeProps {
 }
 
 export default class TileTypeHelper {
-  static tileTypePropsDict: { [tileType: string]: TileTypeProps } = {
+  static tileTypePropsDict: Record<string, TileTypeProps> = {
     [TileType.Default]: {},
     [TileType.Wall]: {},
     [TileType.Block]: {

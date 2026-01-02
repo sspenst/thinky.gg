@@ -14,8 +14,8 @@ export function usePostHogAnalytics(user: User | null | undefined) {
   useEffect(() => {
     if (isLocalhost || isInitialized) return;
 
-    posthog.init((process.env.NEXT_PUBLIC_POSTHOG_KEY as string) || 'phc_Am38672etY9vtglKkfMa86HVxREbLuh7ExC7Qj1qPBx', {
-      api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST as string || '/api/ingest',
+    posthog.init((process.env.NEXT_PUBLIC_POSTHOG_KEY!) || 'phc_Am38672etY9vtglKkfMa86HVxREbLuh7ExC7Qj1qPBx', {
+      api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST! || '/api/ingest',
       person_profiles: 'always',
       capture_pageview: false,
     });

@@ -8,7 +8,7 @@ import { UserAuthModel, UserModel } from '../models/mongoose';
  * @param userIds Array of user ObjectIds
  * @returns Array of mappings with userId and discordId
  */
-async function getDiscordUserIdMappings(userIds: (Types.ObjectId | string)[]): Promise<Array<{ userId: Types.ObjectId; discordId: string }>> {
+async function getDiscordUserIdMappings(userIds: (Types.ObjectId | string)[]): Promise<{ userId: Types.ObjectId; discordId: string }[]> {
   const auths = await UserAuthModel.find(
     {
       userId: { $in: userIds },

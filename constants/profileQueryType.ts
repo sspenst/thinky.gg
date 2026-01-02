@@ -8,8 +8,8 @@ export enum ProfileQueryType {
 }
 
 export interface UserExtendedData {
-  [ProfileQueryType.LevelsByDifficulty]: { [key: string]: number },
-  [ProfileQueryType.LevelsSolvedByDifficulty]: { [key: string]: number },
-  [ProfileQueryType.RankedSolvesByDifficulty]: { [key: string]: number },
+  [ProfileQueryType.LevelsByDifficulty]: Record<string, number>,
+  [ProfileQueryType.LevelsSolvedByDifficulty]: Record<string, number>,
+  [ProfileQueryType.RankedSolvesByDifficulty]: Record<string, number>,
   [ProfileQueryType.User]: User;
 }

@@ -5,7 +5,7 @@ import { ProfileTab } from '@root/pages/[subdomain]/profile/[name]/[[...tab]]';
 import Link from 'next/link';
 import FormattedDifficulty, { difficultyList } from '../formatted/formattedDifficulty';
 
-function getPlayerRank(levelsSolvedByDifficulty?: { [key: string]: number }, tooltip?: string) {
+function getPlayerRank(levelsSolvedByDifficulty?: Record<string, number>, tooltip?: string) {
   if (!levelsSolvedByDifficulty) {
     return null;
   }
@@ -27,7 +27,7 @@ function getPlayerRank(levelsSolvedByDifficulty?: { [key: string]: number }, too
 }
 
 interface PlayerRankProps {
-  levelsSolvedByDifficulty: { [key: string]: number };
+  levelsSolvedByDifficulty: Record<string, number>;
   tooltip?: string;
   user: User;
 }

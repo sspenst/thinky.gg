@@ -651,7 +651,7 @@ describe('Editing levels should work correctly', () => {
         await processQueueMessages();
         expect(response.error).toBe('Error in publishing level');
 
-        const level = await LevelModel.findById(level_id_1) as Level;
+        const level = (await LevelModel.findById(level_id_1))!;
 
         expect(level.isDraft).toBe(true);
       },
@@ -692,7 +692,7 @@ describe('Editing levels should work correctly', () => {
         expect(response.error).toBeUndefined();
         expect(response._id).toBe(level_id_1);
 
-        const level = await LevelModel.findById(level_id_1) as Level;
+        const level = (await LevelModel.findById(level_id_1))!;
 
         expect(level.isDraft).toBe(false);
         expect(level.isRanked).toBe(false);

@@ -7,7 +7,7 @@ import { getBlockedUserIds } from './getBlockedUserIds';
  */
 export async function getContentFilterForBlockedUsers(
   reqUser?: User | null,
-  userIdField: string = 'userId'
+  userIdField = 'userId'
 ): Promise<Record<string, any>> {
   if (!reqUser?._id) return {};
 

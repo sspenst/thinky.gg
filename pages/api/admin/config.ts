@@ -43,91 +43,91 @@ export default withAuth({
 
   try {
     switch (req.method) {
-    case 'GET': {
+      case 'GET': {
       // Get all key/value pairs for THINKY game
-      const keyValues = await KeyValueModel.find({ gameId: GameId.THINKY }).sort({ createdAt: -1 }).lean<KeyValue[]>();
+        const keyValues = await KeyValueModel.find({ gameId: GameId.THINKY }).sort({ createdAt: -1 }).lean<KeyValue[]>();
 
-      return res.status(200).json(keyValues);
-    }
-
-    case 'POST': {
-      const { key, value } = req.body as ConfigBodyProps;
-
-      // Create a new key/value pair
-      if (!key || !value) {
-        return res.status(400).json({ error: 'Key and value are required' });
+        return res.status(200).json(keyValues);
       }
 
-      // Check if key already exists
-      const existingKeyValue = await KeyValueModel.findOne({ gameId: GameId.THINKY, key });
+      case 'POST': {
+        const { key, value } = req.body as ConfigBodyProps;
 
-      if (existingKeyValue) {
-        return res.status(400).json({ error: 'Key already exists' });
+        // Create a new key/value pair
+        if (!key || !value) {
+          return res.status(400).json({ error: 'Key and value are required' });
+        }
+
+        // Check if key already exists
+        const existingKeyValue = await KeyValueModel.findOne({ gameId: GameId.THINKY, key });
+
+        if (existingKeyValue) {
+          return res.status(400).json({ error: 'Key already exists' });
+        }
+
+        const newKeyValue = await KeyValueModel.create({
+          gameId: GameId.THINKY,
+          key,
+          value,
+        });
+
+        return res.status(201).json(newKeyValue);
       }
 
-      const newKeyValue = await KeyValueModel.create({
-        gameId: GameId.THINKY,
-        key,
-        value,
-      });
+      case 'PUT': {
+        const { id, key, value } = req.body as ConfigBodyProps;
 
-      return res.status(201).json(newKeyValue);
-    }
+        // Update an existing key/value pair
+        if (!id || !key || !value) {
+          return res.status(400).json({ error: 'ID, key, and value are required' });
+        }
 
-    case 'PUT': {
-      const { id, key, value } = req.body as ConfigBodyProps;
+        // Check if key already exists (but not for the same document)
+        const existingKey = await KeyValueModel.findOne({
+          gameId: GameId.THINKY,
+          key,
+          _id: { $ne: new Types.ObjectId(id) }
+        });
 
-      // Update an existing key/value pair
-      if (!id || !key || !value) {
-        return res.status(400).json({ error: 'ID, key, and value are required' });
+        if (existingKey) {
+          return res.status(400).json({ error: 'Key already exists' });
+        }
+
+        const updatedKeyValue = await KeyValueModel.findOneAndUpdate(
+          { _id: new Types.ObjectId(id), gameId: GameId.THINKY },
+          { key, value },
+          { new: true }
+        );
+
+        if (!updatedKeyValue) {
+          return res.status(404).json({ error: 'Key/value pair not found' });
+        }
+
+        return res.status(200).json(updatedKeyValue);
       }
 
-      // Check if key already exists (but not for the same document)
-      const existingKey = await KeyValueModel.findOne({
-        gameId: GameId.THINKY,
-        key,
-        _id: { $ne: new Types.ObjectId(id) }
-      });
+      case 'DELETE': {
+        const { id } = req.body as ConfigBodyProps;
 
-      if (existingKey) {
-        return res.status(400).json({ error: 'Key already exists' });
+        // Delete a key/value pair
+        if (!id) {
+          return res.status(400).json({ error: 'ID is required' });
+        }
+
+        const deletedKeyValue = await KeyValueModel.findOneAndDelete({
+          _id: new Types.ObjectId(id),
+          gameId: GameId.THINKY
+        });
+
+        if (!deletedKeyValue) {
+          return res.status(404).json({ error: 'Key/value pair not found' });
+        }
+
+        return res.status(200).json({ success: true });
       }
 
-      const updatedKeyValue = await KeyValueModel.findOneAndUpdate(
-        { _id: new Types.ObjectId(id), gameId: GameId.THINKY },
-        { key, value },
-        { new: true }
-      );
-
-      if (!updatedKeyValue) {
-        return res.status(404).json({ error: 'Key/value pair not found' });
-      }
-
-      return res.status(200).json(updatedKeyValue);
-    }
-
-    case 'DELETE': {
-      const { id } = req.body as ConfigBodyProps;
-
-      // Delete a key/value pair
-      if (!id) {
-        return res.status(400).json({ error: 'ID is required' });
-      }
-
-      const deletedKeyValue = await KeyValueModel.findOneAndDelete({
-        _id: new Types.ObjectId(id),
-        gameId: GameId.THINKY
-      });
-
-      if (!deletedKeyValue) {
-        return res.status(404).json({ error: 'Key/value pair not found' });
-      }
-
-      return res.status(200).json({ success: true });
-    }
-
-    default:
-      return res.status(405).json({ error: 'Method not allowed' });
+      default:
+        return res.status(405).json({ error: 'Method not allowed' });
     }
   } catch (error) {
     logger.error('Error in admin config API:', error);

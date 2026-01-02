@@ -112,15 +112,15 @@ export default withAuth({
 
         try {
           switch (report.reportedEntityModel) {
-          case 'Level':
-            entityDetails = await LevelModel.findById(report.reportedEntity, 'name slug').lean();
-            break;
-          case 'Comment':
-            entityDetails = await CommentModel.findById(report.reportedEntity, 'text target').lean();
-            break;
-          case 'Review':
-            entityDetails = await ReviewModel.findById(report.reportedEntity, 'text score').lean();
-            break;
+            case 'Level':
+              entityDetails = await LevelModel.findById(report.reportedEntity, 'name slug').lean();
+              break;
+            case 'Comment':
+              entityDetails = await CommentModel.findById(report.reportedEntity, 'text target').lean();
+              break;
+            case 'Review':
+              entityDetails = await ReviewModel.findById(report.reportedEntity, 'text score').lean();
+              break;
           }
         } catch (error) {
           logger.error('Error fetching entity details:', error);

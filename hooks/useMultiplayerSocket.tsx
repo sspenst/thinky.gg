@@ -82,25 +82,25 @@ export function useMultiplayerSocket(
 
     socketConn.on('alert', (message) => {
       switch (message.type) {
-      case AlertType.STREAK: {
-        if (user.disableStreakPopup) {
-          return;
-        }
-
-        const { streak, gameId } = message.data;
-
-        toast.success(
-          React.createElement(AnimateCounterOne, { gameId, value: streak }),
-          {
-            duration: 3500,
-            icon: null,
-            style: {
-              minWidth: '200px',
-            }
+        case AlertType.STREAK: {
+          if (user.disableStreakPopup) {
+            return;
           }
-        );
-        break;
-      }
+
+          const { streak, gameId } = message.data;
+
+          toast.success(
+            React.createElement(AnimateCounterOne, { gameId, value: streak }),
+            {
+              duration: 3500,
+              icon: null,
+              style: {
+                minWidth: '200px',
+              }
+            }
+          );
+          break;
+        }
       }
     });
 
@@ -193,7 +193,7 @@ export function useMultiplayerSocket(
       // if match is active and includes user, then redirect to match page /match/[matchId]
       if (match.state === MultiplayerMatchState.ACTIVE && match.players.some((player: User) => player?._id?.toString() === user?._id?.toString())) {
         // match sure current url isn't this
-        if (router.pathname.indexOf('/[subdomain]/match/') >= 0 && router.query.matchId === match.matchId) {
+        if (router.pathname.includes('/[subdomain]/match/') && router.query.matchId === match.matchId) {
           return;
         }
 
@@ -210,7 +210,7 @@ export function useMultiplayerSocket(
       // if match is active and includes user, then redirect to match page /match/[matchId]
       if (match.state === MultiplayerMatchState.ACTIVE && match.players.some((player: User) => player?._id?.toString() === user?._id?.toString())) {
         // match sure current url isn't this
-        if (router.pathname.indexOf('/[subdomain]/match/') >= 0 && router.query.matchId === match.matchId) {
+        if (router.pathname.includes('/[subdomain]/match/') && router.query.matchId === match.matchId) {
           return;
         }
 

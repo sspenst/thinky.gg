@@ -87,7 +87,7 @@ describe('account settings notification preferences', () => {
         expect(response.updated).toBe(true);
 
         // check the db
-        const user = await UserModel.findOne({ _id: TestId.USER }).lean<User>() as User;
+        const user = (await UserModel.findOne({ _id: TestId.USER }).lean<User>())!;
 
         expect(user.disallowedEmailNotifications).toEqual(disallowedEmailNotifications);
         expect(user.disallowedPushNotifications).toEqual(disallowedPushNotifications);

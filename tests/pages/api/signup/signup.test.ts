@@ -1,6 +1,5 @@
 import { DEFAULT_GAME_ID, GameId } from '@root/constants/GameId';
 import { Games } from '@root/constants/Games';
-import UserConfig from '@root/models/db/userConfig';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
@@ -315,7 +314,7 @@ describe('pages/api/signup', () => {
         expect(db).toBeDefined();
         expect(db.name).toBe('Test2');
         expect(db.password).not.toBe('password2'); // should be salted
-        const config = await UserConfigModel.findOne({ userId: db._id }) as UserConfig;
+        const config = (await UserConfigModel.findOne({ userId: db._id }))!;
 
         expect(config).toBeDefined();
         expect(config.gameId).toBe(DEFAULT_GAME_ID);

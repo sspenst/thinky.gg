@@ -15,7 +15,7 @@ export async function getUsersWithMultiplayerProfile(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   match: FilterQuery<any>,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  project: { [field: string]: any },
+  project: Record<string, any>,
 ): Promise<UserWithMultiplayerProfile[]> {
   const users = await UserModel.aggregate([
     {

@@ -85,7 +85,7 @@ export default function Grid({
     };
   }, [gridId, height, width]);
   const tiles = [];
-  const blocks: { [id: number]: JSX.Element } = {};
+  const blocks: Record<number, JSX.Element> = {};
 
   for (let y = 0; y < gameState.board.length; y++) {
     for (let x = 0; x < gameState.board[y].length; x++) {
@@ -177,7 +177,7 @@ export default function Grid({
       const x = Math.floor(offsetX / tileSize);
       const y = Math.floor(offsetY / tileSize);
 
-      onCellClick && onCellClick(x, y, rightClick, isDragging);
+      onCellClick?.(x, y, rightClick, isDragging);
     };
 
     const onBgClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -245,7 +245,7 @@ export default function Grid({
         return;
       }
 
-      onCellDrag && onCellDrag(tileX, tileY, isDragging);
+      onCellDrag?.(tileX, tileY, isDragging);
     }
   };
 

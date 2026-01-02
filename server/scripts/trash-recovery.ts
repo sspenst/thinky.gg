@@ -43,47 +43,47 @@ async function trashRecovery() {
     console.log('Connected to database');
 
     switch (command) {
-    case 'list': {
-      await listTrashRecords();
-      break;
-    }
-
-    case 'restore': {
-      const trashId = args[1];
-
-      if (!trashId) {
-        console.error('❌ Please provide a trash record ID');
-        process.exit(1);
+      case 'list': {
+        await listTrashRecords();
+        break;
       }
 
-      await restoreRecord(trashId);
-      break;
-    }
+      case 'restore': {
+        const trashId = args[1];
 
-    case 'restore-all': {
-      await restoreAllFromCollection();
-      break;
-    }
+        if (!trashId) {
+          console.error('❌ Please provide a trash record ID');
+          process.exit(1);
+        }
 
-    case 'count': {
-      await showTrashCount();
-      break;
-    }
+        await restoreRecord(trashId);
+        break;
+      }
 
-    case 'clean': {
-      await cleanOldTrash();
-      break;
-    }
+      case 'restore-all': {
+        await restoreAllFromCollection();
+        break;
+      }
 
-    default: {
-      console.log('❌ Unknown command. Available commands:');
-      console.log('  list [--detailed] [--collection name] [--user id] [--limit number]');
-      console.log('  restore [trashId]');
-      console.log('  restore-all --collection [name]');
-      console.log('  count');
-      console.log('  clean --older-than [days]');
-      process.exit(1);
-    }
+      case 'count': {
+        await showTrashCount();
+        break;
+      }
+
+      case 'clean': {
+        await cleanOldTrash();
+        break;
+      }
+
+      default: {
+        console.log('❌ Unknown command. Available commands:');
+        console.log('  list [--detailed] [--collection name] [--user id] [--limit number]');
+        console.log('  restore [trashId]');
+        console.log('  restore-all --collection [name]');
+        console.log('  count');
+        console.log('  clean --older-than [days]');
+        process.exit(1);
+      }
     }
   } catch (error) {
     console.error('Error during trash recovery:', error);

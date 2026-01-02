@@ -218,12 +218,12 @@ export async function sendEmailDigests(batchId: Types.ObjectId, limit: number) {
     [EmailType.EMAIL_DIGEST]: [],
     [EmailType.EMAIL_7D_REACTIVATE]: [],
     [EmailType.EMAIL_10D_AUTO_UNSUBSCRIBE]: [],
-  } as { [key: string]: string[] };
+  } as Record<string, string[]>;
   const failedListByEmailDigestType = {
     [EmailType.EMAIL_DIGEST]: [],
     [EmailType.EMAIL_7D_REACTIVATE]: [],
     [EmailType.EMAIL_10D_AUTO_UNSUBSCRIBE]: [],
-  } as { [key: string]: string[] };
+  } as Record<string, string[]>;
 
   let count = 0;
 
@@ -234,7 +234,7 @@ export async function sendEmailDigests(batchId: Types.ObjectId, limit: number) {
       [EmailType.EMAIL_DIGEST]: [],
       [EmailType.EMAIL_7D_REACTIVATE]: [],
       [EmailType.EMAIL_10D_AUTO_UNSUBSCRIBE]: [],
-    } as { [key: string]: EmailLog[] };
+    } as Record<string, EmailLog[]>;
 
     let lastSentEmailLogTs = null;
 
@@ -340,7 +340,7 @@ export async function sendEmailDigests(batchId: Types.ObjectId, limit: number) {
     }
 
     /* istanbul ignore next */
-    const EmailTextTable: { [key: string]: { title: string, message?: string, subject: string, featuredLevelsLabel: string } } = {
+    const EmailTextTable: Record<string, { title: string, message?: string, subject: string, featuredLevelsLabel: string }> = {
       [EmailType.EMAIL_DIGEST]: {
         title: `Welcome to your Thinky.gg daily digest for ${todaysDatePretty}.`,
         subject: dailySubject,

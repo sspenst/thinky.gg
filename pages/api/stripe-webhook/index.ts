@@ -102,11 +102,11 @@ async function subscriptionDeleted(userToDowngrade: User, subscription: Stripe.S
 function getGameIdFromProductName(productName: string): GameId {
   let gameId: GameId = GameId.THINKY;
 
-  if (productName.match(/pathology/i)) {
+  if (/pathology/i.exec(productName)) {
     gameId = GameId.PATHOLOGY;
-  } else if (productName.match(/soko/i)) {
+  } else if (/soko/i.exec(productName)) {
     gameId = GameId.SOKOPATH;
-  } else if (productName.match(/thinky/i)) {
+  } else if (/thinky/i.exec(productName)) {
     gameId = GameId.THINKY;
   }
 

@@ -72,14 +72,14 @@ describe('helpers/*.ts', () => {
     expect(slug).toBe('/profile/test');
   });
   test('isOnline', async () => {
-    const user = await UserModel.findOneAndUpdate({ _id: TestId.USER },
+    const user = (await UserModel.findOneAndUpdate({ _id: TestId.USER },
       {
         $set:
         {
           last_visited_at: TimerUtil.getTs() - 5 * 60 * 2
         },
       }
-    ) as User;
+    ))!;
 
     expect(isOnline(user)).toBe(true);
     user.last_visited_at = TimerUtil.getTs() - 5 * 60 * 2;

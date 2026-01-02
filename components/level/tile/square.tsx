@@ -27,16 +27,16 @@ export default function Square({ game, text, tileType, visited, theme }: SquareP
 
   function getBackgroundColor() {
     switch (tileType) {
-    case TileType.Default:
-      return visited ? 'var(--level-grid-used)' : 'var(--level-grid)';
-    case TileType.Wall:
-      return 'var(--level-wall)';
-    case TileType.Exit:
-      return 'var(--level-end)';
-    case TileType.Hole:
-      return 'var(--level-hole)';
-    default:
-      return undefined;
+      case TileType.Default:
+        return visited ? 'var(--level-grid-used)' : 'var(--level-grid)';
+      case TileType.Wall:
+        return 'var(--level-wall)';
+      case TileType.Exit:
+        return 'var(--level-end)';
+      case TileType.Hole:
+        return 'var(--level-hole)';
+      default:
+        return undefined;
     }
   }
 

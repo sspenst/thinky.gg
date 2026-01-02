@@ -96,7 +96,7 @@ const TAB_DEFAULT_SORTS = {
 };
 
 // Add this before the sortPipeline definition
-const sortFieldMap: { [key: string]: string } = {
+const sortFieldMap: Record<string, string> = {
   'reviewAverage': 'sortReviewAverage',
   'last_visited_at': 'sortLastSeen',
   'followerCount': 'sortFollowerCount',
@@ -137,11 +137,11 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   // Initialize search conditions
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const searchObj = {} as { [key: string]: any };
+  const searchObj = {} as Record<string, any>;
 
   // Add name search condition
   if (search && search.length > 0) {
-    searchObj['name'] = {
+    searchObj.name = {
       $regex: cleanInput(search),
       $options: 'i',
     };
@@ -149,7 +149,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   // Add registered users condition
   if (showNotRegistered !== 'true') {
-    searchObj['ts'] = { $exists: true };
+    searchObj.ts = { $exists: true };
   }
 
   const sortObj = [[validatedSortBy, validatedSortDir === 'asc' ? 1 : -1]];
@@ -653,112 +653,112 @@ export default function PlayersPage({ searchQuery, totalRows, users }: PlayersPr
     ];
 
     switch (tab) {
-    case UserTableTab.GENERAL:
-      return [
-        ...baseColumns,
-        {
-          id: 'calcLevelsSolvedCount',
-          name: 'Solved',
-          selector: row => row.calcLevelsSolvedCount ?? 0,
-          sortable: true,
-        },
-        {
-          id: 'calcLevelsCompletedCount',
-          name: 'Completed',
-          selector: row => row.calcLevelsCompletedCount ?? 0,
-          sortable: true,
-        },
-        {
-          id: 'calcRankedSolves',
-          name: 'Rank Solves',
-          selector: row => row.calcRankedSolves ?? 0,
-          sortable: true,
-        },
-        {
-          id: 'calcLevelsCreatedCount',
-          name: 'Levels Made',
-          selector: row => row.calcLevelsCreatedCount ?? 0,
-          sortable: true,
-        },
-        {
-          id: 'last_visited_at',
-          name: 'Last Seen',
-          selector: (row: UserWithStats) => row.last_visited_at ? <FormattedDate style={{ color: 'var(--color)', fontSize: 13 }} ts={row.last_visited_at} /> : '-',
-          sortable: true,
-          style: { minWidth: 128 },
-        },
-        {
-          id: 'ts',
-          name: 'Registered',
-          selector: (row: UserWithStats) => row.ts ? <FormattedDate style={{ color: 'var(--color)', fontSize: 13 }} ts={row.ts} /> : 'Not registered',
-          sortable: true,
-          style: { minWidth: 128 },
-        },
-      ];
-    case UserTableTab.FOLLOWERS:
-      return [
-        ...baseColumns,
-        {
-          id: 'followerCount',
-          name: 'Followers',
-          selector: (row: UserWithStats) => row.followerCount ?? 0,
-          sortable: false,
-        },
-      ];
-    case UserTableTab.MULTIPLAYER:
-      return [
-        ...baseColumns,
-        {
-          id: 'ratingRushBullet',
-          name: 'Bullet',
-          selector: (row: any) => (
-            <div className='flex flex-col items-center'>
-              <MultiplayerRating hideType profile={row as unknown as MultiplayerProfile} type={MultiplayerMatchType.RushBullet} />
-            </div>
-          ),
-          sortable: true,
-        },
-        {
-          id: 'ratingRushBlitz',
-          name: 'Blitz',
-          selector: (row: any) => (
-            <div className='flex flex-col items-center'>
-              <MultiplayerRating hideType profile={row as unknown as MultiplayerProfile} type={MultiplayerMatchType.RushBlitz} />
-            </div>
-          ),
-          sortable: true,
-        },
-        {
-          id: 'ratingRushRapid',
-          name: 'Rapid',
-          selector: row => (
-            <div className='flex flex-col items-center'>
-              <MultiplayerRating hideType profile={row as unknown as MultiplayerProfile} type={MultiplayerMatchType.RushRapid} />
-            </div>
-          ),
-          sortable: true,
-        },
-        {
-          id: 'ratingRushClassical',
-          name: 'Classical',
-          selector: (row: any) => (
-            <div className='flex flex-col items-center'>
-              <MultiplayerRating hideType profile={row as unknown as MultiplayerProfile} type={MultiplayerMatchType.RushClassical} />
-            </div>
-          ),
-          sortable: true,
-        },
-      ];
-    case UserTableTab.STREAKS:
-      return [
-        ...baseColumns,
-        {
-          id: 'calcCurrentStreak',
-          name: 'Current Streak',
-          selector: row => row.calcCurrentStreak ?? 0,
-          sortable: true,
-        },
-      ];
+      case UserTableTab.GENERAL:
+        return [
+          ...baseColumns,
+          {
+            id: 'calcLevelsSolvedCount',
+            name: 'Solved',
+            selector: row => row.calcLevelsSolvedCount ?? 0,
+            sortable: true,
+          },
+          {
+            id: 'calcLevelsCompletedCount',
+            name: 'Completed',
+            selector: row => row.calcLevelsCompletedCount ?? 0,
+            sortable: true,
+          },
+          {
+            id: 'calcRankedSolves',
+            name: 'Rank Solves',
+            selector: row => row.calcRankedSolves ?? 0,
+            sortable: true,
+          },
+          {
+            id: 'calcLevelsCreatedCount',
+            name: 'Levels Made',
+            selector: row => row.calcLevelsCreatedCount ?? 0,
+            sortable: true,
+          },
+          {
+            id: 'last_visited_at',
+            name: 'Last Seen',
+            selector: (row: UserWithStats) => row.last_visited_at ? <FormattedDate style={{ color: 'var(--color)', fontSize: 13 }} ts={row.last_visited_at} /> : '-',
+            sortable: true,
+            style: { minWidth: 128 },
+          },
+          {
+            id: 'ts',
+            name: 'Registered',
+            selector: (row: UserWithStats) => row.ts ? <FormattedDate style={{ color: 'var(--color)', fontSize: 13 }} ts={row.ts} /> : 'Not registered',
+            sortable: true,
+            style: { minWidth: 128 },
+          },
+        ];
+      case UserTableTab.FOLLOWERS:
+        return [
+          ...baseColumns,
+          {
+            id: 'followerCount',
+            name: 'Followers',
+            selector: (row: UserWithStats) => row.followerCount ?? 0,
+            sortable: false,
+          },
+        ];
+      case UserTableTab.MULTIPLAYER:
+        return [
+          ...baseColumns,
+          {
+            id: 'ratingRushBullet',
+            name: 'Bullet',
+            selector: (row: any) => (
+              <div className='flex flex-col items-center'>
+                <MultiplayerRating hideType profile={row as unknown as MultiplayerProfile} type={MultiplayerMatchType.RushBullet} />
+              </div>
+            ),
+            sortable: true,
+          },
+          {
+            id: 'ratingRushBlitz',
+            name: 'Blitz',
+            selector: (row: any) => (
+              <div className='flex flex-col items-center'>
+                <MultiplayerRating hideType profile={row as unknown as MultiplayerProfile} type={MultiplayerMatchType.RushBlitz} />
+              </div>
+            ),
+            sortable: true,
+          },
+          {
+            id: 'ratingRushRapid',
+            name: 'Rapid',
+            selector: row => (
+              <div className='flex flex-col items-center'>
+                <MultiplayerRating hideType profile={row as unknown as MultiplayerProfile} type={MultiplayerMatchType.RushRapid} />
+              </div>
+            ),
+            sortable: true,
+          },
+          {
+            id: 'ratingRushClassical',
+            name: 'Classical',
+            selector: (row: any) => (
+              <div className='flex flex-col items-center'>
+                <MultiplayerRating hideType profile={row as unknown as MultiplayerProfile} type={MultiplayerMatchType.RushClassical} />
+              </div>
+            ),
+            sortable: true,
+          },
+        ];
+      case UserTableTab.STREAKS:
+        return [
+          ...baseColumns,
+          {
+            id: 'calcCurrentStreak',
+            name: 'Current Streak',
+            selector: row => row.calcCurrentStreak ?? 0,
+            sortable: true,
+          },
+        ];
     }
   };
 

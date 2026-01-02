@@ -21,7 +21,7 @@ export function useUsernameValidation() {
   const validateUsername = useCallback((newUserName: string) => {
     let valid = true;
 
-    if (newUserName.length < 3 || newUserName.length > 50 || !newUserName.match(/^[a-zA-Z0-9][-a-zA-Z0-9_.]*$/)) {
+    if (newUserName.length < 3 || newUserName.length > 50 || !(/^[a-zA-Z0-9][-a-zA-Z0-9_.]*$/.exec(newUserName))) {
       valid = false;
     }
 

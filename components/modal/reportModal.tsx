@@ -8,10 +8,10 @@ import toast from 'react-hot-toast';
 import Modal from '.';
 
 interface ReportModalProps {
-    targetId: string;
-    reportType: ReportType;
+  targetId: string;
+  reportType: ReportType;
 
-    }
+}
 
 export default function ReportModal({ targetId, reportType }: ReportModalProps) {
   const { setModal, setPreventKeyDownEvent } = useContext(PageContext);
@@ -139,10 +139,10 @@ export default function ReportModal({ targetId, reportType }: ReportModalProps) 
           disabled={!reason}
           onClick={fileReport}
         >
-            File report
+          File report
         </button>
         <span className='text-xs text-center text-gray-500'>
-            By reporting this review, you agree to our <Link className='underline' href={TERMS_OF_SERVICE_URL}>terms of service</Link>. Abusing filing a report is also against the rules.
+          By reporting this review, you agree to our <Link className='underline' href={TERMS_OF_SERVICE_URL}>terms of service</Link>. Abusing filing a report is also against the rules.
         </span>
       </div>
     </Modal>

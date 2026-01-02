@@ -1034,7 +1034,7 @@ export default function TutorialPathology({ recaptchaPublicKey }: TutorialPathol
             />
           </div>
         )}
-        {tooltips && tooltips.map((tooltip, index) => (
+        {tooltips?.map((tooltip, index) => (
           <div
             key={`tooltip-${tutorialStepIndex}-${index}`}
             className='bg-white rounded-lg text-black p-3 font-bold justify-center opacity-90 z-30 fadeIn'

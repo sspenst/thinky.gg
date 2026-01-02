@@ -86,7 +86,7 @@ const MathematicalBackground: React.FC<MathematicalBackgroundProps> = ({ classNa
 
     // Reduce pixel ratio on lower performance modes
     const pixelRatio = performanceMode === 'high' ? window.devicePixelRatio :
-                       performanceMode === 'medium' ? Math.min(window.devicePixelRatio, 1.5) : 1;
+      performanceMode === 'medium' ? Math.min(window.devicePixelRatio, 1.5) : 1;
 
     renderer.setPixelRatio(pixelRatio);
 
@@ -104,7 +104,7 @@ const MathematicalBackground: React.FC<MathematicalBackgroundProps> = ({ classNa
 
     // Reduce particle count based on performance mode
     const particleCount = performanceMode === 'high' ? 2000 :
-                         performanceMode === 'medium' ? 800 : 300;
+      performanceMode === 'medium' ? 800 : 300;
 
     const particles = new THREE.BufferGeometry();
     const positions = new Float32Array(particleCount * 3);
@@ -253,7 +253,7 @@ const MathematicalBackground: React.FC<MathematicalBackgroundProps> = ({ classNa
     // Track frame timing for performance throttling
     let lastFrameTime = 0;
     const targetFPS = performanceMode === 'high' ? 60 :
-                     performanceMode === 'medium' ? 30 : 20;
+      performanceMode === 'medium' ? 30 : 20;
     const frameInterval = 1000 / targetFPS;
 
     // Track update cycles to reduce expensive operations

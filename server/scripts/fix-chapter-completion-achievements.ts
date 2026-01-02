@@ -32,7 +32,7 @@ interface UserToFix {
  * - If chapterUnlocked >= 3, should have CHAPTER_2_COMPLETED
  * - If chapterUnlocked >= 4, should have CHAPTER_3_COMPLETED
  */
-async function identifyUsersToFix(gameId: GameId, dryRun: boolean = true): Promise<UserToFix[]> {
+async function identifyUsersToFix(gameId: GameId, dryRun = true): Promise<UserToFix[]> {
   console.log(`\n🔍 Analyzing users for game: ${gameId}...`);
 
   // Get all users who have unlocked at least chapter 2 (meaning they completed chapter 1)
@@ -98,7 +98,7 @@ async function identifyUsersToFix(gameId: GameId, dryRun: boolean = true): Promi
 /**
  * Fixes missing achievements by calling refreshAchievements for affected users
  */
-async function fixMissingAchievements(usersToFix: UserToFix[], dryRun: boolean = true) {
+async function fixMissingAchievements(usersToFix: UserToFix[], dryRun = true) {
   if (usersToFix.length === 0) {
     console.log('\n✅ No users need fixing!');
 

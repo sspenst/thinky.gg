@@ -103,7 +103,7 @@ export default function UserManagementTab({
                   getTimeAgo={getTimeAgo}
                 />
               )}
-              {connectedUsers && connectedUsers.users.length === 0 && !loadingConnectedUsers && (
+              {connectedUsers?.users.length === 0 && !loadingConnectedUsers && (
                 <div className='bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700'>
                   <div className='flex items-center gap-2'>
                     <Network className='w-5 h-5 text-gray-400' />

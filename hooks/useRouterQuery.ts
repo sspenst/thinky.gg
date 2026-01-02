@@ -19,7 +19,7 @@ export default function useRouterQuery() {
     }
 
     // remove subdomain from query and path
-    delete q['subdomain'];
+    delete q.subdomain;
     const pathname = router.pathname.replace('/[subdomain]', '');
 
     return router.push({

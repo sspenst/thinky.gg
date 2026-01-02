@@ -35,7 +35,7 @@ export default function LevelCard({ href, id, level, onClick }: LevelCardProps) 
   const defaultUrl = getUrl(level?.gameId, `/level/${level?.slug}`);
 
   const backgroundImage = useMemo(() => {
-    if (level && level.data) {
+    if (level?.data) {
       return getPngDataClient(level.gameId || pageGame.id, level.data);
     }
 
@@ -55,14 +55,14 @@ export default function LevelCard({ href, id, level, onClick }: LevelCardProps) 
    * @returns the full User object if possible, otherwise null
    */
   function getUser() {
-    if (!level || !level.userId) {
+    if (!level?.userId) {
       return null;
     }
 
     // user is an ObjectId
     if (!Object.prototype.hasOwnProperty.call(level.userId, 'name')) {
       // try to get user from reqUser
-      if (reqUser && reqUser._id.toString() === (level.userId as Types.ObjectId)?.toString()) {
+      if (reqUser?._id.toString() === (level.userId as Types.ObjectId)?.toString()) {
         return reqUser;
       } else {
         return null;

@@ -8,7 +8,7 @@ interface IAchievementInfoFeatureExplorer extends IAchievementInfo {
   unlocked: ({ hasAddedLevelToCollection, user }: { hasAddedLevelToCollection: boolean, user: User }) => boolean;
 }
 
-const AchievementRulesFeatureExplorer: { [achievementType: string]: IAchievementInfoFeatureExplorer } = {};
+const AchievementRulesFeatureExplorer: Record<string, IAchievementInfoFeatureExplorer> = {};
 
 AchievementRulesFeatureExplorer[AchievementType.ADD_LEVEL_TO_COLLECTION] = {
   getDescription: () => 'Added a level to a collection',

@@ -17,7 +17,7 @@ interface AppContextInterface {
   mutatePlayLater: () => void;
   mutateUser: KeyedMutator<ReqUser>;
   notifications: Notification[];
-  playLater?: { [key: string]: boolean };
+  playLater?: Record<string, boolean>;
   protocol: string | undefined;
   setNotifications: React.Dispatch<React.SetStateAction<Notification[]>>;
   setShouldAttemptAuth: React.Dispatch<React.SetStateAction<boolean>>;
@@ -25,7 +25,7 @@ interface AppContextInterface {
   setTempCollection: React.Dispatch<React.SetStateAction<Collection | undefined>>;
   shouldAttemptAuth: boolean;
   showNav: boolean;
-  sounds: { [key: string]: HTMLAudioElement };
+  sounds: Record<string, HTMLAudioElement>;
   tempCollection?: Collection;
   user: ReqUser | undefined | null;
   userConfig: UserConfig | undefined | null;

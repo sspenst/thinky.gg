@@ -77,8 +77,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 }
 
 interface RankedPageProps {
-  levelsByDifficulty: { [key: string]: number };
-  rankedSolvesByDifficulty: { [key: string]: number };
+  levelsByDifficulty: Record<string, number>;
+  rankedSolvesByDifficulty: Record<string, number>;
 }
 
 /* istanbul ignore next */

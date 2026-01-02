@@ -25,7 +25,7 @@ describe('pages/[subdomain]/confirm-email/[userId]', () => {
       const testUserId = new Types.ObjectId();
 
       // 1. User signs up and gets an unconfirmed account with confirmation token
-      const newUser = await UserModel.create({
+      await UserModel.create({
         _id: testUserId,
         name: 'happypath_user',
         email: 'happy@example.com',

@@ -7,10 +7,10 @@ import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } 
 import Modal from '../modal';
 
 interface ScrubberProps {
-    gameState: GameState;
-    isScrubberOpen: boolean;
-    onScrub: (moveIndex: number) => void;
-    isPro: boolean;
+  gameState: GameState;
+  isScrubberOpen: boolean;
+  onScrub: (moveIndex: number) => void;
+  isPro: boolean;
 }
 
 export default function Scrubber({ gameState, isScrubberOpen, onScrub, isPro }: ScrubberProps) {
@@ -235,13 +235,13 @@ export default function Scrubber({ gameState, isScrubberOpen, onScrub, isPro }: 
       >
         <div className='flex flex-col gap-4 items-center text-lg'>
           <div>
-                        With the timeline scrubber, you can <span className='font-bold'>rewind and fast-forward</span>&nbsp;through your moves by simply dragging the scrubber handle, making it easy to analyze and improve your solutions.
+            With the timeline scrubber, you can <span className='font-bold'>rewind and fast-forward</span>&nbsp;through your moves by simply dragging the scrubber handle, making it easy to analyze and improve your solutions.
           </div>
           <div>
-                        By upgrading to <Link href='/pro' className='text-blue-500 hover:text-blue-300 outline-hidden'>Thinky Pro</Link>, you will gain access to this powerful feature, along with additional benefits designed to enhance your gameplay:
+            By upgrading to <Link href='/pro' className='text-blue-500 hover:text-blue-300 outline-hidden'>Thinky Pro</Link>, you will gain access to this powerful feature, along with additional benefits designed to enhance your gameplay:
           </div>
           <Link href='/pro' className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 m-2 rounded-sm focus:outline-hidden focus:shadow-outline cursor-pointer'>
-                        Upgrade to Pro
+            Upgrade to Pro
           </Link>
         </div>
       </Modal>

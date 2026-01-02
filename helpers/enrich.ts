@@ -43,7 +43,7 @@ export async function enrichCollection(collection: Collection, reqUser: User | n
     collection.levels.forEach(level => {
       const stat = stats.find(stat => stat.levelId.equals(level._id));
 
-      if (stat && stat.moves === level.leastMoves) {
+      if (stat?.moves === level.leastMoves) {
         userSolvedCount++;
       }
     });

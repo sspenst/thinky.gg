@@ -219,15 +219,15 @@ export default function MatchStatus({ isMatchPage, match, onJoinClick, onLeaveCl
           </div>
 
         </div>
-                      {/* Countdown timer - Mobile: centered under badges, Desktop: centered */}
-                      {match.state === MultiplayerMatchState.ACTIVE && match.timeUntilEnd > 0 && (
-                <div className={classNames('flex justify-center font-bold text-lg md:text-xl ', {
-                  'text-red-400 animate-pulse': countDown <= 30,
-                  'hidden': countDown === 0,
-                })}>
-                  {timeUntilEndCleanStr}
-                </div>
-              )}
+        {/* Countdown timer - Mobile: centered under badges, Desktop: centered */}
+        {match.state === MultiplayerMatchState.ACTIVE && match.timeUntilEnd > 0 && (
+          <div className={classNames('flex justify-center font-bold text-lg md:text-xl ', {
+            'text-red-400 animate-pulse': countDown <= 30,
+            'hidden': countDown === 0,
+          })}>
+            {timeUntilEndCleanStr}
+          </div>
+        )}
         {/* Copy Link Button for Open Matches */}
         {match.state === MultiplayerMatchState.OPEN && (
           <div className='absolute top-1 right-1 sm:top-2 sm:right-2 sm:static'>

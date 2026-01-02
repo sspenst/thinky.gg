@@ -114,7 +114,7 @@ export default function ThinkyHomePageNotLoggedInVariant() {
     'l': Direction.LEFT,
     'r': Direction.RIGHT,
     'X': Direction.NONE,
-  } as {[key: string]: Direction};
+  } as Record<string, Direction>;
 
   const gameInstr = {
     [GameId.PATHOLOGY]: {

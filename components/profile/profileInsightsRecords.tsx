@@ -12,7 +12,7 @@ dayjs.extend(duration);
 export default function ProfileInsightsRecords({ user }: {user: User}) {
   const { proStatsUser } = useProStatsUser(user, ProStatsUserType.Records);
 
-  if (!proStatsUser || !proStatsUser[ProStatsUserType.Records]) {
+  if (!proStatsUser?.[ProStatsUserType.Records]) {
     return (
       <div className='flex flex-col gap-4'>
         <div className='h-6 bg-gray-700 rounded-sm w-48 animate-pulse' />

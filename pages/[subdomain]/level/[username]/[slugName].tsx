@@ -158,7 +158,7 @@ export default function LevelPage({ _collection, _level, reqUser }: LevelProps) 
   }, [cid, collection, setTempCollection]);
 
   useEffect(() => {
-    if (!_collection && tempCollection && tempCollection.levels.find(l => l._id === level._id)) {
+    if (!_collection && tempCollection?.levels.find(l => l._id === level._id)) {
       setCollection(tempCollection);
     }
   }, [_collection, level._id, setTempCollection, tempCollection]);

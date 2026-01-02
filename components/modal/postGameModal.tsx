@@ -28,7 +28,7 @@ export default function PostGameModal({ chapter, closeModal, collection, dontSho
   let nextLevel: EnrichedLevel | undefined = undefined;
   let lastLevelInCollection = false;
 
-  if (collection && collection.levels) {
+  if (collection?.levels) {
     const levelIndex = collection.levels.findIndex((l) => l._id === level._id);
 
     if (levelIndex + 1 < collection.levels.length) {
@@ -44,7 +44,7 @@ export default function PostGameModal({ chapter, closeModal, collection, dontSho
   const nextLevelUrl = nextLevel ? `/level/${nextLevel.slug}${queryParams?.toString().length ?? 0 !== 0 ? `?${queryParams}` : ''}` : '';
 
   useEffect(() => {
-    const newRecommendedLevel = data && data[HomepageDataType.RecommendedLevel];
+    const newRecommendedLevel = data?.[HomepageDataType.RecommendedLevel];
 
     if (newRecommendedLevel) {
       setRecommendedLevel(newRecommendedLevel);

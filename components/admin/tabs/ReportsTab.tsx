@@ -149,27 +149,27 @@ export default function ReportsTab({ formatDate, getTimeAgo }: ReportsTabProps) 
 
   const getStatusIcon = (status: ReportStatus) => {
     switch (status) {
-    case ReportStatus.OPEN:
-      return <AlertTriangle className='w-4 h-4 text-red-500' />;
-    case ReportStatus.REVIEWING:
-      return <Clock className='w-4 h-4 text-yellow-500' />;
-    case ReportStatus.CLOSED:
-      return <CheckCircle className='w-4 h-4 text-green-500' />;
-    default:
-      return <Flag className='w-4 h-4 text-gray-500' />;
+      case ReportStatus.OPEN:
+        return <AlertTriangle className='w-4 h-4 text-red-500' />;
+      case ReportStatus.REVIEWING:
+        return <Clock className='w-4 h-4 text-yellow-500' />;
+      case ReportStatus.CLOSED:
+        return <CheckCircle className='w-4 h-4 text-green-500' />;
+      default:
+        return <Flag className='w-4 h-4 text-gray-500' />;
     }
   };
 
   const getStatusColor = (status: ReportStatus) => {
     switch (status) {
-    case ReportStatus.OPEN:
-      return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
-    case ReportStatus.REVIEWING:
-      return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
-    case ReportStatus.CLOSED:
-      return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
-    default:
-      return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
+      case ReportStatus.OPEN:
+        return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+      case ReportStatus.REVIEWING:
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
+      case ReportStatus.CLOSED:
+        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+      default:
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
     }
   };
 
@@ -179,14 +179,14 @@ export default function ReportsTab({ formatDate, getTimeAgo }: ReportsTabProps) 
     if (!entityDetails) return null;
 
     switch (reportedEntityModel) {
-    case 'Level':
-      return entityDetails.slug ? `/level/${entityDetails.slug}` : null;
-    case 'Comment':
-      return entityDetails.target ? `/profile/${entityDetails.target}` : null;
-    case 'Review':
-      return null; // Reviews are viewed on level pages, but we don't have level info here
-    default:
-      return null;
+      case 'Level':
+        return entityDetails.slug ? `/level/${entityDetails.slug}` : null;
+      case 'Comment':
+        return entityDetails.target ? `/profile/${entityDetails.target}` : null;
+      case 'Review':
+        return null; // Reviews are viewed on level pages, but we don't have level info here
+      default:
+        return null;
     }
   };
 

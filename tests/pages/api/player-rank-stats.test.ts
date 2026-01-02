@@ -1,7 +1,7 @@
 import { DIFFICULTY_INDEX } from '@root/components/formatted/formattedDifficulty';
 import { skillRequirements } from '@root/constants/achievements/AchievementRulesSkill';
 import AchievementType from '@root/constants/achievements/achievementType';
-import { DEFAULT_GAME_ID, GameId } from '@root/constants/GameId';
+import { DEFAULT_GAME_ID } from '@root/constants/GameId';
 import { genTestLevel, genTestUser } from '@root/lib/initializeLocalDb';
 import User from '@root/models/db/user';
 import { enableFetchMocks } from 'jest-fetch-mock';

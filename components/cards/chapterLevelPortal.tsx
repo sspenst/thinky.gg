@@ -21,7 +21,7 @@ export default function ChapterLevelPortal({ href, id, level, onClick }: Chapter
   const [backgroundImage, setBackgroundImage] = useState<string | undefined>(undefined);
 
   useEffect(() => {
-    if (level && level.data) {
+    if (level?.data) {
       const image = getPngDataClient(level.gameId || pageGame.id, level.data);
 
       setBackgroundImage(image);

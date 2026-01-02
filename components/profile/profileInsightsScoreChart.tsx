@@ -27,18 +27,17 @@ const mergeData = (data1: DateAndSum[], data2: DateAndSum[]) => {
     const item1 = data1.find(item => item.date === date);
     const item2 = data2.find(item => item.date === date);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result: any = { date };
 
     if (item1) {
       result.sum = item1.sum;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       result.cumulativeSum = (item1 as any).cumulativeSum;
     }
 
     if (item2) {
       result.sumCompare = item2.sum;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       result.cumulativeSumCompare = (item2 as any).cumulativeSum;
     }
 
@@ -54,7 +53,7 @@ export default function ProfileInsightsScoreChart({ user, timeFilter }: { user: 
   const { proStatsUser: compareUserData, isLoading: compareUserLoading } = useProStatsUser(compareUser, ProStatsUserType.ScoreHistory, timeFilter);
   const compareData = compareUserData?.[ProStatsUserType.ScoreHistory];
 
-  const scores = scoreChartData?.[ProStatsUserType.ScoreHistory] as DateAndSum[] || [];
+  const scores = scoreChartData?.[ProStatsUserType.ScoreHistory] ?? [];
 
   const cumulativeScores = useMemo(() =>
     getCumulativeScores(scores), [scores]
@@ -69,7 +68,7 @@ export default function ProfileInsightsScoreChart({ user, timeFilter }: { user: 
   [cumulativeScores, cumulativeScoresCompare]
   );
 
-  if (!scoreChartData || !scoreChartData[ProStatsUserType.ScoreHistory]) {
+  if (!scoreChartData?.[ProStatsUserType.ScoreHistory]) {
     return (
       <div className='flex flex-col gap-2'>
         <div className='h-6 bg-gray-700 rounded-sm w-32 animate-pulse' />

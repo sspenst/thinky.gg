@@ -13,7 +13,7 @@ export default function ProfileInsightsLevelPlayLog({ user, timeFilter }: { user
   const { proStatsUser } = useProStatsUser(user, ProStatsUserType.PlayLogForUserCreatedLevels, timeFilter);
   const { user: reqUser } = useContext(AppContext);
 
-  if (!proStatsUser || !proStatsUser[ProStatsUserType.PlayLogForUserCreatedLevels]) {
+  if (!proStatsUser?.[ProStatsUserType.PlayLogForUserCreatedLevels]) {
     return <span>Loading...</span>;
   }
 

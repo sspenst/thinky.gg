@@ -143,7 +143,7 @@ export default function AchievementPage({
   isViewingFromThinky: boolean,
   totalActiveUsers: number,
   totalAchievementCount: number,
-  countsByGame: Array<{ _id: GameId; count: number }>,
+  countsByGame: { _id: GameId; count: number }[],
   achievementsByGame: Record<string, Achievement[]>,
   myAchievements: Achievement[],
   achievements: Achievement[]

@@ -97,7 +97,7 @@ describe('matchCreateAndQuit', () => {
         expect(response.players).toHaveLength(0);
         expect(response.gameTable).toBeUndefined();
         expect(response.matchLog).toHaveLength(2);
-        expect(response.matchLog && response.matchLog[1].type).toBe(MatchAction.QUIT);
+        expect(response.matchLog?.[1].type).toBe(MatchAction.QUIT);
         expect(response.state).toBe(MultiplayerMatchState.ABORTED);
         expect(response.type).toBe(MultiplayerMatchType.RushBullet);
         expect(response.levels).toHaveLength(0);

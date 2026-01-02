@@ -211,7 +211,7 @@ export function enrichMultiplayerMatch(
     }
 
     match.levels?.forEach((level: unknown, index: number) => {
-      match.levels[index] = levelMap.get((level as ObjectId).toString()) as Level;
+      match.levels[index] = levelMap.get((level as ObjectId).toString())!;
       cleanUser((match.levels[index] as Level).userId);
     });
     match.levelsPopulated = []; // clear this out
@@ -225,7 +225,7 @@ export function enrichMultiplayerMatch(
     match.levels = [];
   } else if (!viewAccess) {
     // For active players during the match
-    if (userId && match.gameTable && match.gameTable[userId.toString()]) {
+    if (userId && match.gameTable?.[userId.toString()]) {
       // if user is in score table... then we should return the first level they have not solved
 
       const levelIndex = match.gameTable[userId.toString()].length || 0;
@@ -257,7 +257,7 @@ export function enrichMultiplayerMatch(
 }
 
 export function computeMatchScoreTable(match: MultiplayerMatch) {
-  const scoreTable = {} as {[key: string]: number};
+  const scoreTable = {} as Record<string, number>;
 
   if (match.gameTable) {
     for (const tableEntry in match.gameTable) {

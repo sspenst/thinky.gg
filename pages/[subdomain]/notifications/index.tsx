@@ -16,7 +16,7 @@ import { NotificationModel } from '../../../models/mongoose';
 
 const notificationsPerPage = 20;
 
-type NotificationSearchObjProps = {
+interface NotificationSearchObjProps {
   gameId?: GameId // optional for now
   userId: Types.ObjectId;
   read?: boolean;

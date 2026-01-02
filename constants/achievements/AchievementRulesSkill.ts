@@ -67,7 +67,7 @@ export const skillRequirements: SkillRequirement[] = [
   },
 ];
 
-const AchievementRulesSkill: { [achievementType: string]: IAchievementInfoSkill; } = {};
+const AchievementRulesSkill: Record<string, IAchievementInfoSkill> = {};
 
 skillRequirements.forEach(req => {
   const difficulty = difficultyList[req.difficultyIndex];

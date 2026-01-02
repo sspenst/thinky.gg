@@ -224,7 +224,7 @@ export default apiWrapper({
       acc[level.gameId] = level;
 
       return acc;
-    }, {} as { [gameId: string]: EnrichedLevel | null });
+    }, {} as Record<string, EnrichedLevel | null>);
 
     return res.status(200).json(levelsMap);
   }

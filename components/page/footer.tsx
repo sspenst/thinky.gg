@@ -77,7 +77,7 @@ export default function Footer() {
         <ExternalLink href='https://docs.google.com/document/d/e/2PACX-1vR4E-RcuIpXSrRtR3T3y9begevVF_yq7idcWWx1A-I9w_VRcHhPTkW1A7DeUx2pGOcyuKifEad3Qokn/pub'>
           Terms of Service
         </ExternalLink>
-        </div>
+      </div>
       <div className='text-center text-xs' style={{ color: 'var(--color-gray)' }}>
         © 2026 <ExternalLink href='https://thinky.gg'>
           Thinky.gg

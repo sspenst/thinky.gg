@@ -6,7 +6,7 @@ interface IAchievementInfoSocial extends IAchievementInfo {
   unlocked: ({ commentCount, hasWelcomed, hasSharedToSocial, user }: { commentCount: number, hasWelcomed: boolean, hasSharedToSocial: boolean, user: User }) => boolean;
 }
 
-const AchievementRulesSocial: { [achievementType: string]: IAchievementInfoSocial } = {};
+const AchievementRulesSocial: Record<string, IAchievementInfoSocial> = {};
 
 AchievementRulesSocial[AchievementType.COMMENT_1] = {
   getDescription: () => 'Wrote a comment on another user\'s profile',

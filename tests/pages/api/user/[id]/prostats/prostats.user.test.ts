@@ -21,14 +21,14 @@ afterEach(() => {
 enableFetchMocks();
 
 async function query({ userId, type, expectedError, expectedStatus, additionalAssertions, timeFilter }: {
-    userId?: string,
-    type: ProStatsUserType,
-    expectedError?: string,
-    expectedStatus: number,
-    timeFilter?: string,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    additionalAssertions?: (response: any) => Promise<void>,
-    }) {
+  userId?: string,
+  type: ProStatsUserType,
+  expectedError?: string,
+  expectedStatus: number,
+  timeFilter?: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  additionalAssertions?: (response: any) => Promise<void>,
+}) {
   await testApiHandler({
     pagesHandler: async (_, res) => {
       const req: NextApiRequestWithAuth = {

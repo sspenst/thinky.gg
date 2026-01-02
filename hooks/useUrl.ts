@@ -42,7 +42,7 @@ export default function useUrl() {
         return '/';
       }
 
-      const carryOver = LinksThatCarryOver.some((link) => window.location.pathname.match(new RegExp(link)));
+      const carryOver = LinksThatCarryOver.some((link) => new RegExp(link).exec(window.location.pathname));
 
       return (carryOver ? window.location.pathname : '/');
     }

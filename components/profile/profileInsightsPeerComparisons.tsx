@@ -34,7 +34,7 @@ export default function ProfileInsightsPeerComparisons({ user, reqUser, timeFilt
 
   // Analyze retry patterns using real difficulty comparison data
   const challengingConquests = useMemo(() => {
-    if (!difficultyData || !difficultyData[ProStatsUserType.DifficultyLevelsComparisons]) {
+    if (!difficultyData?.[ProStatsUserType.DifficultyLevelsComparisons]) {
       return [];
     }
 
@@ -64,7 +64,7 @@ export default function ProfileInsightsPeerComparisons({ user, reqUser, timeFilt
 
   // Calculate percentile rankings by difficulty
   const percentileData = useMemo(() => {
-    if (!difficultyData || !difficultyData[ProStatsUserType.DifficultyLevelsComparisons]) {
+    if (!difficultyData?.[ProStatsUserType.DifficultyLevelsComparisons]) {
       return [];
     }
 
@@ -193,7 +193,7 @@ export default function ProfileInsightsPeerComparisons({ user, reqUser, timeFilt
     });
 
     // Define weights for each difficulty (Kindergarten=1, Elementary=2, etc.)
-    const difficultyWeights: { [key: string]: number } = {
+    const difficultyWeights: Record<string, number> = {
       'Kindergarten': 1,
       'Elementary': 2,
       'Junior High': 3,
@@ -208,7 +208,7 @@ export default function ProfileInsightsPeerComparisons({ user, reqUser, timeFilt
 
     let weightedPercentileSum = 0;
     let totalWeightUsed = 0;
-    const breakdown: { [key: string]: { percentile: number; weight: number; contribution: number; levels: number; bonusWeight?: number; bonusLevels?: number; originalPercentile?: number } } = {};
+    const breakdown: Record<string, { percentile: number; weight: number; contribution: number; levels: number; bonusWeight?: number; bonusLevels?: number; originalPercentile?: number }> = {};
 
     // Find the lowest difficulty the player has played (7+ solves)
     let lowestDifficultyWeight = 11; // Start higher than max
@@ -316,7 +316,7 @@ export default function ProfileInsightsPeerComparisons({ user, reqUser, timeFilt
     });
 
     // Build the full breakdown including unplayed difficulties
-    const fullBreakdown: { [key: string]: { percentile: number; weight: number; contribution: number; levels: number; played: boolean; bonusWeight?: number; bonusLevels?: number; originalPercentile?: number } } = {};
+    const fullBreakdown: Record<string, { percentile: number; weight: number; contribution: number; levels: number; played: boolean; bonusWeight?: number; bonusLevels?: number; originalPercentile?: number }> = {};
 
     includedDifficulties.forEach(difficulty => {
       const weight = difficultyWeights[difficulty];

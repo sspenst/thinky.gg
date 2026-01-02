@@ -90,7 +90,7 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
 
   // Calculate activity heatmap data
   const activityHeatmap = useMemo(() => {
-    if (!scoreHistory || !scoreHistory[ProStatsUserType.ScoreHistory]) {
+    if (!scoreHistory?.[ProStatsUserType.ScoreHistory]) {
       return [];
     }
 
@@ -101,8 +101,8 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
     }
 
     // Since we only have daily data, we'll create a day-of-week activity view
-    const dayActivityData: { [key: string]: number } = {};
-    const totalByDay: { [key: string]: number } = {};
+    const dayActivityData: Record<string, number> = {};
+    const totalByDay: Record<string, number> = {};
 
     // Aggregate activity by day of week
     history.forEach(entry => {
@@ -116,7 +116,7 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
 
     // Convert to average activity per day
     const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    const avgByDay: { [key: string]: number } = {};
+    const avgByDay: Record<string, number> = {};
 
     days.forEach(day => {
       if (totalByDay[day] > 0) {
@@ -137,15 +137,15 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
 
   // Calculate time investment by difficulty with threshold data
   const timeInvestmentData = useMemo(() => {
-    if (!difficultyData || !difficultyData[ProStatsUserType.DifficultyLevelsComparisons]) {
+    if (!difficultyData?.[ProStatsUserType.DifficultyLevelsComparisons]) {
       return [];
     }
 
-    const comparisons = difficultyData[ProStatsUserType.DifficultyLevelsComparisons] as Array<{
+    const comparisons = difficultyData[ProStatsUserType.DifficultyLevelsComparisons] as {
       difficulty: number;
       myPlayattemptsSumDuration: number;
       otherPlayattemptsAverageDuration?: number;
-    }>;
+    }[];
     const difficultyGroups = new Map<string, {
       totalTime: number,
       count: number,
@@ -240,11 +240,11 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
 
   // Time-of-day performance analysis with hourly data for clock visualization
   const timeOfDayPerformance = useMemo(() => {
-    if (!difficultyData || !difficultyData[ProStatsUserType.DifficultyLevelsComparisons]) {
+    if (!difficultyData?.[ProStatsUserType.DifficultyLevelsComparisons]) {
       return null;
     }
 
-    const comparisons = difficultyData[ProStatsUserType.DifficultyLevelsComparisons] as Array<{
+    const comparisons = difficultyData[ProStatsUserType.DifficultyLevelsComparisons] as {
       ts: number;
       myPlayattemptsSumDuration: number;
       otherPlayattemptsAverageDuration: number;
@@ -253,7 +253,7 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
       slug: string;
       difficulty: number;
       calc_playattempts_just_beaten_count: number;
-    }>;
+    }[];
     const validComparisons = comparisons.filter(c =>
       c.myPlayattemptsSumDuration && c.otherPlayattemptsAverageDuration && c.ts
     );
@@ -269,7 +269,7 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
     ) / validComparisons.length;
 
     // Initialize hourly data with level details
-    const hourlyData: { [hour: number]: { sumRatio: number, count: number, levels: typeof validComparisons } } = {};
+    const hourlyData: Record<number, { sumRatio: number, count: number, levels: typeof validComparisons }> = {};
 
     for (let i = 0; i < 24; i++) {
       hourlyData[i] = { sumRatio: 0, count: 0, levels: [] };
@@ -604,7 +604,7 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
                         ) : (
                           <>
                             <div className='text-sm text-gray-500 h-11'>
-                            No data
+                              No data
                             </div>
                           </>
                         )}
@@ -667,7 +667,7 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
           {selectedTimePeriod && (() => {
             const selectedPeriodData = timeOfDayPerformance.clockData.find(p => p.period === selectedTimePeriod);
 
-            if (!selectedPeriodData || !selectedPeriodData.hasData) return null;
+            if (!selectedPeriodData?.hasData) return null;
 
             // Process and sort levels based on current sort settings
             const processedLevels = selectedPeriodData.levels.map(level => ({
@@ -681,19 +681,19 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
               let aVal: number, bVal: number;
 
               switch (sortColumn) {
-              case 'yourTime':
-                aVal = a.myPlayattemptsSumDuration;
-                bVal = b.myPlayattemptsSumDuration;
-                break;
-              case 'averageTime':
-                aVal = a.otherPlayattemptsAverageDuration;
-                bVal = b.otherPlayattemptsAverageDuration;
-                break;
-              case 'comparison':
-              default:
-                aVal = a.performanceRatio;
-                bVal = b.performanceRatio;
-                break;
+                case 'yourTime':
+                  aVal = a.myPlayattemptsSumDuration;
+                  bVal = b.myPlayattemptsSumDuration;
+                  break;
+                case 'averageTime':
+                  aVal = a.otherPlayattemptsAverageDuration;
+                  bVal = b.otherPlayattemptsAverageDuration;
+                  break;
+                case 'comparison':
+                default:
+                  aVal = a.performanceRatio;
+                  bVal = b.performanceRatio;
+                  break;
               }
 
               return sortDirection === 'desc' ? bVal - aVal : aVal - bVal;

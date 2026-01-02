@@ -32,7 +32,7 @@ export default function SelectFilter({
               first={true}
               onClick={(e) => {
                 onFilterClick(e);
-                onChange && onChange();
+                onChange?.();
               }}
               selected={filter === StatFilter.HideSolved}
               value={StatFilter.HideSolved}
@@ -41,7 +41,7 @@ export default function SelectFilter({
               element='Solved'
               onClick={(e) => {
                 onFilterClick(e);
-                onChange && onChange();
+                onChange?.();
               } }
               selected={filter === StatFilter.Solved}
               value={StatFilter.Solved}
@@ -50,7 +50,7 @@ export default function SelectFilter({
               element='Unoptimized'
               onClick={(e) => {
                 onFilterClick(e);
-                onChange && onChange();
+                onChange?.();
               } }
               selected={filter === StatFilter.Unoptimized}
               value={StatFilter.Unoptimized}
@@ -59,7 +59,7 @@ export default function SelectFilter({
               element='Completed'
               last={true} onClick={(e) => {
                 onFilterClick(e);
-                onChange && onChange();
+                onChange?.();
               } }
               selected={filter === StatFilter.Completed}
               value={StatFilter.Completed}
@@ -73,7 +73,7 @@ export default function SelectFilter({
             key='search_levels'
             onChange={e => {
               setSearchText(e.target.value);
-              onChange && onChange();
+              onChange?.();
             }}
             placeholder={placeholder}
             type='search'

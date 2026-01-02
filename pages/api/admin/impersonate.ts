@@ -60,7 +60,7 @@ export default withAuth({
       isImpersonating: true,
     };
 
-    const token = jwt.sign(payload, process.env.JWT_SECRET as string, { expiresIn: '1h' });
+    const token = jwt.sign(payload, process.env.JWT_SECRET!, { expiresIn: '1h' });
 
     // Set the new token as a cookie
     res.setHeader('Set-Cookie', serialize('token', token, cookieOptions(req.headers?.host)));
@@ -121,7 +121,7 @@ export default withAuth({
       userId: impersonatingAdminId,
     };
 
-    const newToken = jwt.sign(payload, process.env.JWT_SECRET as string, { expiresIn: '7d' });
+    const newToken = jwt.sign(payload, process.env.JWT_SECRET!, { expiresIn: '7d' });
 
     // Set the new token as a cookie
     res.setHeader('Set-Cookie', serialize('token', newToken, cookieOptions(req.headers?.host)));

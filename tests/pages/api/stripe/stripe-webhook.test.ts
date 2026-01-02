@@ -80,7 +80,7 @@ async function runStripeWebhookTest({
   const payload = JSON.stringify(mockEvent);
   const signature = stripe.webhooks.generateTestHeaderString({
     payload: payload,
-    secret: stripe_secret as string,
+    secret: stripe_secret!,
   });
 
   const readablePayload = Buffer.from(payload);

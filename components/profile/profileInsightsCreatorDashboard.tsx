@@ -50,7 +50,7 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser, timeFil
 
   // Get pre-aggregated popularity trends from API
   const { popularityTrends, trendPeriodLabel } = useMemo(() => {
-    if (!playLogData || !playLogData[ProStatsUserType.PlayLogForUserCreatedLevels]) {
+    if (!playLogData?.[ProStatsUserType.PlayLogForUserCreatedLevels]) {
       return { popularityTrends: [], trendPeriodLabel: 'Activity Trends' };
     }
 
@@ -62,21 +62,21 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser, timeFil
     let dateFormat: string;
 
     switch (timeFilter) {
-    case '7d':
-      label = '7-Day Activity Trends';
-      dateFormat = 'ddd'; // Mon, Tue, Wed
-      break;
-    case '30d':
-      label = '30-Day Activity Trends';
-      dateFormat = 'MMM DD';
-      break;
-    case '1y':
-      label = 'Weekly Activity Trends (Past Year)';
-      dateFormat = 'MMM DD';
-      break;
-    default:
-      label = 'Recent Activity Trends';
-      dateFormat = 'MMM DD';
+      case '7d':
+        label = '7-Day Activity Trends';
+        dateFormat = 'ddd'; // Mon, Tue, Wed
+        break;
+      case '30d':
+        label = '30-Day Activity Trends';
+        dateFormat = 'MMM DD';
+        break;
+      case '1y':
+        label = 'Weekly Activity Trends (Past Year)';
+        dateFormat = 'MMM DD';
+        break;
+      default:
+        label = 'Recent Activity Trends';
+        dateFormat = 'MMM DD';
     }
 
     // Convert API data to chart format
@@ -138,7 +138,7 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser, timeFil
 
   // Get pre-aggregated level performance data from API
   const levelPerformance = useMemo(() => {
-    if (!playLogData || !playLogData[ProStatsUserType.PlayLogForUserCreatedLevels]) {
+    if (!playLogData?.[ProStatsUserType.PlayLogForUserCreatedLevels]) {
       return [];
     }
 
@@ -160,7 +160,7 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser, timeFil
 
   // Analyze tile types used in creator's levels to suggest unused mechanics
   const mechanicSuggestions = useMemo(() => {
-    if (!playLogData || !playLogData[ProStatsUserType.PlayLogForUserCreatedLevels]) {
+    if (!playLogData?.[ProStatsUserType.PlayLogForUserCreatedLevels]) {
       return { suggestions: [], analysis: { used: [], unused: [], totalCategories: 0 } };
     }
 
@@ -234,7 +234,7 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser, timeFil
 
   // Analyze difficulty range of creator's levels
   const difficultyAnalysis = useMemo(() => {
-    if (!playLogData || !playLogData[ProStatsUserType.PlayLogForUserCreatedLevels]) {
+    if (!playLogData?.[ProStatsUserType.PlayLogForUserCreatedLevels]) {
       return { suggestions: [], totalLevels: 0, coveredDifficulties: [], missingDifficulties: [] };
     }
 
@@ -498,12 +498,12 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser, timeFil
         </div>
       </div>
       {/* Follower Activity Analysis */}
-      {followerData && followerData[ProStatsUserType.FollowerActivityPatterns] && followerData[ProStatsUserType.FollowerActivityPatterns].activeFollowerCount >= 5 && <div className='flex flex-col gap-2'>
+      {followerData?.[ProStatsUserType.FollowerActivityPatterns] && followerData[ProStatsUserType.FollowerActivityPatterns].activeFollowerCount >= 5 && <div className='flex flex-col gap-2'>
         <h2 className='text-xl font-bold text-center'>Best Time to Publish</h2>
         <p className='text-sm text-gray-400 text-center mb-4'>
-            Optimal timing based on when your {followerData[ProStatsUserType.FollowerActivityPatterns]?.activeFollowerCount} active followers are most engaged
+          Optimal timing based on when your {followerData[ProStatsUserType.FollowerActivityPatterns]?.activeFollowerCount} active followers are most engaged
           <span className='block text-xs text-gray-500 mt-1'>
-              Analyzing activity patterns from the last 30 days
+            Analyzing activity patterns from the last 30 days
           </span>
         </p>
         {/* Recommendations */}
@@ -514,7 +514,7 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser, timeFil
               {followerData[ProStatsUserType.FollowerActivityPatterns]?.recommendations.bestTimeLabel}
             </p>
             <p className='text-sm text-gray-400'>
-                Peak follower activity time ({userTimezone})
+              Peak follower activity time ({userTimezone})
             </p>
           </div>
           <div className='bg-gray-800 rounded-lg p-4 text-center border-2 border-blue-500'>
@@ -523,7 +523,7 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser, timeFil
               {followerData[ProStatsUserType.FollowerActivityPatterns]?.recommendations.bestDayLabel}
             </p>
             <p className='text-sm text-gray-400'>
-                Most active followers online
+              Most active followers online
             </p>
           </div>
         </div>
@@ -691,7 +691,7 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser, timeFil
                 </div>
               )}
               {/* Discord Connection */}
-              {followerData && followerData[ProStatsUserType.FollowerActivityPatterns] && followerData[ProStatsUserType.FollowerActivityPatterns].hasDiscordConnected && (
+              {followerData?.[ProStatsUserType.FollowerActivityPatterns] && followerData[ProStatsUserType.FollowerActivityPatterns].hasDiscordConnected && (
                 <div className='flex items-start gap-3 p-3 bg-green-500/10 rounded-lg border-l-4 border-green-500'>
                   <span className='text-green-400 text-lg'>💬</span>
                   <div>
@@ -741,7 +741,7 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser, timeFil
 
                 return null;
               })()}
-              {followerData && followerData[ProStatsUserType.FollowerActivityPatterns] && followerData[ProStatsUserType.FollowerActivityPatterns].activeFollowerCount > 0 && (
+              {followerData?.[ProStatsUserType.FollowerActivityPatterns] && followerData[ProStatsUserType.FollowerActivityPatterns].activeFollowerCount > 0 && (
                 <div className='flex items-start gap-3 p-3 bg-green-500/10 rounded-lg border-l-4 border-green-500'>
                   <span className='text-green-400 text-lg'>💫</span>
                   <div>
@@ -871,7 +871,7 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser, timeFil
 
                 return null;
               })()}
-              {(!followerData || !followerData[ProStatsUserType.FollowerActivityPatterns] || !followerData[ProStatsUserType.FollowerActivityPatterns].hasDiscordConnected) && (
+              {(!followerData?.[ProStatsUserType.FollowerActivityPatterns]?.hasDiscordConnected) && (
                 <div className='flex items-start gap-3 p-3 bg-amber-500/10 rounded-lg border-l-4 border-amber-500'>
                   <span className='text-amber-400 text-lg'>💬</span>
                   <div>
@@ -886,7 +886,7 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser, timeFil
                   </div>
                 </div>
               )}
-              {followerData && followerData[ProStatsUserType.FollowerActivityPatterns] && followerData[ProStatsUserType.FollowerActivityPatterns].activeFollowerCount >= 5 && (
+              {followerData?.[ProStatsUserType.FollowerActivityPatterns] && followerData[ProStatsUserType.FollowerActivityPatterns].activeFollowerCount >= 5 && (
                 <div className='flex items-start gap-3 p-3 bg-amber-500/10 rounded-lg border-l-4 border-amber-500'>
                   <span className='text-amber-400 text-lg'>⏰</span>
                   <div>
@@ -896,7 +896,7 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser, timeFil
                   </div>
                 </div>
               )}
-              {(!followerData || !followerData[ProStatsUserType.FollowerActivityPatterns] || followerData[ProStatsUserType.FollowerActivityPatterns].activeFollowerCount < 5) && (
+              {(!followerData?.[ProStatsUserType.FollowerActivityPatterns] || followerData[ProStatsUserType.FollowerActivityPatterns].activeFollowerCount < 5) && (
                 <div className='flex items-start gap-3 p-3 bg-amber-500/10 rounded-lg border-l-4 border-amber-500'>
                   <span className='text-amber-400 text-lg'>👥</span>
                   <div>
@@ -924,7 +924,7 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser, timeFil
               <div className='w-3 h-3 bg-purple-500 rounded-full' />
               <span className='text-gray-400'>Published Levels: <span className='text-white font-medium'>{levelPerformance.length}</span></span>
             </div>
-            {followerData && followerData[ProStatsUserType.FollowerActivityPatterns] && (
+            {followerData?.[ProStatsUserType.FollowerActivityPatterns] && (
               <div className='flex items-center gap-2'>
                 <div className='w-3 h-3 bg-yellow-500 rounded-full' />
                 <span className='text-gray-400'>Followers: <span className='text-white font-medium'>{followerData[ProStatsUserType.FollowerActivityPatterns].followerCount}</span></span>

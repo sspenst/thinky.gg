@@ -12,12 +12,12 @@ import AchievementCategorySection from './achievementCategorySection';
 interface AchievementsBrowserProps {
   userAchievements: Achievement[];
   userAchievementsByGame: Record<GameId, Achievement[]>;
-  achievementStats: Array<{
+  achievementStats: {
     _id: { type: AchievementType; gameId: GameId };
     count: number;
     firstEarned: Date;
     lastEarned: Date;
-  }>;
+  }[];
   game: Game;
   searchQuery: string;
   selectedCategory: string;
@@ -96,7 +96,7 @@ export default function AchievementsBrowser({
       ? Object.keys(AchievementCategoryMapping)
       : [selectedCategory];
 
-    const result: Record<string, Array<{ type: AchievementType; gameAchievements: Achievement[]; allGames: GameId[] }>> = {};
+    const result: Record<string, { type: AchievementType; gameAchievements: Achievement[]; allGames: GameId[] }[]> = {};
 
     categories.forEach(categoryKey => {
       // Skip categories that aren't supported by the selected game (unless viewing all games)
@@ -289,14 +289,14 @@ export default function AchievementsBrowser({
 
   // Calculate category stats for navigation tiles
   const categoryStats = useMemo(() => {
-    const stats: Array<{
+    const stats: {
       key: string;
       name: string;
       totalCount: number;
       unlockedCount: number;
       percentage: number;
       icon: string;
-    }> = [];
+    }[] = [];
 
     // Add individual categories that have visible achievements
     const categoryKeyToNameAndIcon: Record<string, { name: string; icon: string }> = {

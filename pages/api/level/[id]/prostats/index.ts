@@ -164,7 +164,7 @@ async function getCommunityPlayAttemptsData(levelId: string, userId: string) {
     },
   ]);
 
-  return agg && agg[0];
+  return agg?.[0];
 }
 
 async function getPlayAttemptsOverTime(levelId: string, userId: string) {

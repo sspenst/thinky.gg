@@ -34,13 +34,13 @@ export class ImageTools {
       };
     }
 
-    if (!ImageTools.isSupported() || !file.type.match(/image.*/)) {
+    if (!ImageTools.isSupported() || !(/image.*/.exec(file.type))) {
       callback(file, false);
 
       return false;
     }
 
-    if (file.type.match(/image\/gif/)) {
+    if (/image\/gif/.exec(file.type)) {
       // Not attempting, could be an animated gif
       callback(file, false);
 
@@ -110,7 +110,7 @@ export class ImageTools {
     const dataURIParts = dataURI.split(',');
     let byteString;
 
-    if (dataURIParts[0].indexOf('base64') >= 0) {
+    if (dataURIParts[0].includes('base64')) {
       // Convert base64 to raw binary data held in a string:
       byteString = atob(dataURIParts[1]);
     } else {
@@ -166,7 +166,7 @@ export class ImageTools {
     b.lastModifiedDate = new Date();
     b.name = fileName;
 
-    return <File>theBlob;
+    return theBlob as File;
   };
 
   static isSupported() {

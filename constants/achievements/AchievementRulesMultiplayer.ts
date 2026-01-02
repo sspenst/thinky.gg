@@ -4,10 +4,10 @@ import { IAchievementInfo } from './achievementInfo';
 import AchievementType from './achievementType';
 
 interface IAchievementInfoMultiplayer extends IAchievementInfo {
-    unlocked: ({ userMatches, multiplayerProfile }: { userMatches: MultiplayerMatch[], multiplayerProfile: MultiplayerProfile }) => boolean;
+  unlocked: ({ userMatches, multiplayerProfile }: { userMatches: MultiplayerMatch[], multiplayerProfile: MultiplayerProfile }) => boolean;
 }
 
-const AchievementRulesMultiplayer: { [achievementType: string]: IAchievementInfoMultiplayer; } = {
+const AchievementRulesMultiplayer: Record<string, IAchievementInfoMultiplayer> = {
   [AchievementType.MULTIPLAYER_CLASSICAL_5_GAME_PLAYED]: {
     name: 'Classical Player',
     emoji: '⏱️',

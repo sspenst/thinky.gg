@@ -418,7 +418,7 @@ export default function MusicContextProvider({ children }: { children: React.Rea
 
     setIsHot(transitionToOriginal);
 
-    if (!isPlaying || !songMetadata || !songMetadata.original || !songMetadata.ambient) {
+    if (!isPlaying || !songMetadata?.original || !songMetadata.ambient) {
       return;
     }
 

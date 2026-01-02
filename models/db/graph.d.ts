@@ -4,11 +4,11 @@ import { GraphTypeShareMetadata } from './graphMetadata';
 import Level from './level';
 import User from './user';
 
-type GraphMetadata = {
+interface GraphMetadata {
   [GraphType.SHARE]: GraphTypeShareMetadata;
   [GraphType.FOLLOW]?: never;
   [GraphType.BLOCK]?: never;
-};
+}
 
 interface Graph {
   createdAt: Date;

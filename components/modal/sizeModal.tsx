@@ -180,7 +180,7 @@ export default function SizeModal({ closeModal, historyPush, isOpen, level, setI
               }
               }
             >
-            +
+              +
             </button>
             <button
               className='px-1  border hover:bg-gray-500'
@@ -190,7 +190,7 @@ export default function SizeModal({ closeModal, historyPush, isOpen, level, setI
               }
               }
             >
-            -
+              -
             </button>
           </div>
           <div className='flex flex-col gap-1 items-center'>
@@ -203,7 +203,7 @@ export default function SizeModal({ closeModal, historyPush, isOpen, level, setI
                 }
                 }
               >
-            +
+                +
               </button>
               <button
                 className='px-1  border hover:bg-gray-500'
@@ -213,7 +213,7 @@ export default function SizeModal({ closeModal, historyPush, isOpen, level, setI
                 }
                 }
               >
-            -
+                -
               </button>
             </div>
             { /** The rect */}
@@ -227,7 +227,7 @@ export default function SizeModal({ closeModal, historyPush, isOpen, level, setI
                 }
                 }
               >
-            +
+                +
               </button>
               <button
                 className='px-1  border hover:bg-gray-500'
@@ -237,7 +237,7 @@ export default function SizeModal({ closeModal, historyPush, isOpen, level, setI
                 }
                 }
               >
-            -
+                -
               </button>
             </div>
           </div>
@@ -250,7 +250,7 @@ export default function SizeModal({ closeModal, historyPush, isOpen, level, setI
               }
               }
             >
-            +
+              +
             </button>
             <button
               className='px-1  border hover:bg-gray-500'
@@ -260,7 +260,7 @@ export default function SizeModal({ closeModal, historyPush, isOpen, level, setI
               }
               }
             >
-            -
+              -
             </button>
           </div>
 

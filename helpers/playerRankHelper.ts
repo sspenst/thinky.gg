@@ -1,6 +1,6 @@
 import { difficultyList } from '@root/components/formatted/formattedDifficulty';
 
-export function getDifficultyRollingSum(levelsSolvedByDifficulty: { [key: string]: number }): number[] {
+export function getDifficultyRollingSum(levelsSolvedByDifficulty: Record<string, number>): number[] {
   let acc = 0;
   const rollingSum = difficultyList.slice().reverse().map((difficulty) => {
     const add = levelsSolvedByDifficulty[difficulty.value] || 0;

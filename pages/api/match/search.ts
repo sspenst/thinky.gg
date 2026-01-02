@@ -34,40 +34,40 @@ async function doMatchQuery(gameId: GameId, query: MatchQuery) {
   } as any;
 
   if (query.players) {
-    searchObj['players'] = {
+    searchObj.players = {
       $all: query.players
     };
   }
 
   if (query.matchId) {
-    searchObj['matchId'] = query.matchId;
+    searchObj.matchId = query.matchId;
   }
 
   if (query.rated) {
-    searchObj['rated'] = query.rated;
+    searchObj.rated = query.rated;
   }
 
   if (query.filter) {
     switch (query.filter) {
-    case MultiplayerMatchHistoryFilters.Wins:
-      searchObj['winners'] = {
-        $in: query.players
-      };
-      break;
-    case MultiplayerMatchHistoryFilters.Losses:
-      // check if not in winners AND that winners is not empty
-      searchObj['winners'] = {
-        $not: {
+      case MultiplayerMatchHistoryFilters.Wins:
+        searchObj.winners = {
           $in: query.players
-        },
-        $ne: []
-      };
-      break;
-    case MultiplayerMatchHistoryFilters.Draws:
-      searchObj['winners'] = {
-        $size: 0
-      };
-      break;
+        };
+        break;
+      case MultiplayerMatchHistoryFilters.Losses:
+      // check if not in winners AND that winners is not empty
+        searchObj.winners = {
+          $not: {
+            $in: query.players
+          },
+          $ne: []
+        };
+        break;
+      case MultiplayerMatchHistoryFilters.Draws:
+        searchObj.winners = {
+          $size: 0
+        };
+        break;
     }
   }
 

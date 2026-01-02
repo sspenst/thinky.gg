@@ -48,7 +48,7 @@ export default withAuth({ PUT: {} }, async (req: NextApiRequestWithAuth, res: Ne
   const image = req.body;
 
   // check if image is a buffer, array buffer, or array like object or array like object with a length property
-  if (!image || !image.length) {
+  if (!image?.length) {
     return res.status(400).json({
       error: 'Missing required parameters',
     });

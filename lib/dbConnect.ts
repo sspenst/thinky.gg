@@ -37,8 +37,8 @@ export default async function dbConnect({ ignoreInitializeLocalDb }: DBConnectPr
   if (!cached.promise) {
     const options: ConnectOptions = {
       connectTimeoutMS: 10000,
-     // heartbeatFrequencyMS: 30000,
-     // serverSelectionTimeoutMS: 10000,
+      // heartbeatFrequencyMS: 30000,
+      // serverSelectionTimeoutMS: 10000,
       socketTimeoutMS: 20000,
       maxIdleTimeMS: process.env.NODE_ENV === 'development' ? 5000 : 30000,
       ...(process.env.NODE_ENV === 'development' && {
@@ -69,7 +69,7 @@ export default async function dbConnect({ ignoreInitializeLocalDb }: DBConnectPr
       } else {
         const count = parseInt(process.env.MONGODB_TEST_URI_COUNT);
 
-        uri = process.env['MONGODB_TEST_URI_' + Math.floor(Math.random() * count)] as string;
+        uri = process.env['MONGODB_TEST_URI_' + Math.floor(Math.random() * count)]!;
         // now set the uri to point to a randomally generated database name
         // this is so that we can run tests in parallel
         const randomDbName = 't_' + new Types.ObjectId().toString();
@@ -81,7 +81,7 @@ export default async function dbConnect({ ignoreInitializeLocalDb }: DBConnectPr
       uri = process.env.MONGODB_URI;
     }
 
-console.log('Connecting to ' + uri);
+    console.log('Connecting to ' + uri);
     cached.promise = mongoose.connect(uri, options).then((mongoose) => {
       mongoose.connection.on('disconnected', () => {
         if (!cached.autoReconnect) {
@@ -120,7 +120,7 @@ console.log('Connecting to ' + uri);
   return cached.conn;
 }
 
-export async function dbDisconnect(log: boolean = false) {
+export async function dbDisconnect(log = false) {
   log && console.log('In dbDisconnect');
   // NB: dbDisconnect is intentional, so we don't want to automatically reconnect
   cached.autoReconnect = false;

@@ -34,24 +34,24 @@ export default function ModifyModal({ closeModal, historyPush, isOpen, setIsDirt
 
       // then transform
       switch (transformType) {
-      case 'identity':
-        break;
-      case 'cw':
-        data = transformLevel.rotateLevelCW(data);
-        break;
-      case 'cw2':
-        data = transformLevel.rotateLevelCCW(data);
-        data = transformLevel.rotateLevelCCW(data);
-        break;
-      case 'cw3':
-        data = transformLevel.rotateLevelCCW(data);
-        break;
-      case 'fX':
-        data = transformLevel.flipLevelX(data);
-        break;
-      case 'fY':
-        data = transformLevel.flipLevelY(data);
-        break;
+        case 'identity':
+          break;
+        case 'cw':
+          data = transformLevel.rotateLevelCW(data);
+          break;
+        case 'cw2':
+          data = transformLevel.rotateLevelCCW(data);
+          data = transformLevel.rotateLevelCCW(data);
+          break;
+        case 'cw3':
+          data = transformLevel.rotateLevelCCW(data);
+          break;
+        case 'fX':
+          data = transformLevel.flipLevelX(data);
+          break;
+        case 'fY':
+          data = transformLevel.flipLevelY(data);
+          break;
       }
 
       // update level properties

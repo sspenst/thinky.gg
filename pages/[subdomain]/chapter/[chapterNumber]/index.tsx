@@ -483,15 +483,15 @@ export default function ChapterPage({ enrichedCollections, reqUser, solvedLevels
 
           </div>
 
-        {/* Floating Chapter Progress */}
-        <div className='md:absolute bottom-24 left-4 sm:bottom-32 sm:left-6 lg:bottom-40 lg:left-12 animate-fadeInLeft' style={{ animationDelay: '0.7s' }}>
-          <div className='bg-black/20 backdrop-blur-xs border border-white/20 rounded-xl px-3 py-2 sm:px-4 sm:py-3 text-white'>
-            <div className='text-xs opacity-70 mb-1'>CHAPTER {chapterNumber}</div>
-            <div className='text-sm sm:text-lg font-black bg-linear-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent'>
-              {Math.round((solvedLevels / totalLevels) * 100)}% Complete
+          {/* Floating Chapter Progress */}
+          <div className='md:absolute bottom-24 left-4 sm:bottom-32 sm:left-6 lg:bottom-40 lg:left-12 animate-fadeInLeft' style={{ animationDelay: '0.7s' }}>
+            <div className='bg-black/20 backdrop-blur-xs border border-white/20 rounded-xl px-3 py-2 sm:px-4 sm:py-3 text-white'>
+              <div className='text-xs opacity-70 mb-1'>CHAPTER {chapterNumber}</div>
+              <div className='text-sm sm:text-lg font-black bg-linear-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent'>
+                {Math.round((solvedLevels / totalLevels) * 100)}% Complete
+              </div>
             </div>
           </div>
-        </div>
         </div>
       </SpaceBackground>
 

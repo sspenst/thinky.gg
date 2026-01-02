@@ -17,10 +17,10 @@ import { MultiplayerMatchModel, NotificationModel } from '../../models/mongoose'
 import { enrichMultiplayerMatch } from '../../models/schemas/multiplayerMatchSchema';
 import { checkForFinishedMatch, checkForUnreadyAboutToStartMatch, getAllMatches } from '../../pages/api/match';
 
-const GlobalMatchTimers = {} as { [matchId: string]: {
+const GlobalMatchTimers = {} as Record<string, {
   start: NodeJS.Timeout;
   end: NodeJS.Timeout;
-} };
+}>;
 
 export async function broadcastPrivateAndInvitedMatches(gameId: GameId, emitter: Emitter, userId: Types.ObjectId) {
   const matches = await getAllMatches(gameId, userId as unknown as User,
@@ -127,7 +127,8 @@ export async function broadcastCountOfUsersInRoom(gameId: GameId, emitter: Serve
   try {
     // Use local.fetchSockets() in development to avoid adapter timeout issues
     const isLocal = process.env.LOCAL === 'true';
-    clientsMap = isLocal 
+
+    clientsMap = isLocal
       ? await emitter?.local.in(matchId).fetchSockets()
       : await emitter?.in(matchId).fetchSockets();
   } catch (e) {
@@ -185,6 +186,7 @@ export async function broadcastConnectedPlayers(gameId: GameId, emitter: Server)
   try {
     // Use local.fetchSockets() in development to avoid adapter timeout issues
     const isLocal = process.env.LOCAL === 'true';
+
     clientsMap = isLocal
       ? await emitter?.local.fetchSockets()
       : await emitter?.fetchSockets();

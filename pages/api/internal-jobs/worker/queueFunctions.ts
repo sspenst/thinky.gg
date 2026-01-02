@@ -43,7 +43,7 @@ export async function queuePushNotification(notificationId: Types.ObjectId, opti
   ]);
 }
 
-export async function bulkQueuePushNotification(notificationIds: Types.ObjectId[], session: ClientSession, runAt?: Date, onlyPush: boolean = false) {
+export async function bulkQueuePushNotification(notificationIds: Types.ObjectId[], session: ClientSession, runAt?: Date, onlyPush = false) {
   const queueMessages = [];
   const now = new Date();
   const runAtTime = runAt || now;
@@ -128,7 +128,7 @@ export async function queueDiscord(
  * @param options
  * @param spreadRunAtDuration How long to spread out the runAt times (in seconds).
  */
-export async function bulkQueueCalcPlayAttempts(levelIds: Types.ObjectId[], options?: QueryOptions, spreadRunAtDuration: number = 0) {
+export async function bulkQueueCalcPlayAttempts(levelIds: Types.ObjectId[], options?: QueryOptions, spreadRunAtDuration = 0) {
   const queueMessages = [];
   const now = new Date();
   const timeBetweenLevels = spreadRunAtDuration > 0 ? spreadRunAtDuration * 1000 / levelIds.length : 0;
@@ -208,7 +208,7 @@ export async function queuePublishLevel(levelId: Types.ObjectId, runAt: Date, op
  * @param options
  * @param spreadRunAtDuration How long to spread out the runAt times (in seconds).
  */
-export async function bulkQueueRefreshAchievements(userIds: Types.ObjectId[], gameId: GameId, categories: AchievementCategory[], options?: QueryOptions, spreadRunAtDuration: number = 0) {
+export async function bulkQueueRefreshAchievements(userIds: Types.ObjectId[], gameId: GameId, categories: AchievementCategory[], options?: QueryOptions, spreadRunAtDuration = 0) {
   const queueMessages = [];
   const now = new Date();
   const timeBetweenUsers = spreadRunAtDuration > 0 ? spreadRunAtDuration * 1000 / userIds.length : 0;
@@ -235,8 +235,8 @@ export async function bulkQueueRefreshAchievements(userIds: Types.ObjectId[], ga
 }
 
 export interface EmailQueueMessage {
-    toUser: Types.ObjectId | string;
-    fromUser: Types.ObjectId | string;
-    subject: string;
-    text: string;
-  }
+  toUser: Types.ObjectId | string;
+  fromUser: Types.ObjectId | string;
+  subject: string;
+  text: string;
+}

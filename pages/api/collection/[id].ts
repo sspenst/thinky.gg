@@ -9,7 +9,7 @@ import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Collection from '../../../models/db/collection';
 import { CollectionModel } from '../../../models/mongoose';
 
-type UpdateLevelParams = {
+interface UpdateLevelParams {
   authorNote?: string,
   isPrivate?: boolean,
   levels?: (string | Types.ObjectId)[],

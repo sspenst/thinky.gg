@@ -37,36 +37,36 @@ export default withAuth({
   let userBeingReported, reportEntityObj = null;
 
   switch (reportType) {
-  case ReportType.LEVEL: {
-    reportEntityObj = await LevelModel.findById(targetId) as Level;
-    const game = getGameFromId(reportEntityObj.gameId);
+    case ReportType.LEVEL: {
+      reportEntityObj = (await LevelModel.findById(targetId))!;
+      const game = getGameFromId(reportEntityObj.gameId);
 
-    url = game.baseUrl + `/level/${reportEntityObj.slug}`;
-    userBeingReported = reportEntityObj.userId;
-    break;
-  }
+      url = game.baseUrl + `/level/${reportEntityObj.slug}`;
+      userBeingReported = reportEntityObj.userId;
+      break;
+    }
 
-  case ReportType.COMMENT: {
+    case ReportType.COMMENT: {
     // report comment
-    url = `/comments/${targetId}`;
-    reportEntityObj = (await CommentModel.findById(targetId).populate('target')) as Comment;
-    const game = getGameFromId(GameId.THINKY);
+      url = `/comments/${targetId}`;
+      reportEntityObj = (await CommentModel.findById(targetId).populate('target')) as Comment;
+      const game = getGameFromId(GameId.THINKY);
 
-    url = game.baseUrl + `/profile/${reportEntityObj.target}`;
-    userBeingReported = reportEntityObj.author;
-    break;
-  }
+      url = game.baseUrl + `/profile/${reportEntityObj.target}`;
+      userBeingReported = reportEntityObj.author;
+      break;
+    }
 
-  case ReportType.REVIEW: {
+    case ReportType.REVIEW: {
     // report review
-    reportEntityObj = (await ReviewModel.findById(targetId).populate('levelId userId')) as Review;
+      reportEntityObj = (await ReviewModel.findById(targetId).populate('levelId userId')) as Review;
 
-    const game = getGameFromId(reportEntityObj.gameId);
+      const game = getGameFromId(reportEntityObj.gameId);
 
-    url = game.baseUrl + `/level/${reportEntityObj.levelId.slug}`;
-    userBeingReported = reportEntityObj.userId;
-    break;
-  }
+      url = game.baseUrl + `/level/${reportEntityObj.levelId.slug}`;
+      userBeingReported = reportEntityObj.userId;
+      break;
+    }
   }
 
   if (!reportEntityObj) {

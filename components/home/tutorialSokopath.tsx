@@ -282,7 +282,7 @@ export default function TutorialSokopath({ recaptchaPublicKey }: TutorialSokopat
               animationDelay: '2s',
             }}>
               {!game.disableCampaign && <>
-              Continue your Sokopath journey with the <span className='font-bold'>Campaign</span>!
+                Continue your Sokopath journey with the <span className='font-bold'>Campaign</span>!
               </>}
             </div>
             :

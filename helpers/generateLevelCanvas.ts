@@ -37,27 +37,27 @@ export default function generateLevelCanvas(canvas: Bitmap | HTMLCanvasElement, 
       const tileType = levelRows[y][x] as TileType | typeof TileTypeDefaultVisited;
 
       switch (tileType) {
-      case TileType.Default:
-        context.fillStyle = 'rgb(14, 168, 117)';
-        break;
-      case TileTypeDefaultVisited:
-        context.fillStyle = 'rgb(4, 120, 87)';
-        break;
-      case TileType.Wall:
+        case TileType.Default:
+          context.fillStyle = 'rgb(14, 168, 117)';
+          break;
+        case TileTypeDefaultVisited:
+          context.fillStyle = 'rgb(4, 120, 87)';
+          break;
+        case TileType.Wall:
         // skip since it's the same color as the background
-        continue;
-      case TileType.Exit:
-        context.fillStyle = game.type === GameType.COMPLETE_AND_SHORTEST ? 'rgb(14, 168, 117)' : 'rgb(255, 255, 255)';
-        break;
-      case TileType.Player:
-      case TileType.PlayerOnExit:
-        context.fillStyle = 'rgb(244, 114, 182)';
-        break;
-      case TileType.Hole:
-        context.fillStyle = 'rgb(65, 65, 65)';
-        break;
-      default:
-        context.fillStyle = 'rgb(0, 0, 0)';
+          continue;
+        case TileType.Exit:
+          context.fillStyle = game.type === GameType.COMPLETE_AND_SHORTEST ? 'rgb(14, 168, 117)' : 'rgb(255, 255, 255)';
+          break;
+        case TileType.Player:
+        case TileType.PlayerOnExit:
+          context.fillStyle = 'rgb(244, 114, 182)';
+          break;
+        case TileType.Hole:
+          context.fillStyle = 'rgb(65, 65, 65)';
+          break;
+        default:
+          context.fillStyle = 'rgb(0, 0, 0)';
       }
 
       // draw main background color for this cell

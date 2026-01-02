@@ -200,12 +200,12 @@ export default function SettingsConnections({ user }: SettingsConnectionsProps) 
     // Define explicit button styles for each provider
     const getButtonStyles = (providerName: string) => {
       switch (providerName.toLowerCase()) {
-      case 'discord':
-        return 'bg-purple-600 hover:bg-purple-700 focus:ring-purple-500';
-      case 'google':
-        return 'bg-red-600 hover:bg-red-700 focus:ring-red-500';
-      default:
-        return 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500';
+        case 'discord':
+          return 'bg-purple-600 hover:bg-purple-700 focus:ring-purple-500';
+        case 'google':
+          return 'bg-red-600 hover:bg-red-700 focus:ring-red-500';
+        default:
+          return 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500';
       }
     };
 

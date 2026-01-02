@@ -24,16 +24,16 @@ export function getDirectionFromCode(code: string) {
 
 export function directionToVector(direction: Direction) {
   switch (direction) {
-  case Direction.LEFT:
-    return new Position(-1, 0);
-  case Direction.UP:
-    return new Position(0, -1);
-  case Direction.RIGHT:
-    return new Position(1, 0);
-  case Direction.DOWN:
-    return new Position(0, 1);
-  default:
-    return new Position(0, 0);
+    case Direction.LEFT:
+      return new Position(-1, 0);
+    case Direction.UP:
+      return new Position(0, -1);
+    case Direction.RIGHT:
+      return new Position(1, 0);
+    case Direction.DOWN:
+      return new Position(0, 1);
+    default:
+      return new Position(0, 0);
   }
 }
 

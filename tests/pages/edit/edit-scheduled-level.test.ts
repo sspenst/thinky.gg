@@ -113,7 +113,6 @@ describe('/edit/[id] page protection', () => {
 
   test('should redirect to home for non-existent level', async () => {
     const nonExistentLevelId = new Types.ObjectId();
-    const testUserId = new Types.ObjectId(TestId.USER_PRO);
 
     const mockContext = {
       query: { id: nonExistentLevelId.toString() },

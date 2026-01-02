@@ -189,13 +189,13 @@ export default function Leaderboards({ gmLeaderboard, rankedLeaderboard, reqUser
     ...(!game.disableRanked ? { 'ranked': 'Ranked\u00A0🏅' } : {}),
     'gm': 'Grandmasters\u00A0📜',
     'sgm': 'Super\u00A0Grandmasters\u00A0🧠',
-  } as { [key: string]: string };
+  } as Record<string, string>;
 
   const leaderboardStringsMobile = {
     ...(!game.disableRanked ? { 'ranked': 'Ranked\u00A0🏅' } : {}),
     'gm': 'GM\u00A0📜',
     'sgm': 'Super\u00A0GM\u00A0🧠',
-  } as { [key: string]: string };
+  } as Record<string, string>;
 
   function getLeaderboardTable(users: User[], values: number[]) {
     if (users.length === 0) {
@@ -219,7 +219,7 @@ export default function Leaderboards({ gmLeaderboard, rankedLeaderboard, reqUser
     return (
       <div className='space-y-4 max-w-4xl mx-auto w-full'>
         {users.map((user, i) => {
-          const isYou = reqUser && user._id === reqUser._id;
+          const isYou = user._id === reqUser?._id;
 
           return (
             <div key={user._id.toString()} className='relative group'>
@@ -248,13 +248,13 @@ export default function Leaderboards({ gmLeaderboard, rankedLeaderboard, reqUser
                       {i + 1}
                     </div>
 
-                  {/* User info */}
+                    {/* User info */}
                     <div className='flex items-center text-base sm:text-lg gap-2 sm:gap-3 flex-1 min-w-0'>
                       <FormattedUser id='leaderboard' size={32} user={user} />
                     </div>
                   </div>
 
-                {/* Score with glass morphism effect */}
+                  {/* Score with glass morphism effect */}
                   <div className={`bg-white/10 backdrop-blur-xs border border-white/20 rounded-lg px-3 sm:px-4 py-2 font-bold text-base sm:text-lg shrink-0 ${
                     isYou ? 'text-yellow-400 bg-yellow-400/20 border-yellow-400/40' : 'text-white'
                   }`}>

@@ -105,95 +105,95 @@ export default withAuth(
           );
 
           // If levels are not yet generated, generate them now that both players are ready
-            const level0s = generateLevels(
-              updatedMatch.gameId,
-              DIFFICULTY_INDEX.KINDERGARTEN,
-              DIFFICULTY_INDEX.ELEMENTARY,
+          const level0s = generateLevels(
+            updatedMatch.gameId,
+            DIFFICULTY_INDEX.KINDERGARTEN,
+            DIFFICULTY_INDEX.ELEMENTARY,
+            {
+              minSteps: 6,
+              maxSteps: 25,
+              minLaplace: 0.5,
+            },
+            10
+          );
+          const level1s = generateLevels(
+            updatedMatch.gameId,
+            DIFFICULTY_INDEX.JUNIOR_HIGH,
+            DIFFICULTY_INDEX.HIGH_SCHOOL,
+            {},
+            20
+          );
+          const level2s = generateLevels(
+            updatedMatch.gameId,
+            DIFFICULTY_INDEX.BACHELORS,
+            DIFFICULTY_INDEX.PROFESSOR,
+            {},
+            5
+          );
+          const level3s = generateLevels(
+            updatedMatch.gameId,
+            DIFFICULTY_INDEX.PHD,
+            DIFFICULTY_INDEX.SUPER_GRANDMASTER,
+            {},
+            5
+          );
+
+          const [l0, l1, l2, l3] = await Promise.all([level0s, level1s, level2s, level3s]);
+
+          // Dedupe these level ids
+          const dedupedLevels = new Set([...l0, ...l1, ...l2, ...l3]);
+
+          if (dedupedLevels.size < 40) {
+            // Fallback to any levels to ensure we have enough
+            const level4s = await LevelModel.find<Level[]>(
               {
-                minSteps: 6,
-                maxSteps: 25,
-                minLaplace: 0.5,
+                isDraft: { $ne: true },
+                isDeleted: { $ne: true },
+                gameId: updatedMatch.gameId,
               },
-              10
-            );
-            const level1s = generateLevels(
-              updatedMatch.gameId,
-              DIFFICULTY_INDEX.JUNIOR_HIGH,
-              DIFFICULTY_INDEX.HIGH_SCHOOL,
-              {},
-              20
-            );
-            const level2s = generateLevels(
-              updatedMatch.gameId,
-              DIFFICULTY_INDEX.BACHELORS,
-              DIFFICULTY_INDEX.PROFESSOR,
-              {},
-              5
-            );
-            const level3s = generateLevels(
-              updatedMatch.gameId,
-              DIFFICULTY_INDEX.PHD,
-              DIFFICULTY_INDEX.SUPER_GRANDMASTER,
-              {},
-              5
-            );
+              { _id: 1 },
+              { limit: 40 - dedupedLevels.size }
+            ).lean<Level[]>();
 
-            const [l0, l1, l2, l3] = await Promise.all([level0s, level1s, level2s, level3s]);
+            level4s.forEach((level) => dedupedLevels.add(level));
+          }
 
-            // Dedupe these level ids
-            const dedupedLevels = new Set([...l0, ...l1, ...l2, ...l3]);
+          // Update match with levels and initialize gameTable
+          const matchUrl = `${req.headers.origin}/match/${matchId}`;
+          const game = getGameFromId(updatedMatch.gameId);
+          const discordChannel = game.id === GameId.SOKOPATH ? DiscordChannel.SokopathMultiplayer : DiscordChannel.PathologyMultiplayer;
+          const discordMessage = `*${multiplayerMatchTypeToText(updatedMatch.type)}* match starting between ${updatedMatch.players
+            ?.map((p) => `**${(p as User).name}**`)
+            .join(' and ')}! [Spectate here](<${matchUrl}>)`;
 
-            if (dedupedLevels.size < 40) {
-              // Fallback to any levels to ensure we have enough
-              const level4s = await LevelModel.find<Level[]>(
-                {
-                  isDraft: { $ne: true },
-                  isDeleted: { $ne: true },
-                  gameId: updatedMatch.gameId,
+          console.log('generating with levels ', dedupedLevels, matchId);
+          const [updatedMatch2, ] = await Promise.all([
+            MultiplayerMatchModel.findOneAndUpdate(
+              { matchId: matchId },
+              {
+                startTime: newStartTime,
+                endTime: newEndTime,
+                $push: {
+                  chatMessages: createMatchEventMessage('Match starting in 3 seconds!'),
                 },
-                { _id: 1 },
-                { limit: 40 - dedupedLevels.size }
-              ).lean<Level[]>();
-
-              level4s.forEach((level) => dedupedLevels.add(level));
-            }
-
-            // Update match with levels and initialize gameTable
-            const matchUrl = `${req.headers.origin}/match/${matchId}`;
-            const game = getGameFromId(updatedMatch.gameId);
-            const discordChannel = game.id === GameId.SOKOPATH ? DiscordChannel.SokopathMultiplayer : DiscordChannel.PathologyMultiplayer;
-            const discordMessage = `*${multiplayerMatchTypeToText(updatedMatch.type)}* match starting between ${updatedMatch.players
-              ?.map((p) => `**${(p as User).name}**`)
-              .join(' and ')}! [Spectate here](<${matchUrl}>)`;
-
-              console.log('generating with levels ', dedupedLevels, matchId);
-            const [updatedMatch2, ] = await Promise.all([
-              MultiplayerMatchModel.findOneAndUpdate(
-                { matchId: matchId },
-                {
-                  startTime: newStartTime,
-                  endTime: newEndTime,
-                  $push: {
-                    chatMessages: createMatchEventMessage('Match starting in 3 seconds!'),
-                  },
-                  levels: [...dedupedLevels].map((level: Level) => level._id),
-                  gameTable: {
-                    [updatedMatch.players[0]._id.toString()]: [],
-                    [updatedMatch.players[1]._id.toString()]: [],
-                  },
-                }, {
-                  new: true
-                }
-              ),
-              // Only announce if not private
-              updatedMatch.private && Promise.resolve(),
-              !updatedMatch.private && queueDiscordWebhook(
-                discordChannel,
-                discordMessage,
-                undefined,
-                updatedMatch.players.map((player: User) => player.name),
-              ),
-            ]);
+                levels: [...dedupedLevels].map((level: Level) => level._id),
+                gameTable: {
+                  [updatedMatch.players[0]._id.toString()]: [],
+                  [updatedMatch.players[1]._id.toString()]: [],
+                },
+              }, {
+                new: true
+              }
+            ),
+            // Only announce if not private
+            updatedMatch.private && Promise.resolve(),
+            !updatedMatch.private && queueDiscordWebhook(
+              discordChannel,
+              discordMessage,
+              undefined,
+              updatedMatch.players.map((player: User) => player.name),
+            ),
+          ]);
 
           // Update the match object with new times for broadcasting
           updatedMatch = updatedMatch2;
@@ -274,9 +274,9 @@ export default withAuth(
         const log = generateMatchLog(MatchAction.JOIN, {
           userId: req.user._id,
         });
-        const match = await MultiplayerMatchModel.findOne<MultiplayerMatch>({
+        const match = (await MultiplayerMatchModel.findOne<MultiplayerMatch>({
           matchId: matchId,
-        }) as MultiplayerMatch;
+        }))!;
 
         const updatedMatch = await MultiplayerMatchModel.findOneAndUpdate(
           {

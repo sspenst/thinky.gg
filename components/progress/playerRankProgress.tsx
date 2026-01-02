@@ -267,7 +267,7 @@ export default function PlayerRankProgress({ className = '', customCta }: Player
                         </div>
                         {rankPos.percentile > 0 && (
                           <div className='text-sm text-white/80 mt-1'>
-                              Only {rankPos.percentile.toFixed(1)}% of players have achieved this rank
+                            Only {rankPos.percentile.toFixed(1)}% of players have achieved this rank
                           </div>
                         )}
                       </Link>
@@ -287,7 +287,7 @@ export default function PlayerRankProgress({ className = '', customCta }: Player
                       ) : rankPos.isNext ? (
                         <div className='flex flex-col items-end gap-1'>
                           <div className='px-3 py-1 bg-linear-to-r from-cyan-800/80 to-blue-800/80 backdrop-blur-xs text-white text-sm rounded-full font-semibold border border-cyan-400/30 animate-pulse'>
-                              Next Goal
+                            Next Goal
                           </div>
                           {rankPos.requirement && (
                             <Link
@@ -296,7 +296,7 @@ export default function PlayerRankProgress({ className = '', customCta }: Player
                               data-tooltip-id={`progress-tooltip-${rankPos.difficultyIndex}`}
                               data-tooltip-content={`Counts levels at ${rankPos.rank.name} difficulty or harder`}
                             >
-                                Progress: {rankPos.userProgress || 0}/{rankPos.requirement} {rankPos.rank.name} Solved
+                              Progress: {rankPos.userProgress || 0}/{rankPos.requirement} {rankPos.rank.name} Solved
                             </Link>
                           )}
                         </div>
@@ -381,17 +381,17 @@ export default function PlayerRankProgress({ className = '', customCta }: Player
             )}
           </p>
         </div>
-        </div>
+      </div>
 
-        {/* Tooltips for progress indicators */}
-        {allRankPositions.map((rankPos) => (
-          rankPos.requirement && (
-            <StyledTooltip
-              key={`tooltip-${rankPos.difficultyIndex}`}
-              id={`progress-tooltip-${rankPos.difficultyIndex}`}
-            />
-          )
-        ))}
+      {/* Tooltips for progress indicators */}
+      {allRankPositions.map((rankPos) => (
+        rankPos.requirement && (
+          <StyledTooltip
+            key={`tooltip-${rankPos.difficultyIndex}`}
+            id={`progress-tooltip-${rankPos.difficultyIndex}`}
+          />
+        )
+      ))}
 
     </div>
   );

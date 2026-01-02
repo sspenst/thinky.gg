@@ -50,9 +50,9 @@ export function ChapterSelectCardBase({
           <div className={classNames(
             'absolute -inset-4 blur-3xl transition-all duration-700 opacity-60',
             complete ? 'bg-linear-to-r from-green-500/40 to-emerald-500/40' :
-            disabled ? 'bg-linear-to-r from-gray-600/30 to-gray-500/30' :
-            highlight ? 'bg-linear-to-r from-yellow-500/40 to-orange-500/40 animate-pulse' :
-            'bg-linear-to-r from-cyan-500/40 via-purple-500/40 to-pink-500/40'
+              disabled ? 'bg-linear-to-r from-gray-600/30 to-gray-500/30' :
+                highlight ? 'bg-linear-to-r from-yellow-500/40 to-orange-500/40 animate-pulse' :
+                  'bg-linear-to-r from-cyan-500/40 via-purple-500/40 to-pink-500/40'
           )} />
 
           {/* Main card container */}
@@ -172,9 +172,9 @@ export function ChapterSelectCardBase({
         <div className={classNames(
           'absolute -inset-6 blur-3xl transition-all duration-700 opacity-70',
           complete ? 'bg-linear-to-r from-green-500/50 to-emerald-500/50' :
-          disabled ? 'bg-linear-to-r from-gray-600/40 to-gray-500/40' :
-          highlight ? 'bg-linear-to-r from-yellow-500/50 to-orange-500/50 animate-pulse' :
-          'bg-linear-to-r from-cyan-500/50 via-purple-500/50 to-pink-500/50'
+            disabled ? 'bg-linear-to-r from-gray-600/40 to-gray-500/40' :
+              highlight ? 'bg-linear-to-r from-yellow-500/50 to-orange-500/50 animate-pulse' :
+                'bg-linear-to-r from-cyan-500/50 via-purple-500/50 to-pink-500/50'
         )} />
 
         {/* Main card container */}
@@ -291,69 +291,69 @@ export default function ChapterSelectCard({ chapter, chapterUnlocked, href, titl
   const { game } = useContext(AppContext);
 
   switch (chapter) {
-  case 0:
-    return (
-      <ChapterSelectCardBase
-        game={game}
-        href={href ?? '/tutorial'}
-        id='tutorial'
-        levelData={'00000000\n00000000\n00000000\n00000000'}
-        title={titleOverride || 'Start'}
-      />
-    );
-  case 1:
-    return (
-      <ChapterSelectCardBase
-        game={game}
-        complete={!!chapterUnlocked && chapterUnlocked > 1}
-        href={href ?? '/chapter/1'}
-        id='chapter1'
-        levelData={'50000000\n00000100\n02000000\n00000020'}
-        subtitle={'Grassroots'}
-        title={titleOverride || 'Chapter 1'}
-        highlight={highlight}
-      />
-    );
-  case 2:
-    return (
-      <ChapterSelectCardBase
-        complete={!!chapterUnlocked && chapterUnlocked > 2}
-        disabled={chapterUnlocked ? chapterUnlocked < 2 : false}
-        disabledStr={'Complete Chapter 1 to unlock'}
-        game={game}
-        href={href ?? '/chapter/2'}
-        id='chapter2'
-        levelData={'005E0C00\n0G070005\n10005010\n005100I0'}
-        subtitle={'Into the Depths'}
-        title={titleOverride || 'Chapter 2'}
-      />
-    );
-  case 3:
-    return (
-      <ChapterSelectCardBase
-        complete={!!chapterUnlocked && chapterUnlocked > 3}
-        disabled={chapterUnlocked ? chapterUnlocked < 3 : false}
-        disabledStr={'Complete Chapter 2 to unlock'}
-        game={game}
-        href={href ?? '/chapter/3'}
-        id='chapter3'
-        levelData={'B519F0G0\n10JH5H52\n75F02J08\n02050B10'}
-        subtitle={'Brain Busters'}
-        title={titleOverride || 'Chapter 3'}
-      />
-    );
-  case 4:
-    return (
-      <ChapterSelectCardBase
-        disabled={false}
-        game={game}
-        href={'/ranked'}
-        id='chapter4'
-        levelData={'65G9F3G5\nG1J5GH3I\n53FF251G\nJ1I5H505'}
-        title={titleOverride || 'Ranked'}
-      />
-    );
-  default:
-    return null;
+    case 0:
+      return (
+        <ChapterSelectCardBase
+          game={game}
+          href={href ?? '/tutorial'}
+          id='tutorial'
+          levelData={'00000000\n00000000\n00000000\n00000000'}
+          title={titleOverride || 'Start'}
+        />
+      );
+    case 1:
+      return (
+        <ChapterSelectCardBase
+          game={game}
+          complete={!!chapterUnlocked && chapterUnlocked > 1}
+          href={href ?? '/chapter/1'}
+          id='chapter1'
+          levelData={'50000000\n00000100\n02000000\n00000020'}
+          subtitle={'Grassroots'}
+          title={titleOverride || 'Chapter 1'}
+          highlight={highlight}
+        />
+      );
+    case 2:
+      return (
+        <ChapterSelectCardBase
+          complete={!!chapterUnlocked && chapterUnlocked > 2}
+          disabled={chapterUnlocked ? chapterUnlocked < 2 : false}
+          disabledStr={'Complete Chapter 1 to unlock'}
+          game={game}
+          href={href ?? '/chapter/2'}
+          id='chapter2'
+          levelData={'005E0C00\n0G070005\n10005010\n005100I0'}
+          subtitle={'Into the Depths'}
+          title={titleOverride || 'Chapter 2'}
+        />
+      );
+    case 3:
+      return (
+        <ChapterSelectCardBase
+          complete={!!chapterUnlocked && chapterUnlocked > 3}
+          disabled={chapterUnlocked ? chapterUnlocked < 3 : false}
+          disabledStr={'Complete Chapter 2 to unlock'}
+          game={game}
+          href={href ?? '/chapter/3'}
+          id='chapter3'
+          levelData={'B519F0G0\n10JH5H52\n75F02J08\n02050B10'}
+          subtitle={'Brain Busters'}
+          title={titleOverride || 'Chapter 3'}
+        />
+      );
+    case 4:
+      return (
+        <ChapterSelectCardBase
+          disabled={false}
+          game={game}
+          href={'/ranked'}
+          id='chapter4'
+          levelData={'65G9F3G5\nG1J5GH3I\n53FF251G\nJ1I5H505'}
+          title={titleOverride || 'Ranked'}
+        />
+      );
+    default:
+      return null;
   }
 }

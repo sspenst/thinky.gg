@@ -4,7 +4,7 @@ interface SpaceBackgroundProps {
   children: React.ReactNode;
   starCount?: number;
   constellationPattern?: 'default' | 'leaderboard' | 'chapter' | 'custom';
-  customConstellations?: Array<{
+  customConstellations?: {
     left: string;
     top: string;
     size?: string;
@@ -12,7 +12,7 @@ interface SpaceBackgroundProps {
     delay?: string;
     duration?: string;
     glow?: boolean;
-  }>;
+  }[];
   showGeometricShapes?: boolean;
   showBottomGradient?: boolean;
   className?: string;
@@ -41,44 +41,44 @@ const SpaceBackground = React.memo(function SpaceBackground({
     const timeSeed = 42; // Fixed seed for stable positions
 
     switch (constellationPattern) {
-    case 'leaderboard':
-      return [...Array(8)].map((_, i) => {
-        const baseLeft = 20 + (i % 3) * 25;
-        const baseTop = 15 + Math.floor(i / 3) * 20;
-        const leftVariation = pseudoRandom(timeSeed + i * 7, 10) - 5;
-        const topVariation = pseudoRandom(timeSeed + i * 11, 10) - 5;
+      case 'leaderboard':
+        return [...Array(8)].map((_, i) => {
+          const baseLeft = 20 + (i % 3) * 25;
+          const baseTop = 15 + Math.floor(i / 3) * 20;
+          const leftVariation = pseudoRandom(timeSeed + i * 7, 10) - 5;
+          const topVariation = pseudoRandom(timeSeed + i * 11, 10) - 5;
 
-        return {
-          left: `${Math.max(10, Math.min(90, baseLeft + leftVariation))}%`,
-          top: `${Math.max(10, Math.min(80, baseTop + topVariation))}%`,
-          size: `${4 + pseudoRandom(timeSeed + i * 13, 3)}px`,
-          color: 'bg-yellow-400',
-          delay: `${i * 0.3 + pseudoRandom(timeSeed + i * 17, 10) / 20}s`,
-          duration: `${2.5 + pseudoRandom(timeSeed + i * 19, 10) / 10}s`,
-          glow: true,
-        };
-      });
+          return {
+            left: `${Math.max(10, Math.min(90, baseLeft + leftVariation))}%`,
+            top: `${Math.max(10, Math.min(80, baseTop + topVariation))}%`,
+            size: `${4 + pseudoRandom(timeSeed + i * 13, 3)}px`,
+            color: 'bg-yellow-400',
+            delay: `${i * 0.3 + pseudoRandom(timeSeed + i * 17, 10) / 20}s`,
+            duration: `${2.5 + pseudoRandom(timeSeed + i * 19, 10) / 10}s`,
+            glow: true,
+          };
+        });
 
-    case 'chapter':
-      return [...Array(6)].map((_, i) => {
-        const baseLeft = 15 + (i % 3) * 30;
-        const baseTop = 20 + Math.floor(i / 3) * 25;
-        const leftVariation = pseudoRandom(timeSeed + i * 7, 10) - 5;
-        const topVariation = pseudoRandom(timeSeed + i * 11, 10) - 5;
+      case 'chapter':
+        return [...Array(6)].map((_, i) => {
+          const baseLeft = 15 + (i % 3) * 30;
+          const baseTop = 20 + Math.floor(i / 3) * 25;
+          const leftVariation = pseudoRandom(timeSeed + i * 7, 10) - 5;
+          const topVariation = pseudoRandom(timeSeed + i * 11, 10) - 5;
 
-        return {
-          left: `${Math.max(10, Math.min(90, baseLeft + leftVariation))}%`,
-          top: `${Math.max(10, Math.min(80, baseTop + topVariation))}%`,
-          size: `${5 + pseudoRandom(timeSeed + i * 13, 3)}px`,
-          color: 'bg-blue-400',
-          delay: `${i * 0.2 + pseudoRandom(timeSeed + i * 17, 10) / 20}s`,
-          duration: `${3 + pseudoRandom(timeSeed + i * 19, 10) / 10}s`,
-          glow: true,
-        };
-      });
+          return {
+            left: `${Math.max(10, Math.min(90, baseLeft + leftVariation))}%`,
+            top: `${Math.max(10, Math.min(80, baseTop + topVariation))}%`,
+            size: `${5 + pseudoRandom(timeSeed + i * 13, 3)}px`,
+            color: 'bg-blue-400',
+            delay: `${i * 0.2 + pseudoRandom(timeSeed + i * 17, 10) / 20}s`,
+            duration: `${3 + pseudoRandom(timeSeed + i * 19, 10) / 10}s`,
+            glow: true,
+          };
+        });
 
-    default:
-      return [];
+      default:
+        return [];
     }
   }, [constellationPattern, customConstellations]);
 

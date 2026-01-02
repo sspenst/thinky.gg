@@ -58,7 +58,7 @@ export default function Header({
         }
 
         // Otherwise check the token client-side
-        const token = document.cookie.match(/token=([^;]+)/)?.[1];
+        const token = (/token=([^;]+)/.exec(document.cookie))?.[1];
 
         if (token) {
           try {

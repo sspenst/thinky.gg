@@ -5,7 +5,7 @@ interface IAchievementInfoReviewer extends IAchievementInfo {
   unlocked: ({ reviewsCreatedCount }: {reviewsCreatedCount: number}) => boolean;
 }
 
-const AchievementRulesReviewer: { [achievementType: string]: IAchievementInfoReviewer; } = {
+const AchievementRulesReviewer: Record<string, IAchievementInfoReviewer> = {
   [AchievementType.REVIEWED_3000_LEVELS]: {
     name: 'Legendary Reviewer',
     emoji: '👑',

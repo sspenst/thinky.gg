@@ -137,6 +137,7 @@ export default function useTouchControls({
         lastTouchX.current = clientX;
         lastTouchY.current = clientY;
         scheduleSwipeReset();
+
         return;
       }
 
@@ -169,6 +170,7 @@ export default function useTouchControls({
 
     const timeSince = Date.now() - touchStartTimestamp.current;
     const { tapSlop, swipeDistance } = getTileMetrics();
+
     clearLongPressTimer();
 
     if (touchXDown !== undefined && touchYDown !== undefined) {
@@ -183,12 +185,14 @@ export default function useTouchControls({
         scheduleSwipeReset();
         validTouchStart.current = false;
         longPressActive.current = false;
+
         return;
       }
 
       if (dragDistance <= tapSlop && timeSince <= TAP_MAX_MS) {
         // Reset touch state on tap
         validTouchStart.current = false;
+
         return;
       }
 

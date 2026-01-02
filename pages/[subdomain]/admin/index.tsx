@@ -35,7 +35,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const token = context.req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
 
-  if (!reqUser || !reqUser.roles.includes(Role.ADMIN)) {
+  if (!reqUser?.roles.includes(Role.ADMIN)) {
     return {
       notFound: true,
     };
@@ -106,7 +106,7 @@ export default function AdminPage({ adminQuery, level, user }: AdminPageProps) {
   const systemVariables = useSystemVariables();
   const adminCommands = useAdminCommands();
 
-  const activeTab = (adminQuery.tab as Tab) || 'users';
+  const activeTab = (adminQuery.tab!) || 'users';
 
   // Command definitions
   const commandsUser: IAdminCommand[] = [

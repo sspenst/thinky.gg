@@ -46,12 +46,12 @@ const DIRECTIONS_2 = [
 ];
 
 async function query({ params, expectedError, expectedStatus, additionalAssertions }: {
-    params: Partial<NextApiRequestWithAuth>,
-    expectedError?: string,
-    expectedStatus: number,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    additionalAssertions?: (response: any) => Promise<void>,
-    }) {
+  params: Partial<NextApiRequestWithAuth>,
+  expectedError?: string,
+  expectedStatus: number,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  additionalAssertions?: (response: any) => Promise<void>,
+}) {
   await testApiHandler({
     pagesHandler: async (_, res) => {
       const req: NextApiRequestWithAuth = {

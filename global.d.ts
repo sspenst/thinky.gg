@@ -1,5 +1,3 @@
-/* eslint-disable no-var */
-
 import { Emitter } from '@socket.io/mongo-emitter';
 import admin from 'firebase-admin';
 import { MongoMemoryReplSet } from 'mongodb-memory-server';

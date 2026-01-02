@@ -17,9 +17,7 @@ interface MultiplayerMatch {
   createdBy: User;
   endTime: Date;
   gameId: GameId;
-  gameTable?: {
-    [key: string]: Level[];
-  };
+  gameTable?: Record<string, Level[]>;
   levels: Level[] | Types.ObjectId[];
   levelsPopulated: Level[]; // virtual
   markedReady: Types.ObjectId[] | User[] | string[];
@@ -29,9 +27,7 @@ interface MultiplayerMatch {
   players: UserWithMultiplayerProfile[];
   private: boolean;
   rated: boolean;
-  scoreTable: {
-    [key: string]: number; // virtual
-  };
+  scoreTable: Record<string, number>;
   startTime: Date;
   state: MultiplayerMatchState;
   timeUntilStart: number; // virtual

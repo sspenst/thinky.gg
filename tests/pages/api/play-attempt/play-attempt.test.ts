@@ -649,7 +649,7 @@ describe('Testing stats api', () => {
       userId: new Types.ObjectId(TestId.USER_B),
     },
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } as { [levelId: string]: any };
+  } as Record<string, any>;
 
   async function cleanup(levelId: Types.ObjectId) {
     const init = levelInitData[levelId.toString()];
@@ -797,11 +797,11 @@ describe('Testing stats api', () => {
 
       // console.log(allAttempts, allStats, lvlBeforeResync);
 
-      const resetLvl = await LevelModel.findOneAndUpdate(
+      const resetLvl = (await LevelModel.findOneAndUpdate(
         { _id: t.levelId },
         resetLevelUpdateQuery,
         { new: true }
-      ) as Level;
+      ))!;
 
       expect(resetLvl).toBeDefined();
       expect(resetLvl.calc_difficulty_completion_estimate).toBe(-1);
@@ -820,7 +820,7 @@ describe('Testing stats api', () => {
       ]);
       await processQueueMessages();
 
-      const lvlAfterResync = await LevelModel.findById(t.levelId) as Level;
+      const lvlAfterResync = (await LevelModel.findById(t.levelId))!;
 
       expect(lvlAfterResync.calc_difficulty_completion_estimate).toBe(lvlBeforeResync.calc_difficulty_completion_estimate);
       expect(lvlAfterResync.calc_difficulty_estimate).toBe(lvlBeforeResync.calc_difficulty_estimate);

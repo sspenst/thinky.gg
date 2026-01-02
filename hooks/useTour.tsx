@@ -7,7 +7,7 @@ import { toast } from 'react-hot-toast';
 import ReactJoyride, { CallBackProps, Step, Styles, StylesOptions } from 'react-joyride';
 import TOUR_STEPS_HOME_PAGE from '../constants/tourSteps/TOUR_STEPS_HOME_PAGE';
 
-export const TOUR_DATA: { [key in TourType]: Step[] } = {
+export const TOUR_DATA: Record<TourType, Step[]> = {
   [TourType.HOME_PAGE]: TOUR_STEPS_HOME_PAGE,
 };
 

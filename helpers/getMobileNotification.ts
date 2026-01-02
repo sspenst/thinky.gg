@@ -59,148 +59,148 @@ export default function getMobileNotification(gameId: GameId, notification: Noti
   mobileNotification.notificationId = notification._id.toString();
 
   switch (notification.type) {
-  case NotificationType.ADMIN_MESSAGE: {
-    if (notification.message) {
-      const payload = JSON.parse(notification.message);
+    case NotificationType.ADMIN_MESSAGE: {
+      if (notification.message) {
+        const payload = JSON.parse(notification.message);
 
-      mobileNotification.title = game.displayName;
-      mobileNotification.body = `${payload.message}`;
-      mobileNotification.url = `${host}${payload.href}`;
+        mobileNotification.title = game.displayName;
+        mobileNotification.body = `${payload.message}`;
+        mobileNotification.url = `${host}${payload.href}`;
+      }
+
+      return mobileNotification;
     }
 
-    return mobileNotification;
-  }
+    case NotificationType.NEW_ACHIEVEMENT: {
+      const source = notification.source as Achievement;
 
-  case NotificationType.NEW_ACHIEVEMENT: {
-    const source = notification.source as Achievement;
+      mobileNotification.title = game.displayName + ' - New Achievement';
+      const meta = AchievementRulesCombined[source.type];
 
-    mobileNotification.title = game.displayName + ' - New Achievement';
-    const meta = AchievementRulesCombined[source.type];
+      if (notification.source) {
+        mobileNotification.body = `${meta?.emoji} Achievement unlocked! ${meta.getDescription(game)}`;
+        mobileNotification.url = `${host}/profile/${user.name}/achievements`;
+      } else {
+        mobileNotification.body = 'Unknown achievement';
+        mobileNotification.url = `${host}/profile/${user.name}/achievements`;
+      }
 
-    if (notification.source) {
-      mobileNotification.body = `${meta?.emoji} Achievement unlocked! ${meta.getDescription(game)}`;
-      mobileNotification.url = `${host}/profile/${user.name}/achievements`;
-    } else {
-      mobileNotification.body = 'Unknown achievement';
-      mobileNotification.url = `${host}/profile/${user.name}/achievements`;
+      return mobileNotification;
     }
 
-    return mobileNotification;
-  }
+    case NotificationType.NEW_FOLLOWER: {
+      const source = notification.source as User;
 
-  case NotificationType.NEW_FOLLOWER: {
-    const source = notification.source as User;
+      mobileNotification.title = game.displayName + ' - New Follower';
+      mobileNotification.body = `${source.name} started following you`;
+      mobileNotification.imageUrl = `${host}/api/avatar/${source._id}.png`;
+      mobileNotification.url = `${host}/profile/${source.name}`;
 
-    mobileNotification.title = game.displayName + ' - New Follower';
-    mobileNotification.body = `${source.name} started following you`;
-    mobileNotification.imageUrl = `${host}/api/avatar/${source._id}.png`;
-    mobileNotification.url = `${host}/profile/${source.name}`;
-
-    return mobileNotification;
-  }
-
-  case NotificationType.NEW_LEVEL: {
-    const source = notification.source as User;
-
-    mobileNotification.title = game.displayName + ' - New Level';
-    mobileNotification.body = `${source.name} published a new level: ${targetAsLevel.name}`;
-    mobileNotification.imageUrl = `${host}/api/level/image/${targetAsLevel._id}.png`;
-    mobileNotification.url = `${host}/level/${targetAsLevel.slug}`;
-
-    return mobileNotification;
-  }
-
-  case NotificationType.NEW_LEVEL_ADDED_TO_COLLECTION: {
-    const source = notification.source as User;
-
-    mobileNotification.title = game.displayName + ' - Your level added to a collection';
-    mobileNotification.body = `${source?.name} was added to the collection: ${targetAsCollection.name}`;
-    mobileNotification.imageUrl = `${host}/${game.logo}}`;
-    mobileNotification.url = `${host}/collection/${targetAsCollection.slug}`;
-
-    return mobileNotification;
-  }
-
-  case NotificationType.NEW_RECORD_ON_A_LEVEL_YOU_SOLVED:{
-    const source = notification.source as User;
-
-    mobileNotification.title = game.displayName + ' - New Record';
-    mobileNotification.body = `${source.name} set a new record: ${targetAsLevel.name} - ${notification.message} moves`;
-    mobileNotification.imageUrl = `${host}/api/level/image/${targetAsLevel._id}.png`;
-    mobileNotification.url = `${host}/level/${targetAsLevel.slug}`;
-
-    return mobileNotification;
-  }
-
-  case NotificationType.NEW_REVIEW_ON_YOUR_LEVEL:{
-    const source = notification.source as User;
-
-    mobileNotification.title = game.displayName + ' - New Review';
-    mobileNotification.body = `${source.name} ${getNewReviewOnYourLevelBody(notification.message)} on your level ${targetAsLevel.name}`;
-    mobileNotification.imageUrl = `${host}/api/level/image/${targetAsLevel._id}.png`;
-    mobileNotification.url = `${host}/level/${targetAsLevel.slug}`;
-
-    return mobileNotification;
-  }
-
-  case NotificationType.NEW_WALL_POST: {
-    const source = notification.source as User;
-
-    mobileNotification.title = game.displayName + ' - New Comment';
-    const comment = notification.message
-      ? JSON.parse(notification.message)
-      : null;
-    const shortenedText = comment
-      ? comment.text.length > 10
-        ? comment.text.substring(0, 10) + '...'
-        : comment.text
-      : '';
-
-    mobileNotification.body = `${source.name} posted "${shortenedText}" on your profile.`;
-    mobileNotification.imageUrl = `${host}/api/avatar/${source._id}.png`;
-    mobileNotification.url = `${host}/profile/${user.name}`;
-
-    return mobileNotification;
-  }
-
-  case NotificationType.NEW_WALL_REPLY: {
-    const source = notification.source as User;
-
-    mobileNotification.title = game.displayName + ' - New Reply';
-    const comment = notification.message
-      ? JSON.parse(notification.message)
-      : null;
-    const shortenedText = comment
-      ? comment.text.length > 10
-        ? comment.text.substring(0, 10) + '...'
-        : comment.text
-      : '';
-
-    mobileNotification.body = `${source.name} replied "${shortenedText}" to your message on ${targetAsUser.name}'s profile.`;
-    mobileNotification.imageUrl = `${host}/api/avatar/${source._id}.png`;
-    mobileNotification.url = `${host}/profile/${targetAsUser.name}`;
-
-    return mobileNotification;
-  }
-
-  case NotificationType.LEVEL_OF_DAY: {
-    mobileNotification.title = game.displayName + ' - Level of the Day';
-
-    if (notification.source && (notification.source as EnrichedLevel)._id) {
-      const levelOfDay = notification.source as EnrichedLevel;
-
-      mobileNotification.body = notification.message || `Check out today's ${game.displayName} level of the day!`;
-      mobileNotification.imageUrl = `${host}/api/level/image/${levelOfDay._id}.png`;
-      mobileNotification.url = `${host}/level-of-day`;
-    } else {
-      mobileNotification.body = notification.message || `Check out today's ${game.displayName} level of the day!`;
-      mobileNotification.url = `${host}/level-of-day`;
+      return mobileNotification;
     }
 
-    return mobileNotification;
-  }
+    case NotificationType.NEW_LEVEL: {
+      const source = notification.source as User;
 
-  default:
-    return mobileNotification;
+      mobileNotification.title = game.displayName + ' - New Level';
+      mobileNotification.body = `${source.name} published a new level: ${targetAsLevel.name}`;
+      mobileNotification.imageUrl = `${host}/api/level/image/${targetAsLevel._id}.png`;
+      mobileNotification.url = `${host}/level/${targetAsLevel.slug}`;
+
+      return mobileNotification;
+    }
+
+    case NotificationType.NEW_LEVEL_ADDED_TO_COLLECTION: {
+      const source = notification.source as User;
+
+      mobileNotification.title = game.displayName + ' - Your level added to a collection';
+      mobileNotification.body = `${source?.name} was added to the collection: ${targetAsCollection.name}`;
+      mobileNotification.imageUrl = `${host}/${game.logo}}`;
+      mobileNotification.url = `${host}/collection/${targetAsCollection.slug}`;
+
+      return mobileNotification;
+    }
+
+    case NotificationType.NEW_RECORD_ON_A_LEVEL_YOU_SOLVED:{
+      const source = notification.source as User;
+
+      mobileNotification.title = game.displayName + ' - New Record';
+      mobileNotification.body = `${source.name} set a new record: ${targetAsLevel.name} - ${notification.message} moves`;
+      mobileNotification.imageUrl = `${host}/api/level/image/${targetAsLevel._id}.png`;
+      mobileNotification.url = `${host}/level/${targetAsLevel.slug}`;
+
+      return mobileNotification;
+    }
+
+    case NotificationType.NEW_REVIEW_ON_YOUR_LEVEL:{
+      const source = notification.source as User;
+
+      mobileNotification.title = game.displayName + ' - New Review';
+      mobileNotification.body = `${source.name} ${getNewReviewOnYourLevelBody(notification.message)} on your level ${targetAsLevel.name}`;
+      mobileNotification.imageUrl = `${host}/api/level/image/${targetAsLevel._id}.png`;
+      mobileNotification.url = `${host}/level/${targetAsLevel.slug}`;
+
+      return mobileNotification;
+    }
+
+    case NotificationType.NEW_WALL_POST: {
+      const source = notification.source as User;
+
+      mobileNotification.title = game.displayName + ' - New Comment';
+      const comment = notification.message
+        ? JSON.parse(notification.message)
+        : null;
+      const shortenedText = comment
+        ? comment.text.length > 10
+          ? comment.text.substring(0, 10) + '...'
+          : comment.text
+        : '';
+
+      mobileNotification.body = `${source.name} posted "${shortenedText}" on your profile.`;
+      mobileNotification.imageUrl = `${host}/api/avatar/${source._id}.png`;
+      mobileNotification.url = `${host}/profile/${user.name}`;
+
+      return mobileNotification;
+    }
+
+    case NotificationType.NEW_WALL_REPLY: {
+      const source = notification.source as User;
+
+      mobileNotification.title = game.displayName + ' - New Reply';
+      const comment = notification.message
+        ? JSON.parse(notification.message)
+        : null;
+      const shortenedText = comment
+        ? comment.text.length > 10
+          ? comment.text.substring(0, 10) + '...'
+          : comment.text
+        : '';
+
+      mobileNotification.body = `${source.name} replied "${shortenedText}" to your message on ${targetAsUser.name}'s profile.`;
+      mobileNotification.imageUrl = `${host}/api/avatar/${source._id}.png`;
+      mobileNotification.url = `${host}/profile/${targetAsUser.name}`;
+
+      return mobileNotification;
+    }
+
+    case NotificationType.LEVEL_OF_DAY: {
+      mobileNotification.title = game.displayName + ' - Level of the Day';
+
+      if (notification.source && (notification.source as EnrichedLevel)._id) {
+        const levelOfDay = notification.source as EnrichedLevel;
+
+        mobileNotification.body = notification.message || `Check out today's ${game.displayName} level of the day!`;
+        mobileNotification.imageUrl = `${host}/api/level/image/${levelOfDay._id}.png`;
+        mobileNotification.url = `${host}/level-of-day`;
+      } else {
+        mobileNotification.body = notification.message || `Check out today's ${game.displayName} level of the day!`;
+        mobileNotification.url = `${host}/level-of-day`;
+      }
+
+      return mobileNotification;
+    }
+
+    default:
+      return mobileNotification;
   }
 }

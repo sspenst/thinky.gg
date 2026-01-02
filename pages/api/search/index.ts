@@ -95,11 +95,11 @@ function getDimensionLimits(query: SearchQuery, searchObj: FilterQuery<any>) {
   }
 
   if (maxDimensionOr.length > 0 && minDimensionOr.length > 0) {
-    searchObj['$and'] = [{ $or: maxDimensionOr }, { $or: minDimensionOr }];
+    searchObj.$and = [{ $or: maxDimensionOr }, { $or: minDimensionOr }];
   } else if (maxDimensionOr.length > 0) {
-    searchObj['$or'] = maxDimensionOr;
+    searchObj.$or = maxDimensionOr;
   } else if (minDimensionOr.length > 0) {
-    searchObj['$or'] = minDimensionOr;
+    searchObj.$or = minDimensionOr;
   }
 }
 
@@ -107,11 +107,11 @@ export function cleanInput(input: string) {
   return input.replace(/[^-a-zA-Z0-9_' ]/g, '.*');
 }
 
-export type SearchResult = {
+export interface SearchResult {
   levels: EnrichedLevel[];
   searchAuthor: User | null;
   totalRows: number;
-};
+}
 
 function generateCacheKey(gameId: GameId, query: SearchQuery): string {
   // Clone query and remove fields that shouldn't affect caching
@@ -165,14 +165,14 @@ export async function doQuery(gameId: GameId | undefined, query: SearchQuery, re
   const userId = reqUser?._id;
 
   if (query.search && query.search.length > 0) {
-    searchObj['name'] = {
+    searchObj.name = {
       $regex: cleanInput(query.search),
       $options: 'i',
     };
   }
 
   if (query.isRanked === 'true') {
-    searchObj['isRanked'] = true;
+    searchObj.isRanked = true;
   }
 
   let searchAuthor: User | null = null;
@@ -188,28 +188,28 @@ export async function doQuery(gameId: GameId | undefined, query: SearchQuery, re
     cleanUser(searchAuthor);
 
     if (searchAuthor) {
-      searchObj['userId'] = searchAuthor._id;
+      searchObj.userId = searchAuthor._id;
     }
   } else if (query.searchAuthorId) {
     if (Types.ObjectId.isValid(query.searchAuthorId)) {
-      searchObj['userId'] = new Types.ObjectId(query.searchAuthorId);
+      searchObj.userId = new Types.ObjectId(query.searchAuthorId);
     }
   }
 
   if (query.excludeLevelIds) {
     const excludeLevelIds = query.excludeLevelIds.split(',');
 
-    searchObj['_id'] = { $nin: excludeLevelIds.map((id) => new Types.ObjectId(id)) };
+    searchObj._id = { $nin: excludeLevelIds.map((id) => new Types.ObjectId(id)) };
   }
 
   if (query.includeLevelIds) {
     const includeLevelIds = query.includeLevelIds.split(',');
 
-    searchObj['_id'] = { $in: includeLevelIds.map((id) => new Types.ObjectId(id)) };
+    searchObj._id = { $in: includeLevelIds.map((id) => new Types.ObjectId(id)) };
   }
 
   if (query.minSteps && query.maxSteps) {
-    searchObj['leastMoves'] = {
+    searchObj.leastMoves = {
       $gte: parseInt(query.minSteps),
       $lte: parseInt(query.maxSteps),
     };
@@ -218,7 +218,7 @@ export async function doQuery(gameId: GameId | undefined, query: SearchQuery, re
   getDimensionLimits(query, searchObj);
 
   if (query.maxRating && query.minRating) {
-    searchObj['calc_reviews_score_laplace'] = {
+    searchObj.calc_reviews_score_laplace = {
       $gte: parseFloat(query.minRating),
       $lte: parseFloat(query.maxRating),
     };
@@ -226,17 +226,17 @@ export async function doQuery(gameId: GameId | undefined, query: SearchQuery, re
 
   if (query.timeRange) {
     if (query.timeRange === TimeRange[TimeRange.Day]) {
-      searchObj['ts'] = {};
-      searchObj['ts']['$gte'] = new Date(Date.now() - 24 * 60 * 60 * 1000).getTime() / 1000;
+      searchObj.ts = {};
+      searchObj.ts.$gte = new Date(Date.now() - 24 * 60 * 60 * 1000).getTime() / 1000;
     } else if (query.timeRange === TimeRange[TimeRange.Week]) {
-      searchObj['ts'] = {};
-      searchObj['ts']['$gte'] = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).getTime() / 1000;
+      searchObj.ts = {};
+      searchObj.ts.$gte = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).getTime() / 1000;
     } else if (query.timeRange === TimeRange[TimeRange.Month]) {
-      searchObj['ts'] = {};
-      searchObj['ts']['$gte'] = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).getTime() / 1000;
+      searchObj.ts = {};
+      searchObj.ts.$gte = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).getTime() / 1000;
     } else if (query.timeRange === TimeRange[TimeRange.Year]) {
-      searchObj['ts'] = {};
-      searchObj['ts']['$gte'] = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).getTime() / 1000;
+      searchObj.ts = {};
+      searchObj.ts.$gte = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).getTime() / 1000;
     }
   }
 
@@ -262,7 +262,7 @@ export async function doQuery(gameId: GameId | undefined, query: SearchQuery, re
       sortObj.push(['ts', sortDirection]);
     } else if (query.sortBy === 'reviewScore') {
       sortObj.push(['calc_reviews_score_laplace', sortDirection], ['calc_reviews_score_avg', sortDirection], ['calc_reviews_count', sortDirection]);
-      searchObj['calc_reviews_score_avg'] = { $gte: 0 };
+      searchObj.calc_reviews_score_avg = { $gte: 0 };
     } else if (query.sortBy === 'total_reviews') {
       sortObj.push(['calc_reviews_count', sortDirection]);
     } else if (query.sortBy === 'solves') {
@@ -342,7 +342,7 @@ export async function doQuery(gameId: GameId | undefined, query: SearchQuery, re
       $match: { 'stat.complete': false },
     });
   } else if (query.statFilter === StatFilter.Unattempted) {
-    projection['calc_playattempts_unique_users'] = 1;
+    projection.calc_playattempts_unique_users = 1;
 
     statLookupAndMatchStage.push(
       {
@@ -370,7 +370,7 @@ export async function doQuery(gameId: GameId | undefined, query: SearchQuery, re
     statLookupAndMatchStage = [{ $unwind: '$_id' }];
   }
 
-  const limit = Math.max(1, Math.min(parseInt(query.numResults as string) || 20, 20));
+  const limit = Math.max(1, Math.min(parseInt(query.numResults!) || 20, 20));
   const skip = query.page ? (parseInt(query.page) - 1) * limit : 0;
 
   if (query.difficultyFilter) {
@@ -392,11 +392,11 @@ export async function doQuery(gameId: GameId | undefined, query: SearchQuery, re
     searchObj[difficultyEstimate] = {};
 
     if (query.minDifficulty) {
-      searchObj[difficultyEstimate]['$gte'] = parseInt(query.minDifficulty);
+      searchObj[difficultyEstimate].$gte = parseInt(query.minDifficulty);
     }
 
     if (query.maxDifficulty) {
-      searchObj[difficultyEstimate]['$lte'] = parseInt(query.maxDifficulty);
+      searchObj[difficultyEstimate].$lte = parseInt(query.maxDifficulty);
     }
   }
 
@@ -419,7 +419,7 @@ export async function doQuery(gameId: GameId | undefined, query: SearchQuery, re
 
     const mustNotContainRegex = mustNotContain !== '' ? `(?!.*[${mustNotContain}])` : '';
 
-    searchObj['data'] = { $regex: new RegExp(`^(${mustNotContainRegex}[0-9A-J\n]+)$`, 'g') };
+    searchObj.data = { $regex: new RegExp(`^(${mustNotContainRegex}[0-9A-J\n]+)$`, 'g') };
   }
 
   const lookupUserStage = [

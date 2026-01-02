@@ -6,7 +6,7 @@ interface IAchievementInfoCreator extends IAchievementInfo {
   unlocked: ({ levelsCreated }: {levelsCreated: Level[]}) => boolean;
 }
 
-const AchievementRulesCreator: { [achievementType: string]: IAchievementInfoCreator; } = {
+const AchievementRulesCreator: Record<string, IAchievementInfoCreator> = {
   [AchievementType.CREATOR_CREATED_25_HIGH_QUALITY_LEVELS]: {
     name: 'Masterpiece Maker',
     emoji: '🎻',

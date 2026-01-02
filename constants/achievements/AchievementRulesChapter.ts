@@ -6,7 +6,7 @@ interface IAchievementInfoUser extends IAchievementInfo {
   unlocked: ({ userConfig }: { userConfig: UserConfig | null; }) => boolean;
 }
 
-const AchievementRulesChapter: { [achievementType: string]: IAchievementInfoUser; } = {
+const AchievementRulesChapter: Record<string, IAchievementInfoUser> = {
   [AchievementType.CHAPTER_1_COMPLETED]: {
     name: 'Grassroots Graduate',
     emoji: '🌱',

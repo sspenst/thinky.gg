@@ -163,7 +163,7 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
         }
         }
       >
-              Add { game.displayName } Pro
+        Add { game.displayName } Pro
       </button>
 
     </div>
@@ -175,7 +175,7 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
         rel='noreferrer'
         target='_blank'
       >
-              Start Free Trial
+        Start Free Trial
       </Link>
     );
 
@@ -386,8 +386,8 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
             { subscribeButtonComponent}
           </div>
           <p className='text-xs text-center'>
-              By clicking Subscribe, you agree to our <a className='text-blue-300' href='https://docs.google.com/document/d/e/2PACX-1vR4E-RcuIpXSrRtR3T3y9begevVF_yq7idcWWx1A-I9w_VRcHhPTkW1A7DeUx2pGOcyuKifEad3Qokn/pub' rel='noreferrer' target='_blank'>
-                Terms of Service
+            By clicking Subscribe, you agree to our <a className='text-blue-300' href='https://docs.google.com/document/d/e/2PACX-1vR4E-RcuIpXSrRtR3T3y9begevVF_yq7idcWWx1A-I9w_VRcHhPTkW1A7DeUx2pGOcyuKifEad3Qokn/pub' rel='noreferrer' target='_blank'>
+              Terms of Service
             </a>.<br />Subscriptions auto-renew until canceled, as described in the Terms.
           </p>
         </div>

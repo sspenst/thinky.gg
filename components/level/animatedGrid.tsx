@@ -6,12 +6,12 @@ import React, { useEffect, useRef, useState } from 'react';
 import Grid from './grid';
 
 interface AnimatedGridProps {
-    animationInstructions: Direction[];
-    id?: string;
-    game: Game;
-    theme: Theme;
-    leastMoves?: number;
-    levelData: string;
+  animationInstructions: Direction[];
+  id?: string;
+  game: Game;
+  theme: Theme;
+  leastMoves?: number;
+  levelData: string;
 
 }
 

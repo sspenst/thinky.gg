@@ -71,7 +71,7 @@ describe('api/admin/impersonate', () => {
 
           if (tokenMatch) {
             const token = tokenMatch[1];
-            const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as any;
+            const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
 
             expect(decoded.userId).toBe(TestId.USER);
             expect(decoded.adminId).toBe(TestId.USER_ADMIN);
@@ -199,7 +199,7 @@ describe('api/admin/impersonate', () => {
         userId: TestId.USER,
         adminId: TestId.USER_ADMIN,
         isImpersonating: true,
-      }, process.env.JWT_SECRET as string, { expiresIn: '1h' });
+      }, process.env.JWT_SECRET!, { expiresIn: '1h' });
 
       await testApiHandler({
         pagesHandler: async (_, res) => {
@@ -234,7 +234,7 @@ describe('api/admin/impersonate', () => {
 
           if (tokenMatch) {
             const token = tokenMatch[1];
-            const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as any;
+            const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
 
             expect(decoded.userId).toBe(TestId.USER_ADMIN);
             expect(decoded.adminId).toBeUndefined();

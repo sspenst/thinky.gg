@@ -28,7 +28,7 @@ const DefaultReq = {
   },
 };
 const convertToBinary = (base64: string) => {
-  const matches = base64.match(/^data:([A-Za-z-+/]+);base64,(.+)$/);
+  const matches = /^data:([A-Za-z-+/]+);base64,(.+)$/.exec(base64);
 
   if (matches?.length !== 3) {
     return new Error('Invalid input string');

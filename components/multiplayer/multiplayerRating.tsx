@@ -28,7 +28,7 @@ export default function MultiplayerRating({ hideType, profile, record, type }: M
         </span>
         {record && (
           <div data-tooltip-id='profile-record' className='text-xs' data-tooltip-content={'Wins-Draws-Losses'}>
-          ({record.wins}-{record.draws}-{record.losses})
+            ({record.wins}-{record.draws}-{record.losses})
           </div>
         )}
         <StyledTooltip id='profile-rating' />
@@ -48,7 +48,7 @@ export default function MultiplayerRating({ hideType, profile, record, type }: M
         }}>{deviceInfo.screenSize < ScreenSize.MD ? '⏳' : 'Unrated'}</span>
         {record && (
           <div className='text-xs'>
-          ({record.wins}-{record.draws}-{record.losses})
+            ({record.wins}-{record.draws}-{record.losses})
           </div>
         )}
         <StyledTooltip id='unrated' />

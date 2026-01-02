@@ -1,7 +1,6 @@
 import AdminCommand from '@root/constants/adminCommand';
 import Direction from '@root/constants/direction';
 import { DEFAULT_GAME_ID } from '@root/constants/GameId';
-import Level from '@root/models/db/level';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import TestId from '../../../../constants/testId';
@@ -121,7 +120,7 @@ describe('Publishing a new level, setting it to ranked, verifying ranked data is
         expect(response.error).toBeUndefined();
         expect(response._id).toBe(rankedLevelId);
 
-        const level = await LevelModel.findById(rankedLevelId) as Level;
+        const level = (await LevelModel.findById(rankedLevelId))!;
 
         expect(level.isDraft).toBe(false);
         expect(level.isRanked).toBe(false);
@@ -165,7 +164,7 @@ describe('Publishing a new level, setting it to ranked, verifying ranked data is
 
         expect(response.error).toBeUndefined();
 
-        const level = await LevelModel.findById(rankedLevelId) as Level;
+        const level = (await LevelModel.findById(rankedLevelId))!;
 
         expect(level.isRanked).toBe(true);
 
@@ -265,7 +264,7 @@ describe('Publishing a new level, setting it to ranked, verifying ranked data is
 
         expect(response.error).toBeUndefined();
 
-        const level = await LevelModel.findById(rankedLevelId) as Level;
+        const level = (await LevelModel.findById(rankedLevelId))!;
 
         expect(level.isRanked).toBe(false);
 

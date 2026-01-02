@@ -160,30 +160,30 @@ describe('matchUnpublishLevelInMatch', () => {
     });
   });
   test('Player A marks themselves ready', async () => {
-  await testApiHandler({
-    pagesHandler: async (_, res) => {
-      await handler({
-        ...defaultReq,
-        method: 'PUT',
-        cookies: {
-          token: getTokenCookieValue(TestId.USER),
-        },
-        query: {
-          matchId: matchId,
-        },
-        body: {
-          action: MatchAction.MARK_READY,
-        },
-      }, res);
-    },
-    test: async ({ fetch }) => {
-      const res = await fetch();
-      const response = await res.json();
+    await testApiHandler({
+      pagesHandler: async (_, res) => {
+        await handler({
+          ...defaultReq,
+          method: 'PUT',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          query: {
+            matchId: matchId,
+          },
+          body: {
+            action: MatchAction.MARK_READY,
+          },
+        }, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
 
-      expect(res.status).toBe(200);
-      expect(response.success).toBe(true);
-    },
-  });
+        expect(res.status).toBe(200);
+        expect(response.success).toBe(true);
+      },
+    });
   }),
   test('in between no levels still generated', async () => {
     MockDate.set(new Date().getTime() + 2000); // two seconds later
@@ -235,7 +235,7 @@ describe('matchUnpublishLevelInMatch', () => {
         expect(response.success).toBe(true);
       },
     });
-    }),
+  }),
   test('GET match from a spectator after both players mark ready (match should have started', async () => {
     // Now the start time should be set to 3 seconds from now. let's fast forward 4 seconds
 
@@ -541,8 +541,7 @@ describe('matchUnpublishLevelInMatch', () => {
       createdAt: Date;
     }
     const userBSkipMessage = chatMessages.find((msg: ChatMessage) =>
-      msg.systemData &&
-      msg.systemData.type === 'level_action' &&
+      msg.systemData?.type === 'level_action' &&
       msg.systemData.userId === TestId.USER_B &&
       msg.systemData.action === 'skipped'
     );

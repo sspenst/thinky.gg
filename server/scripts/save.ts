@@ -163,7 +163,7 @@ async function integrityCheckRankedScore(gameId: GameId) {
   ]);
 
   // convert stats to a dictionary
-  const rankedSolvesTable: { [userId: string]: number } = {};
+  const rankedSolvesTable: Record<string, number> = {};
 
   for (const stat of stats) {
     rankedSolvesTable[stat._id.toString()] = stat.count;
@@ -240,7 +240,7 @@ async function integrityCheckRecords() {
   console.log('Integrity Check Records');
   console.log('Querying all levels\' records into memory...');
   const allLevels = await LevelModel.countDocuments({ isDeleted: { $ne: true }, isDraft: false });
-  const recordCounts: { [userId: string]: number } = {};
+  const recordCounts: Record<string, number> = {};
   let i = 0;
 
   progressBar.start(allLevels, 0);
@@ -327,7 +327,7 @@ async function integrityCheckPlayAttempts() {
     }
 
     // comparing play attempts from the same level and user
-    if (prevPlayAttempt && prevPlayAttempt.levelId.toString() === playAttempt.levelId.toString() && prevPlayAttempt.userId.toString() === playAttempt.userId.toString()) {
+    if (prevPlayAttempt?.levelId.toString() === playAttempt.levelId.toString() && prevPlayAttempt.userId.toString() === playAttempt.userId.toString()) {
       if (playAttempt.attemptContext > prevPlayAttempt.attemptContext) {
         console.warn(`[${playAttempt._id.toString()}, ${playAttempt.levelId.toString()}, ${playAttempt.userId.toString()}] attemptContext out of order`);
       }

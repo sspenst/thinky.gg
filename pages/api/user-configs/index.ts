@@ -13,7 +13,7 @@ export default withAuth({
 
     return acc;
   }
-  , {} as { [gameId: string]: UserConfig });
+  , {} as Record<string, UserConfig>);
 
   // return userConfigsMap;
   return res.status(200).json(userConfigsMap);

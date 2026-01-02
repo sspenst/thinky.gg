@@ -128,7 +128,7 @@ export default function ThinkyHomeRouter({ user }: ThinkyHomeRouterProps) {
               textShadow: '0 0 10px rgba(255,255,255,1)',
             }}
           >
-          Thinky.gg
+            Thinky.gg
           </span>
           {user ? (
             <div>

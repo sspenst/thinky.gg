@@ -176,38 +176,38 @@ export default function Home({
         </div>
         <div className='p-6'>
           <div className='flex flex-wrap justify-center gap-4'>
-          {latestLevels ?
-            latestLevels.length === 0 ?
-              <div className='text-center italic p-3'>No levels found</div>
+            {latestLevels ?
+              latestLevels.length === 0 ?
+                <div className='text-center italic p-3'>No levels found</div>
+                :
+                latestLevels.map((level) => {
+                  return (
+                    <LevelCard
+                      id='latest-unsolved'
+                      key={level._id.toString()}
+                      level={level}
+                    />
+                  );
+                })
               :
-              latestLevels.map((level) => {
-                return (
-                  <LevelCard
-                    id='latest-unsolved'
-                    key={level._id.toString()}
-                    level={level}
-                  />
-                );
-              })
-            :
-            <>
-              <LoadingCard />
-              <LoadingCard />
-              <LoadingCard />
-              <LoadingCard />
-              <LoadingCard />
-              <LoadingCard />
-              <LoadingCard />
-              <LoadingCard />
-              <LoadingCard />
-              <LoadingCard />
-              <LoadingCard />
-              <LoadingCard />
-              <LoadingCard />
-              <LoadingCard />
-              <LoadingCard />
-            </>
-          }
+              <>
+                <LoadingCard />
+                <LoadingCard />
+                <LoadingCard />
+                <LoadingCard />
+                <LoadingCard />
+                <LoadingCard />
+                <LoadingCard />
+                <LoadingCard />
+                <LoadingCard />
+                <LoadingCard />
+                <LoadingCard />
+                <LoadingCard />
+                <LoadingCard />
+                <LoadingCard />
+                <LoadingCard />
+              </>
+            }
           </div>
         </div>
       </div>
@@ -240,28 +240,28 @@ export default function Home({
           </div>
           <div className='p-6'>
             <div className='flex flex-col justify-center gap-4 items-center'>
-          {topLevelsThisMonth ?
-            topLevelsThisMonth.length === 0 ?
-              <div className='text-center italic p-3'>No levels found</div>
-              :
-              topLevelsThisMonth.map((level) => {
-                return (
-                  <LevelCard
-                    id='top-level-this-month'
-                    key={level._id.toString()}
-                    level={level}
-                  />
-                );
-              })
-            :
-            <>
-              <LoadingCard />
-              <LoadingCard />
-              <LoadingCard />
-              <LoadingCard />
-              <LoadingCard />
-            </>
-          }
+              {topLevelsThisMonth ?
+                topLevelsThisMonth.length === 0 ?
+                  <div className='text-center italic p-3'>No levels found</div>
+                  :
+                  topLevelsThisMonth.map((level) => {
+                    return (
+                      <LevelCard
+                        id='top-level-this-month'
+                        key={level._id.toString()}
+                        level={level}
+                      />
+                    );
+                  })
+                :
+                <>
+                  <LoadingCard />
+                  <LoadingCard />
+                  <LoadingCard />
+                  <LoadingCard />
+                  <LoadingCard />
+                </>
+              }
             </div>
           </div>
         </div>
@@ -282,26 +282,26 @@ export default function Home({
         </div>
         <div className='p-6'>
           <div className='w-full text-center flex flex-col gap-4'>
-          {latestReviews === undefined ?
-            <div className='flex justify-center p-4'>
-              <LoadingSpinner />
-            </div>
-            :
-            latestReviews.length === 0 ?
-              <div className='text-center italic p-3'>No reviews found</div>
+            {latestReviews === undefined ?
+              <div className='flex justify-center p-4'>
+                <LoadingSpinner />
+              </div>
               :
-              latestReviews.map(review => {
-                return (
-                  <div key={`review-${review._id.toString()}`}>
-                    <FormattedReview
-                      level={review.levelId}
-                      review={review}
-                      user={review.userId}
-                    />
-                  </div>
-                );
-              })
-          }
+              latestReviews.length === 0 ?
+                <div className='text-center italic p-3'>No reviews found</div>
+                :
+                latestReviews.map(review => {
+                  return (
+                    <div key={`review-${review._id.toString()}`}>
+                      <FormattedReview
+                        level={review.levelId}
+                        review={review}
+                        user={review.userId}
+                      />
+                    </div>
+                  );
+                })
+            }
           </div>
         </div>
       </div>
@@ -431,84 +431,84 @@ export default function Home({
     >
       <div className='flex justify-center px-4 sm:px-6 py-12 text-center'>
         <div className='flex flex-col items-center gap-8 w-full max-w-(--breakpoint-2xl)'>
-        {/* Hero Section */}
-        <div className='animate-fadeInDown relative z-20 mb-12'>
-          <h1 className='text-4xl sm:text-5xl lg:text-7xl font-black mb-4'>
-            <span className='bg-linear-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent'>
-              Welcome to {game.displayName}
-            </span>
-          </h1>
-          <p className='text-lg sm:text-xl text-gray-200 max-w-2xl mx-auto'>
-            {game.shortDescription}
-          </p>
-        </div>
+          {/* Hero Section */}
+          <div className='animate-fadeInDown relative z-20 mb-12'>
+            <h1 className='text-4xl sm:text-5xl lg:text-7xl font-black mb-4'>
+              <span className='bg-linear-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent'>
+                Welcome to {game.displayName}
+              </span>
+            </h1>
+            <p className='text-lg sm:text-xl text-gray-200 max-w-2xl mx-auto'>
+              {game.shortDescription}
+            </p>
+          </div>
 
-        <div className='flex flex-wrap justify-center gap-8 items-center max-w-full'>
-          {getSuggestedAction()}
-        </div>
-        <div className='flex flex-wrap justify-center gap-4 items-center max-w-full'>
-          {scrollToSectionButtons}
-        </div>
-        <div className='animate-fadeInUp flex flex-wrap justify-center gap-6 max-w-full' style={{ animationDelay: '0.5s' }}>
-          <LevelCardWithTitle
-            id='level-of-day'
-            level={levelOfDay}
-            title='Level of the Day'
-            tooltip={'Every day there is a new level of the day. Difficulty increases throughout the week!'}
-          />
-          <LevelCardWithTitle
-            id='recommended-level'
-            level={recommendedLevel}
-            title='Try this Level'
-            tooltip={'This is a quality level with similar difficulty to levels you\'ve played recently.'}
-          />
-          {user && <LevelCardWithTitle
-            id='last-level-played'
-            level={lastLevelPlayed}
-            title={
-              <div className='flex justify-center items-center gap-2'>
-                <Link className='font-bold hover:underline' href='/play-history'>
-                  Last Played
-                </Link>
-                <Link href='/pro' passHref>
-                  <Image alt='pro' src='/pro.svg' width={16} height={16} style={{ minWidth: 16, minHeight: 16 }} />
-                </Link>
-              </div>
-            }
-            tooltip='Resume your last play. Click to see your play history.'
-          />}
-        </div>
-        <div className='animate-fadeInUp flex flex-col md:flex-row items-stretch w-full justify-center gap-6 max-w-4xl mx-auto relative z-50' style={{ animationDelay: '0.9s' }}>
-          {userConfig && (
-            <div className='flex-1 max-w-md'>
-              <div className='bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-4 h-full'>
-                <div className='flex items-center justify-between mb-3'>
-                  <div className='flex items-center gap-3'>
-                    <div className='p-2 bg-linear-to-r from-cyan-600 to-blue-600 rounded-lg'>
-                      <GameLogo gameId={game.id} id={game.id + '-streak-home'} size={20} />
-                    </div>
-                    <h3 className='text-lg font-bold text-white'>{game.displayName} Streak</h3>
-                  </div>
-                  <div className='bg-white/20 px-3 py-1 rounded-full text-sm font-medium text-white'>
-                      {streak} day{streak === 1 ? '' : 's'}
-                  </div>
+          <div className='flex flex-wrap justify-center gap-8 items-center max-w-full'>
+            {getSuggestedAction()}
+          </div>
+          <div className='flex flex-wrap justify-center gap-4 items-center max-w-full'>
+            {scrollToSectionButtons}
+          </div>
+          <div className='animate-fadeInUp flex flex-wrap justify-center gap-6 max-w-full' style={{ animationDelay: '0.5s' }}>
+            <LevelCardWithTitle
+              id='level-of-day'
+              level={levelOfDay}
+              title='Level of the Day'
+              tooltip={'Every day there is a new level of the day. Difficulty increases throughout the week!'}
+            />
+            <LevelCardWithTitle
+              id='recommended-level'
+              level={recommendedLevel}
+              title='Try this Level'
+              tooltip={'This is a quality level with similar difficulty to levels you\'ve played recently.'}
+            />
+            {user && <LevelCardWithTitle
+              id='last-level-played'
+              level={lastLevelPlayed}
+              title={
+                <div className='flex justify-center items-center gap-2'>
+                  <Link className='font-bold hover:underline' href='/play-history'>
+                    Last Played
+                  </Link>
+                  <Link href='/pro' passHref>
+                    <Image alt='pro' src='/pro.svg' width={16} height={16} style={{ minWidth: 16, minHeight: 16 }} />
+                  </Link>
                 </div>
-                <StreakSection hideHeader gameId={game.id} userConfig={userConfig} compact />
+              }
+              tooltip='Resume your last play. Click to see your play history.'
+            />}
+          </div>
+          <div className='animate-fadeInUp flex flex-col md:flex-row items-stretch w-full justify-center gap-6 max-w-4xl mx-auto relative z-50' style={{ animationDelay: '0.9s' }}>
+            {userConfig && (
+              <div className='flex-1 max-w-md'>
+                <div className='bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-4 h-full'>
+                  <div className='flex items-center justify-between mb-3'>
+                    <div className='flex items-center gap-3'>
+                      <div className='p-2 bg-linear-to-r from-cyan-600 to-blue-600 rounded-lg'>
+                        <GameLogo gameId={game.id} id={game.id + '-streak-home'} size={20} />
+                      </div>
+                      <h3 className='text-lg font-bold text-white'>{game.displayName} Streak</h3>
+                    </div>
+                    <div className='bg-white/20 px-3 py-1 rounded-full text-sm font-medium text-white'>
+                      {streak} day{streak === 1 ? '' : 's'}
+                    </div>
+                  </div>
+                  <StreakSection hideHeader gameId={game.id} userConfig={userConfig} compact />
+                </div>
               </div>
+            )}
+            <div className='flex-1 max-w-md h-full'>
+              {searchSection}
             </div>
-          )}
-          <div className='flex-1 max-w-md h-full'>
-            {searchSection}
           </div>
-        </div>
-        <div className='w-full flex flex-col lg:flex-row gap-8 items-start'>
-          {latestLevelsSection}
-          <div className='flex flex-col gap-8 w-full lg:w-4/12'>
-            {topLevelsThisMonthSection}
+          <div className='w-full flex flex-col lg:flex-row gap-8 items-start'>
+            {latestLevelsSection}
+            <div className='flex flex-col gap-8 w-full lg:w-4/12'>
+              {topLevelsThisMonthSection}
+            </div>
           </div>
-        </div>
-        {latestReviewSection}
-        {buttonsSection}
+          {latestReviewSection}
+          {buttonsSection}
         </div>
       </div>
     </SpaceBackground>

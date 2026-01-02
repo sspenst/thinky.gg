@@ -32,7 +32,7 @@ export default apiWrapper({ POST: {
   const hashedPassword = user?.password || '$2b$10$invalidHashToPreventTimingAttack';
   const isValidPassword = await bcrypt.compare(password, hashedPassword);
 
-  if (!user || user.password === undefined || !isValidPassword) {
+  if (user?.password === undefined || !isValidPassword) {
     return res.status(401).json({
       error: 'Incorrect email or password',
     });

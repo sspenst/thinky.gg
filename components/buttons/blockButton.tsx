@@ -4,11 +4,11 @@ import { toast } from 'react-hot-toast';
 import GraphType from '../../constants/graphType';
 import User from '../../models/db/user';
 
-type BlockButtonProps = {
+interface BlockButtonProps {
   isBlocked: boolean;
   user: User;
   onBlockStatusChange?: (isBlocked: boolean) => void;
-};
+}
 
 export default function BlockButton({ isBlocked, user, onBlockStatusChange }: BlockButtonProps) {
   const [isBlockLoading, setIsBlockLoading] = useState(false);

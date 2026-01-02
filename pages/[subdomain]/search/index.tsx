@@ -175,7 +175,7 @@ function getFilterDisplay(game: Game, filter: string, query: SearchQuery) {
       '3': 'Only restricted blocks',
       '2': 'No holes',
       '1': 'No blocks',
-    }[query.blockFilter as string] || query.blockFilter;
+    }[query.blockFilter!] || query.blockFilter;
   } else if (filter === 'minSteps') {
     return `Min Steps: ${query.minSteps}`;
   } else if (filter === 'maxSteps') {
@@ -259,8 +259,11 @@ function StatFilterMenu({ onStatFilterClick, query }: StatFilterMenuProps) {
   const { game } = useContext(AppContext);
 
   if (query.sortBy !== 'completed') {
+    // eslint-disable-next-line react-hooks/immutability
     statFilterStrings[StatFilter.Completed] = 'Completed';
+    // eslint-disable-next-line react-hooks/immutability
     statFilterStrings[StatFilter.Unoptimized] = 'Unoptimized';
+    // eslint-disable-next-line react-hooks/immutability
     statFilterStrings[StatFilter.Unattempted] = 'Unattempted';
   }
 
@@ -858,7 +861,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
                 <>
                   {/* Dimensions */}
                   <div className='space-y-2'>
-                    <label className='block text-sm font-medium flex items-center gap-2'>
+                    <label className='text-sm font-medium flex items-center gap-2'>
                       Dimensions
                       <Image alt='pro' src='/pro.svg' width='16' height='16' />
                     </label>
@@ -910,7 +913,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
                   </div>
                   {/* Block Types */}
                   <div className='space-y-2'>
-                    <label className='block text-sm font-medium flex items-center gap-2'>
+                    <label className='text-sm font-medium flex items-center gap-2'>
                       Block Types
                       <Image alt='pro' src='/pro.svg' width='16' height='16' />
                     </label>

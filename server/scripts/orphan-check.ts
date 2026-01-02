@@ -668,7 +668,7 @@ async function checkOrphanedRecords() {
               }
             } else {
               // Standard collection queries - map to actual MongoDB collection names
-              const collectionNameMap: { [key: string]: string } = {
+              const collectionNameMap: Record<string, string> = {
                 'Achievement': 'achievements',
                 'Collection': 'collections',
                 'Comment': 'comments',

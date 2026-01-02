@@ -78,152 +78,152 @@ export default withAuth({ POST: {
 
   try {
     switch (command) {
-    case AdminCommand.RefreshAchievements:
-      resp = await refreshAchievements(req.gameId, new Types.ObjectId(targetId as string), Object.values(AchievementCategory));
-      await processQueueMessages();
-      break;
-    case AdminCommand.DeleteAchievements:
-      resp = await Promise.all([
-        AchievementModel.deleteMany({ userId: new Types.ObjectId(targetId as string), gameId: req.gameId }),
-        NotificationModel.deleteMany({ userId: new Types.ObjectId(targetId as string), type: NotificationType.NEW_ACHIEVEMENT, gameId: req.gameId }),
-      ]);
-      break;
-    case AdminCommand.DeleteUser:
-      await deleteUser(new Types.ObjectId(targetId as string));
-      break;
-    case AdminCommand.ArchiveAllLevels:
-      await archiveUserLevels(new Types.ObjectId(targetId as string));
-      break;
-    case AdminCommand.RefreshIndexCalcs:
-      await refreshIndexCalcs(new Types.ObjectId(targetId as string));
-      break;
+      case AdminCommand.RefreshAchievements:
+        resp = await refreshAchievements(req.gameId, new Types.ObjectId(targetId as string), Object.values(AchievementCategory));
+        await processQueueMessages();
+        break;
+      case AdminCommand.DeleteAchievements:
+        resp = await Promise.all([
+          AchievementModel.deleteMany({ userId: new Types.ObjectId(targetId as string), gameId: req.gameId }),
+          NotificationModel.deleteMany({ userId: new Types.ObjectId(targetId as string), type: NotificationType.NEW_ACHIEVEMENT, gameId: req.gameId }),
+        ]);
+        break;
+      case AdminCommand.DeleteUser:
+        await deleteUser(new Types.ObjectId(targetId as string));
+        break;
+      case AdminCommand.ArchiveAllLevels:
+        await archiveUserLevels(new Types.ObjectId(targetId as string));
+        break;
+      case AdminCommand.RefreshIndexCalcs:
+        await refreshIndexCalcs(new Types.ObjectId(targetId as string));
+        break;
 
-    case AdminCommand.RunBatchRefreshPlayAttempts: {
+      case AdminCommand.RunBatchRefreshPlayAttempts: {
       // Query all levels into memory
-      const allLevels = await LevelModel.find({
-        isDraft: false,
-        isDeleted: { $ne: true },
-        gameId: req.gameId
-      }, '_id');
+        const allLevels = await LevelModel.find({
+          isDraft: false,
+          isDeleted: { $ne: true },
+          gameId: req.gameId
+        }, '_id');
 
-      // for each level, add a message to the queue
-      // we want to spread out the messages so we don't overload the queue with just these messages
-      // so let's interleave them by having each message run at a different time... Divide 1 hour by the number of levels
-      const oneHourSeconds = 60 * 60;
+        // for each level, add a message to the queue
+        // we want to spread out the messages so we don't overload the queue with just these messages
+        // so let's interleave them by having each message run at a different time... Divide 1 hour by the number of levels
+        const oneHourSeconds = 60 * 60;
 
-      await bulkQueueCalcPlayAttempts(allLevels.map(lvl => lvl._id), undefined, oneHourSeconds);
+        await bulkQueueCalcPlayAttempts(allLevels.map(lvl => lvl._id), undefined, oneHourSeconds);
 
-      break;
-    }
+        break;
+      }
 
-    case AdminCommand.RunBatchRefreshAchievements: {
+      case AdminCommand.RunBatchRefreshAchievements: {
       // Query all users across all games who have any activity (solved levels, created levels, or records)
       // Use aggregation to get unique users who have any activity in any game
-      const allUsers = await UserConfigModel.aggregate([
-        {
-          $match: {
-            $or: [
-              { calcLevelsSolvedCount: { $gt: 0 } },
-              { calcLevelsCompletedCount: { $gt: 0 } },
-            ]
+        const allUsers = await UserConfigModel.aggregate([
+          {
+            $match: {
+              $or: [
+                { calcLevelsSolvedCount: { $gt: 0 } },
+                { calcLevelsCompletedCount: { $gt: 0 } },
+              ]
+            }
+          },
+          {
+            $group: {
+              _id: '$userId',
+              userId: { $first: '$userId' }
+            }
           }
-        },
-        {
-          $group: {
-            _id: '$userId',
-            userId: { $first: '$userId' }
-          }
+        ]);
+
+        console.log(`Found ${allUsers.length} users to refresh achievements for`);
+
+        // for each user, add a message to the queue
+        // we want to spread out the messages so we don't overload the queue with just these messages
+        // so let's interleave them by having each message run at a different time... Divide 1 hour by the number of users
+        const oneHourSeconds = 60 * 60;
+
+        try {
+          await bulkQueueRefreshAchievements(allUsers.map(user => user.userId), req.gameId, Object.values(AchievementCategory), undefined, oneHourSeconds);
+          console.log(`Successfully queued ${allUsers.length} achievement refresh messages`);
+          resp = { message: `Queued ${allUsers.length} achievement refresh messages (spread over 1 hour)` };
+        } catch (error) {
+          console.error('Error queuing achievement refresh messages:', error);
+          throw error;
         }
-      ]);
 
-      console.log(`Found ${allUsers.length} users to refresh achievements for`);
-
-      // for each user, add a message to the queue
-      // we want to spread out the messages so we don't overload the queue with just these messages
-      // so let's interleave them by having each message run at a different time... Divide 1 hour by the number of users
-      const oneHourSeconds = 60 * 60;
-
-      try {
-        await bulkQueueRefreshAchievements(allUsers.map(user => user.userId), req.gameId, Object.values(AchievementCategory), undefined, oneHourSeconds);
-        console.log(`Successfully queued ${allUsers.length} achievement refresh messages`);
-        resp = { message: `Queued ${allUsers.length} achievement refresh messages (spread over 1 hour)` };
-      } catch (error) {
-        console.error('Error queuing achievement refresh messages:', error);
-        throw error;
+        break;
       }
 
-      break;
-    }
+      case AdminCommand.RefreshPlayAttempts:
+        await calcPlayAttempts(new Types.ObjectId(targetId as string));
+        break;
 
-    case AdminCommand.RefreshPlayAttempts:
-      await calcPlayAttempts(new Types.ObjectId(targetId as string));
-      break;
-
-    case AdminCommand.SendReloadPageToUsers: {
-      await requestBroadcastReloadPage();
-      break;
-    }
-
-    case AdminCommand.RegenImage: {
-      const lvl = await LevelModel.findById<Level>(new Types.ObjectId(targetId as string));
-
-      if (lvl) {
-        await genLevelImage(lvl);
-      } else {
-        throw new Error('Level not found');
+      case AdminCommand.SendReloadPageToUsers: {
+        await requestBroadcastReloadPage();
+        break;
       }
 
-      break;
-    }
+      case AdminCommand.RegenImage: {
+        const lvl = await LevelModel.findById<Level>(new Types.ObjectId(targetId as string));
 
-    case AdminCommand.SwitchIsRanked: {
-      const success = await switchIsRanked(new Types.ObjectId(targetId as string), req.gameId);
+        if (lvl) {
+          await genLevelImage(lvl);
+        } else {
+          throw new Error('Level not found');
+        }
 
-      if (!success) {
-        return res.status(500).json({ error: 'Error switching isRanked' });
+        break;
       }
 
-      break;
-    }
+      case AdminCommand.SwitchIsRanked: {
+        const success = await switchIsRanked(new Types.ObjectId(targetId as string), req.gameId);
 
-    case AdminCommand.RunEmailDigest: {
-      const { limit } = JSON.parse(req.body.payload);
+        if (!success) {
+          return res.status(500).json({ error: 'Error switching isRanked' });
+        }
 
-      await runEmailDigest(limit);
-      break;
-    }
+        break;
+      }
 
-    case AdminCommand.SendAdminMessage: {
-      const session = await mongoose.startSession();
+      case AdminCommand.RunEmailDigest: {
+        const { limit } = JSON.parse(req.body.payload);
 
-      try {
-        await session.withTransaction(async () => {
-          const userIdsAgg = await UserModel.aggregate([
-            ...(role ? [{ $match: { roles: role } }] : []),
-            { $project: { _id: 1 } },
-            { $group: { _id: null, userIds: { $push: '$_id' } } },
-          ], { session: session });
+        await runEmailDigest(limit);
+        break;
+      }
 
-          const userIds = userIdsAgg[0].userIds as Types.ObjectId[];
+      case AdminCommand.SendAdminMessage: {
+        const session = await mongoose.startSession();
 
-          await createNewAdminMessageNotifications(req.gameId, userIds, payload, session);
+        try {
+          await session.withTransaction(async () => {
+            const userIdsAgg = await UserModel.aggregate([
+              ...(role ? [{ $match: { roles: role } }] : []),
+              { $project: { _id: 1 } },
+              { $group: { _id: null, userIds: { $push: '$_id' } } },
+            ], { session: session });
+
+            const userIds = userIdsAgg[0].userIds as Types.ObjectId[];
+
+            await createNewAdminMessageNotifications(req.gameId, userIds, payload, session);
+          });
+
+          session.endSession();
+        } catch (err) {
+          logger.error(err);
+          session.endSession();
+
+          return res.status(500).json({ error: 'Error sending admin message' });
+        }
+
+        break;
+      }
+
+      default:
+        return res.status(400).json({
+          error: command + ' is an invalid command'
         });
-
-        session.endSession();
-      } catch (err) {
-        logger.error(err);
-        session.endSession();
-
-        return res.status(500).json({ error: 'Error sending admin message' });
-      }
-
-      break;
-    }
-
-    default:
-      return res.status(400).json({
-        error: command + ' is an invalid command'
-      });
     }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (e: any) {

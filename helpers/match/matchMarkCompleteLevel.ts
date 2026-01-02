@@ -27,7 +27,7 @@ export async function matchMarkCompleteLevel(
   // Find the level being completed
   const level = (match.levels as any[]).find(l => l._id.toString() === levelId.toString());
 
-  const updated = await MultiplayerMatchModel.findOneAndUpdate(
+  const updated = (await MultiplayerMatchModel.findOneAndUpdate(
     {
       matchId: matchId,
       players: userId,
@@ -54,7 +54,7 @@ export async function matchMarkCompleteLevel(
     {
       new: true
     }
-  ) as MultiplayerMatch;
+  ))!;
 
   /*
 // TODO later

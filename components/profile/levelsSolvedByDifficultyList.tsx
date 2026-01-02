@@ -3,7 +3,7 @@ import Link from 'next/link';
 import FormattedDifficulty, { difficultyList, getDifficultyColor } from '../formatted/formattedDifficulty';
 
 interface LevelsSolvedByDifficultyListProps {
-  levelsSolvedByDifficulty: {[key: string]: number};
+  levelsSolvedByDifficulty: Record<string, number>;
 }
 
 export default function LevelsSolvedByDifficultyList({ levelsSolvedByDifficulty }: LevelsSolvedByDifficultyListProps) {

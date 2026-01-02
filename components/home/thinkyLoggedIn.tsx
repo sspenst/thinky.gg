@@ -21,8 +21,8 @@ export function ThinkyHomePageLoggedIn({ user }: { user: User }) {
   const getUrl = useUrl();
   const router = useRouter();
 
-  const { data: userConfigs, isLoading: configsLoading } = useSWRHelper<{ [key: string]: UserConfig }>('/api/user-configs/');
-  const { data: levelOfDays, isLoading: levelOfDaysLoading } = useSWRHelper<{ [key: string]: Level }>('/api/level-of-day/');
+  const { data: userConfigs, isLoading: configsLoading } = useSWRHelper<Record<string, UserConfig>>('/api/user-configs/');
+  const { data: levelOfDays, isLoading: levelOfDaysLoading } = useSWRHelper<Record<string, Level>>('/api/level-of-day/');
 
   return (
     <div className='flex flex-col gap-8 items-center max-w-7xl mx-auto '>
@@ -57,13 +57,13 @@ export function ThinkyHomePageLoggedIn({ user }: { user: User }) {
         <h2 className='text-2xl font-bold mb-4 text-center'>Thinky Games</h2>
         <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
           {Object.values(Games).map(game => {
-            const userConfig = userConfigs && userConfigs[game.id];
+            const userConfig = userConfigs?.[game.id];
 
             if (game.id === GameId.THINKY) {
               return null;
             }
 
-            const levelOfDay = levelOfDays && levelOfDays[game.id];
+            const levelOfDay = levelOfDays?.[game.id];
             const { streak, timeToKeepStreak } = userConfig ? getStreak(userConfig) : { streak: 0, timeToKeepStreak: 0 };
 
             return (

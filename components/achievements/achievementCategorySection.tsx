@@ -7,11 +7,11 @@ import AchievementCard from './achievementCard';
 
 interface AchievementCategorySectionProps {
   categoryName: string;
-  achievements: Array<{
+  achievements: {
     type: AchievementType;
     gameAchievements: Achievement[];
     allGames: GameId[];
-  }>;
+  }[];
   unlockedCount: number;
   totalCount: number;
   hiddenCount?: number;

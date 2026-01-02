@@ -104,23 +104,23 @@ export default withAuth({
       return res.status(200).json({ updated: true });
     }
 
-    const setObj: {[k: string]: string} = {};
+    const setObj: Record<string, string> = {};
 
     if (disableConfetti !== undefined) {
-      setObj['disableConfetti'] = disableConfetti;
+      setObj.disableConfetti = disableConfetti;
     }
 
     if (disableAfterLevelPopup !== undefined) {
-      setObj['disableAfterLevelPopup'] = disableAfterLevelPopup;
+      setObj.disableAfterLevelPopup = disableAfterLevelPopup;
     }
 
     if (disableStreakPopup !== undefined) {
       // shouldn't have to parse as boolean since mongoose should be doin that for us... i think
-      setObj['disableStreakPopup'] = disableStreakPopup;
+      setObj.disableStreakPopup = disableStreakPopup;
     }
 
     if (hideStatus !== undefined) {
-      setObj['hideStatus'] = hideStatus;
+      setObj.hideStatus = hideStatus;
     }
 
     if (email !== undefined) {
@@ -138,11 +138,11 @@ export default withAuth({
         }
       }
 
-      setObj['email'] = emailTrimmed;
+      setObj.email = emailTrimmed;
     }
 
     if (bio !== undefined) {
-      setObj['bio'] = bio.trim();
+      setObj.bio = bio.trim();
     }
 
     // /^[-a-zA-Z0-9_]+$/.test(v);
@@ -158,7 +158,7 @@ export default withAuth({
     }
 
     if (trimmedName && trimmedName !== req.user.name ) {
-      setObj['name'] = trimmedName;
+      setObj.name = trimmedName;
       const userWithUsername = await UserModel.findOne({ name: trimmedName }, '_id').lean<User>();
 
       if (userWithUsername) {
@@ -169,7 +169,7 @@ export default withAuth({
     try {
       const newUser = await UserModel.findOneAndUpdate({ _id: req.user._id }, { $set: setObj }, { runValidators: true, new: true, projection: { _id: 1, email: 1, name: 1, emailConfirmationToken: 1 } });
 
-      if (setObj['email']) {
+      if (setObj.email) {
         newUser.emailConfirmationToken = getEmailConfirmationToken();
         // also need to set emailConfirmed to false
         newUser.emailConfirmed = false;

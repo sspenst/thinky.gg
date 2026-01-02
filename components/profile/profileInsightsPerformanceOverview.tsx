@@ -45,7 +45,7 @@ interface DifficultyProgressData {
 }
 
 // Color function for performance percentiles
-function getPerformanceColor(performance: number, baseline: number = 50): string {
+function getPerformanceColor(performance: number, baseline = 50): string {
   if (baseline === 100) {
     // For level type performance (100 = baseline)
     if (performance >= 130) return '#10B981'; // green-500 - Much better than your average
@@ -106,7 +106,7 @@ export default function ProfileInsightsPerformanceOverview({ user, reqUser, time
     // }
 
     // Average performance vs peers - using only 7+ solve difficulties
-    if (difficultyData && difficultyData[ProStatsUserType.DifficultyLevelsComparisons]) {
+    if (difficultyData?.[ProStatsUserType.DifficultyLevelsComparisons]) {
       const comparisons = difficultyData[ProStatsUserType.DifficultyLevelsComparisons] as DifficultyLevelComparison[];
 
       // Group by difficulty and only include those with 7+ solves
@@ -134,7 +134,7 @@ export default function ProfileInsightsPerformanceOverview({ user, reqUser, time
 
   // Calculate difficulty progression
   const difficultyProgression = useMemo(() => {
-    if (!difficultyData || !difficultyData[ProStatsUserType.DifficultyLevelsComparisons]) {
+    if (!difficultyData?.[ProStatsUserType.DifficultyLevelsComparisons]) {
       return [];
     }
 
@@ -186,7 +186,7 @@ export default function ProfileInsightsPerformanceOverview({ user, reqUser, time
 
   // Calculate difficulty timeline with level details
   const difficultyTimeline = useMemo(() => {
-    if (!difficultyData || !difficultyData[ProStatsUserType.DifficultyLevelsComparisons]) {
+    if (!difficultyData?.[ProStatsUserType.DifficultyLevelsComparisons]) {
       return [];
     }
 
@@ -260,7 +260,7 @@ export default function ProfileInsightsPerformanceOverview({ user, reqUser, time
 
   // Calculate performance by level type data
   const { skillRadarData, averagePerformance } = useMemo(() => {
-    if (!difficultyData || !difficultyData[ProStatsUserType.DifficultyLevelsComparisons]) {
+    if (!difficultyData?.[ProStatsUserType.DifficultyLevelsComparisons]) {
       return { skillRadarData: [], averagePerformance: 100 };
     }
 

@@ -92,7 +92,7 @@ async function isEmailDomainAllowed(email: string): Promise<boolean> {
       gameId: GameId.THINKY
     }).lean<KeyValue>();
 
-    if (!disallowedDomainsKV || !disallowedDomainsKV.value) {
+    if (!disallowedDomainsKV?.value) {
       return true; // No admin restrictions, allow domain (already checked disposable)
     }
 

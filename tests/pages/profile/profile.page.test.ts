@@ -75,11 +75,7 @@ describe('pages/profile page', () => {
 
     expect(ret.props).toBeDefined();
     expect(ret.props?.pageProp).toBe(1);
-    expect(ret.props?.reviewsReceived).toHaveLength(0);
-    expect(ret.props?.reviewsWritten).toHaveLength(0);
     expect(ret.props?.profileTab).toBe('');
-    expect(ret.props?.reviewsReceivedCount).toBe(1);
-    expect(ret.props?.reviewsWrittenCount).toBe(0);
     expect(ret.props?.user._id).toBe(TestId.USER);
     expect(ret.props?.followers).toHaveLength(0);
     expect(ret.props?.following).toHaveLength(0);
@@ -101,11 +97,7 @@ describe('pages/profile page', () => {
 
     expect(ret.props).toBeDefined();
     expect(ret.props?.pageProp).toBe(1);
-    expect(ret.props?.reviewsReceived).toHaveLength(0);
-    expect(ret.props?.reviewsWritten).toHaveLength(0);
     expect(ret.props?.profileTab).toBe('collections');
-    expect(ret.props?.reviewsReceivedCount).toBe(1);
-    expect(ret.props?.reviewsWrittenCount).toBe(0);
     expect(ret.props?.user._id).toBe(TestId.USER);
   });
   test('getServerSideProps levels tab', async () => {
@@ -129,49 +121,7 @@ describe('pages/profile page', () => {
 
     expect(ret.props).toBeDefined();
     expect(ret.props?.pageProp).toBe(2);
-    expect(ret.props?.reviewsReceived).toHaveLength(0);
-    expect(ret.props?.reviewsWritten).toHaveLength(0);
     expect(ret.props?.profileTab).toBe('levels');
-    expect(ret.props?.reviewsReceivedCount).toBe(1);
-    expect(ret.props?.reviewsWrittenCount).toBe(0);
-    expect(ret.props?.user._id).toBe(TestId.USER);
-  });
-  test('getServerSideProps reviews-received tab', async () => {
-    const context = {
-      params: {
-        name: 'test',
-        tab: [ProfileTab.ReviewsReceived],
-      }
-    };
-
-    const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext);
-
-    expect(ret.props).toBeDefined();
-    expect(ret.props?.pageProp).toBe(1);
-    expect(ret.props?.reviewsReceived).toHaveLength(1);
-    expect(ret.props?.reviewsWritten).toHaveLength(0);
-    expect(ret.props?.profileTab).toBe('reviews-received');
-    expect(ret.props?.reviewsReceivedCount).toBe(1);
-    expect(ret.props?.reviewsWrittenCount).toBe(0);
-    expect(ret.props?.user._id).toBe(TestId.USER);
-  });
-  test('getServerSideProps reviews-written tab', async () => {
-    const context = {
-      params: {
-        name: 'test',
-        tab: [ProfileTab.ReviewsWritten],
-      }
-    };
-
-    const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext);
-
-    expect(ret.props).toBeDefined();
-    expect(ret.props?.pageProp).toBe(1);
-    expect(ret.props?.reviewsReceived).toHaveLength(0);
-    expect(ret.props?.reviewsWritten).toHaveLength(0);
-    expect(ret.props?.profileTab).toBe('reviews-written');
-    expect(ret.props?.reviewsReceivedCount).toBe(1);
-    expect(ret.props?.reviewsWrittenCount).toBe(0);
     expect(ret.props?.user._id).toBe(TestId.USER);
   });
   test('getServerSideProps after following 2 users', async () => {
@@ -206,11 +156,7 @@ describe('pages/profile page', () => {
 
     expect(ret.props).toBeDefined();
     expect(ret.props?.pageProp).toBe(1);
-    expect(ret.props?.reviewsReceived).toHaveLength(0);
-    expect(ret.props?.reviewsWritten).toHaveLength(0);
     expect(ret.props?.profileTab).toBe('');
-    expect(ret.props?.reviewsReceivedCount).toBe(1);
-    expect(ret.props?.reviewsWrittenCount).toBe(0);
     expect(ret.props?.user._id).toBe(TestId.USER);
     expect(ret.props?.followers).toHaveLength(0);
     expect(ret.props?.following).toHaveLength(2);
@@ -313,51 +259,6 @@ describe('pages/profile page', () => {
     // Verify no reviews from blocked users are present
     const hasBlockedUserReviews = reviews.some(review =>
       review.userId._id.toString() === TestId.USER_B
-    );
-
-    expect(hasBlockedUserReviews).toBe(false);
-
-    // Clean up the block for other tests
-    await GraphModel.deleteOne({
-      source: TestId.USER,
-      target: TestId.USER_B,
-      type: GraphType.BLOCK,
-    });
-  });
-
-  // Test to verify that profile page SSR correctly filters blocked user reviews
-  test('getServerSideProps should filter out reviews from blocked users', async () => {
-    // Create a block relationship
-    await GraphModel.create({
-      source: TestId.USER,
-      sourceModel: 'User',
-      type: GraphType.BLOCK,
-      target: TestId.USER_B,
-      targetModel: 'User',
-    });
-
-    const context = {
-      params: {
-        name: 'test',
-        tab: [ProfileTab.ReviewsReceived],
-      },
-      req: {
-        cookies: {
-          token: getTokenCookieValue(TestId.USER),
-        },
-      },
-    };
-
-    const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext);
-
-    // Test that props are defined
-    expect(ret.props).toBeDefined();
-    expect(ret.props?.reviewsReceived).toBeDefined();
-
-    // Check if any reviews in the response are from the blocked user
-    const reviewsReceived = ret.props?.reviewsReceived || [];
-    const hasBlockedUserReviews = reviewsReceived.some(
-      (review: any) => review.userId._id.toString() === TestId.USER_B
     );
 
     expect(hasBlockedUserReviews).toBe(false);

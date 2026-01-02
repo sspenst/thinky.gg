@@ -38,12 +38,12 @@ export function getRarityFromStats(count: number, totalUsers?: number): RarityTy
  */
 export function getRarityText(rarity: RarityType): string {
   switch (rarity) {
-  case 'never': return 'Never Earned';
-  case 'legendary': return 'Legendary';
-  case 'epic': return 'Epic';
-  case 'rare': return 'Rare';
-  case 'uncommon': return 'Uncommon';
-  case 'common': return 'Common';
+    case 'never': return 'Never Earned';
+    case 'legendary': return 'Legendary';
+    case 'epic': return 'Epic';
+    case 'rare': return 'Rare';
+    case 'uncommon': return 'Uncommon';
+    case 'common': return 'Common';
   }
 }
 
@@ -54,12 +54,12 @@ export function getRarityText(rarity: RarityType): string {
  */
 export function getRarityColor(rarity: RarityType): string {
   switch (rarity) {
-  case 'never': return 'text-gray-500';
-  case 'legendary': return 'text-purple-500';
-  case 'epic': return 'text-orange-500';
-  case 'rare': return 'text-blue-500';
-  case 'uncommon': return 'text-green-500';
-  case 'common': return 'text-gray-500';
+    case 'never': return 'text-gray-500';
+    case 'legendary': return 'text-purple-500';
+    case 'epic': return 'text-orange-500';
+    case 'rare': return 'text-blue-500';
+    case 'uncommon': return 'text-green-500';
+    case 'common': return 'text-gray-500';
   }
 }
 
@@ -98,22 +98,22 @@ export function getRarityTooltip(rarity: RarityType, count?: number, totalUsers?
   // If we only have count, show count-based description
   if (count !== undefined) {
     switch (rarity) {
-    case 'legendary': return `Only ${count} players - extremely rare!`;
-    case 'epic': return `${count} players - very rare!`;
-    case 'rare': return `${count} players - uncommon`;
-    case 'uncommon': return `${count} players - moderately rare`;
-    case 'common': return `${count} players - widely earned`;
-    case 'never': return 'No one has earned this achievement yet';
+      case 'legendary': return `Only ${count} players - extremely rare!`;
+      case 'epic': return `${count} players - very rare!`;
+      case 'rare': return `${count} players - uncommon`;
+      case 'uncommon': return `${count} players - moderately rare`;
+      case 'common': return `${count} players - widely earned`;
+      case 'never': return 'No one has earned this achievement yet';
     }
   }
 
   // Fallback to generic descriptions
   switch (rarity) {
-  case 'never': return 'Never earned';
-  case 'legendary': return 'Extremely rare achievement';
-  case 'epic': return 'Very rare achievement';
-  case 'rare': return 'Uncommon achievement';
-  case 'uncommon': return 'Moderately rare achievement';
-  case 'common': return 'Commonly earned achievement';
+    case 'never': return 'Never earned';
+    case 'legendary': return 'Extremely rare achievement';
+    case 'epic': return 'Very rare achievement';
+    case 'rare': return 'Uncommon achievement';
+    case 'uncommon': return 'Moderately rare achievement';
+    case 'common': return 'Commonly earned achievement';
   }
 }

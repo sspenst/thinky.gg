@@ -9,12 +9,12 @@ import AchievementsDisplay from '../achievements/achievementsDisplay';
 
 export function ProfileAchievments({ achievements, achievementStats, totalActiveUsers, reqUser }: {
   achievements: Achievement[];
-  achievementStats: Array<{
+  achievementStats: {
     _id: { type: AchievementType; gameId: GameId };
     count: number;
     firstEarned: Date;
     lastEarned: Date;
-  }>;
+  }[];
   totalActiveUsers: number;
   reqUser: User | null;
 }) {

@@ -172,7 +172,7 @@ UserSchema.pre('save', function(next) {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const document = this;
 
-    bcrypt.hash(document.password as string, PASSWORD_SALTROUNDS,
+    bcrypt.hash(document.password!, PASSWORD_SALTROUNDS,
       function(err, hashedPassword) {
         /* istanbul ignore if */
         if (err) {

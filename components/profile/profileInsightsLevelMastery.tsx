@@ -50,7 +50,7 @@ export default function ProfileInsightsLevelMastery({ user, reqUser, timeFilter 
 
   // Calculate difficulty progression
   const difficultyProgression = useMemo(() => {
-    if (!difficultyData || !difficultyData[ProStatsUserType.DifficultyLevelsComparisons]) {
+    if (!difficultyData?.[ProStatsUserType.DifficultyLevelsComparisons]) {
       return [];
     }
 
@@ -102,7 +102,7 @@ export default function ProfileInsightsLevelMastery({ user, reqUser, timeFilter 
 
   // Calculate difficulty timeline with level details
   const difficultyTimeline = useMemo(() => {
-    if (!difficultyData || !difficultyData[ProStatsUserType.DifficultyLevelsComparisons]) {
+    if (!difficultyData?.[ProStatsUserType.DifficultyLevelsComparisons]) {
       return [];
     }
 
@@ -291,19 +291,19 @@ export default function ProfileInsightsLevelMastery({ user, reqUser, timeFilter 
                     boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
                   }}
                   formatter={(value: number | undefined, name: string | undefined, props: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
-                    const data = props.payload; // eslint-disable-line react/prop-types
+                    const data = props.payload;
 
                     return [
                       <div key='tooltip' className='text-sm'>
-                        <div className='font-bold text-blue-400 mb-2'>{data.date /* eslint-disable-line react/prop-types */}</div>
+                        <div className='font-bold text-blue-400 mb-2'>{data.date }</div>
                         <div className='space-y-1'>
                           <div>{timelineMode === 'average' ? 'Average' : 'Maximum'} Difficulty:
                             {value !== undefined && <span className='font-bold text-green-400 ml-1'>{getDifficultyFromEstimate(value).name}</span>}
                           </div>
-                          <div>Levels solved this month: <span className='font-bold text-yellow-400'>{data.levelCount /* eslint-disable-line react/prop-types */}</span></div>
-                          {timelineMode === 'average' && data.maxDifficulty /* eslint-disable-line react/prop-types */ !== value && (
+                          <div>Levels solved this month: <span className='font-bold text-yellow-400'>{data.levelCount }</span></div>
+                          {timelineMode === 'average' && data.maxDifficulty !== value && (
                             <div className='text-xs text-gray-400'>
-                              Hardest level: {getDifficultyFromEstimate(data.maxDifficulty /* eslint-disable-line react/prop-types */).name}
+                              Hardest level: {getDifficultyFromEstimate(data.maxDifficulty ).name}
                             </div>
                           )}
                         </div>

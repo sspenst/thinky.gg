@@ -19,7 +19,7 @@ async function init() {
   console.log('connected');
 
   const checkpoints = await KeyValueModel.countDocuments({ key: { $regex: 'checkpoints' } });
-  const levelData: { [id: string]: string } = {};
+  const levelData: Record<string, string> = {};
   const progressBar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
   let i = 0;
 

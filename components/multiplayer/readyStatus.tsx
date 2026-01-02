@@ -33,9 +33,9 @@ export default function ReadyStatus({ match, user }: ReadyStatusProps) {
           )}
           {match.markedReady.length === 1 && user && !(match.markedReady as Types.ObjectId[]).includes(user._id) && (
             <div className='text-purple-400 flex flex-col'>
-            <span><strong>{(match.players.find(p => match.markedReady.some((id: any) => id.toString() === p._id.toString()))?.name || 'other')}</strong></span>
-            <span>is ready</span>
-          </div>
+              <span><strong>{(match.players.find(p => match.markedReady.some((id: any) => id.toString() === p._id.toString()))?.name || 'other')}</strong></span>
+              <span>is ready</span>
+            </div>
           )}
           {match.markedReady.length !== 2 && user && (match.markedReady as Types.ObjectId[]).includes(user._id) && (
             <div className='text-purple-400 flex flex-col'>

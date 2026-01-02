@@ -60,11 +60,11 @@ export default withAuth({
       tutorialCompletedAt,
     } = req.body;
 
-    const setObj: {[k: string]: string} = {};
-    const setObjUser: {[k: string]: string} = {};
+    const setObj: Record<string, string> = {};
+    const setObjUser: Record<string, string> = {};
 
     if (emailDigest !== undefined) {
-      setObjUser['emailDigest'] = emailDigest;
+      setObjUser.emailDigest = emailDigest;
 
       if (isGuest(req.user)) {
         return res.status(400).json({
@@ -74,7 +74,7 @@ export default withAuth({
     }
 
     if (theme !== undefined) {
-      setObj['theme'] = theme;
+      setObj.theme = theme;
     }
 
     if (customTheme !== undefined) {
@@ -82,27 +82,27 @@ export default withAuth({
         return res.status(400).json({ error: 'Custom themes are a Pro feature. Upgrade to Pro to use custom themes.' });
       }
 
-      setObj['customTheme'] = customTheme;
+      setObj.customTheme = customTheme;
     }
 
     if (tutorialCompletedAt) {
-      setObj['tutorialCompletedAt'] = tutorialCompletedAt;
+      setObj.tutorialCompletedAt = tutorialCompletedAt;
     }
 
     if (toursCompleted) {
-      setObj['toursCompleted'] = toursCompleted;
+      setObj.toursCompleted = toursCompleted;
     }
 
     if (disallowedEmailNotifications !== undefined) {
-      setObjUser['disallowedEmailNotifications'] = disallowedEmailNotifications;
+      setObjUser.disallowedEmailNotifications = disallowedEmailNotifications;
     }
 
     if (disallowedPushNotifications !== undefined) {
-      setObjUser['disallowedPushNotifications'] = disallowedPushNotifications;
+      setObjUser.disallowedPushNotifications = disallowedPushNotifications;
     }
 
     if (disallowedInboxNotifications !== undefined) {
-      setObjUser['disallowedInboxNotifications'] = disallowedInboxNotifications;
+      setObjUser.disallowedInboxNotifications = disallowedInboxNotifications;
     }
 
     // check if setObj is blank

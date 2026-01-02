@@ -43,7 +43,7 @@ export default function ProfileInsightsSolveTimeComparison({ user, timeFilter }:
   const [percentile, setPercentile] = useState(0.01);
   const { game } = useContext(AppContext);
 
-  if (!difficultyComparisonData || !difficultyComparisonData[ProStatsUserType.DifficultyLevelsComparisons]) {
+  if (!difficultyComparisonData?.[ProStatsUserType.DifficultyLevelsComparisons]) {
     return <span>Loading...</span>;
   }
 
@@ -176,12 +176,12 @@ export default function ProfileInsightsSolveTimeComparison({ user, timeFilter }:
           <Tooltip
             content={
               ({ active, payload }) => {
-                if (active && payload && payload[0] && payload[0].payload) {
+                if (active && payload?.[0]?.payload) {
                   const difficultyLevelComparison = (payload[0].payload as DifficultyLevelComparison);
                   const name = difficultyLevelComparison.name;
                   const difficulty = difficultyLevelComparison.difficulty;
                   const ts = difficultyLevelComparison.ts * 1000;
-                  const diff = difficultyLevelComparison.diff as number;
+                  const diff = difficultyLevelComparison.diff!;
                   const timeTakenForOthersToSolve = dayjs.duration(difficultyLevelComparison.otherPlayattemptsAverageDuration * 1000).humanize();
                   const timeTakenToSolve = dayjs.duration(difficultyLevelComparison.myPlayattemptsSumDuration * 1000).humanize();
                   const multiplier = diff >= 1 ? diff.toFixed(1) : (1 / diff).toFixed(1);

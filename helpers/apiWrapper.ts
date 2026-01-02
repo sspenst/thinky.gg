@@ -19,8 +19,8 @@ export interface ReqValidator {
 }
 
 export interface ReqExpected {
-  body?: { [key: string]: (value: unknown) => boolean };
-  query?: { [key: string]: (value: unknown) => boolean };
+  body?: Record<string, (value: unknown) => boolean>;
+  query?: Record<string, (value: unknown) => boolean>;
 }
 
 /**

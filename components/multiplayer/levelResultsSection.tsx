@@ -13,7 +13,7 @@ interface LevelResultsSectionProps {
 }
 
 function getLevelResultIcon(match: MultiplayerMatch, level: Level, userId: string) {
-  if (!match || !match.matchLog) {
+  if (!match?.matchLog) {
     return;
   }
 

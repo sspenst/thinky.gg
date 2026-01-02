@@ -44,7 +44,7 @@ export default function SchedulePublishModal({ closeModal, isOpen, level }: Sche
 
   // Get best time suggestion if available (from profile insights)
   const getBestTimeToPublish = () => {
-    if (followerData && followerData[ProStatsUserType.FollowerActivityPatterns] && followerData[ProStatsUserType.FollowerActivityPatterns].followerCount >= 5) {
+    if (followerData?.[ProStatsUserType.FollowerActivityPatterns] && followerData[ProStatsUserType.FollowerActivityPatterns].followerCount >= 5) {
       const recommendations = followerData[ProStatsUserType.FollowerActivityPatterns].recommendations;
 
       return `${recommendations.bestDayLabel}s at ${recommendations.bestTimeLabel}`;
@@ -88,7 +88,7 @@ export default function SchedulePublishModal({ closeModal, isOpen, level }: Sche
       // Calculate the next optimal publish time
       let optimalTime;
 
-      if (followerData && followerData[ProStatsUserType.FollowerActivityPatterns] && followerData[ProStatsUserType.FollowerActivityPatterns].followerCount >= 5) {
+      if (followerData?.[ProStatsUserType.FollowerActivityPatterns] && followerData[ProStatsUserType.FollowerActivityPatterns].followerCount >= 5) {
         const recommendations = followerData[ProStatsUserType.FollowerActivityPatterns].recommendations;
         const bestDay = recommendations.bestDay; // 0 = Sunday, 1 = Monday, etc.
         const bestHour = recommendations.bestHour; // 0-23

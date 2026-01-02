@@ -26,14 +26,14 @@ function getTimeFilterCutoff(timeFilter?: string): number | null {
   const now = Math.floor(Date.now() / 1000);
 
   switch (timeFilter) {
-  case TimeFilter.WEEK:
-    return now - (60 * 60 * 24 * 7);
-  case TimeFilter.MONTH:
-    return now - (60 * 60 * 24 * 30);
-  case TimeFilter.YEAR:
-    return now - (60 * 60 * 24 * 365);
-  default:
-    return null;
+    case TimeFilter.WEEK:
+      return now - (60 * 60 * 24 * 7);
+    case TimeFilter.MONTH:
+      return now - (60 * 60 * 24 * 30);
+    case TimeFilter.YEAR:
+      return now - (60 * 60 * 24 * 365);
+    default:
+      return null;
   }
 }
 
@@ -920,12 +920,12 @@ async function getFollowerActivityPatterns(gameId: GameId, userId: string) {
   }
 
   // Create a comprehensive day-hour heatmap data (7 days x 24 hours = 168 combinations)
-  const heatmapData: Array<{
+  const heatmapData: {
     dayOfWeek: number;
     hour: number;
     activityCount: number;
     activeFollowers: number;
-  }> = [];
+  }[] = [];
 
   // Generate all day-hour combinations
   for (let dayOfWeek = 1; dayOfWeek <= 7; dayOfWeek++) { // 1=Sunday, 7=Saturday

@@ -73,7 +73,7 @@ export async function getSolvesByDifficultyTable(
   ], options);
 
   // map of difficulty value to levels solved
-  const levelsSolvedByDifficulty: { [key: string]: number } = {};
+  const levelsSolvedByDifficulty: Record<string, number> = {};
 
   levelsSolvedByDifficultyData.map((d: {_id: string, count: number}) => {
     levelsSolvedByDifficulty[d._id] = d.count;

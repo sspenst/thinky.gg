@@ -11,12 +11,12 @@ import AchievementsBrowser from './achievementsBrowser';
 interface AchievementsDisplayProps {
   userAchievements: Achievement[];
   userAchievementsByGame: Record<GameId, Achievement[]>;
-  achievementStats: Array<{
+  achievementStats: {
     _id: { type: AchievementType; gameId: GameId };
     count: number;
     firstEarned: Date;
     lastEarned: Date;
-  }>;
+  }[];
   totalAchievements: Record<string, number>;
   totalActiveUsers: number;
   reqUser: { _id: string; name: string } | null;

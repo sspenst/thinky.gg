@@ -19,9 +19,7 @@ export interface MultiplayerRecord {
   wins: number;
 }
 
-export type MultiplayerRecords = {
-  [T in MultiplayerMatchType]: MultiplayerRecord;
-};
+export type MultiplayerRecords = Record<MultiplayerMatchType, MultiplayerRecord>;
 export enum MultiplayerMatchHistoryFilters {
   All = 'all',
   Wins = 'wins',
@@ -78,7 +76,7 @@ export default function ProfileMultiplayer({ user }: ProfileMultiplayerProps) {
             }}
             onClick={() => setPage(page - 1)}
           >
-              Prev
+            Prev
           </button>
           <button
             className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-sm'
@@ -88,7 +86,7 @@ export default function ProfileMultiplayer({ user }: ProfileMultiplayerProps) {
             }}
             onClick={() => setPage(page + 1)}
           >
-              Next
+            Next
           </button>
         </div>
 

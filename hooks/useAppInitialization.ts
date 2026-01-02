@@ -13,12 +13,12 @@ import { ReqUser } from '../models/db/user';
 export function useAppInitialization(user: ReqUser | null | undefined, initGame: Game) {
   const router = useRouter();
   const [host, setHost] = useState<string>('thinky.gg');
-  const [playLater, setPlayLater] = useState<{ [key: string]: boolean }>();
+  const [playLater, setPlayLater] = useState<Record<string, boolean>>();
   const [protocol, setProtocol] = useState<string>('https:');
   const [selectedGame, setSelectedGame] = useState<Game>(initGame);
   const [shouldAttemptAuth, setShouldAttemptAuth] = useState(true);
   const [tempCollection, setTempCollection] = useState<Collection>();
-  const soundsRef = useRef<{ [key: string]: HTMLAudioElement }>({});
+  const soundsRef = useRef<Record<string, HTMLAudioElement>>({});
 
   const mutatePlayLater = useCallback(() => {
     if (!isPro(user)) {
@@ -182,7 +182,7 @@ export function useAppInitialization(user: ReqUser | null | undefined, initGame:
       window.ReactNativeWebView.postMessage(JSON.stringify({ loggedIn: loggedIn }));
 
       // Send badge count if user has notifications
-      if (user && user.notifications) {
+      if (user?.notifications) {
         const unreadCount = user.notifications.filter(n => !n.read).length;
 
         window.ReactNativeWebView.postMessage(JSON.stringify({

@@ -71,7 +71,7 @@ export async function putStat(user: User, directions: Direction[], levelId: stri
         const checkpoint = await KeyValueModel.findOne({ key: checkpointKey }, {}, { session: session });
         let checkpointMoves = -1;
 
-        if (checkpoint && checkpoint.value[BEST_CHECKPOINT_INDEX]) {
+        if (checkpoint?.value[BEST_CHECKPOINT_INDEX]) {
           checkpointMoves = checkpoint.value[BEST_CHECKPOINT_INDEX].length;
         }
 
@@ -409,12 +409,12 @@ export async function putStat(user: User, directions: Direction[], levelId: stri
       };
 
       if (newRecord) {
-        levelUpdate['$set'] = {
+        levelUpdate.$set = {
           calc_playattempts_just_beaten_count: 1,
           leastMoves: moves,
         };
       } else {
-        levelUpdate['$inc']['calc_playattempts_just_beaten_count'] = 1;
+        levelUpdate.$inc.calc_playattempts_just_beaten_count = 1;
       }
 
       const enrichedLevel = await LevelModel.findByIdAndUpdate(level._id, levelUpdate, {

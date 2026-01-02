@@ -310,19 +310,19 @@ export async function clearNotifications(userId?: string | Types.ObjectId, sourc
   const obj: {userId?: string | Types.ObjectId, target?: string | Types.ObjectId, source?: string | Types.ObjectId, type?: NotificationType} = {};
 
   if (userId) {
-    obj['userId'] = userId;
+    obj.userId = userId;
   }
 
   if (targetId) {
-    obj['target'] = targetId;
+    obj.target = targetId;
   }
 
   if (sourceId) {
-    obj['source'] = sourceId;
+    obj.source = sourceId;
   }
 
   if (type) {
-    obj['type'] = type;
+    obj.type = type;
   }
 
   const deleted = await NotificationModel.deleteMany({

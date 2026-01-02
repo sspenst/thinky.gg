@@ -51,7 +51,7 @@ export default function LevelInfoCompletions() {
         const resp = await res.json();
 
         setProStatsLevel(p => {
-          if (!p || !p[ProStatsLevelType.CommunityStepData]) {
+          if (!p?.[ProStatsLevelType.CommunityStepData]) {
             return p;
           }
 

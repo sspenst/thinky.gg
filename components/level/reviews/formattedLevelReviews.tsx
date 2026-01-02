@@ -20,7 +20,7 @@ export default function FormattedLevelReviews({ inModal, hideReviews: hideOtherR
     setHideReviews(!!levelContext?.inCampaign);
   }, [levelContext?.inCampaign]);
 
-  if (!levelContext || !levelContext.reviews) {
+  if (!levelContext?.reviews) {
     return <span>Loading...</span>;
   }
 

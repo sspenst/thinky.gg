@@ -13,7 +13,7 @@ export default function ProfileInsightsMostSolves({ user, timeFilter }: { user: 
   const { proStatsUser } = useProStatsUser(user, ProStatsUserType.MostSolvesForUserLevels, timeFilter);
   const { user: reqUser, game } = useContext(AppContext);
 
-  if (!proStatsUser || !proStatsUser[ProStatsUserType.MostSolvesForUserLevels]) {
+  if (!proStatsUser?.[ProStatsUserType.MostSolvesForUserLevels]) {
     return <span>Loading...</span>;
   }
 

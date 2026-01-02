@@ -22,7 +22,7 @@ function getProgressCount(userConfig: UserConfig | null) {
   }
 }
 
-const AchievementRulesProgress: { [achievementType: string]: IAchievementInfoUser; } = {
+const AchievementRulesProgress: Record<string, IAchievementInfoUser> = {
   [AchievementType.SOLVED_LEVELS_5000]: {
     name: 'Legend',
     emoji: '🐉',

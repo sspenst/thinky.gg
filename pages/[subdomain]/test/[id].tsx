@@ -60,7 +60,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     ...getEnrichUserConfigPipelineStage(gameId, { excludeCalcs: true, localField: 'userId._id', lookupAs: 'userId.config' }),
   ]);
 
-  if (!levelAgg || levelAgg.length !== 1) {
+  if (levelAgg?.length !== 1) {
     return {
       notFound: true,
     };

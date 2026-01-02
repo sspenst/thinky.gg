@@ -20,7 +20,7 @@ export interface ProStatsUser {
   [ProStatsUserType.DifficultyLevelsComparisons]?: DifficultyLevelComparison[];
   [ProStatsUserType.MostSolvesForUserLevels]?: UserAndSum[];
   [ProStatsUserType.PlayLogForUserCreatedLevels]?: {
-    creatorLevels: Array<{
+    creatorLevels: {
       _id: string;
       name: string;
       slug: string;
@@ -28,29 +28,29 @@ export interface ProStatsUser {
       calc_difficulty_estimate: number;
       calc_stats_completed_count: number;
       calc_playattempts_unique_users: string[];
-    }>;
+    }[];
     engagementMetrics: {
       totalSolves: number;
       uniquePlayersCount: number;
       uniquePlayerIds: string[];
-      solvesByUser: Array<{ userId: string; levelId: string }>;
+      solvesByUser: { userId: string; levelId: string }[];
     };
     topSolver: {
       solveCount: number;
       user: User;
     } | null;
-    popularityTrends: Array<{
+    popularityTrends: {
       date: Date;
       totalSolves: number;
       uniquePlayers: number;
-    }>;
-    levelPerformance: Array<{
+    }[];
+    levelPerformance: {
       name: string;
       slug: string;
       solveCount: number;
       uniquePlayers: number;
       calc_stats_completed_count: number;
-    }>;
+    }[];
     playLog: UserLevelAndStatTs[]; // Limited sample for backward compatibility
   };
   [ProStatsUserType.Records]?: LevelWithRecordHistory[];
@@ -58,9 +58,9 @@ export interface ProStatsUser {
     followerCount: number;
     activeFollowerCount: number;
     hasDiscordConnected: boolean;
-    heatmapData: Array<{ dayOfWeek: number; hour: number; activityCount: number; activeFollowers: number }>;
-    hourlyActivity: Array<{ hour: number; activityCount: number; activeFollowers: number }>;
-    dailyActivity: Array<{ dayOfWeek: number; activityCount: number; activeFollowers: number }>;
+    heatmapData: { dayOfWeek: number; hour: number; activityCount: number; activeFollowers: number }[];
+    hourlyActivity: { hour: number; activityCount: number; activeFollowers: number }[];
+    dailyActivity: { dayOfWeek: number; activityCount: number; activeFollowers: number }[];
     recommendations: {
       bestHour: number;
       bestDay: number;

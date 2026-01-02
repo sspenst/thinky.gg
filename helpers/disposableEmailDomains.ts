@@ -1,9 +1,9 @@
 import { logger } from './logger';
 
 // Global variable to store disposable email domains
-let disposableEmailDomains: Set<string> = new Set();
-let lastFetchTime: number = 0;
-let isLoading: boolean = false;
+let disposableEmailDomains = new Set<string>();
+let lastFetchTime = 0;
+let isLoading = false;
 
 // Cache for 24 hours (in milliseconds)
 const CACHE_DURATION = 24 * 60 * 60 * 1000;

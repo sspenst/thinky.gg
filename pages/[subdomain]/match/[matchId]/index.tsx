@@ -297,7 +297,7 @@ export default function Match({ initialMatch }: MatchProps) {
           document.title = `Starting in ${ncd >> 0} seconds!`;
 
           if (!startSoundPlayed.current) {
-            sounds['start']?.play();
+            sounds.start?.play();
             startSoundPlayed.current = true;
           }
         } else {
@@ -424,13 +424,13 @@ export default function Match({ initialMatch }: MatchProps) {
               <div className='flex flex-col lg:flex-row items-center justify-center gap-8 w-full max-w-7xl'>
                 <div className='flex flex-col items-center gap-8 flex-1'>
                   <div className='flex flex-col md:flex-row gap-8 items-center'>
-                  <MatchResults
-                    match={currentMatch}
-                    recap={currentMatch.matchLog?.find(log => log.type === MatchAction.GAME_RECAP)?.data as MatchLogDataGameRecap}
-                    showViewLink={false}
-                  />
-                   {/* Chat for post-game and spectators - everyone can see */}
-                   {user && (
+                    <MatchResults
+                      match={currentMatch}
+                      recap={currentMatch.matchLog?.find(log => log.type === MatchAction.GAME_RECAP)?.data as MatchLogDataGameRecap}
+                      showViewLink={false}
+                    />
+                    {/* Chat for post-game and spectators - everyone can see */}
+                    {user && (
                       <MatchChat
                         match={currentMatch}
                         user={user}
@@ -480,8 +480,8 @@ export default function Match({ initialMatch }: MatchProps) {
                 'justify-start mb-4': matchInProgress && iAmPlaying
               })}>
 
-                  {/* Chat for lobby and spectators during match */}
-                  <div className='flex flex-col md:flex-row h-full items-center gap-4'>
+                {/* Chat for lobby and spectators during match */}
+                <div className='flex flex-col md:flex-row h-full items-center gap-4'>
                   {user && (!matchInProgress || currentIsSpectating) && (
                     <MatchChat
                       match={currentMatch}
@@ -492,57 +492,57 @@ export default function Match({ initialMatch }: MatchProps) {
                     />
                   )}
                   <div className='flex flex-col gap-2 items-center'>
-                  <MarkReadyButton match={currentMatch} user={user} onMarkReady={fetchMarkReady} onUnmarkReady={fetchUnmarkReady} />
-                  <ReadyStatus match={currentMatch} user={user} />
+                    <MarkReadyButton match={currentMatch} user={user} onMarkReady={fetchMarkReady} onUnmarkReady={fetchUnmarkReady} />
+                    <ReadyStatus match={currentMatch} user={user} />
 
-                  {/* Invite Panel - Only show for match creator when match is OPEN and has only 1 player */}
-                  {currentMatch.state === MultiplayerMatchState.OPEN &&
+                    {/* Invite Panel - Only show for match creator when match is OPEN and has only 1 player */}
+                    {currentMatch.state === MultiplayerMatchState.OPEN &&
                    currentMatch.players.length === 1 &&
                    currentMatch.createdBy._id.toString() === user._id.toString() && (
-                    <div className='flex flex-col gap-2 items-center mt-4 animate-fadeInUp' style={{ animationDelay: '0.5s' }}>
-                      {!showInvitePanel ? (
-                        <button
-                          onClick={() => setShowInvitePanel(true)}
-                          className='group relative overflow-hidden bg-linear-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-300 flex items-center gap-2'
-                        >
-                          <div className='absolute inset-0 bg-linear-to-r from-white to-transparent opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-transform duration-700' />
-                          <svg className='w-4 h-4 relative z-10' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                            <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 4v16m8-8H4' />
-                          </svg>
-                          <span className='relative z-10'>Invite Player</span>
-                        </button>
-                      ) : (
-                        <div className='flex flex-col gap-2 items-center bg-white/10 backdrop-blur-xs rounded-lg p-4 border border-white/20'>
-                          <h3 className='text-sm font-medium'>Invite a player</h3>
-                          <div className='w-64'>
-                            <MultiSelectUser
-                              placeholder='Search for a player...'
-                              onSelect={handleInviteUser}
-                            />
+                      <div className='flex flex-col gap-2 items-center mt-4 animate-fadeInUp' style={{ animationDelay: '0.5s' }}>
+                        {!showInvitePanel ? (
+                          <button
+                            onClick={() => setShowInvitePanel(true)}
+                            className='group relative overflow-hidden bg-linear-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-300 flex items-center gap-2'
+                          >
+                            <div className='absolute inset-0 bg-linear-to-r from-white to-transparent opacity-20 transform skew-x-12 translate-x-full group-hover:-translate-x-full transition-transform duration-700' />
+                            <svg className='w-4 h-4 relative z-10' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                              <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 4v16m8-8H4' />
+                            </svg>
+                            <span className='relative z-10'>Invite Player</span>
+                          </button>
+                        ) : (
+                          <div className='flex flex-col gap-2 items-center bg-white/10 backdrop-blur-xs rounded-lg p-4 border border-white/20'>
+                            <h3 className='text-sm font-medium'>Invite a player</h3>
+                            <div className='w-64'>
+                              <MultiSelectUser
+                                placeholder='Search for a player...'
+                                onSelect={handleInviteUser}
+                              />
+                            </div>
+                            <div className='flex gap-2'>
+                              <button
+                                onClick={() => setShowInvitePanel(false)}
+                                disabled={isInviting}
+                                className='px-3 py-1 text-xs bg-gray-600 hover:bg-gray-700 text-white rounded-sm transition-colors disabled:opacity-50'
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                            {isInviting && (
+                              <div className='text-xs text-gray-300'>Sending invitation...</div>
+                            )}
                           </div>
-                          <div className='flex gap-2'>
-                            <button
-                              onClick={() => setShowInvitePanel(false)}
-                              disabled={isInviting}
-                              className='px-3 py-1 text-xs bg-gray-600 hover:bg-gray-700 text-white rounded-sm transition-colors disabled:opacity-50'
-                            >
-                              Cancel
-                            </button>
-                          </div>
-                          {isInviting && (
-                            <div className='text-xs text-gray-300'>Sending invitation...</div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  )}
+                        )}
+                      </div>
+                    )}
 
                   </div>
-                  </div>
+                </div>
                 <div className='flex flex-col xl:flex-row items-start justify-center gap-6 w-full max-w-6xl'>
                   <div className='flex flex-col items-center gap-6 w-full xl:w-auto'>
                     <div className='flex flex-col  h-full items-center gap-4'>
-<div className='flex flex-col gap-2' />
+                      <div className='flex flex-col gap-2' />
                     </div>
                     <div className='w-full max-w-4xl mx-auto animate-fadeInUp' style={{ animationDelay: '0.6s' }}>
                       <MatchStatus

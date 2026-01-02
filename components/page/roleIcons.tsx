@@ -18,23 +18,23 @@ export function RoleIcon({ id, role, size = 18 }: RoleIconProps) {
   let link = null;
 
   switch (role) {
-  case (Role.ADMIN):
+    case (Role.ADMIN):
     // TODO: admin icon
-    tooltip = 'Admin';
-    break;
-  case (Role.CURATOR):
+      tooltip = 'Admin';
+      break;
+    case (Role.CURATOR):
     // TODO: curator icon
-    tooltip = 'Curator';
-    break;
-  case (Role.BOT):
-    tooltip = 'Approved Bot';
-    icon = <Bot stroke='green' size={size} />;
-    break;
-  case (Role.PRO):
-    icon = <Image alt='pro' src='/pro.svg' width={size} height={size} style={{ minWidth: size, minHeight: size }} />;
-    tooltip = 'Pro Subscriber';
-    link = '/pro';
-    break;
+      tooltip = 'Curator';
+      break;
+    case (Role.BOT):
+      tooltip = 'Approved Bot';
+      icon = <Bot stroke='green' size={size} />;
+      break;
+    case (Role.PRO):
+      icon = <Image alt='pro' src='/pro.svg' width={size} height={size} style={{ minWidth: size, minHeight: size }} />;
+      tooltip = 'Pro Subscriber';
+      link = '/pro';
+      break;
   }
 
   if (!icon) {

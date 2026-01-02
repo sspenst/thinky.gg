@@ -4,7 +4,7 @@ import TileTypeHelper from './tileTypeHelper';
 // convert raw level data into array of arrays
 function loadLevel(level: string) {
   const loadedLevel = level.split('\n');
-  const output = Array<Array<string>>();
+  const output = Array<string[]>();
 
   for (const k in loadedLevel) {
     output[k] = [];
@@ -19,7 +19,7 @@ function loadLevel(level: string) {
 }
 
 // convert the array of arrays into raw level data
-function exportLevel(level: Array<Array<string>>) {
+function exportLevel(level: string[][]) {
   let exportedLevel = String();
 
   for (const k in level) {
@@ -127,43 +127,43 @@ export function trimLevel(level: string) {
 function rotateTileTypeCCW(tileType: TileType) {
   function baseRotateTileTypeCCW(tileType: TileType) {
     switch (tileType) {
-    case TileType.Left:
-      return TileType.Down;
-    case TileType.Up:
-      return TileType.Left;
-    case TileType.Right:
-      return TileType.Up;
-    case TileType.Down:
-      return TileType.Right;
-    case TileType.UpLeft:
-      return TileType.DownLeft;
-    case TileType.UpRight:
-      return TileType.UpLeft;
-    case TileType.DownRight:
-      return TileType.UpRight;
-    case TileType.DownLeft:
-      return TileType.DownRight;
-    case TileType.NotLeft:
-      return TileType.NotDown;
-    case TileType.NotUp:
-      return TileType.NotLeft;
-    case TileType.NotRight:
-      return TileType.NotUp;
-    case TileType.NotDown:
-      return TileType.NotRight;
-    case TileType.LeftRight:
-      return TileType.UpDown;
-    case TileType.UpDown:
-      return TileType.LeftRight;
-    default:
-      return tileType;
+      case TileType.Left:
+        return TileType.Down;
+      case TileType.Up:
+        return TileType.Left;
+      case TileType.Right:
+        return TileType.Up;
+      case TileType.Down:
+        return TileType.Right;
+      case TileType.UpLeft:
+        return TileType.DownLeft;
+      case TileType.UpRight:
+        return TileType.UpLeft;
+      case TileType.DownRight:
+        return TileType.UpRight;
+      case TileType.DownLeft:
+        return TileType.DownRight;
+      case TileType.NotLeft:
+        return TileType.NotDown;
+      case TileType.NotUp:
+        return TileType.NotLeft;
+      case TileType.NotRight:
+        return TileType.NotUp;
+      case TileType.NotDown:
+        return TileType.NotRight;
+      case TileType.LeftRight:
+        return TileType.UpDown;
+      case TileType.UpDown:
+        return TileType.LeftRight;
+      default:
+        return tileType;
     }
   }
 
   const isOnExit = TileTypeHelper.isOnExit(tileType);
-  const tileToRotate = isOnExit ? TileTypeHelper.getExitSibilingTileType(tileType) as TileType : tileType;
+  const tileToRotate = isOnExit ? TileTypeHelper.getExitSibilingTileType(tileType)! : tileType;
   const baseRotatedTileType = baseRotateTileTypeCCW(tileToRotate) as TileType;
-  const rotatedTileType = isOnExit ? TileTypeHelper.getExitSibilingTileType(baseRotatedTileType) as TileType : baseRotatedTileType;
+  const rotatedTileType = isOnExit ? TileTypeHelper.getExitSibilingTileType(baseRotatedTileType)! : baseRotatedTileType;
 
   return rotatedTileType;
 }
@@ -173,31 +173,31 @@ function rotateTileTypeCCW(tileType: TileType) {
 function filpTileTypeY(tileType: TileType) {
   function baseFlipTileTypeY(tileType: TileType) {
     switch (tileType) {
-    case TileType.Up:
-      return TileType.Down;
-    case TileType.Down:
-      return TileType.Up;
-    case TileType.UpLeft:
-      return TileType.DownLeft;
-    case TileType.UpRight:
-      return TileType.DownRight;
-    case TileType.DownRight:
-      return TileType.UpRight;
-    case TileType.DownLeft:
-      return TileType.UpLeft;
-    case TileType.NotUp:
-      return TileType.NotDown;
-    case TileType.NotDown:
-      return TileType.NotUp;
-    default:
-      return tileType;
+      case TileType.Up:
+        return TileType.Down;
+      case TileType.Down:
+        return TileType.Up;
+      case TileType.UpLeft:
+        return TileType.DownLeft;
+      case TileType.UpRight:
+        return TileType.DownRight;
+      case TileType.DownRight:
+        return TileType.UpRight;
+      case TileType.DownLeft:
+        return TileType.UpLeft;
+      case TileType.NotUp:
+        return TileType.NotDown;
+      case TileType.NotDown:
+        return TileType.NotUp;
+      default:
+        return tileType;
     }
   }
 
   const isOnExit = TileTypeHelper.isOnExit(tileType);
-  const tileToFlip = isOnExit ? TileTypeHelper.getExitSibilingTileType(tileType) as TileType : tileType;
+  const tileToFlip = isOnExit ? TileTypeHelper.getExitSibilingTileType(tileType)! : tileType;
   const baseFlippedTileType = baseFlipTileTypeY(tileToFlip) as TileType;
-  const flippedTileType = isOnExit ? TileTypeHelper.getExitSibilingTileType(baseFlippedTileType) as TileType : baseFlippedTileType;
+  const flippedTileType = isOnExit ? TileTypeHelper.getExitSibilingTileType(baseFlippedTileType)! : baseFlippedTileType;
 
   return flippedTileType;
 }
@@ -208,7 +208,7 @@ export function rotateLevelCCW(level: string) {
   const height = loadedLevel.length;
   const width = loadedLevel[0].length;
 
-  const newLevel = Array<Array<string>>();
+  const newLevel = Array<string[]>();
 
   for (let k = 0; k < width; k++) {
     newLevel[k] = [];
@@ -234,7 +234,7 @@ export function flipLevelY(level: string) {
   const height = loadedLevel.length;
   const width = loadedLevel[0].length;
 
-  const newLevel = Array<Array<string>>();
+  const newLevel = Array<string[]>();
 
   for (let k = 0; k < height; k++) {
     newLevel[k] = [];

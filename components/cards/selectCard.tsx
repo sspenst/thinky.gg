@@ -25,7 +25,7 @@ export default function SelectCard({ option, prefetch }: SelectCardProps) {
   const optionGameId = option.gameId || game.id;
 
   const backgroundImage = useMemo(() => {
-    if (option.level && option.level.data) {
+    if (option.level?.data) {
       return getPngDataClient(game.id, option.level.data);
     }
 

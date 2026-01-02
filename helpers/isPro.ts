@@ -3,7 +3,7 @@ import Role from '../constants/role';
 import User, { ReqUser } from '../models/db/user';
 
 export default function isPro(user: User | ReqUser | UserConfig | undefined | null): boolean {
-  if (!user || !user.roles) {
+  if (!user?.roles) {
     return false;
   }
 

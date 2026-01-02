@@ -13,9 +13,9 @@ import { getUserFromToken } from '../../lib/withAuth';
 import { MultiplayerMatchState } from '../../models/constants/multiplayer';
 import { MultiplayerMatchModel } from '../../models/mongoose';
 import { enrichMultiplayerMatch } from '../../models/schemas/multiplayerMatchSchema';
-import { broadcastConnectedPlayers, broadcastCountOfUsersInRoom, broadcastMatches, broadcastMatchGameState, broadcastNotifications, broadcastPrivateAndInvitedMatches, scheduleBroadcastMatch } from './socketFunctions';
-import { isRateLimited } from './rateLimiter';
 import { isGameStateRateLimited } from './gameStateRateLimiter';
+import { isRateLimited } from './rateLimiter';
+import { broadcastConnectedPlayers, broadcastCountOfUsersInRoom, broadcastMatches, broadcastMatchGameState, broadcastNotifications, broadcastPrivateAndInvitedMatches, scheduleBroadcastMatch } from './socketFunctions';
 
 'use strict';
 
@@ -35,12 +35,15 @@ process.on('uncaughtException', (err) => {
 });
 process.on('unhandledRejection', (err) => {
   logger.error('unhandledRejection', err);
+
   // Don't exit on MongoDB connection errors - let Mongoose handle reconnection
-  if (err && typeof err === 'object' && 'name' in err && 
+  if (err && typeof err === 'object' && 'name' in err &&
       (err.name === 'MongoNetworkError' || err.name === 'MongoServerError' || err.name === 'MongoTimeoutError')) {
     logger.error('MongoDB error detected, Mongoose will handle reconnection automatically');
+
     return;
   }
+
   process.exit(1);
 });
 
@@ -56,7 +59,7 @@ process.on('SIGINT', () => {
 // kill
 process.on('SIGTERM', async () => {
   logger.info('SIGTERM signal received. Gracefully shutting down...');
-  
+
   if (GlobalSocketIO) {
     logger.info('Closing Socket.IO server...');
     GlobalSocketIO.close(() => {
@@ -72,18 +75,18 @@ process.on('SIGTERM', async () => {
 });
 let GlobalSocketIO: Server;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function authenticateSocket(socket: any, next: (err?: Error) => void) {
   // Rate limit based on IP address
-  const clientIp = socket.handshake.headers['x-forwarded-for'] || 
-                   socket.handshake.headers['x-real-ip'] || 
-                   socket.handshake.address || 
+  const clientIp = socket.handshake.headers['x-forwarded-for'] ||
+                   socket.handshake.headers['x-real-ip'] ||
+                   socket.handshake.address ||
                    socket.request?.connection?.remoteAddress ||
                    'unknown';
   const identifier = typeof clientIp === 'string' ? clientIp : clientIp?.[0] || 'unknown';
 
   if (isRateLimited(identifier)) {
     logger.warn(`Blocking connection from ${identifier} due to rate limiting`);
+
     return next(new Error('Rate limit exceeded. Please wait before reconnecting.'));
   }
 
@@ -165,7 +168,7 @@ export default async function startSocketIOServer(server: Server) {
   }
 
   const collection = db.collection('socket.io-adapter-events');
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   const mongoAdapter = createAdapter(collection as any);
 
   const adapted = GlobalSocketIO.adapter(mongoAdapter);
@@ -185,6 +188,7 @@ export default async function startSocketIOServer(server: Server) {
     await scheduleBroadcastMatch(match.gameId, mongoEmitter, match.matchId.toString());
   });
 
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   GlobalSocketIO.use(authenticateSocket);
 
   GlobalSocketIO.on('connection', async socket => {
@@ -208,6 +212,7 @@ export default async function startSocketIOServer(server: Server) {
         if (isGameStateRateLimited(userId.toString())) {
           return;
         }
+
         await broadcastMatchGameState(mongoEmitter, userId, matchId, matchGameState);
         await broadcastCountOfUsersInRoom(gameId, adapted, matchId); // TODO: probably worth finding a better place to put this
       }
@@ -222,7 +227,7 @@ export default async function startSocketIOServer(server: Server) {
 
       // Get the rooms this socket was in (excluding personal room and socket.id)
       // Use 'disconnecting' event so we can access rooms before they're cleared
-      const rooms = Array.from(socket.rooms).filter(room => 
+      const rooms = Array.from(socket.rooms).filter(room =>
         room !== socket.id && room !== userId.toString() && !room.startsWith('LOBBY-')
       );
 

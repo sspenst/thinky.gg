@@ -8,10 +8,10 @@ const apiKey = process.env.NEXT_PUBLIC_POSTHOG_KEY;
 
 export const posthogServer = apiKey
   ? new PostHog(apiKey, {
-      host: process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://us.i.posthog.com',
-      flushAt: 1,
-      flushInterval: 0,
-    })
+    host: process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://us.i.posthog.com',
+    flushAt: 1,
+    flushInterval: 0,
+  })
   : null;
 
 /**

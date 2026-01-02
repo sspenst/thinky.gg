@@ -60,8 +60,8 @@ export default function MatchChart({ match }: MatchChartProps) {
 
   const chartData = [];
   const timePerLevelMap = new Map<string, LevelTimeData>();
-  const playerMap = {} as { [id: string]: UserWithMultiplayerProfile };
-  const lastLevelMap = {} as { [playerId: string]: string }; // Track last level for each player
+  const playerMap = {} as Record<string, UserWithMultiplayerProfile>;
+  const lastLevelMap = {} as Record<string, string>; // Track last level for each player
 
   for (const player of match.players) {
     playerMap[player._id.toString()] = player;
@@ -76,8 +76,8 @@ export default function MatchChart({ match }: MatchChartProps) {
   }
 
   // Track last action time for each player to calculate time per level
-  const lastActionTime = {} as { [id: string]: number };
-  const playerScore = {} as { [id: string]: number };
+  const lastActionTime = {} as Record<string, number>;
+  const playerScore = {} as Record<string, number>;
 
   // Initialize lastActionTime with match start time for all players
   for (const player of match.players) {

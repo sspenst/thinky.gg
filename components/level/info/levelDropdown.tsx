@@ -37,7 +37,7 @@ export default function LevelDropdown({ level }: LevelDropdownProps) {
   const isAuthor = level.userId === user?._id || level.userId._id === user?._id;
   const canEdit = isAuthor || isCurator(user);
   const boldedLevelName = <span className='font-bold'>{level.name}</span>;
-  const isInPlayLater = !!(playLater && playLater[level._id.toString()]);
+  const isInPlayLater = !!(playLater?.[level._id.toString()]);
 
   const modal = <ReportModal targetId={level._id.toString()} reportType={ReportType.LEVEL} />;
   const reportLevel = async () => {

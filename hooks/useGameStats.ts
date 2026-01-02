@@ -40,7 +40,7 @@ export default function useGameStats({
 }: UseGameStatsProps): UseGameStatsReturn {
   const lastDirections = useRef<Direction[]>([]);
 
-  const trackStats = useCallback((directions: Direction[], maxRetries: number = 3) => {
+  const trackStats = useCallback((directions: Direction[], maxRetries = 3) => {
     if (disableStats) {
       return;
     }
