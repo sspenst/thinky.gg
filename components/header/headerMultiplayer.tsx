@@ -1,14 +1,13 @@
-import { ScreenSize } from '@root/hooks/useDeviceCheck';
 import Link from 'next/link';
 import { useContext } from 'react';
 import { AppContext } from '../../contexts/appContext';
 import StyledTooltip from '../page/styledTooltip';
 
 export default function HeaderMultiplayer() {
-  const { deviceInfo, multiplayerSocket, user } = useContext(AppContext);
+  const { multiplayerSocket, user } = useContext(AppContext);
   const { connectedPlayersCount, matches, socket } = multiplayerSocket;
 
-  if (!user || deviceInfo.screenSize < ScreenSize.SM) {
+  if (!user) {
     return null;
   }
 
