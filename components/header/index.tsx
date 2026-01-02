@@ -19,6 +19,7 @@ import StyledTooltip from '../page/styledTooltip';
 import Directory from './directory';
 import Dropdown from './dropdown';
 import HeaderControls from './headerControls';
+import HeaderGameMenu from './headerGameMenu';
 
 interface HeaderProps {
   folders?: LinkInfo[];
@@ -122,13 +123,16 @@ export default function Header({
               </svg>
             </button>
         }
-        <div>
-          <Link className='font-bold text-3xl' href='/'>
-            <Image alt='logo' src={game.logo} width='24' height='24' className='h-6 w-6' style={{ minWidth: 24, minHeight: 24 }} />
-          </Link>
-        </div>
-        <div className='-ml-2'>
-          <Directory folders={folders} subtitle={subtitle} title={title} />
+        <div className='flex items-center gap-2'>
+          <div>
+            <Link className='font-bold text-3xl' href='/'>
+              <Image alt='logo' src={game.logo} width='24' height='24' className='h-6 w-6' style={{ minWidth: 24, minHeight: 24 }} />
+            </Link>
+          </div>
+          <HeaderGameMenu />
+          <div className='-ml-2'>
+            <Directory folders={folders} subtitle={subtitle} title={title} />
+          </div>
         </div>
       </div>
       {user === undefined ?
