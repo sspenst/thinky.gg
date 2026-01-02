@@ -106,10 +106,10 @@ export default function ReviewsPage({
         starCount={60}
         constellationPattern='default'
         showGeometricShapes={true}
-        className='min-h-0 mx-2 sm:mx-0'
+        className='min-h-0'
       >
         <div className='flex flex-col items-center min-h-screen px-4 py-8'>
-          <div className='text-center mb-8 animate-fadeInDown' style={{ animationDelay: '0.3s' }}>
+          <div className='text-center mb-8 animate-fadeInDown' style={{ animationDelay: '0.1s' }}>
             <h1 className='text-4xl sm:text-6xl font-black text-transparent bg-clip-text bg-linear-to-r from-purple-400 via-blue-400 to-cyan-400 mb-4'>
               Reviews
             </h1>
@@ -122,8 +122,8 @@ export default function ReviewsPage({
             </p>
           </div>
 
-          <div className='w-full max-w-4xl mb-6 space-y-6 animate-fadeInUp' style={{ animationDelay: '0.4s' }}>
-            <div className='bg-white/10 backdrop-blur-xs border border-white/20 rounded-xl p-4'>
+          <div className='w-full max-w-4xl mb-6 space-y-6 animate-fadeInUp' style={{ animationDelay: '0.2s' }}>
+            <div className='bg-white/10 border border-white/20 rounded-xl p-4'>
               <div className='flex flex-col gap-4'>
                 <div className='flex-1'>
                   <label className='block text-sm font-medium text-gray-300 mb-2'>
@@ -214,7 +214,7 @@ export default function ReviewsPage({
                   <div
                     className='animate-fadeInUp'
                     key={`review-${review._id}`}
-                    style={{ animationDelay: `${0.7 + index * 0.1}s` }}
+                    style={{ animationDelay: `${0.3 + index * 0.1}s` }}
                   >
                     <FormattedReview
                       level={review.levelId}
