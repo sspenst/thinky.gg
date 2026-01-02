@@ -110,17 +110,15 @@ export default function Dropdown() {
           </div>
         </MenuItem>
         <MenuItem>
-          <div className='block sm:hidden'>
-            <div
-              className='flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3 hover-bg-3'
-              onClick={() => {
-                setIsMusicModalOpen(true);
-                setPreventKeyDownEvent(true);
-              }}
-            >
-              <MusicIcon />
-              Music
-            </div>
+          <div
+            className='flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3 hover-bg-3'
+            onClick={() => {
+              setIsMusicModalOpen(true);
+              setPreventKeyDownEvent(true);
+            }}
+          >
+            <MusicIcon />
+            Music
           </div>
         </MenuItem>
         {user ?

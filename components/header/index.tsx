@@ -16,8 +16,9 @@ import LoadingSpinner from '../page/loadingSpinner';
 import MultiSelectUser from '../page/multiSelectUser';
 import Directory from './directory';
 import Dropdown from './dropdown';
-import HeaderControls from './headerControls';
 import HeaderGameMenu from './headerGameMenu';
+import HeaderMultiplayer from './headerMultiplayer';
+import Notifications from './notifications';
 
 interface HeaderProps {
   folders?: LinkInfo[];
@@ -224,7 +225,8 @@ export default function Header({
               )}
             </div>
           )}
-          <HeaderControls />
+          <HeaderMultiplayer />
+          {user && <Notifications />}
           <div className='flex gap-3 items-center'>
             {user === null &&
               <div className='hidden sm:flex gap-3'>
