@@ -43,7 +43,7 @@ export function ThinkyHomePageLoggedIn({ user }: { user: User }) {
               <StreakCalendar />
             </div>
             <Link
-              href='/achievements'
+              href={`/profile/${user.name.toLowerCase()}/achievements`}
               className='bg-white/10 p-3 rounded-lg backdrop-blur-xs hover:bg-white/20 transition-colors flex flex-col items-center justify-center min-w-[100px]'
             >
               <span className='text-2xl mb-1'>🏆</span>
@@ -163,7 +163,7 @@ export function ThinkyHomePageLoggedIn({ user }: { user: User }) {
             />
           </div>
           <Link
-            href='/achievements'
+            href={`/profile/${user.name.toLowerCase()}/achievements`}
             className='flex flex-col items-center justify-center p-2 bg-white dark:bg-gray-800 rounded-lg shadow-xs border border-gray-200 dark:border-gray-700 hover:shadow-md transition'
           >
             <span className='text-2xl mb-2'>🏆</span>
