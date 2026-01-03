@@ -11,7 +11,7 @@ import { refreshAchievements } from '@root/helpers/refreshAchievements';
 import Level from '@root/models/db/level';
 import MultiplayerProfile from '@root/models/db/multiplayerProfile';
 import PlayAttempt from '@root/models/db/playAttempt';
-import Record from '@root/models/db/record';
+import RecordType from '@root/models/db/record';
 import UserConfig from '@root/models/db/userConfig';
 import { AttemptContext } from '@root/models/schemas/playAttemptSchema';
 import cliProgress from 'cli-progress';
@@ -247,7 +247,7 @@ async function integrityCheckRecords() {
 
   for await (const level of LevelModel.find<Level>({ isDeleted: { $ne: true }, isDraft: false })) {
     // find the latest record
-    const record = await RecordModel.findOne<Record>({ levelId: level._id }).sort({ ts: -1 });
+    const record = await RecordModel.findOne<RecordType>({ levelId: level._id }).sort({ ts: -1 });
 
     if (!record) {
       console.warn(`\nNo record found for level ${level.slug}`);

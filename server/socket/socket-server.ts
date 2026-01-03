@@ -162,7 +162,7 @@ export default async function startSocketIOServer(server: Server) {
       capped: true,
       size: 1e6
     });
-  } catch (e) {
+  } catch {
     logger.info('"socket.io-adapter-events" collection already exists');
     // collection already exists
   }
