@@ -53,7 +53,7 @@ for (const game of Object.values(Games)) {
 }
 
 // https://medium.com/@jfbaraky/using-subdomains-as-paths-on-next-js-e5aab5c28c28
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const url = req.nextUrl.clone();
 
   // skip public files

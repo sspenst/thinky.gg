@@ -82,23 +82,6 @@ module.exports = {
     ignoreBuildErrors: process.env.SKIP_TYPE_CHECK === 'true',
   },
 
-  // Optimize ESLint checking
-  eslint: {
-    // Skip linting during builds (run separately)
-    ignoreDuringBuilds: process.env.SKIP_LINT === 'true',
-    dirs: [
-      'components',
-      'constants',
-      'contexts',
-      'helpers',
-      'hooks',
-      'lib',
-      'models',
-      'pages',
-      'tests',
-    ],
-  },
-
   async redirects() {
     return [
       {
