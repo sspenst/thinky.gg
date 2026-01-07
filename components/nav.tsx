@@ -15,7 +15,7 @@ import Footer from './page/footer';
 
 function NavDivider() {
   return (
-    <div className='h-px mx-2 my-1 bg-3 w-full' style={{ minHeight: 1 }} />
+    <div className='h-px px-2 my-1 bg-3 w-full' style={{ minHeight: 1 }} />
   );
 }
 
