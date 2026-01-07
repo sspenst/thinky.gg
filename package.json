@@ -29,7 +29,7 @@
     "lucide-react": "^0.562.0",
     "micro": "^10.0.1",
     "module-alias": "^2.2.3",
-    "mongodb-memory-server": "^10.1.4",
+    "mongodb-memory-server": "^10.4.2",
     "mongoose": "^8.9.6",
     "motion": "^12.23.26",
     "newrelic": "^13.8.1",
