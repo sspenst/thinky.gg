@@ -35,27 +35,18 @@ export default {
   // The directory where Jest should output its coverage files
   coverageDirectory: 'coverage',
   preset: 'ts-jest',
-  /*transform: {
-    'node_modules/(react-dnd|dnd-core|@react-dnd|react-dnd-html5-backend)/.+\\.(j|t)sx?$': 'ts-jest',
-    '^.+\\.tsx?$': ['ts-jest', {
-      isolatedModules: true,
-      tsconfig: {
-        // Got this below snippet from https://github.com/kulshekhar/ts-jest/issues/2805
-        // This is necessary because next.js forces { "jsx": "preserve" }, but ts-jest appears to require { "jsx": "react" }
-        jsx: 'react',
-      },
-    }],
-  },*/
 
   transform: {
     '^.+\\.ts$': ['@swc/jest', {
       configFile: '.swcrc',
     }],
-    'node_modules/(react-dnd|dnd-core|@react-dnd|react-dnd-html5-backend)/.+\\.(j|t)sx?$': 'ts-jest',
     '^.+\\.tsx$': ['ts-jest', {
       tsconfig: {
         // Updated to use the new JSX transform which doesn't require React imports
         jsx: 'react-jsx',
+        // Got this below snippet from https://github.com/kulshekhar/ts-jest/issues/2805
+        // This is necessary because next.js forces { "jsx": "preserve" }, but ts-jest appears to require { "jsx": "react" }
+        // jsx: 'react',
       },
     }],
   },
@@ -130,7 +121,10 @@ export default {
   moduleNameMapper: {
     '^@root/(.*)$': '<rootDir>/$1',
     '\\.(css|less)$': '<rootDir>/tests/jest/__mocks__/styleMock.ts',
-    'next/font/(.*)': require.resolve('next/dist/build/jest/__mocks__/nextFontMock.js'),
+    'next/font/(.*)': 'next/dist/build/jest/__mocks__/nextFontMock.js',
+    '^react-dnd$': '<rootDir>/tests/jest/__mocks__/react-dnd.ts',
+    '^react-dnd-html5-backend$': '<rootDir>/tests/jest/__mocks__/react-dnd-html5-backend.ts',
+    '^debounce$': '<rootDir>/tests/jest/__mocks__/debounce.ts',
   },
   // An array of regexp pattern strings, matched against all module paths before considered 'visible' to the module loader
   // modulePathIgnorePatterns: [],
@@ -176,7 +170,6 @@ export default {
   // runner: "jest-runner",
 
   // The paths to modules that run some code to configure or set up the testing environment before each test
-  // setupFiles: [],
   setupFiles: ['dotenv/config'],
 
   // A list of paths to modules that run some code to configure or set up the testing framework before each test
@@ -226,10 +219,6 @@ export default {
   //   "/node_modules/",
   //   "\\.pnp\\.[^\\/]+$"
   // ],
-  // https://github.com/react-dnd/react-dnd/issues/3443
-  transformIgnorePatterns: [
-    '/node_modules/(?!react-dnd|dnd-core|@react-dnd|react-dnd-html5-backend)'
-  ],
 
   // An array of regexp pattern strings that are matched against all modules before the module loader will automatically return a mock for them
   // unmockedModulePathPatterns: undefined,
