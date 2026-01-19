@@ -51,7 +51,7 @@ async function subscriptionDeleted(userToDowngrade: User, subscription: Stripe.S
         ),
         queueDiscordWebhook(
           DiscordChannel.DevPriv,
-          `🥹 UNSUBSCRIBED. [${userToDowngrade.name}](https://thinky.gg/profile/${userToDowngrade.name}) was just unsubscribed from ` + productName,
+          `🥹 UNSUBSCRIBED. ${userToDowngrade.name} was just unsubscribed from ` + productName,
           undefined,
           [userToDowngrade.name],
         ),
@@ -230,7 +230,7 @@ async function checkoutSessionGift(giftFromUser: User, giftToUser: User, subscri
           createNewProUserNotification(gameId, giftToUser._id, giftFromUser._id),
           queueDiscordWebhook(
             DiscordChannel.DevPriv,
-            `💸 [${giftFromUser.name}](https://thinky.gg/profile/${giftFromUser.name}) just gifted ${quantity} ${type === GiftType.Yearly ? 'year' : 'month'}${quantity === 1 ? '' : 's'} of Pro to [${giftToUser.name}](https://thinky.gg/profile/${giftToUser.name})`,
+            `💸 ${giftFromUser.name} just gifted ${quantity} ${type === GiftType.Yearly ? 'year' : 'month'}${quantity === 1 ? '' : 's'} of Pro to ${giftToUser.name}`,
             undefined,
             [giftFromUser.name, giftToUser.name],
           ),
@@ -311,7 +311,7 @@ async function checkoutSessionComplete(userToUpgrade: User, properties: Stripe.C
           createNewProUserNotification(gameId, userToUpgrade._id),
           queueDiscordWebhook(
             DiscordChannel.DevPriv,
-            `💸 NEW SUBSCRIBER! [${userToUpgrade.name}](https://thinky.gg/profile/${userToUpgrade.name}) just subscribed to ${productName}!`,
+            `💸 NEW SUBSCRIBER! ${userToUpgrade.name} just subscribed to ${productName}!`,
             undefined,
             [userToUpgrade.name],
           ),
@@ -587,7 +587,7 @@ export default apiWrapper({
                 createNewProUserNotification(gameId as GameId, userTarget._id),
                 queueDiscordWebhook(
                   DiscordChannel.DevPriv,
-                  `💸 NEW SUBSCRIBER! [${userTarget.name}](https://thinky.gg/profile/${userTarget.name}) just subscribed to ${game.displayName} ${metadata?.type}!`,
+                  `💸 NEW SUBSCRIBER! ${userTarget.name} just subscribed to ${game.displayName} ${metadata?.type}!`,
                   undefined,
                   [userTarget.name],
                 ),
