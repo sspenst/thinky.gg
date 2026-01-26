@@ -3,8 +3,6 @@ import Select, { CSSObjectWithLabel } from 'react-select';
 import * as transformLevel from '../../helpers/transformLevel';
 import Level from '../../models/db/level';
 import Modal from '.';
-import level from '@root/pages/api/level';
-import TileType from '@root/constants/tileType';
 
 interface ModifyModalProps {
   closeModal: () => void;
@@ -18,7 +16,7 @@ export default function ModifyModal({ closeModal, historyPush, isOpen, setIsDirt
   const [toTrim, setToTrim] = useState(true);
   const [toSimplify, setToSimplify] = useState(false);
   const [transformType, setTransformType] = useState('identity');
-  
+
   let simplifiable = false;
 
   function onSubmit() {

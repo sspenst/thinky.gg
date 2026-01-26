@@ -1,15 +1,12 @@
 import { logger } from '@root/helpers/logger';
-import mongoose, { Types } from 'mongoose';
+import mongoose from 'mongoose';
 import type { NextApiResponse } from 'next';
 import { ValidObjectId } from '../../../../../helpers/apiWrapper';
-import { enrichLevels } from '../../../../../helpers/enrich';
-import { generateLevelSlug } from '../../../../../helpers/generateSlug';
 import isCurator from '../../../../../helpers/isCurator';
-import cleanUser from '../../../../../lib/cleanUser';
 import withAuth, { NextApiRequestWithAuth } from '../../../../../lib/withAuth';
 import Level from '../../../../../models/db/level';
 import * as transformLevel from '../../../../../helpers/transformLevel';
-import { CollectionModel, LevelModel, UserModel } from '../../../../../models/mongoose';
+import { LevelModel } from '../../../../../models/mongoose';
 
 export default withAuth({
   PUT: {

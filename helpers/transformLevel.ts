@@ -2,7 +2,6 @@ import TileType from '@root/constants/tileType';
 import Direction, { directionToVector } from '@root/constants/direction';
 import Position from '@root/models/position';
 import TileTypeHelper from './tileTypeHelper';
-import trim from '@root/pages/api/level/[id]/trim';
 
 // convert raw level data into array of arrays
 function loadLevel(level: string) {
