@@ -17,8 +17,6 @@ export default function ModifyModal({ closeModal, historyPush, isOpen, setIsDirt
   const [toSimplify, setToSimplify] = useState(false);
   const [transformType, setTransformType] = useState('identity');
 
-  let simplifiable = false;
-
   function onSubmit() {
     setLevel(prevLevel => {
       if (!prevLevel) {
@@ -33,7 +31,6 @@ export default function ModifyModal({ closeModal, historyPush, isOpen, setIsDirt
       // simplify first
       if (toSimplify) {
         data = transformLevel.simplifyLevelUnreachable(data);
-        simplifiable = data != level.data;
       }
 
       // then trim
@@ -99,7 +96,6 @@ export default function ModifyModal({ closeModal, historyPush, isOpen, setIsDirt
           <label className='font-semibold' htmlFor='simplify'>Simplify?</label>
           <input
             checked={toSimplify}
-            disabled={!simplifiable}
             id='simplify'
             name='simplify'
             onChange={() => setToSimplify(prevToSimplify => !prevToSimplify)}
