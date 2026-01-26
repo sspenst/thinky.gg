@@ -19,6 +19,11 @@ describe('helpers/transformLevel.ts', () => {
 
     expect(transformLevel.trimLevel(data)).toBe('40\n03');
   });
+  test('simplify', async () => {
+    const data = '1071\n1635\n1064';
+
+    expect(transformLevel.simplifyLevelUnreachable(data)).toBe('1111\n1135\n1064');
+  });
   test('symmetries', async () => {
     const data = 'E0\n00';
 
