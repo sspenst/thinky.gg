@@ -8,6 +8,7 @@ import FormattedAuthorNote from '../formatted/formattedAuthorNote';
 import isNotFullAccountToast from '../toasts/isNotFullAccountToast';
 import Modal from '.';
 import SchedulePublishModal from './schedulePublishModal';
+import { trimLevel } from '../../helpers/transformLevel';
 
 interface PublishLevelModalProps {
   closeModal: () => void;
@@ -20,6 +21,10 @@ export default function PublishLevelModal({ closeModal, isOpen, level }: Publish
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const { mutateUser, user } = useContext(AppContext);
   const router = useRouter();
+
+  // these things are called a lot more often than I expected
+  // check if trimming would change the level
+  const trimmable = trimLevel(level.data) != level.data;
 
   function onConfirm() {
     setIsPublishing(true);
@@ -85,6 +90,9 @@ export default function PublishLevelModal({ closeModal, isOpen, level }: Publish
               </div>
             }
           </div>
+          {trimmable && <>
+            ⚠️ Full wall border; consider trimming.
+          </>}
           {/* Custom Button Row */}
           <div className='flex justify-center gap-3 pt-4'>
             <button

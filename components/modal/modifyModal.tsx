@@ -3,6 +3,8 @@ import Select, { CSSObjectWithLabel } from 'react-select';
 import * as transformLevel from '../../helpers/transformLevel';
 import Level from '../../models/db/level';
 import Modal from '.';
+import level from '@root/pages/api/level';
+import TileType from '@root/constants/tileType';
 
 interface ModifyModalProps {
   closeModal: () => void;
@@ -14,7 +16,10 @@ interface ModifyModalProps {
 
 export default function ModifyModal({ closeModal, historyPush, isOpen, setIsDirty, setLevel }: ModifyModalProps) {
   const [toTrim, setToTrim] = useState(true);
+  const [toSimplify, setToSimplify] = useState(false);
   const [transformType, setTransformType] = useState('identity');
+  
+  let simplifiable = false;
 
   function onSubmit() {
     setLevel(prevLevel => {
@@ -27,9 +32,15 @@ export default function ModifyModal({ closeModal, historyPush, isOpen, setIsDirt
       // hold level data
       let data = level.data;
 
-      // trim first
+      // simplify first
+      if (toSimplify) {
+        data = transformLevel.simplifyLevelUnreachable(data);
+        simplifiable = data != level.data;
+      }
+
+      // then trim
       if (toTrim) {
-        data = transformLevel.trimLevel(level.data);
+        data = transformLevel.trimLevel(data);
       }
 
       // then transform
@@ -83,6 +94,17 @@ export default function ModifyModal({ closeModal, historyPush, isOpen, setIsDirt
             id='trim'
             name='trim'
             onChange={() => setToTrim(prevToTrim => !prevToTrim)}
+            type='checkbox'
+          />
+        </div>
+        <div className='flex flex-row gap-2 items-center w-full'>
+          <label className='font-semibold' htmlFor='simplify'>Simplify?</label>
+          <input
+            checked={toSimplify}
+            disabled={!simplifiable}
+            id='simplify'
+            name='simplify'
+            onChange={() => setToSimplify(prevToSimplify => !prevToSimplify)}
             type='checkbox'
           />
         </div>
