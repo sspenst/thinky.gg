@@ -2,6 +2,7 @@ import { Menu, MenuButton, MenuItem, MenuItems, Transition } from '@headlessui/r
 import ArchiveLevelModal from '@root/components/modal/archiveLevelModal';
 import DeleteLevelModal from '@root/components/modal/deleteLevelModal';
 import EditLevelModal from '@root/components/modal/editLevelModal';
+import TrimLevelModal from '@root/components/modal/trimLevelModal';
 import PublishLevelModal from '@root/components/modal/publishLevelModal';
 import ReportModal from '@root/components/modal/reportModal';
 import SaveToCollectionModal from '@root/components/modal/saveToCollectionModal';
@@ -17,6 +18,7 @@ import classNames from 'classnames';
 import Link from 'next/link';
 import { Fragment, useContext, useState } from 'react';
 import toast from 'react-hot-toast';
+import { trimLevel, simplifyLevelUnreachable } from '../../../helpers/transformLevel';
 
 interface LevelDropdownProps {
   level: Level;
@@ -31,6 +33,7 @@ export default function LevelDropdown({ level }: LevelDropdownProps) {
   const [isSaveToCollectionOpen, setIsSaveToCollectionOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isUnpublishLevelOpen, setIsUnpublishLevelOpen] = useState(false);
+  const [isTrimLevelOpen, setIsTrimLevelOpen] = useState(false);
   const { mutatePlayLater, playLater, user } = useContext(AppContext);
   const { setPreventKeyDownEvent, setModal } = useContext(PageContext);
 
@@ -38,6 +41,9 @@ export default function LevelDropdown({ level }: LevelDropdownProps) {
   const canEdit = isAuthor || isCurator(user);
   const boldedLevelName = <span className='font-bold'>{level.name}</span>;
   const isInPlayLater = !!(playLater?.[level._id.toString()]);
+
+  const trimmable = trimLevel(level.data) != level.data;
+  const simplifiable = simplifyLevelUnreachable(level.data) != level.data;
 
   const modal = <ReportModal targetId={level._id.toString()} reportType={ReportType.LEVEL} />;
   const reportLevel = async () => {
@@ -226,6 +232,24 @@ export default function LevelDropdown({ level }: LevelDropdownProps) {
                   <span>Edit</span>
                 </div>
               </MenuItem>
+              {(trimmable || simplifiable) && <>
+                <MenuItem>
+                  <div
+                    className={classNames('flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3 hover-bg-3', { 'text-red-500': !isAuthor })}
+                    onClick={() => {
+                      setIsTrimLevelOpen(true);
+                      setPreventKeyDownEvent(true);
+                    }}
+                  >
+                    <svg xmlns='http://www.w3.org/2000/svg' className='w-5 h-5' viewBox='1 1 22 22' strokeWidth='1.5' stroke='currentColor' fill='none' strokeLinecap='round' strokeLinejoin='round'>
+                      <path stroke='none' d='M0 0h24v24H0z' fill='none' />
+                      <path d='M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4' />
+                      <path d='M13.5 6.5l4 4' />
+                    </svg>
+                    <span>Trim</span>
+                  </div>
+                </MenuItem>
+              </>}
               {level.isDraft ?
                 <>
                   <MenuItem>
@@ -350,6 +374,14 @@ export default function LevelDropdown({ level }: LevelDropdownProps) {
           setPreventKeyDownEvent(false);
         }}
         isOpen={isEditLevelOpen}
+        level={level}
+      />
+      <TrimLevelModal
+        closeModal={() => {
+          setIsTrimLevelOpen(false);
+          setPreventKeyDownEvent(false);
+        }}
+        isOpen={isTrimLevelOpen}
         level={level}
       />
       {level.isDraft ?
