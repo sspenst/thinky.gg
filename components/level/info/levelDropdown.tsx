@@ -18,7 +18,7 @@ import classNames from 'classnames';
 import Link from 'next/link';
 import { Fragment, useContext, useState } from 'react';
 import toast from 'react-hot-toast';
-import { trimLevel, simplifyLevelUnreachable } from '../../../helpers/transformLevel';
+import { trimLevel } from '../../../helpers/transformLevel';
 
 interface LevelDropdownProps {
   level: Level;
@@ -43,7 +43,6 @@ export default function LevelDropdown({ level }: LevelDropdownProps) {
   const isInPlayLater = !!(playLater?.[level._id.toString()]);
 
   const trimmable = trimLevel(level.data) != level.data;
-  const simplifiable = simplifyLevelUnreachable(level.data) != level.data;
 
   const modal = <ReportModal targetId={level._id.toString()} reportType={ReportType.LEVEL} />;
   const reportLevel = async () => {
@@ -232,7 +231,7 @@ export default function LevelDropdown({ level }: LevelDropdownProps) {
                   <span>Edit</span>
                 </div>
               </MenuItem>
-              {(trimmable || simplifiable) && <>
+              {trimmable && <>
                 <MenuItem>
                   <div
                     className={classNames('flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3 hover-bg-3', { 'text-red-500': !isAuthor })}

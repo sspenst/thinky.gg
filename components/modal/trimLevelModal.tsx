@@ -12,33 +12,17 @@ interface TrimLevelModalProps {
 }
 
 export default function TrimLevelModal({ closeModal, isOpen, level, onLevelUpdated }: TrimLevelModalProps) {
-  const [toTrim, setToTrim] = useState(true);
-  const [toSimplify, setToSimplify] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
   function onSubmit() {
-    // No change so don't bother server
-    if (!toTrim && !toSimplify) {
-      toast.dismiss();
-      closeModal();
-      return;
-    }
-
     setIsSubmitting(true);
     toast.dismiss();
     toast.loading('Updating level...');
 
     fetch(`/api/level/${level._id}/trim`, {
       method: 'PUT',
-      body: JSON.stringify({
-        trim: toTrim,
-        simplify: toSimplify,
-      }),
       credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json'
-      }
     }).then(async res => {
       if (res.status === 200) {
         toast.dismiss();
@@ -78,28 +62,7 @@ export default function TrimLevelModal({ closeModal, isOpen, level, onLevelUpdat
       onSubmit={onSubmit}
       title='Trim Level'
     >
-      <div className='flex flex-col gap-2 max-w-full'>
-        <div className='flex flex-row gap-2 items-center w-full'>
-          <label className='font-semibold' htmlFor='trim'>Trim?</label>
-          <input
-            checked={toTrim}
-            id='trim'
-            name='trim'
-            onChange={() => setToTrim(prevToTrim => !prevToTrim)}
-            type='checkbox'
-          />
-        </div>
-        <div className='flex flex-row gap-2 items-center w-full'>
-          <label className='font-semibold' htmlFor='simplify'>Simplify?</label>
-          <input
-            checked={toSimplify}
-            id='simplify'
-            name='simplify'
-            onChange={() => setToSimplify(prevToSimplify => !prevToSimplify)}
-            type='checkbox'
-          />
-        </div>
-      </div>
+      Trimming this published level will be irreversible.
     </Modal>
   );
 }

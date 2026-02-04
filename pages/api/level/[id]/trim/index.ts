@@ -16,14 +16,7 @@ export default withAuth({
   },
 }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method === 'PUT') {
-    if (!req.body) {
-      return res.status(400).json({
-        error: 'Missing required fields',
-      });
-    }
-
     const { id } = req.query;
-    const { trim, simplify } = req.body;
 
     const level = await LevelModel.findById<Level>(id);
 
@@ -34,14 +27,9 @@ export default withAuth({
     }
 
     if (isCurator(req.user) || req.userId === level.userId.toString()) {
-      // simplify, then trim the level
+      // trim the level
       let data = level.data;
-      if (simplify) {
-        data = transformLevel.simplifyLevelUnreachable(data);
-      }
-      if (trim) {
-        data = transformLevel.trimLevel(data);
-      }
+      data = transformLevel.trimLevel(data);
       const newWidth = transformLevel.getWidth(data);
       const newHeight = transformLevel.getHeight(data);
       // check for a duplicate
@@ -52,7 +40,7 @@ export default withAuth({
         gameId: level.gameId,
       })) {
         return res.status(400).json({
-          error: `Level after modification is identical to another`,
+          error: `Level after trimming is identical to another`,
         });
       }
 
