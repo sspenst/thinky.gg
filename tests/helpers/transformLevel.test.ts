@@ -19,7 +19,17 @@ describe('helpers/transformLevel.ts', () => {
 
     expect(transformLevel.trimLevel(data)).toBe('40\n03');
   });
-  test('simplify', async () => {
+  test('simplifyFillHoles', async () => {
+    const data = '000000000\n001111100\n014000010\n010010010\n010101010\n010010010\n010000010\n001111100\n000000000';
+
+    expect(transformLevel.simplifyLevelUnreachable(data)).toBe('111111111\n111111111\n114000011\n110010011\n110111011\n110010011\n110000011\n111111111\n111111111');
+  });
+  test('simplifyKeepMoveableBlocks', async () => {
+    const data = '00000\n09560\n02790\n08470';
+
+    expect(transformLevel.simplifyLevelUnreachable(data)).toBe('00000\n09560\n02710\n08410');
+  });
+  test('simplifySequence', async () => {
     const data = '1071\n1635\n1064';
 
     expect(transformLevel.simplifyLevelUnreachable(data)).toBe('1111\n1135\n1064');
