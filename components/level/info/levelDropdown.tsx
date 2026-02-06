@@ -2,11 +2,11 @@ import { Menu, MenuButton, MenuItem, MenuItems, Transition } from '@headlessui/r
 import ArchiveLevelModal from '@root/components/modal/archiveLevelModal';
 import DeleteLevelModal from '@root/components/modal/deleteLevelModal';
 import EditLevelModal from '@root/components/modal/editLevelModal';
-import TrimLevelModal from '@root/components/modal/trimLevelModal';
 import PublishLevelModal from '@root/components/modal/publishLevelModal';
 import ReportModal from '@root/components/modal/reportModal';
 import SaveToCollectionModal from '@root/components/modal/saveToCollectionModal';
 import ShareModal from '@root/components/modal/shareModal';
+import TrimLevelModal from '@root/components/modal/trimLevelModal';
 import UnpublishLevelModal from '@root/components/modal/unpublishLevelModal';
 import { ReportType } from '@root/constants/ReportType';
 import { AppContext } from '@root/contexts/appContext';
@@ -15,6 +15,7 @@ import isCurator from '@root/helpers/isCurator';
 import isGuest from '@root/helpers/isGuest';
 import Level from '@root/models/db/level';
 import classNames from 'classnames';
+import { LucideFlipHorizontal2 } from 'lucide-react';
 import Link from 'next/link';
 import { Fragment, useContext, useState } from 'react';
 import toast from 'react-hot-toast';
@@ -240,11 +241,7 @@ export default function LevelDropdown({ level }: LevelDropdownProps) {
                       setPreventKeyDownEvent(true);
                     }}
                   >
-                    <svg xmlns='http://www.w3.org/2000/svg' className='w-5 h-5' viewBox='1 1 22 22' strokeWidth='1.5' stroke='currentColor' fill='none' strokeLinecap='round' strokeLinejoin='round'>
-                      <path stroke='none' d='M0 0h24v24H0z' fill='none' />
-                      <path d='M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4' />
-                      <path d='M13.5 6.5l4 4' />
-                    </svg>
+                    <LucideFlipHorizontal2 className='w-5 h-5' />
                     <span>Trim</span>
                   </div>
                 </MenuItem>
