@@ -24,10 +24,10 @@ describe('helpers/transformLevel.ts', () => {
 
     expect(transformLevel.simplifyLevelUnreachable(data)).toBe('111111111\n111111111\n114000011\n110010011\n110111011\n110010011\n110000011\n111111111\n111111111');
   });
-  test('simplifyKeepMoveableBlocks', async () => {
-    const data = '00000\n09560\n02790\n08470';
+  test('simplifyKeepMoveableBlocksNotPushedIntoWalls', async () => {
+    const data = '00080\n09569\n02799\n08471';
 
-    expect(transformLevel.simplifyLevelUnreachable(data)).toBe('00000\n09560\n02710\n08410');
+    expect(transformLevel.simplifyLevelUnreachable(data)).toBe('00080\n09569\n02791\n08411');
   });
   test('simplifySequence', async () => {
     const data = '1071\n1635\n1064';
