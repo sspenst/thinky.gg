@@ -1,11 +1,9 @@
-import { logger } from '@root/helpers/logger';
-import mongoose from 'mongoose';
 import type { NextApiResponse } from 'next';
 import { ValidObjectId } from '../../../../../helpers/apiWrapper';
 import isCurator from '../../../../../helpers/isCurator';
+import * as transformLevel from '../../../../../helpers/transformLevel';
 import withAuth, { NextApiRequestWithAuth } from '../../../../../lib/withAuth';
 import Level from '../../../../../models/db/level';
-import * as transformLevel from '../../../../../helpers/transformLevel';
 import { LevelModel } from '../../../../../models/mongoose';
 
 export default withAuth({
@@ -29,9 +27,11 @@ export default withAuth({
     if (isCurator(req.user) || req.userId === level.userId.toString()) {
       // trim the level
       let data = level.data;
+
       data = transformLevel.trimLevel(data);
       const newWidth = transformLevel.getWidth(data);
       const newHeight = transformLevel.getHeight(data);
+
       // check for a duplicate
       if (await LevelModel.findOne({
         data: data,
@@ -40,43 +40,26 @@ export default withAuth({
         gameId: level.gameId,
       })) {
         return res.status(400).json({
-          error: `Level after trimming is identical to another`,
+          error: 'Level after trimming is identical to another',
         });
       }
 
-      // attempt to update the database
-      const session = await mongoose.startSession();
+      await LevelModel.updateOne({
+        _id: id,
+      }, {
+        $set: {
+          data: data,
+          width: newWidth,
+          height: newHeight,
+        },
+      }, {
+        runValidators: true,
+      });
 
-      try {
-        await session.withTransaction(async () => {
-          await LevelModel.updateOne({
-            _id: id,
-          }, {
-            $set: {
-              data: data,
-              width: newWidth,
-              height: newHeight,
-            },
-          }, {
-            runValidators: true,
-            session: session,
-          });
-
-          // update level properties for return object
-          level.data = data;
-          level.width = newWidth;
-          level.height = newHeight;
-        });
-
-        session.endSession();
-      } catch (err) {
-        logger.error(err);
-        session.endSession();
-
-        return res.status(500).json({
-          error: `Error updating slug for level id ${level._id.toString()}`,
-        });
-      }
+      // update level properties for return object
+      level.data = data;
+      level.width = newWidth;
+      level.height = newHeight;
     }
 
     return res.status(200).json(level);

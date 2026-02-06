@@ -28,14 +28,14 @@ export default function ModifyModal({ closeModal, historyPush, isOpen, setIsDirt
       // hold level data
       let data = level.data;
 
-      // simplify first
-      if (toSimplify) {
-        data = transformLevel.simplifyLevelUnreachable(data);
-      }
-
-      // then trim
+      // trim first
       if (toTrim) {
         data = transformLevel.trimLevel(data);
+      }
+
+      // then simplify
+      if (toSimplify) {
+        data = transformLevel.simplifyLevelUnreachable(data);
       }
 
       // then transform

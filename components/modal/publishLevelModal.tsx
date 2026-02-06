@@ -3,12 +3,12 @@ import { useRouter } from 'next/router';
 import { useContext, useState } from 'react';
 import toast from 'react-hot-toast';
 import { AppContext } from '../../contexts/appContext';
+import { trimLevel } from '../../helpers/transformLevel';
 import Level from '../../models/db/level';
 import FormattedAuthorNote from '../formatted/formattedAuthorNote';
 import isNotFullAccountToast from '../toasts/isNotFullAccountToast';
 import Modal from '.';
 import SchedulePublishModal from './schedulePublishModal';
-import { trimLevel } from '../../helpers/transformLevel';
 
 interface PublishLevelModalProps {
   closeModal: () => void;
@@ -19,11 +19,9 @@ interface PublishLevelModalProps {
 export default function PublishLevelModal({ closeModal, isOpen, level }: PublishLevelModalProps) {
   const [isPublishing, setIsPublishing] = useState(false);
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
-  const { mutateUser, user } = useContext(AppContext);
+  const { mutateUser } = useContext(AppContext);
   const router = useRouter();
 
-  // these things are called a lot more often than I expected
-  // check if trimming would change the level
   const trimmable = trimLevel(level.data) != level.data;
   const [publishWithoutTrim, setPublishWithoutTrim] = useState(false);
 

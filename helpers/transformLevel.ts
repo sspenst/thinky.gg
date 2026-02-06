@@ -1,5 +1,5 @@
-import TileType from '@root/constants/tileType';
 import Direction, { directionToVector } from '@root/constants/direction';
+import TileType from '@root/constants/tileType';
 import Position from '@root/models/position';
 import TileTypeHelper from './tileTypeHelper';
 
@@ -132,14 +132,17 @@ export function simplifyLevelUnreachable(level: string) {
 
   // locate player (there doesn't seem to be an existing helper for this)
   let player = null;
+
   for (let y = 0; y < loadedLevel.length; y++) {
     for (let x = 0; x < loadedLevel[y].length; x++) {
       const tileType = loadedLevel[y][x] as TileType;
+
       if (tileType === TileType.Player || tileType === TileType.PlayerOnExit) {
         player = new Position(x, y);
       }
     }
   }
+
   if (player === null) {
     // player doesn't exist - prefer changing nothing
     return level;
@@ -149,44 +152,54 @@ export function simplifyLevelUnreachable(level: string) {
   function tileIfNotWallOrOOB(pos: Position) {
     // bounds checking, copied from gameStateHelpers.ts
     const row = loadedLevel[pos.y];
+
     if (!row || !row[pos.x]) {
       return null;
     }
+
     // treat wall same as oob
     const tile = row[pos.x];
+
     return tile === TileType.Wall ? null : tile;
   }
 
   // floodfill starting from player
-  let reachable = [player];
+  const reachable = [player];
   let fillIndex = -1;
+
   while (fillIndex < reachable.length - 1) {
     fillIndex++;
     const pos = reachable[fillIndex];
+
     for (const direction of [Direction.DOWN, Direction.LEFT, Direction.RIGHT, Direction.UP]) {
       const delta = directionToVector(direction);
       const nextPos = pos.add(delta);
       const nextTile = tileIfNotWallOrOOB(nextPos) as TileType;
+
       if (!nextTile) {
         // checking position is wall or oob
         continue;
       }
+
       if (TileTypeHelper.canMove(nextTile)) {
         // checking a block
         if (!TileTypeHelper.canMoveInDirection(nextTile, direction)) {
           // block acts as a wall from this direction
           continue;
         }
+
         const nextNextPos = nextPos.add(delta);
         const nextNextTile = tileIfNotWallOrOOB(nextNextPos);
+
         if (!nextNextTile) {
           // block would be pushed into wall or oob
           continue;
         }
       }
+
       // tile is 'walkable'
       // optimisation (unneeded): can avoid searching the list here and below using a bitarray of 'tile has been reached'
-      if (!reachable.some((seenPos) => {return seenPos.x == nextPos.x && seenPos.y == nextPos.y})) {
+      if (!reachable.some((seenPos) => {return seenPos.x == nextPos.x && seenPos.y == nextPos.y;})) {
         // and not queued
         reachable.push(nextPos);
       }
@@ -196,7 +209,7 @@ export function simplifyLevelUnreachable(level: string) {
   // turn anything not reachable to wall
   for (let y = 0; y < loadedLevel.length; y++) {
     for (let x = 0; x < loadedLevel[y].length; x++) {
-      if (!reachable.some((seenPos) => {return seenPos.x == x && seenPos.y == y})) {
+      if (!reachable.some((seenPos) => {return seenPos.x == x && seenPos.y == y;})) {
         loadedLevel[y][x] = TileType.Wall;
       }
     }
