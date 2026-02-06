@@ -6,6 +6,7 @@ import PublishLevelModal from '@root/components/modal/publishLevelModal';
 import ReportModal from '@root/components/modal/reportModal';
 import SaveToCollectionModal from '@root/components/modal/saveToCollectionModal';
 import ShareModal from '@root/components/modal/shareModal';
+import TrimLevelModal from '@root/components/modal/trimLevelModal';
 import UnpublishLevelModal from '@root/components/modal/unpublishLevelModal';
 import { ReportType } from '@root/constants/ReportType';
 import { AppContext } from '@root/contexts/appContext';
@@ -14,9 +15,11 @@ import isCurator from '@root/helpers/isCurator';
 import isGuest from '@root/helpers/isGuest';
 import Level from '@root/models/db/level';
 import classNames from 'classnames';
+import { LucideFlipHorizontal2 } from 'lucide-react';
 import Link from 'next/link';
 import { Fragment, useContext, useState } from 'react';
 import toast from 'react-hot-toast';
+import { trimLevel } from '../../../helpers/transformLevel';
 
 interface LevelDropdownProps {
   level: Level;
@@ -31,6 +34,7 @@ export default function LevelDropdown({ level }: LevelDropdownProps) {
   const [isSaveToCollectionOpen, setIsSaveToCollectionOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isUnpublishLevelOpen, setIsUnpublishLevelOpen] = useState(false);
+  const [isTrimLevelOpen, setIsTrimLevelOpen] = useState(false);
   const { mutatePlayLater, playLater, user } = useContext(AppContext);
   const { setPreventKeyDownEvent, setModal } = useContext(PageContext);
 
@@ -38,6 +42,8 @@ export default function LevelDropdown({ level }: LevelDropdownProps) {
   const canEdit = isAuthor || isCurator(user);
   const boldedLevelName = <span className='font-bold'>{level.name}</span>;
   const isInPlayLater = !!(playLater?.[level._id.toString()]);
+
+  const trimmable = trimLevel(level.data) != level.data;
 
   const modal = <ReportModal targetId={level._id.toString()} reportType={ReportType.LEVEL} />;
   const reportLevel = async () => {
@@ -226,6 +232,20 @@ export default function LevelDropdown({ level }: LevelDropdownProps) {
                   <span>Edit</span>
                 </div>
               </MenuItem>
+              {trimmable && <>
+                <MenuItem>
+                  <div
+                    className={classNames('flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3 hover-bg-3', { 'text-red-500': !isAuthor })}
+                    onClick={() => {
+                      setIsTrimLevelOpen(true);
+                      setPreventKeyDownEvent(true);
+                    }}
+                  >
+                    <LucideFlipHorizontal2 className='w-5 h-5' />
+                    <span>Trim</span>
+                  </div>
+                </MenuItem>
+              </>}
               {level.isDraft ?
                 <>
                   <MenuItem>
@@ -350,6 +370,14 @@ export default function LevelDropdown({ level }: LevelDropdownProps) {
           setPreventKeyDownEvent(false);
         }}
         isOpen={isEditLevelOpen}
+        level={level}
+      />
+      <TrimLevelModal
+        closeModal={() => {
+          setIsTrimLevelOpen(false);
+          setPreventKeyDownEvent(false);
+        }}
+        isOpen={isTrimLevelOpen}
         level={level}
       />
       {level.isDraft ?

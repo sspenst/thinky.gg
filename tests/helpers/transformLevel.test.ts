@@ -19,6 +19,21 @@ describe('helpers/transformLevel.ts', () => {
 
     expect(transformLevel.trimLevel(data)).toBe('40\n03');
   });
+  test('simplifyFillHoles', async () => {
+    const data = '000000000\n001111100\n014000010\n010010010\n010101010\n010010010\n010000010\n001111100\n000000000';
+
+    expect(transformLevel.simplifyLevelUnreachable(data)).toBe('111111111\n111111111\n114000011\n110010011\n110111011\n110010011\n110000011\n111111111\n111111111');
+  });
+  test('simplifyKeepMoveableBlocksNotPushedIntoWalls', async () => {
+    const data = '00080\n09569\n02799\n08471';
+
+    expect(transformLevel.simplifyLevelUnreachable(data)).toBe('00080\n09569\n02791\n08411');
+  });
+  test('simplifySequence', async () => {
+    const data = '1071\n1635\n1064';
+
+    expect(transformLevel.simplifyLevelUnreachable(data)).toBe('1111\n1135\n1064');
+  });
   test('symmetries', async () => {
     const data = 'E0\n00';
 

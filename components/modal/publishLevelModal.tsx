@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import { useContext, useState } from 'react';
 import toast from 'react-hot-toast';
 import { AppContext } from '../../contexts/appContext';
+import { trimLevel } from '../../helpers/transformLevel';
 import Level from '../../models/db/level';
 import FormattedAuthorNote from '../formatted/formattedAuthorNote';
 import isNotFullAccountToast from '../toasts/isNotFullAccountToast';
@@ -18,8 +19,11 @@ interface PublishLevelModalProps {
 export default function PublishLevelModal({ closeModal, isOpen, level }: PublishLevelModalProps) {
   const [isPublishing, setIsPublishing] = useState(false);
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
-  const { mutateUser, user } = useContext(AppContext);
+  const { mutateUser } = useContext(AppContext);
   const router = useRouter();
+
+  const trimmable = trimLevel(level.data) != level.data;
+  const [publishWithoutTrim, setPublishWithoutTrim] = useState(false);
 
   function onConfirm() {
     setIsPublishing(true);
@@ -85,11 +89,23 @@ export default function PublishLevelModal({ closeModal, isOpen, level }: Publish
               </div>
             }
           </div>
+          {trimmable && <>
+            <div className='flex flex-row gap-2 items-center w-full'>
+              <label className='font-semibold' htmlFor='trimmableWarning'>⚠️ Level can be trimmed. Publish anyway?</label>
+              <input
+                checked={publishWithoutTrim}
+                id='trimmableWarning'
+                name='trimmableWarning'
+                onChange={() => setPublishWithoutTrim(prevPublishWithoutTrim => !prevPublishWithoutTrim)}
+                type='checkbox'
+              />
+            </div>
+          </>}
           {/* Custom Button Row */}
           <div className='flex justify-center gap-3 pt-4'>
             <button
               onClick={onConfirm}
-              disabled={isPublishing}
+              disabled={isPublishing || (trimmable && !publishWithoutTrim)}
               className='inline-flex justify-center px-6 py-2 text-sm font-medium border border-transparent rounded-md bg-blue-500 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white'
             >
               {isPublishing ? 'Publishing...' : 'Publish Now'}
@@ -97,7 +113,7 @@ export default function PublishLevelModal({ closeModal, isOpen, level }: Publish
 
             <button
               onClick={onSchedule}
-              disabled={isPublishing}
+              disabled={isPublishing || (trimmable && !publishWithoutTrim)}
               className='inline-flex items-center justify-center gap-2 px-6 py-2 text-sm font-medium border border-transparent rounded-md bg-linear-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white'
             >
               <Image alt='pro' src='/pro.svg' width={16} height={16} className='opacity-90' />

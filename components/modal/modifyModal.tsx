@@ -14,6 +14,7 @@ interface ModifyModalProps {
 
 export default function ModifyModal({ closeModal, historyPush, isOpen, setIsDirty, setLevel }: ModifyModalProps) {
   const [toTrim, setToTrim] = useState(true);
+  const [toSimplify, setToSimplify] = useState(false);
   const [transformType, setTransformType] = useState('identity');
 
   function onSubmit() {
@@ -29,7 +30,12 @@ export default function ModifyModal({ closeModal, historyPush, isOpen, setIsDirt
 
       // trim first
       if (toTrim) {
-        data = transformLevel.trimLevel(level.data);
+        data = transformLevel.trimLevel(data);
+      }
+
+      // then simplify
+      if (toSimplify) {
+        data = transformLevel.simplifyLevelUnreachable(data);
       }
 
       // then transform
@@ -83,6 +89,16 @@ export default function ModifyModal({ closeModal, historyPush, isOpen, setIsDirt
             id='trim'
             name='trim'
             onChange={() => setToTrim(prevToTrim => !prevToTrim)}
+            type='checkbox'
+          />
+        </div>
+        <div className='flex flex-row gap-2 items-center w-full'>
+          <label className='font-semibold' htmlFor='simplify'>Simplify?</label>
+          <input
+            checked={toSimplify}
+            id='simplify'
+            name='simplify'
+            onChange={() => setToSimplify(prevToSimplify => !prevToSimplify)}
             type='checkbox'
           />
         </div>
