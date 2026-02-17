@@ -460,6 +460,51 @@ describe('Email digest', () => {
       }
     );
   }, 10000);
+  test('Skip digest for users inactive for more than 6 months', async () => {
+    await dbConnect();
+    sendMailRefMock.ref = acceptMock;
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
+    jest.spyOn(logger, 'info').mockImplementation(() => ({} as Logger));
+    jest.spyOn(logger, 'warn').mockImplementation(() => ({} as Logger));
+
+    const sevenMonthsAgoTs = Math.floor(Date.now() / 1000) - (7 * 30 * 24 * 60 * 60);
+
+    await Promise.all([
+      EmailLogModel.deleteMany({}),
+      NotificationModel.deleteMany({}),
+      UserModel.findByIdAndUpdate(TestId.USER, {
+        emailDigest: EmailDigestSettingType.DAILY,
+        last_visited_at: sevenMonthsAgoTs,
+      })
+    ]);
+
+    await testApiHandler({
+      pagesHandler: async (_, res) => {
+        const req: NextApiRequestWrapper = {
+          gameId: DEFAULT_GAME_ID,
+          method: 'GET',
+          query: {
+            secret: process.env.INTERNAL_JOB_TOKEN_SECRET_EMAILDIGEST
+          },
+          body: {},
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWrapper;
+
+        await handler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBeUndefined();
+        expect(res.status).toBe(200);
+        expect(response.sent[EmailType.EMAIL_DIGEST]).not.toContain('test@gmail.com');
+        expect(response.sent[EmailType.EMAIL_DIGEST]).toHaveLength(3);
+      },
+    });
+  }, 10000);
   test('Running with a user with no userconfig', async () => {
     // delete user config
     await Promise.all([UserModel.findByIdAndDelete(TestId.USER),

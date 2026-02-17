@@ -96,6 +96,10 @@ interface UserWithNotificationsCount extends User {
 }
 
 export async function sendEmailDigests(batchId: Types.ObjectId, limit: number) {
+  const sixMonthsAgo = new Date();
+  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+  const sixMonthsAgoTs = Math.floor(sixMonthsAgo.getTime() / 1000);
+
   const userAgg = UserModel.aggregate<UserWithNotificationsCount>([
     {
       $match: {
@@ -105,6 +109,10 @@ export async function sendEmailDigests(batchId: Types.ObjectId, limit: number) {
         },
         // check where ts exists
         ts: { $exists: true },
+        // if last_visited_at is missing, fall back to account creation time
+        $expr: {
+          $gte: [{ $ifNull: ['$last_visited_at', '$ts'] }, sixMonthsAgoTs]
+        },
       },
     },
     {
