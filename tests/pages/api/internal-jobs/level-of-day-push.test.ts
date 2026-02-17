@@ -462,6 +462,78 @@ describe('Level of Day Push Notifications', () => {
     });
   });
 
+  test('replace previous level-of-day in-app notification before creating today\'s', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
+    jest.spyOn(logger, 'info').mockImplementation(() => ({} as Logger));
+    jest.spyOn(logger, 'warn').mockImplementation(() => ({} as Logger));
+
+    await DeviceModel.create({
+      _id: new Types.ObjectId(),
+      userId: TestId.USER,
+      deviceToken: 'test-device-token',
+      deviceName: 'Test Device',
+      deviceBrand: 'Test Brand',
+      deviceOSName: 'iOS',
+      deviceOSVersion: '16.0',
+      state: DeviceState.ACTIVE,
+    });
+
+    const yesterday = new Date();
+
+    yesterday.setUTCDate(yesterday.getUTCDate() - 1);
+
+    const oldNotification = await NotificationModel.create({
+      _id: new Types.ObjectId(),
+      userId: TestId.USER,
+      type: NotificationType.LEVEL_OF_DAY,
+      gameId: GameId.PATHOLOGY,
+      message: 'Old level of day message',
+      read: true,
+      createdAt: yesterday,
+    });
+
+    await UserModel.findByIdAndUpdate(TestId.USER, {
+      disallowedPushNotifications: [],
+    });
+
+    await testApiHandler({
+      pagesHandler: async (_, res) => {
+        const req: NextApiRequestWrapper = {
+          gameId: DEFAULT_GAME_ID,
+          method: 'GET',
+          query: {
+            secret: process.env.INTERNAL_JOB_TOKEN_SECRET_EMAILDIGEST,
+            limit: '1'
+          },
+          body: {},
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWrapper;
+
+        await handler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(res.status).toBe(200);
+        expect(response.success).toBe(true);
+        expect(response.sent).toBe(1);
+        expect(response.failed).toBe(0);
+
+        const notifications = await NotificationModel.find({
+          userId: TestId.USER,
+          type: NotificationType.LEVEL_OF_DAY
+        });
+
+        expect(notifications).toHaveLength(1);
+        expect(notifications[0]._id.toString()).not.toBe(oldNotification._id.toString());
+        expect(notifications[0].message).not.toBe('Old level of day message');
+      },
+    });
+  });
+
   test('schedule notifications based on user activity patterns', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     jest.spyOn(logger, 'info').mockImplementation(() => ({} as Logger));

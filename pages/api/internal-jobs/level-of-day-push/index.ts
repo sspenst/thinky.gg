@@ -344,6 +344,12 @@ export async function sendLevelOfDayPushNotifications(limit: number) {
             // Create an engaging message with level details
             const notificationMessage = createLevelOfDayMessage(userLevelOfDay, gameDisplayName, user.config);
 
+            // Keep only the latest in-app level-of-day notification for each user.
+            await NotificationModel.deleteMany({
+              userId: user._id,
+              type: NotificationType.LEVEL_OF_DAY,
+            }, { session });
+
             // Create notification
             const notification = await NotificationModel.create([{
               gameId: userLevelOfDay.gameId,
