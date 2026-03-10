@@ -6,6 +6,15 @@ import Router from 'next/router';
 import { useCallback, useState } from 'react';
 import toast from 'react-hot-toast';
 
+interface UserCommandResult {
+  deleted: boolean;
+  resp?: {
+    isApprovedBot?: boolean;
+    message?: string;
+    roles?: string[];
+  };
+}
+
 export function useAdminCommands() {
   const [runningCommand, setRunningCommand] = useState(false);
   const [selectedLevelCommand, setSelectedLevelCommand] = useState<IAdminCommand>();
@@ -54,7 +63,7 @@ export function useAdminCommands() {
     }
   }, [selectedGenericCommand]);
 
-  const runCommandUser = useCallback(async (selectedUser: User | null) => {
+  const runCommandUser = useCallback(async (selectedUser: User | null): Promise<UserCommandResult | undefined> => {
     if (!selectedUser || !selectedUserCommand) {
       return;
     }
@@ -85,10 +94,14 @@ export function useAdminCommands() {
       if (json.error) {
         toast.error(json.error);
       } else {
-        toast.success('Command ran successfully');
+        const message = json.resp?.message || 'Command ran successfully';
 
-        // Return whether user was deleted for parent component to handle
-        return selectedUserCommand.command === AdminCommand.DeleteUser;
+        toast.success(message);
+
+        return {
+          deleted: selectedUserCommand.command === AdminCommand.DeleteUser,
+          resp: json.resp,
+        };
       }
     } catch (error) {
       toast.dismiss();
@@ -96,8 +109,6 @@ export function useAdminCommands() {
     } finally {
       setRunningCommand(false);
     }
-
-    return false;
   }, [selectedUserCommand]);
 
   const runCommandLevel = useCallback(async (selectedLevel: Level | null) => {

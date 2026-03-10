@@ -11,6 +11,7 @@ interface UseTouchControlsProps {
 
 interface UseTouchControlsReturn {
   isSwiping: React.MutableRefObject<boolean>;
+  consumeTapToMoveIntent: () => boolean;
   resetTouchState: () => void;
 }
 
@@ -29,12 +30,13 @@ export default function useTouchControls({
   const touchStartTimestamp = useRef<number>(Date.now());
   const lastMoveTimestamp = useRef(Date.now());
   const isSwiping = useRef<boolean>(false);
+  const tapToMoveIntent = useRef<boolean>(false);
   const longPressActive = useRef<boolean>(false);
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const swipeHandled = useRef<boolean>(false);
 
   const LONG_PRESS_MS = 250;
-  const TAP_MAX_MS = 220;
+  const TAP_TO_MOVE_HOLD_MS = 600;
   const SWIPE_MAX_MS = 260;
   const SWIPE_SUPPRESS_MS = 300;
 
@@ -100,6 +102,7 @@ export default function useTouchControls({
       lastTouchY.current = touchYDown.current;
       swipeHandled.current = false;
       isSwiping.current = false;
+      tapToMoveIntent.current = false;
       longPressActive.current = false;
       touchStartTimestamp.current = Date.now();
       clearLongPressTimer();
@@ -127,12 +130,14 @@ export default function useTouchControls({
 
       if (!longPressActive.current && distanceFromStart > tapSlop) {
         clearLongPressTimer();
+        tapToMoveIntent.current = false;
       }
 
       if (!longPressActive.current && timeSince <= SWIPE_MAX_MS && distanceFromStart >= swipeDistance) {
         // Fast swipe: move immediately and suppress tap/click.
         swipeHandled.current = true;
         isSwiping.current = true;
+        tapToMoveIntent.current = false;
         moveByDXDY(dxFromStart, dyFromStart);
         lastTouchX.current = clientX;
         lastTouchY.current = clientY;
@@ -178,19 +183,27 @@ export default function useTouchControls({
       const dx: number = clientX - touchXDown.current;
       const dy: number = clientY - touchYDown.current;
       const dragDistance = Math.sqrt(dx * dx + dy * dy);
+      const isTapLike = dragDistance <= tapSlop;
+      const heldLongEnoughForTapMove = timeSince >= TAP_TO_MOVE_HOLD_MS;
 
       if (longPressActive.current) {
-        // Suppress tap after a long press.
-        isSwiping.current = true;
-        scheduleSwipeReset();
+        if (isTapLike && heldLongEnoughForTapMove) {
+          // Allow destination move only after an intentional hold.
+          tapToMoveIntent.current = true;
+        } else {
+          // Suppress tap after a long press drag.
+          isSwiping.current = true;
+          scheduleSwipeReset();
+          tapToMoveIntent.current = false;
+        }
         validTouchStart.current = false;
         longPressActive.current = false;
 
         return;
       }
 
-      if (dragDistance <= tapSlop && timeSince <= TAP_MAX_MS) {
-        // Reset touch state on tap
+      if (isTapLike) {
+        tapToMoveIntent.current = heldLongEnoughForTapMove;
         validTouchStart.current = false;
 
         return;
@@ -199,11 +212,13 @@ export default function useTouchControls({
       if (!swipeHandled.current && timeSince <= SWIPE_MAX_MS && dragDistance >= swipeDistance) {
         // For swipe control instead of drag
         isSwiping.current = true;
+        tapToMoveIntent.current = false;
         moveByDXDY(dx, dy);
         scheduleSwipeReset();
       } else if (dragDistance > tapSlop) {
         // Movement occurred; suppress synthetic click even if no move happened.
         isSwiping.current = true;
+        tapToMoveIntent.current = false;
         scheduleSwipeReset();
       }
     }
@@ -230,6 +245,7 @@ export default function useTouchControls({
       // Reset all touch states on unmount
       validTouchStart.current = false;
       isSwiping.current = false;
+      tapToMoveIntent.current = false;
       longPressActive.current = false;
       touchXDown.current = 0;
       touchYDown.current = 0;
@@ -239,12 +255,22 @@ export default function useTouchControls({
     };
   }, [clearLongPressTimer]);
 
+  const consumeTapToMoveIntent = useCallback(() => {
+    const shouldMove = tapToMoveIntent.current;
+
+    tapToMoveIntent.current = false;
+
+    return shouldMove;
+  }, []);
+
   const resetTouchState = useCallback(() => {
     validTouchStart.current = false;
+    tapToMoveIntent.current = false;
     clearLongPressTimer();
   }, [clearLongPressTimer]);
 
   return {
+    consumeTapToMoveIntent,
     isSwiping,
     resetTouchState,
   };

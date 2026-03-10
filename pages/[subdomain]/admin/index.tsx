@@ -17,7 +17,7 @@ import { USER_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import Level from '@root/models/db/level';
 import User from '@root/models/db/user';
 import { LevelModel, UserModel } from '@root/models/mongoose';
-import { Box, Database, Flag, Settings, Trash2, User as UserIcon } from 'lucide-react';
+import { Bot, Box, Database, Flag, Settings, Trash2, User as UserIcon } from 'lucide-react';
 import { Types } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { useCallback, useEffect, useState } from 'react';
@@ -128,6 +128,11 @@ export default function AdminPage({ adminQuery, level, user }: AdminPageProps) {
       confirm: true,
       icon: Box,
       dangerous: true
+    },
+    {
+      label: 'Toggle Approved Bot',
+      command: AdminCommand.ToggleApprovedBot,
+      icon: Bot,
     },
     {
       label: 'Delete User',
@@ -282,11 +287,19 @@ export default function AdminPage({ adminQuery, level, user }: AdminPageProps) {
 
   // Command handlers
   const handleUserCommand = async () => {
-    const userDeleted = await adminCommands.runCommandUser(selectedUser);
+    const result = await adminCommands.runCommandUser(selectedUser);
 
-    if (userDeleted) {
+    if (result?.deleted) {
       setSelectedUser(null);
       updateQuery({ userId: undefined });
+      return;
+    }
+
+    if (result?.resp?.roles && selectedUser) {
+      setSelectedUser({
+        ...selectedUser,
+        roles: result.resp.roles as Role[],
+      });
     }
   };
 

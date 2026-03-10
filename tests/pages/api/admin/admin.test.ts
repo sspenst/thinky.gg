@@ -337,6 +337,81 @@ describe('api/admin', () => {
         },
       });
     });
+
+    test('should toggle Approved Bot role for a user', async () => {
+      const originalUser = await UserModel.findById(TestId.USER_B);
+
+      expect(originalUser).toBeDefined();
+      expect(originalUser?.roles.includes(Role.BOT)).toBe(false);
+
+      await testApiHandler({
+        pagesHandler: async (_, res) => {
+          const req: NextApiRequestWithAuth = {
+            method: 'POST',
+            cookies: {
+              token: getTokenCookieValue(TestId.USER_ADMIN)
+            },
+            body: {
+              command: AdminCommand.ToggleApprovedBot,
+              targetId: TestId.USER_B,
+            },
+            headers: {
+              'content-type': 'application/json',
+            },
+          } as unknown as NextApiRequestWithAuth;
+
+          await adminHandler(req, res);
+        },
+        test: async ({ fetch }) => {
+          const res = await fetch();
+          const response = await res.json();
+
+          expect(response.error).toBeUndefined();
+          expect(response.success).toBe(true);
+          expect(response.resp.message).toBe('User marked as Approved Bot');
+          expect(response.resp.isApprovedBot).toBe(true);
+          expect(res.status).toBe(200);
+
+          const updatedUser = await UserModel.findById(TestId.USER_B);
+
+          expect(updatedUser?.roles.includes(Role.BOT)).toBe(true);
+        },
+      });
+
+      await testApiHandler({
+        pagesHandler: async (_, res) => {
+          const req: NextApiRequestWithAuth = {
+            method: 'POST',
+            cookies: {
+              token: getTokenCookieValue(TestId.USER_ADMIN)
+            },
+            body: {
+              command: AdminCommand.ToggleApprovedBot,
+              targetId: TestId.USER_B,
+            },
+            headers: {
+              'content-type': 'application/json',
+            },
+          } as unknown as NextApiRequestWithAuth;
+
+          await adminHandler(req, res);
+        },
+        test: async ({ fetch }) => {
+          const res = await fetch();
+          const response = await res.json();
+
+          expect(response.error).toBeUndefined();
+          expect(response.success).toBe(true);
+          expect(response.resp.message).toBe('Approved Bot removed from user');
+          expect(response.resp.isApprovedBot).toBe(false);
+          expect(res.status).toBe(200);
+
+          const revertedUser = await UserModel.findById(TestId.USER_B);
+
+          expect(revertedUser?.roles.includes(Role.BOT)).toBe(false);
+        },
+      });
+    });
   });
 
   describe('Level Commands', () => {

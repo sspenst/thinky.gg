@@ -52,6 +52,33 @@ export async function switchIsRanked(levelId: Types.ObjectId, gameId: GameId, is
   return true;
 }
 
+export async function toggleApprovedBot(userId: Types.ObjectId) {
+  const user = await UserModel.findById(userId, { roles: 1 });
+
+  if (!user) {
+    throw new Error('User not found');
+  }
+
+  const isApprovedBot = user.roles.includes(Role.BOT);
+  const update = isApprovedBot ? { $pull: { roles: Role.BOT } } : { $addToSet: { roles: Role.BOT } };
+
+  const updatedUser = await UserModel.findByIdAndUpdate(
+    userId,
+    update,
+    { new: true, projection: { roles: 1 } }
+  );
+
+  if (!updatedUser) {
+    throw new Error('User not found');
+  }
+
+  return {
+    isApprovedBot: !isApprovedBot,
+    message: !isApprovedBot ? 'User marked as Approved Bot' : 'Approved Bot removed from user',
+    roles: updatedUser.roles,
+  };
+}
+
 interface AdminBodyProps {
   targetId: string;
   command: AdminCommand;
@@ -93,6 +120,9 @@ export default withAuth({ POST: {
         break;
       case AdminCommand.ArchiveAllLevels:
         await archiveUserLevels(new Types.ObjectId(targetId as string));
+        break;
+      case AdminCommand.ToggleApprovedBot:
+        resp = await toggleApprovedBot(new Types.ObjectId(targetId as string));
         break;
       case AdminCommand.RefreshIndexCalcs:
         await refreshIndexCalcs(new Types.ObjectId(targetId as string));

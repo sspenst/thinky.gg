@@ -4,6 +4,7 @@ enum AdminCommand {
   DeleteAchievements = 'deleteAchievements',
   DeleteUser = 'deleteUser',
   ArchiveAllLevels = 'archiveAllLevels',
+  ToggleApprovedBot = 'toggleApprovedBot',
 
   // level
   RefreshIndexCalcs = 'refreshIndexCalcs',
