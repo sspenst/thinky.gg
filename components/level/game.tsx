@@ -412,7 +412,7 @@ export default function Game({
   // Keyboard controls hook moved above handleKeyDown definition
 
   // Touch controls hook
-  const { consumeTapToMoveIntent, isSwiping, resetTouchState } = useTouchControls({
+  const { consumeDoubleTapToMoveIntent, isSwiping, resetTouchState } = useTouchControls({
     levelId: level._id,
     levelWidth: level.width,
     levelHeight: level.height,
@@ -434,7 +434,7 @@ export default function Game({
   // Cell click handler
   const onCellClick = useCallback((x: number, y: number) => {
     if (isSwiping.current) return;
-    if (isMobile && !consumeTapToMoveIntent()) return;
+    if (isMobile && !consumeDoubleTapToMoveIntent()) return;
 
     const playerPosition = gameState.pos;
     const dist = Math.abs(x - playerPosition.x + y - playerPosition.y);
@@ -455,7 +455,7 @@ export default function Game({
         break;
       }
     }
-  }, [consumeTapToMoveIntent, gameState.pos, handleTouchMove, isMobile, isSwiping, resetTouchState]);
+  }, [consumeDoubleTapToMoveIntent, gameState.pos, handleTouchMove, isMobile, isSwiping, resetTouchState]);
 
   // Scrubber handler
   const handleScrub = useCallback((moveIndex: number) => {

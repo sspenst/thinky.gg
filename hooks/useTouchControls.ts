@@ -11,7 +11,7 @@ interface UseTouchControlsProps {
 
 interface UseTouchControlsReturn {
   isSwiping: React.MutableRefObject<boolean>;
-  consumeTapToMoveIntent: () => boolean;
+  consumeDoubleTapToMoveIntent: () => boolean;
   resetTouchState: () => void;
 }
 
@@ -31,14 +31,23 @@ export default function useTouchControls({
   const lastMoveTimestamp = useRef(Date.now());
   const isSwiping = useRef<boolean>(false);
   const tapToMoveIntent = useRef<boolean>(false);
+  const lastTapTimestamp = useRef<number>(0);
+  const lastTapX = useRef<number>(0);
+  const lastTapY = useRef<number>(0);
   const longPressActive = useRef<boolean>(false);
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const swipeHandled = useRef<boolean>(false);
 
   const LONG_PRESS_MS = 250;
-  const TAP_TO_MOVE_HOLD_MS = 600;
+  const DOUBLE_TAP_MAX_MS = 350;
   const SWIPE_MAX_MS = 260;
   const SWIPE_SUPPRESS_MS = 300;
+
+  const clearDoubleTapState = useCallback(() => {
+    lastTapTimestamp.current = 0;
+    lastTapX.current = 0;
+    lastTapY.current = 0;
+  }, []);
 
   const clearLongPressTimer = useCallback(() => {
     if (longPressTimer.current) {
@@ -138,6 +147,7 @@ export default function useTouchControls({
         swipeHandled.current = true;
         isSwiping.current = true;
         tapToMoveIntent.current = false;
+        clearDoubleTapState();
         moveByDXDY(dxFromStart, dyFromStart);
         lastTouchX.current = clientX;
         lastTouchY.current = clientY;
@@ -166,7 +176,7 @@ export default function useTouchControls({
         moveByDXDY(dx, dy);
       }
     }
-  }, [clearLongPressTimer, getTileMetrics, moveByDXDY, preventKeyDownEvent, scheduleSwipeReset]);
+  }, [clearDoubleTapState, clearLongPressTimer, getTileMetrics, moveByDXDY, preventKeyDownEvent, scheduleSwipeReset]);
 
   const handleTouchEndEvent = useCallback((event: TouchEvent) => {
     if (!validTouchStart.current || preventKeyDownEvent) {
@@ -184,18 +194,13 @@ export default function useTouchControls({
       const dy: number = clientY - touchYDown.current;
       const dragDistance = Math.sqrt(dx * dx + dy * dy);
       const isTapLike = dragDistance <= tapSlop;
-      const heldLongEnoughForTapMove = timeSince >= TAP_TO_MOVE_HOLD_MS;
 
       if (longPressActive.current) {
-        if (isTapLike && heldLongEnoughForTapMove) {
-          // Allow destination move only after an intentional hold.
-          tapToMoveIntent.current = true;
-        } else {
-          // Suppress tap after a long press drag.
-          isSwiping.current = true;
-          scheduleSwipeReset();
-          tapToMoveIntent.current = false;
-        }
+        // Suppress tap after a long press interaction.
+        isSwiping.current = true;
+        scheduleSwipeReset();
+        tapToMoveIntent.current = false;
+        clearDoubleTapState();
         validTouchStart.current = false;
         longPressActive.current = false;
 
@@ -203,7 +208,24 @@ export default function useTouchControls({
       }
 
       if (isTapLike) {
-        tapToMoveIntent.current = heldLongEnoughForTapMove;
+        const timeSinceLastTap = touchStartTimestamp.current - lastTapTimestamp.current;
+        const dxFromLastTap = clientX - lastTapX.current;
+        const dyFromLastTap = clientY - lastTapY.current;
+        const distanceFromLastTap = Math.sqrt(dxFromLastTap * dxFromLastTap + dyFromLastTap * dyFromLastTap);
+        const isDoubleTap = lastTapTimestamp.current > 0 &&
+          timeSinceLastTap <= DOUBLE_TAP_MAX_MS &&
+          distanceFromLastTap <= tapSlop;
+
+        if (isDoubleTap) {
+          tapToMoveIntent.current = true;
+          clearDoubleTapState();
+        } else {
+          tapToMoveIntent.current = false;
+          lastTapTimestamp.current = touchStartTimestamp.current;
+          lastTapX.current = clientX;
+          lastTapY.current = clientY;
+        }
+
         validTouchStart.current = false;
 
         return;
@@ -213,12 +235,14 @@ export default function useTouchControls({
         // For swipe control instead of drag
         isSwiping.current = true;
         tapToMoveIntent.current = false;
+        clearDoubleTapState();
         moveByDXDY(dx, dy);
         scheduleSwipeReset();
       } else if (dragDistance > tapSlop) {
         // Movement occurred; suppress synthetic click even if no move happened.
         isSwiping.current = true;
         tapToMoveIntent.current = false;
+        clearDoubleTapState();
         scheduleSwipeReset();
       }
     }
@@ -226,7 +250,7 @@ export default function useTouchControls({
     // Reset touch state
     validTouchStart.current = false;
     longPressActive.current = false;
-  }, [clearLongPressTimer, getTileMetrics, moveByDXDY, preventKeyDownEvent, scheduleSwipeReset]);
+  }, [clearDoubleTapState, clearLongPressTimer, getTileMetrics, moveByDXDY, preventKeyDownEvent, scheduleSwipeReset]);
 
   useEffect(() => {
     document.addEventListener('touchstart', handleTouchStartEvent, { passive: false });
@@ -246,6 +270,7 @@ export default function useTouchControls({
       validTouchStart.current = false;
       isSwiping.current = false;
       tapToMoveIntent.current = false;
+      clearDoubleTapState();
       longPressActive.current = false;
       touchXDown.current = 0;
       touchYDown.current = 0;
@@ -253,9 +278,9 @@ export default function useTouchControls({
       lastTouchY.current = 0;
       clearLongPressTimer();
     };
-  }, [clearLongPressTimer]);
+  }, [clearDoubleTapState, clearLongPressTimer]);
 
-  const consumeTapToMoveIntent = useCallback(() => {
+  const consumeDoubleTapToMoveIntent = useCallback(() => {
     const shouldMove = tapToMoveIntent.current;
 
     tapToMoveIntent.current = false;
@@ -266,11 +291,12 @@ export default function useTouchControls({
   const resetTouchState = useCallback(() => {
     validTouchStart.current = false;
     tapToMoveIntent.current = false;
+    clearDoubleTapState();
     clearLongPressTimer();
-  }, [clearLongPressTimer]);
+  }, [clearDoubleTapState, clearLongPressTimer]);
 
   return {
-    consumeTapToMoveIntent,
+    consumeDoubleTapToMoveIntent,
     isSwiping,
     resetTouchState,
   };
