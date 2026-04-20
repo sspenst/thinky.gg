@@ -3,7 +3,7 @@ import { AppContext } from '@root/contexts/appContext';
 import useProStatsUser, { ProStatsUserType } from '@root/hooks/useProStatsUser';
 import dayjs from 'dayjs';
 import { useRouter } from 'next/router';
-import { useContext, useState } from 'react';
+import { useContext, useMemo, useState } from 'react';
 import { Brush, ReferenceArea, ReferenceLine, ResponsiveContainer, Scatter, ScatterChart, Symbols, Tooltip, XAxis, YAxis } from 'recharts';
 import User from '../../models/db/user';
 import { difficultyList, getDifficultyColor, getDifficultyFromEstimate } from '../formatted/formattedDifficulty';
@@ -48,20 +48,28 @@ export default function ProfileInsightsSolveTimeComparison({ user, timeFilter }:
   }
 
   // draw a scatter plot with a difficulty bucket on the x axis and the two dots on the y axis for the difficulty and average duration
-  let data = difficultyComparisonData[ProStatsUserType.DifficultyLevelsComparisons] as DifficultyLevelComparison[];
+  const data = useMemo(() => {
+    const comparisons = difficultyComparisonData[ProStatsUserType.DifficultyLevelsComparisons] as DifficultyLevelComparison[];
+    const normalizedData = comparisons
+      .filter(d => d.otherPlayattemptsAverageDuration && d.myPlayattemptsSumDuration)
+      .map(d => ({
+        ...d,
+        diff: d.otherPlayattemptsAverageDuration / d.myPlayattemptsSumDuration,
+      }));
 
-  data = data.filter(d => d.otherPlayattemptsAverageDuration && d.myPlayattemptsSumDuration);
+    if (!hideAnomalies) {
+      return normalizedData;
+    }
 
-  for (const d of data) {
-    d.diff = d.otherPlayattemptsAverageDuration / d.myPlayattemptsSumDuration;
-  }
-
-  if (hideAnomalies) {
-    const sorted = data.sort((a, b) => (a.diff ?? 1) - (b.diff ?? 1));
+    const sorted = [...normalizedData].sort((a, b) => (a.diff ?? 1) - (b.diff ?? 1));
     const top1Percent = Math.floor(sorted.length * percentile);
     const bottom1Percent = Math.floor(sorted.length * (1 - percentile));
 
-    data = sorted.slice(top1Percent, bottom1Percent);
+    return sorted.slice(top1Percent, bottom1Percent);
+  }, [difficultyComparisonData, hideAnomalies, percentile]);
+
+  if (!data.length) {
+    return <span>No comparison data available for this time range.</span>;
   }
 
   const maxDifficultySolved = Math.max(...data.map(d => d.difficulty).filter(x => x));
