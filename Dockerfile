@@ -10,7 +10,7 @@ RUN npm config set fund false && \
     npm ci --platform=linux --arch=x64 && \
     npm install --platform=linux --arch=x64 sharp && \
     npm install --platform=linuxmusl && \
-    npm install -g ts-node typescript module-alias
+    npm install -g ts-node module-alias
 
 # Stage 2: Build the application
 FROM build-deps AS builder
@@ -42,7 +42,7 @@ COPY --chown=node:node . .
 
 # Build the web app and socket server in parallel
 RUN npm run build:fast && \
-    tsc -p tsconfig-socket.json && \
+    npx tsc -p tsconfig-socket.json && \
     chown -R node:node .next/
 
 # Stage 3: Production runtime
@@ -70,7 +70,7 @@ USER nextjs
 
 EXPOSE 3000
 
-ENV PORT 3000
-ENV HOSTNAME "0.0.0.0"
+ENV PORT=3000
+ENV HOSTNAME=0.0.0.0
 
 CMD ["npm", "start"]
