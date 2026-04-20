@@ -37,6 +37,19 @@ interface TimeInvestmentData {
   userColor: string;
 }
 
+interface SelectedPeriodLevel {
+  _id: string;
+  name: string;
+  slug: string;
+  difficulty: number;
+  ts: number;
+  myPlayattemptsSumDuration: number;
+  otherPlayattemptsAverageDuration: number;
+  calc_playattempts_just_beaten_count: number;
+  performanceRatio: number;
+  dateSolved: string;
+}
+
 // Helper function to format duration intelligently
 function formatDuration(minutes: number): string {
   if (minutes < 60) {
@@ -238,6 +251,23 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
       .map(d => d.day);
   }, [activityHeatmap]);
 
+  const timeInvestmentSummary = useMemo(() => {
+    if (timeInvestmentData.length === 0) {
+      return null;
+    }
+
+    return timeInvestmentData.reduce<{
+      mostTimeSpent: TimeInvestmentData;
+      mostEfficient: TimeInvestmentData;
+    }>((summary, item) => ({
+      mostTimeSpent: item.totalTime > summary.mostTimeSpent.totalTime ? item : summary.mostTimeSpent,
+      mostEfficient: item.avgTimePerLevel < summary.mostEfficient.avgTimePerLevel ? item : summary.mostEfficient,
+    }), {
+      mostTimeSpent: timeInvestmentData[0],
+      mostEfficient: timeInvestmentData[0],
+    });
+  }, [timeInvestmentData]);
+
   // Time-of-day performance analysis with hourly data for clock visualization
   const timeOfDayPerformance = useMemo(() => {
     if (!difficultyData?.[ProStatsUserType.DifficultyLevelsComparisons]) {
@@ -396,6 +426,84 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
       hasData: validComparisons.length > 0,
     };
   }, [difficultyData, selectedTimezone]);
+
+  const selectedPeriodData = useMemo(() => {
+    if (!selectedTimePeriod || !timeOfDayPerformance) {
+      return null;
+    }
+
+    return timeOfDayPerformance.clockData.find(period => period.period === selectedTimePeriod) || null;
+  }, [selectedTimePeriod, timeOfDayPerformance]);
+
+  const selectedPeriodTableData = useMemo(() => {
+    if (!selectedPeriodData?.hasData) {
+      return {
+        paginatedLevels: [] as SelectedPeriodLevel[],
+        safeCurrentPage: 1,
+        sortedLevels: [] as SelectedPeriodLevel[],
+        totalPages: 0,
+      };
+    }
+
+    const processedLevels = selectedPeriodData.levels.map(level => ({
+      ...level,
+      performanceRatio: level.otherPlayattemptsAverageDuration / level.myPlayattemptsSumDuration,
+      dateSolved: dayjs.unix(level.ts).tz(selectedTimezone).format('MMM DD, YYYY h:mmA z'),
+    }));
+
+    const sortedLevels = [...processedLevels].sort((a, b) => {
+      let aVal: number;
+      let bVal: number;
+
+      switch (sortColumn) {
+        case 'yourTime':
+          aVal = a.myPlayattemptsSumDuration;
+          bVal = b.myPlayattemptsSumDuration;
+          break;
+        case 'averageTime':
+          aVal = a.otherPlayattemptsAverageDuration;
+          bVal = b.otherPlayattemptsAverageDuration;
+          break;
+        case 'comparison':
+        default:
+          aVal = a.performanceRatio;
+          bVal = b.performanceRatio;
+          break;
+      }
+
+      return sortDirection === 'desc' ? bVal - aVal : aVal - bVal;
+    });
+
+    const itemsPerPage = 10;
+    const totalPages = Math.ceil(sortedLevels.length / itemsPerPage);
+    const safeCurrentPage = totalPages === 0 ? 1 : Math.min(currentPage, totalPages);
+    const startIndex = (safeCurrentPage - 1) * itemsPerPage;
+    const paginatedLevels = sortedLevels.slice(startIndex, startIndex + itemsPerPage);
+
+    return {
+      paginatedLevels,
+      safeCurrentPage,
+      sortedLevels,
+      totalPages,
+    };
+  }, [currentPage, selectedPeriodData, selectedTimezone, sortColumn, sortDirection]);
+
+  const handleSort = (column: typeof sortColumn) => {
+    if (sortColumn === column) {
+      setSortDirection(sortDirection === 'desc' ? 'asc' : 'desc');
+    } else {
+      setSortColumn(column);
+      setSortDirection('desc');
+    }
+
+    setCurrentPage(1);
+  };
+
+  const getSortIcon = (column: typeof sortColumn) => {
+    if (sortColumn !== column) return '↕️';
+
+    return sortDirection === 'desc' ? '↓' : '↑';
+  };
 
   // Only show loading if we can view data and hooks are actually loading
   const isLoading = canViewTimeAnalytics && (isLoadingScoreHistory || isLoadingDifficulty);
@@ -664,211 +772,151 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
             </div>
           </div>
           {/* Selected Time Period Details */}
-          {selectedTimePeriod && (() => {
-            const selectedPeriodData = timeOfDayPerformance.clockData.find(p => p.period === selectedTimePeriod);
-
-            if (!selectedPeriodData?.hasData) return null;
-
-            // Process and sort levels based on current sort settings
-            const processedLevels = selectedPeriodData.levels.map(level => ({
-              ...level,
-              performanceRatio: level.otherPlayattemptsAverageDuration / level.myPlayattemptsSumDuration,
-              dateSolved: dayjs.unix(level.ts).tz(selectedTimezone).format('MMM DD, YYYY h:mmA z'),
-            }));
-
-            // Sort levels based on current sort column and direction
-            const sortedLevels = [...processedLevels].sort((a, b) => {
-              let aVal: number, bVal: number;
-
-              switch (sortColumn) {
-                case 'yourTime':
-                  aVal = a.myPlayattemptsSumDuration;
-                  bVal = b.myPlayattemptsSumDuration;
-                  break;
-                case 'averageTime':
-                  aVal = a.otherPlayattemptsAverageDuration;
-                  bVal = b.otherPlayattemptsAverageDuration;
-                  break;
-                case 'comparison':
-                default:
-                  aVal = a.performanceRatio;
-                  bVal = b.performanceRatio;
-                  break;
-              }
-
-              return sortDirection === 'desc' ? bVal - aVal : aVal - bVal;
-            });
-
-            // Pagination
-            const itemsPerPage = 10;
-            const totalPages = Math.ceil(sortedLevels.length / itemsPerPage);
-            const startIndex = (currentPage - 1) * itemsPerPage;
-            const paginatedLevels = sortedLevels.slice(startIndex, startIndex + itemsPerPage);
-
-            const handleSort = (column: typeof sortColumn) => {
-              if (sortColumn === column) {
-                setSortDirection(sortDirection === 'desc' ? 'asc' : 'desc');
-              } else {
-                setSortColumn(column);
-                setSortDirection('desc');
-              }
-
-              setCurrentPage(1); // Reset to first page when sorting
-            };
-
-            const getSortIcon = (column: typeof sortColumn) => {
-              if (sortColumn !== column) return '↕️';
-
-              return sortDirection === 'desc' ? '↓' : '↑';
-            };
-
-            return (
-              <div className='mt-6 bg-gray-800 rounded-lg p-4'>
-                <div className='flex items-center justify-between mb-3'>
-                  <h3 className='font-bold text-lg'>Levels Solved During {selectedPeriodData.period} ({selectedPeriodData.sublabel})</h3>
-                  <button
-                    onClick={() => setSelectedTimePeriod(null)}
-                    className='text-gray-400 hover:text-gray-200 text-xl'
-                  >
-                    ×
-                  </button>
-                </div>
-                <p className='text-sm text-gray-400 mb-4'>
-                  Performance: <span className='text-green-400 font-bold'>
-                    {selectedPeriodData.relativePerformance.toFixed(1)}% of levels faster than community
-                  </span> •
-                  <span className='ml-2'>Levels solved: <span className='text-blue-400 font-bold'>{selectedPeriodData.levelCount}</span></span>
-                </p>
-                <p className='text-xs text-gray-500 mb-3'>
-                  Showing {paginatedLevels.length} of {sortedLevels.length} levels solved during this time period:
-                </p>
-                <div className='bg-gray-800 rounded-lg overflow-hidden'>
-                  <table className='w-full text-sm'>
-                    <thead className='bg-gray-700'>
-                      <tr>
-                        <th className='text-left p-3'>Level</th>
-                        <th className='text-center p-3'>Difficulty</th>
-                        <th className='text-center p-3'>Date Solved</th>
-                        <th
-                          className='text-center p-3 cursor-pointer hover:bg-gray-600 select-none'
-                          onClick={() => handleSort('yourTime')}
-                        >
-                          Your Time {getSortIcon('yourTime')}
-                        </th>
-                        <th
-                          className='text-center p-3 cursor-pointer hover:bg-gray-600 select-none'
-                          onClick={() => handleSort('averageTime')}
-                        >
-                          Average Time {getSortIcon('averageTime')}
-                        </th>
-                        <th
-                          className='text-center p-3 cursor-pointer hover:bg-gray-600 select-none'
-                          onClick={() => handleSort('comparison')}
-                        >
-                          Comparison {getSortIcon('comparison')}
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {paginatedLevels.map((level, index) => (
-                        <tr key={index} className='border-t border-gray-700'>
-                          <td className='p-3'>
-                            <FormattedLevelLink
-                              id={`time-period-level-${index}`}
-                              level={{ _id: level._id, name: level.name, slug: level.slug } as any}
-                            />
-                          </td>
-                          <td className='text-center p-3'>
-                            <span className='px-2 py-1 rounded-sm text-xs' style={{
-                              backgroundColor: getDifficultyColor(level.difficulty) + '20',
-                              color: getDifficultyColor(level.difficulty),
-                            }}>
-                              {getDifficultyFromEstimate(level.difficulty).name}
+          {selectedPeriodData?.hasData && (
+            <div className='mt-6 bg-gray-800 rounded-lg p-4'>
+              <div className='flex items-center justify-between mb-3'>
+                <h3 className='font-bold text-lg'>Levels Solved During {selectedPeriodData.period} ({selectedPeriodData.sublabel})</h3>
+                <button
+                  onClick={() => setSelectedTimePeriod(null)}
+                  className='text-gray-400 hover:text-gray-200 text-xl'
+                >
+                  ×
+                </button>
+              </div>
+              <p className='text-sm text-gray-400 mb-4'>
+                Performance: <span className='text-green-400 font-bold'>
+                  {selectedPeriodData.relativePerformance.toFixed(1)}% of levels faster than community
+                </span> •
+                <span className='ml-2'>Levels solved: <span className='text-blue-400 font-bold'>{selectedPeriodData.levelCount}</span></span>
+              </p>
+              <p className='text-xs text-gray-500 mb-3'>
+                Showing {selectedPeriodTableData.paginatedLevels.length} of {selectedPeriodTableData.sortedLevels.length} levels solved during this time period:
+              </p>
+              <div className='bg-gray-800 rounded-lg overflow-hidden'>
+                <table className='w-full text-sm'>
+                  <thead className='bg-gray-700'>
+                    <tr>
+                      <th className='text-left p-3'>Level</th>
+                      <th className='text-center p-3'>Difficulty</th>
+                      <th className='text-center p-3'>Date Solved</th>
+                      <th
+                        className='text-center p-3 cursor-pointer hover:bg-gray-600 select-none'
+                        onClick={() => handleSort('yourTime')}
+                      >
+                        Your Time {getSortIcon('yourTime')}
+                      </th>
+                      <th
+                        className='text-center p-3 cursor-pointer hover:bg-gray-600 select-none'
+                        onClick={() => handleSort('averageTime')}
+                      >
+                        Average Time {getSortIcon('averageTime')}
+                      </th>
+                      <th
+                        className='text-center p-3 cursor-pointer hover:bg-gray-600 select-none'
+                        onClick={() => handleSort('comparison')}
+                      >
+                        Comparison {getSortIcon('comparison')}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {selectedPeriodTableData.paginatedLevels.map((level, index) => (
+                      <tr key={index} className='border-t border-gray-700'>
+                        <td className='p-3'>
+                          <FormattedLevelLink
+                            id={`time-period-level-${index}`}
+                            level={{ _id: level._id, name: level.name, slug: level.slug } as any}
+                          />
+                        </td>
+                        <td className='text-center p-3'>
+                          <span className='px-2 py-1 rounded-sm text-xs' style={{
+                            backgroundColor: getDifficultyColor(level.difficulty) + '20',
+                            color: getDifficultyColor(level.difficulty),
+                          }}>
+                            {getDifficultyFromEstimate(level.difficulty).name}
+                          </span>
+                        </td>
+                        <td className='text-center p-3 text-xs'>{level.dateSolved}</td>
+                        <td className='text-center p-3'>{dayjs.duration(level.myPlayattemptsSumDuration * 1000).format('mm:ss')}</td>
+                        <td className='text-center p-3'>{dayjs.duration(level.otherPlayattemptsAverageDuration * 1000).format('mm:ss')}</td>
+                        <td className='text-center p-3'>
+                          <div className='group relative'>
+                            <span className={`cursor-help underline decoration-dashed ${level.performanceRatio >= 1 ? 'text-green-400' : 'text-red-400'}`}>
+                              {level.performanceRatio >= 1 ?
+                                `${((level.performanceRatio - 1) * 100).toFixed(0)}% faster` :
+                                `${((1 - level.performanceRatio) * 100).toFixed(0)}% slower`
+                              }
                             </span>
-                          </td>
-                          <td className='text-center p-3 text-xs'>{level.dateSolved}</td>
-                          <td className='text-center p-3'>{dayjs.duration(level.myPlayattemptsSumDuration * 1000).format('mm:ss')}</td>
-                          <td className='text-center p-3'>{dayjs.duration(level.otherPlayattemptsAverageDuration * 1000).format('mm:ss')}</td>
-                          <td className='text-center p-3'>
-                            <div className='group relative'>
-                              <span className={`cursor-help underline decoration-dashed ${level.performanceRatio >= 1 ? 'text-green-400' : 'text-red-400'}`}>
-                                {level.performanceRatio >= 1 ?
-                                  `${((level.performanceRatio - 1) * 100).toFixed(0)}% faster` :
-                                  `${((1 - level.performanceRatio) * 100).toFixed(0)}% slower`
-                                }
-                              </span>
-                              <div className='absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 whitespace-nowrap'>
-                                <div className='text-xs text-gray-300'>
-                                  <div>Your time: {level.myPlayattemptsSumDuration.toFixed(1)}s</div>
-                                  <div>Community average: {level.otherPlayattemptsAverageDuration.toFixed(1)}s</div>
-                                  <div>vs {level.calc_playattempts_just_beaten_count} solvers</div>
-                                  <div className={`mt-1 ${level.performanceRatio >= 1 ? 'text-green-400' : 'text-red-400'}`}>
-                                    {level.otherPlayattemptsAverageDuration.toFixed(1)}s ÷ {level.myPlayattemptsSumDuration.toFixed(1)}s = {level.performanceRatio.toFixed(2)}x
-                                  </div>
+                            <div className='absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 whitespace-nowrap'>
+                              <div className='text-xs text-gray-300'>
+                                <div>Your time: {level.myPlayattemptsSumDuration.toFixed(1)}s</div>
+                                <div>Community average: {level.otherPlayattemptsAverageDuration.toFixed(1)}s</div>
+                                <div>vs {level.calc_playattempts_just_beaten_count} solvers</div>
+                                <div className={`mt-1 ${level.performanceRatio >= 1 ? 'text-green-400' : 'text-red-400'}`}>
+                                  {level.otherPlayattemptsAverageDuration.toFixed(1)}s ÷ {level.myPlayattemptsSumDuration.toFixed(1)}s = {level.performanceRatio.toFixed(2)}x
                                 </div>
                               </div>
                             </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                {/* Pagination Controls */}
-                {totalPages > 1 && (
-                  <div className='flex items-center justify-between mt-4'>
-                    <div className='text-sm text-gray-400'>
-                      Page {currentPage} of {totalPages} ({sortedLevels.length} total levels)
-                    </div>
-                    <div className='flex items-center gap-2'>
-                      <button
-                        onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                        disabled={currentPage === 1}
-                        className='px-3 py-1 bg-gray-700 text-white rounded-sm text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-600'
-                      >
-                        Previous
-                      </button>
-                      {/* Page numbers */}
-                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                        let pageNum: number;
-
-                        if (totalPages <= 5) {
-                          pageNum = i + 1;
-                        } else if (currentPage <= 3) {
-                          pageNum = i + 1;
-                        } else if (currentPage >= totalPages - 2) {
-                          pageNum = totalPages - 4 + i;
-                        } else {
-                          pageNum = currentPage - 2 + i;
-                        }
-
-                        return (
-                          <button
-                            key={pageNum}
-                            onClick={() => setCurrentPage(pageNum)}
-                            className={`px-3 py-1 rounded text-sm ${
-                              currentPage === pageNum
-                                ? 'bg-blue-600 text-white'
-                                : 'bg-gray-700 text-white hover:bg-gray-600'
-                            }`}
-                          >
-                            {pageNum}
-                          </button>
-                        );
-                      })}
-                      <button
-                        onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                        disabled={currentPage === totalPages}
-                        className='px-3 py-1 bg-gray-700 text-white rounded-sm text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-600'
-                      >
-                        Next
-                      </button>
-                    </div>
-                  </div>
-                )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-            );
-          })()}
+              {/* Pagination Controls */}
+              {selectedPeriodTableData.totalPages > 1 && (
+                <div className='flex items-center justify-between mt-4'>
+                  <div className='text-sm text-gray-400'>
+                    Page {selectedPeriodTableData.safeCurrentPage} of {selectedPeriodTableData.totalPages} ({selectedPeriodTableData.sortedLevels.length} total levels)
+                  </div>
+                  <div className='flex items-center gap-2'>
+                    <button
+                      onClick={() => setCurrentPage(Math.max(1, selectedPeriodTableData.safeCurrentPage - 1))}
+                      disabled={selectedPeriodTableData.safeCurrentPage === 1}
+                      className='px-3 py-1 bg-gray-700 text-white rounded-sm text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-600'
+                    >
+                      Previous
+                    </button>
+                    {Array.from({ length: Math.min(5, selectedPeriodTableData.totalPages) }, (_, i) => {
+                      let pageNum: number;
+
+                      if (selectedPeriodTableData.totalPages <= 5) {
+                        pageNum = i + 1;
+                      } else if (selectedPeriodTableData.safeCurrentPage <= 3) {
+                        pageNum = i + 1;
+                      } else if (selectedPeriodTableData.safeCurrentPage >= selectedPeriodTableData.totalPages - 2) {
+                        pageNum = selectedPeriodTableData.totalPages - 4 + i;
+                      } else {
+                        pageNum = selectedPeriodTableData.safeCurrentPage - 2 + i;
+                      }
+
+                      return (
+                        <button
+                          key={pageNum}
+                          onClick={() => setCurrentPage(pageNum)}
+                          className={`px-3 py-1 rounded text-sm ${
+                            selectedPeriodTableData.safeCurrentPage === pageNum
+                              ? 'bg-blue-600 text-white'
+                              : 'bg-gray-700 text-white hover:bg-gray-600'
+                          }`}
+                        >
+                          {pageNum}
+                        </button>
+                      );
+                    })}
+                    <button
+                      onClick={() => setCurrentPage(Math.min(selectedPeriodTableData.totalPages, selectedPeriodTableData.safeCurrentPage + 1))}
+                      disabled={selectedPeriodTableData.safeCurrentPage === selectedPeriodTableData.totalPages}
+                      className='px-3 py-1 bg-gray-700 text-white rounded-sm text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-600'
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
           <div className='bg-gray-800 rounded-lg p-4'>
             <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
               <div>
@@ -982,16 +1030,16 @@ export default function ProfileInsightsTimeAnalytics({ user, reqUser, timeFilter
         <div className='bg-gray-800 rounded-lg p-4'>
           <h3 className='font-bold mb-2'>Time Investment ROI</h3>
           <div className='text-sm text-gray-300 space-y-2'>
-            {timeInvestmentData.length > 0 && (
+            {timeInvestmentSummary && (
               <>
                 <div>
                   Most time spent: <span className='text-blue-400'>
-                    {timeInvestmentData.sort((a, b) => b.totalTime - a.totalTime)[0].difficulty}
+                    {timeInvestmentSummary.mostTimeSpent.difficulty}
                   </span>
                 </div>
                 <div>
                   Most efficient: <span className='text-green-400'>
-                    {timeInvestmentData.sort((a, b) => a.avgTimePerLevel - b.avgTimePerLevel)[0].difficulty}
+                    {timeInvestmentSummary.mostEfficient.difficulty}
                   </span>
                 </div>
               </>

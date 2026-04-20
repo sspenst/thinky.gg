@@ -24,6 +24,7 @@ interface ProfileInsightsCreatorDashboardProps {
 
 interface LevelPopularityData {
   date: string;
+  rawDate: number;
   plays: number;
   uniquePlayers: number;
 }
@@ -34,6 +35,34 @@ interface LevelEngagementData {
   color: string;
   description: string;
 }
+
+const MECHANIC_CATEGORIES = [
+  {
+    name: 'Holes',
+    tiles: [TileType.Hole],
+    tileNames: ['Hole tiles'],
+  },
+  {
+    name: 'Directional Movement',
+    tiles: [TileType.Left, TileType.Up, TileType.Right, TileType.Down],
+    tileNames: ['Left', 'Up', 'Right', 'Down'],
+  },
+  {
+    name: 'Diagonal Movement',
+    tiles: [TileType.UpLeft, TileType.UpRight, TileType.DownLeft, TileType.DownRight],
+    tileNames: ['UpLeft', 'UpRight', 'DownLeft', 'DownRight'],
+  },
+  {
+    name: 'Restricted Movement',
+    tiles: [TileType.NotLeft, TileType.NotUp, TileType.NotRight, TileType.NotDown],
+    tileNames: ['NotLeft', 'NotUp', 'NotRight', 'NotDown'],
+  },
+  {
+    name: 'Bidirectional Movement',
+    tiles: [TileType.LeftRight, TileType.UpDown],
+    tileNames: ['LeftRight', 'UpDown'],
+  },
+];
 
 export default function ProfileInsightsCreatorDashboard({ user, reqUser, timeFilter }: ProfileInsightsCreatorDashboardProps) {
   const canViewCreatorDashboard = (reqUser?._id === user._id) || (reqUser?.roles?.includes(Role.ADMIN)) || hasProAccessForProfile(reqUser, user);
@@ -83,16 +112,11 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser, timeFil
     const data: LevelPopularityData[] = apiTrends
       .map(trend => ({
         date: dayjs(trend.date).format(dateFormat),
+        rawDate: dayjs(trend.date).valueOf(),
         plays: trend.totalSolves,
         uniquePlayers: trend.uniquePlayers,
       }))
-      .sort((a, b) => {
-        // Sort chronologically
-        const dateA = dayjs(a.date, dateFormat);
-        const dateB = dayjs(b.date, dateFormat);
-
-        return dateA.isBefore(dateB) ? -1 : dateA.isAfter(dateB) ? 1 : 0;
-      });
+      .sort((a, b) => a.rawDate - b.rawDate);
 
     return { popularityTrends: data, trendPeriodLabel: label };
   }, [playLogData, timeFilter]);
@@ -184,41 +208,12 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser, timeFil
       }
     });
 
-    // Define interesting mechanics to suggest
-    const mechanicCategories = [
-      {
-        name: 'Holes',
-        tiles: [TileType.Hole], // '5'
-        tileNames: ['Hole tiles']
-      },
-      {
-        name: 'Directional Movement',
-        tiles: [TileType.Left, TileType.Up, TileType.Right, TileType.Down], // '6', '7', '8', '9'
-        tileNames: ['Left', 'Up', 'Right', 'Down']
-      },
-      {
-        name: 'Diagonal Movement',
-        tiles: [TileType.UpLeft, TileType.UpRight, TileType.DownLeft, TileType.DownRight], // 'A', 'B', 'D', 'C'
-        tileNames: ['UpLeft', 'UpRight', 'DownLeft', 'DownRight']
-      },
-      {
-        name: 'Restricted Movement',
-        tiles: [TileType.NotLeft, TileType.NotUp, TileType.NotRight, TileType.NotDown], // 'E', 'F', 'G', 'H'
-        tileNames: ['NotLeft', 'NotUp', 'NotRight', 'NotDown']
-      },
-      {
-        name: 'Bidirectional Movement',
-        tiles: [TileType.LeftRight, TileType.UpDown], // 'I', 'J'
-        tileNames: ['LeftRight', 'UpDown']
-      }
-    ];
-
     // Find used and unused mechanics
-    const usedCategories = mechanicCategories.filter(category => {
+    const usedCategories = MECHANIC_CATEGORIES.filter(category => {
       return category.tiles.some(tile => usedTileTypes.has(tile));
     });
 
-    const unusedCategories = mechanicCategories.filter(category => {
+    const unusedCategories = MECHANIC_CATEGORIES.filter(category => {
       return !category.tiles.some(tile => usedTileTypes.has(tile));
     });
 
@@ -227,7 +222,7 @@ export default function ProfileInsightsCreatorDashboard({ user, reqUser, timeFil
       analysis: {
         used: usedCategories.map(c => c.name),
         unused: unusedCategories.map(c => c.name),
-        totalCategories: mechanicCategories.length
+        totalCategories: MECHANIC_CATEGORIES.length
       }
     };
   }, [playLogData]);

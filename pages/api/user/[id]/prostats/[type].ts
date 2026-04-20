@@ -59,9 +59,6 @@ async function getDifficultyDataComparisons(gameId: GameId, userId: string, time
       $match: matchStage,
     },
     {
-      $sort: { userId: 1, ts: -1 }
-    },
-    {
       $project: {
         levelId: 1,
         ts: 1,

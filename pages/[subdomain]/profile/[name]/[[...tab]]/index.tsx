@@ -515,9 +515,10 @@ export default function ProfilePage({
     }
   };
 
-  // create an array of objects with the id, trigger element (eg. button), and the content element
-  const tabsContent = {
-    [ProfileTab.Profile]: (
+  const renderTabContent = () => {
+    switch (tab) {
+      case ProfileTab.Profile:
+        return (
       <SpaceBackground
         starCount={60}
         constellationPattern='default'
@@ -808,8 +809,9 @@ export default function ProfilePage({
           )}
         </div>
       </SpaceBackground>
-    ),
-    [ProfileTab.Insights]: (
+        );
+      case ProfileTab.Insights:
+        return (
       <SpaceBackground
         starCount={60}
         constellationPattern='default'
@@ -831,8 +833,9 @@ export default function ProfilePage({
           </div>
         </div>
       </SpaceBackground>
-    ),
-    [ProfileTab.Multiplayer]: (
+        );
+      case ProfileTab.Multiplayer:
+        return (
       <SpaceBackground
         starCount={60}
         constellationPattern='default'
@@ -854,8 +857,9 @@ export default function ProfilePage({
           </div>
         </div>
       </SpaceBackground>
-    ),
-    [ProfileTab.Collections]: (
+        );
+      case ProfileTab.Collections:
+        return (
       <SpaceBackground
         starCount={60}
         constellationPattern='default'
@@ -909,8 +913,9 @@ export default function ProfilePage({
           </div>
         </div>
       </SpaceBackground>
-    ),
-    [ProfileTab.Levels]: (
+        );
+      case ProfileTab.Levels:
+        return (
       <SpaceBackground
         starCount={60}
         constellationPattern='default'
@@ -1015,8 +1020,9 @@ export default function ProfilePage({
           </div>
         </div>
       </SpaceBackground>
-    ),
-    [ProfileTab.Achievements]: (
+        );
+      case ProfileTab.Achievements:
+        return (
       <SpaceBackground
         starCount={60}
         constellationPattern='leaderboard'
@@ -1038,8 +1044,11 @@ export default function ProfilePage({
           </div>
         </div>
       </SpaceBackground>
-    ),
-  } as Record<string, React.ReactNode | null>;
+        );
+      default:
+        return null;
+    }
+  };
 
   const getTabClassNames = useCallback((tabId: ProfileTab) => {
     return classNames(
@@ -1195,7 +1204,7 @@ export default function ProfilePage({
                 </button>
               </div>
             ) : (
-              tabsContent[tab]
+              renderTabContent()
             )}
           </div>
         </div>

@@ -1,26 +1,20 @@
 import Role from '@root/constants/role';
-import { AppContext } from '@root/contexts/appContext';
 import { hasProAccessForProfile } from '@root/helpers/isDemoProAccess';
 import useProStatsUser, { ProStatsUserType } from '@root/hooks/useProStatsUser';
 import dayjs from 'dayjs';
-import advancedFormat from 'dayjs/plugin/advancedFormat';
-import duration from 'dayjs/plugin/duration';
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
-import { useContext, useMemo, useState } from 'react';
-import { Line, LineChart, ResponsiveContainer, Text, Tooltip, XAxis, YAxis } from 'recharts';
+import { useMemo, useState } from 'react';
+import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import User from '../../models/db/user';
 import { difficultyList, getDifficultyColor, getDifficultyFromEstimate } from '../formatted/formattedDifficulty';
 import FormattedLevelLink from '../formatted/formattedLevelLink';
 import { TimeFilter } from './profileInsights';
 import ProfileInsightsRecords from './profileInsightsRecords';
 import ProfileInsightsScoreChart from './profileInsightsScoreChart';
-import { DifficultyLevelComparison } from './profileInsightsSolveTimeComparison';
 
-dayjs.extend(duration);
 dayjs.extend(utc);
 dayjs.extend(timezone);
-dayjs.extend(advancedFormat);
 
 interface ProfileInsightsPerformanceOverviewProps {
   user: User;
@@ -40,37 +34,15 @@ interface DifficultyProgressData {
   value: number;
   color: string;
   levelCount: number;
-  firstSolved?: string;
-  latestSolved?: string;
-}
-
-// Color function for performance percentiles
-function getPerformanceColor(performance: number, baseline = 50): string {
-  if (baseline === 100) {
-    // For level type performance (100 = baseline)
-    if (performance >= 130) return '#10B981'; // green-500 - Much better than your average
-    if (performance >= 110) return '#3B82F6'; // blue-500 - Better than your average
-    if (performance >= 90) return '#F59E0B'; // amber-500 - Similar to your average
-    if (performance >= 70) return '#EF4444'; // red-500 - Worse than your average
-
-    return '#6B7280'; // gray-500 - Much worse than your average
-  } else {
-    // Original logic for community comparison
-    if (performance >= 80) return '#10B981'; // green-500 - Excellent
-    if (performance >= 65) return '#3B82F6'; // blue-500 - Good
-    if (performance >= 50) return '#F59E0B'; // amber-500 - Average
-    if (performance >= 35) return '#EF4444'; // red-500 - Below average
-
-    return '#6B7280'; // gray-500 - Poor
-  }
+  firstSolvedTs?: number;
+  latestSolvedTs?: number;
 }
 
 export default function ProfileInsightsPerformanceOverview({ user, reqUser, timeFilter }: ProfileInsightsPerformanceOverviewProps) {
-  const { game: _game } = useContext(AppContext);
   const canViewFullOverview = (reqUser?._id === user._id) || (reqUser?.roles?.includes(Role.ADMIN)) || hasProAccessForProfile(reqUser, user);
 
   const { proStatsUser: difficultyData, isLoading: isLoadingDifficulty } = useProStatsUser(user, ProStatsUserType.DifficultyLevelsComparisons, timeFilter, !canViewFullOverview);
-  const { proStatsUser: _scoreHistory, isLoading: isLoadingScoreHistory } = useProStatsUser(user, ProStatsUserType.ScoreHistory, timeFilter, false);
+  const { isLoading: isLoadingScoreHistory } = useProStatsUser(user, ProStatsUserType.ScoreHistory, timeFilter, false);
   const { proStatsUser: recordsData, isLoading: isLoadingRecords } = useProStatsUser(user, ProStatsUserType.Records, timeFilter, false);
 
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
@@ -105,32 +77,8 @@ export default function ProfileInsightsPerformanceOverview({ user, reqUser, time
     //   });
     // }
 
-    // Average performance vs peers - using only 7+ solve difficulties
-    if (difficultyData?.[ProStatsUserType.DifficultyLevelsComparisons]) {
-      const comparisons = difficultyData[ProStatsUserType.DifficultyLevelsComparisons] as DifficultyLevelComparison[];
-
-      // Group by difficulty and only include those with 7+ solves
-      const difficultyGroups = new Map<string, DifficultyLevelComparison[]>();
-
-      comparisons.forEach(c => {
-        if (!c.difficulty || !c.otherPlayattemptsAverageDuration || !c.myPlayattemptsSumDuration) return;
-        const difficulty = getDifficultyFromEstimate(c.difficulty).name;
-
-        if (!difficultyGroups.has(difficulty)) {
-          difficultyGroups.set(difficulty, []);
-        }
-
-        difficultyGroups.get(difficulty)!.push(c);
-      });
-
-      // Only include difficulties with 7+ solves
-      const validComparisons = Array.from(difficultyGroups.values())
-        .filter(group => group.length >= 7)
-        .flat();
-    }
-
     return metrics;
-  }, [user, difficultyData]);
+  }, [user]);
 
   // Calculate difficulty progression
   const difficultyProgression = useMemo(() => {
@@ -169,14 +117,12 @@ export default function ProfileInsightsPerformanceOverview({ user, reqUser, time
 
       if (data) {
         data.levelCount++;
-        const solveDate = dayjs(c.ts * 1000).format('MMM DD, YYYY');
-
-        if (!data.firstSolved || c.ts < dayjs(data.firstSolved).unix()) {
-          data.firstSolved = solveDate;
+        if (!data.firstSolvedTs || c.ts < data.firstSolvedTs) {
+          data.firstSolvedTs = c.ts;
         }
 
-        if (!data.latestSolved || c.ts > dayjs(data.latestSolved).unix()) {
-          data.latestSolved = solveDate;
+        if (!data.latestSolvedTs || c.ts > data.latestSolvedTs) {
+          data.latestSolvedTs = c.ts;
         }
       }
     });
@@ -228,14 +174,14 @@ export default function ProfileInsightsPerformanceOverview({ user, reqUser, time
 
     // Convert to array and sort, calculate based on mode
     return Array.from(timeline.values())
-      .sort((a, b) => dayjs(a.date).unix() - dayjs(b.date).unix())
+      .sort((a, b) => a.monthKey.localeCompare(b.monthKey))
       .map(entry => {
         const displayDifficulty = timelineMode === 'average'
           ? entry.totalDifficulty / entry.levelCount
           : entry.maxDifficulty;
         const difficultyObj = getDifficultyFromEstimate(displayDifficulty);
         // Find hardest levels for click details
-        const hardestLevels = entry.allLevels
+        const hardestLevels = [...entry.allLevels]
           .sort((a, b) => b.difficulty - a.difficulty)
           .slice(0, 10);
 
@@ -258,136 +204,8 @@ export default function ProfileInsightsPerformanceOverview({ user, reqUser, time
     return difficultyTimeline.find(entry => entry.monthKey === selectedMonth);
   }, [selectedMonth, difficultyTimeline]);
 
-  // Calculate performance by level type data
-  const { skillRadarData, averagePerformance } = useMemo(() => {
-    if (!difficultyData?.[ProStatsUserType.DifficultyLevelsComparisons]) {
-      return { skillRadarData: [], averagePerformance: 100 };
-    }
-
-    const comparisons = difficultyData[ProStatsUserType.DifficultyLevelsComparisons] as DifficultyLevelComparison[];
-
-    // Debug: Check level data structure
-    console.log('🔍 Sample level data:', comparisons.slice(0, 3).map(c => ({
-      name: c.name,
-      difficulty: c.difficulty,
-      ts: c.ts
-    })));
-
-    // Calculate user's overall average solve time (for comparison baseline)
-    let totalTime = 0;
-    let totalLevels = 0;
-
-    comparisons.forEach(c => {
-      if (c.myPlayattemptsSumDuration && c.myPlayattemptsSumDuration > 0) {
-        totalTime += c.myPlayattemptsSumDuration;
-        totalLevels++;
-      }
-    });
-
-    const userAverageTime = totalLevels > 0 ? totalTime / totalLevels : 0;
-
-    // Categorize levels by type
-    const levelTypes = new Map<string, { times: number[], totalTime: number, count: number }>();
-    let processedLevels = 0;
-    let levelsWithData = 0;
-
-    comparisons.forEach(c => {
-      if (!c.myPlayattemptsSumDuration || c.myPlayattemptsSumDuration <= 0) return;
-      processedLevels++;
-
-      // Categorize by difficulty tier since level data is not available
-      levelsWithData++;
-
-      let levelType: string;
-
-      if (c.difficulty < 500) {
-        levelType = 'Easy Levels (< 500 difficulty)';
-      } else if (c.difficulty < 1000) {
-        levelType = 'Medium Levels (500-1000 difficulty)';
-      } else if (c.difficulty < 1500) {
-        levelType = 'Hard Levels (1000-1500 difficulty)';
-      } else if (c.difficulty < 2000) {
-        levelType = 'Expert Levels (1500-2000 difficulty)';
-      } else {
-        levelType = 'Master Levels (2000+ difficulty)';
-      }
-
-      if (!levelTypes.has(levelType)) {
-        levelTypes.set(levelType, { times: [], totalTime: 0, count: 0 });
-      }
-
-      const bucket = levelTypes.get(levelType)!;
-
-      bucket.times.push(c.myPlayattemptsSumDuration);
-      bucket.totalTime += c.myPlayattemptsSumDuration;
-      bucket.count++;
-    });
-
-    // Debug: Log categorization results
-    console.log('🔍 Level categorization:', {
-      totalProcessed: processedLevels,
-      levelsWithData: levelsWithData,
-      categories: Array.from(levelTypes.entries()).map(([type, data]) => ({
-        type,
-        count: data.count,
-        avgTime: Math.round(data.totalTime / data.count / 1000)
-      }))
-    });
-
-    // Add "All Levels" category
-    if (totalLevels > 0) {
-      levelTypes.set('All Levels', {
-        times: comparisons.filter(c => c.myPlayattemptsSumDuration && c.myPlayattemptsSumDuration > 0).map(c => c.myPlayattemptsSumDuration!),
-        totalTime: totalTime,
-        count: totalLevels
-      });
-    }
-
-    // Convert to radar chart format - only include types with 5+ solves
-    const radarData = Array.from(levelTypes.entries())
-      .filter(([_type, data]) => data.count >= 5) // Need at least 5 levels
-      .map(([levelType, data]) => {
-        const avgTime = data.totalTime / data.count;
-        // Performance relative to user's overall average (100 = same as average, >100 = better than average, <100 = worse)
-        const performance = userAverageTime > 0 ? Math.round((userAverageTime / avgTime) * 100) : 100;
-
-        return {
-          difficulty: levelType,
-          performance: Math.min(200, Math.max(25, performance)), // Cap between 25-200 for chart readability
-          fullMark: 200,
-          hasData: true,
-          levelCount: data.count,
-          averageTime: Math.round(avgTime / 1000), // Convert to seconds
-          userOverallAverage: Math.round(userAverageTime / 1000),
-          meetsMinimum: true,
-          color: getPerformanceColor(performance, 100), // Use 100 as baseline instead of 50
-        };
-      });
-
-    // Debug: Log final radar data
-    console.log('🔍 Final radar data:', radarData.map(item => ({
-      type: item.difficulty,
-      performance: item.performance,
-      levelCount: item.levelCount,
-      color: item.color
-    })));
-
-    const avgPerf = radarData.length > 0
-      ? radarData.reduce((sum, item) => sum + (item.performance || 100), 0) / radarData.length
-      : 100;
-
-    return { skillRadarData: radarData, averagePerformance: avgPerf };
-  }, [difficultyData]);
-
   // Only show loading if we can view data and hooks are actually loading
   const isLoading = canViewFullOverview && (isLoadingDifficulty || isLoadingScoreHistory || isLoadingRecords);
-
-  // Loading components
-  const _LoadingSpinner = () => (
-    <div className='flex items-center justify-center p-8'>
-      <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400' />
-    </div>
-  );
 
   const LoadingSkeleton = ({ height = 'h-64' }: { height?: string }) => (
     <div className={`bg-gray-800 rounded-lg animate-pulse ${height}`}>
@@ -427,19 +245,6 @@ export default function ProfileInsightsPerformanceOverview({ user, reqUser, time
     );
   }
 
-  function renderPolarAngleAxis({ payload, x, y, cx, cy, ...rest }: { payload: any; x: number; y: number; cx: number; cy: number; [key: string]: any }) {
-    return (
-      <Text
-        {...rest}
-        verticalAnchor='middle'
-        y={y + (y - cy) / 8}
-        x={x + (x - cx) / 8}
-      >
-        {payload.value}
-      </Text>
-    );
-  }
-
   return (
     <div className='flex flex-col gap-6 w-full'>
       {/* Performance Metrics Cards */}
@@ -470,14 +275,14 @@ export default function ProfileInsightsPerformanceOverview({ user, reqUser, time
               <h3 className='font-bold text-lg' style={{ color: diff.color }}>{diff.name}</h3>
               <div className='mt-2 space-y-1 text-sm'>
                 <div>Levels conquered: <span className='font-bold'>{diff.levelCount}</span></div>
-                {diff.firstSolved && (
+                {diff.firstSolvedTs && (
                   <div className='text-xs text-gray-400'>
-                    First: {diff.firstSolved}
+                    First: {dayjs(diff.firstSolvedTs * 1000).format('MMM DD, YYYY')}
                   </div>
                 )}
-                {diff.latestSolved && (
+                {diff.latestSolvedTs && (
                   <div className='text-xs text-gray-400'>
-                    Latest: {diff.latestSolved}
+                    Latest: {dayjs(diff.latestSolvedTs * 1000).format('MMM DD, YYYY')}
                   </div>
                 )}
               </div>
@@ -542,7 +347,7 @@ export default function ProfileInsightsPerformanceOverview({ user, reqUser, time
                     color: 'rgb(229, 231, 235)',
                     boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
                   }}
-                  formatter={(value: number | undefined, name: string | undefined, props: any) => {
+                  formatter={(value: any, _name: string | undefined, props: any) => {
                     const data = props.payload;
 
                     return [
