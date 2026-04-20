@@ -42,8 +42,6 @@ export default function ProfileInsightsPerformanceOverview({ user, reqUser, time
   const canViewFullOverview = (reqUser?._id === user._id) || (reqUser?.roles?.includes(Role.ADMIN)) || hasProAccessForProfile(reqUser, user);
 
   const { proStatsUser: difficultyData, isLoading: isLoadingDifficulty } = useProStatsUser(user, ProStatsUserType.DifficultyLevelsComparisons, timeFilter, !canViewFullOverview);
-  const { isLoading: isLoadingScoreHistory } = useProStatsUser(user, ProStatsUserType.ScoreHistory, timeFilter, false);
-  const { proStatsUser: recordsData, isLoading: isLoadingRecords } = useProStatsUser(user, ProStatsUserType.Records, timeFilter, false);
 
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
   const [timelineMode, setTimelineMode] = useState<'max' | 'average'>('average');
@@ -203,9 +201,7 @@ export default function ProfileInsightsPerformanceOverview({ user, reqUser, time
 
     return difficultyTimeline.find(entry => entry.monthKey === selectedMonth);
   }, [selectedMonth, difficultyTimeline]);
-
-  // Only show loading if we can view data and hooks are actually loading
-  const isLoading = canViewFullOverview && (isLoadingDifficulty || isLoadingScoreHistory || isLoadingRecords);
+  const isDifficultyLoading = canViewFullOverview && isLoadingDifficulty;
 
   const LoadingSkeleton = ({ height = 'h-64' }: { height?: string }) => (
     <div className={`bg-gray-800 rounded-lg animate-pulse ${height}`}>
@@ -223,24 +219,6 @@ export default function ProfileInsightsPerformanceOverview({ user, reqUser, time
       <div className='flex flex-col gap-6 w-full'>
         <ProfileInsightsScoreChart user={user} timeFilter={timeFilter} />
         <ProfileInsightsRecords user={user} />
-      </div>
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <div className='flex flex-col gap-6 w-full'>
-        {/* Performance Metrics Cards Loading */}
-        <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className='bg-gray-800 rounded-lg p-4 animate-pulse'>
-              <div className='h-3 bg-gray-700 rounded-sm mb-2' />
-              <div className='h-8 bg-gray-700 rounded-sm' />
-            </div>
-          ))}
-        </div>
-        <LoadingSkeleton height='h-80' />
-        <LoadingSkeleton height='h-96' />
       </div>
     );
   }
@@ -264,34 +242,40 @@ export default function ProfileInsightsPerformanceOverview({ user, reqUser, time
       {/* Score History Chart */}
       <ProfileInsightsScoreChart user={user} timeFilter={timeFilter} />
       {/* Difficulty Conquest Map */}
-      <div className='flex flex-col gap-2'>
-        <h2 className='text-xl font-bold text-center'>Difficulty Conquest Map</h2>
-        <p className='text-sm text-gray-400 text-center mb-4'>
-          {user.name}&apos;s progression through different difficulty tiers
-        </p>
-        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
-          {difficultyProgression.map((diff) => (
-            <div key={diff.name} className='bg-gray-800 rounded-lg p-4 border-2' style={{ borderColor: diff.color }}>
-              <h3 className='font-bold text-lg' style={{ color: diff.color }}>{diff.name}</h3>
-              <div className='mt-2 space-y-1 text-sm'>
-                <div>Levels conquered: <span className='font-bold'>{diff.levelCount}</span></div>
-                {diff.firstSolvedTs && (
-                  <div className='text-xs text-gray-400'>
-                    First: {dayjs(diff.firstSolvedTs * 1000).format('MMM DD, YYYY')}
-                  </div>
-                )}
-                {diff.latestSolvedTs && (
-                  <div className='text-xs text-gray-400'>
-                    Latest: {dayjs(diff.latestSolvedTs * 1000).format('MMM DD, YYYY')}
-                  </div>
-                )}
+      {isDifficultyLoading ? (
+        <LoadingSkeleton height='h-80' />
+      ) : (
+        <div className='flex flex-col gap-2'>
+          <h2 className='text-xl font-bold text-center'>Difficulty Conquest Map</h2>
+          <p className='text-sm text-gray-400 text-center mb-4'>
+            {user.name}&apos;s progression through different difficulty tiers
+          </p>
+          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
+            {difficultyProgression.map((diff) => (
+              <div key={diff.name} className='bg-gray-800 rounded-lg p-4 border-2' style={{ borderColor: diff.color }}>
+                <h3 className='font-bold text-lg' style={{ color: diff.color }}>{diff.name}</h3>
+                <div className='mt-2 space-y-1 text-sm'>
+                  <div>Levels conquered: <span className='font-bold'>{diff.levelCount}</span></div>
+                  {diff.firstSolvedTs && (
+                    <div className='text-xs text-gray-400'>
+                      First: {dayjs(diff.firstSolvedTs * 1000).format('MMM DD, YYYY')}
+                    </div>
+                  )}
+                  {diff.latestSolvedTs && (
+                    <div className='text-xs text-gray-400'>
+                      Latest: {dayjs(diff.latestSolvedTs * 1000).format('MMM DD, YYYY')}
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
+      )}
       {/* Difficulty Progression Timeline */}
-      {difficultyTimeline.length > 1 && (
+      {isDifficultyLoading ? (
+        <LoadingSkeleton height='h-96' />
+      ) : difficultyTimeline.length > 1 && (
         <div className='flex flex-col gap-2'>
           <div className='flex items-center justify-between mb-2'>
             <h2 className='text-xl font-bold'>{timelineMode === 'average' ? 'Average' : 'Maximum'} Difficulty Over Time</h2>
