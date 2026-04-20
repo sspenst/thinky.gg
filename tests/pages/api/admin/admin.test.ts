@@ -339,7 +339,18 @@ describe('api/admin', () => {
     });
 
     test('should toggle Approved Bot role for a user', async () => {
-      const originalUser = await UserModel.findById(TestId.USER_B);
+      const toggleUserId = new Types.ObjectId();
+
+      await UserModel.create({
+        _id: toggleUserId,
+        email: `toggle-bot-${toggleUserId.toString()}@example.com`,
+        name: `togglebot${toggleUserId.toString().slice(-6)}`,
+        password: 'hashed-password',
+        roles: [],
+        ts: Math.floor(Date.now() / 1000),
+      });
+
+      const originalUser = await UserModel.findById(toggleUserId);
 
       expect(originalUser).toBeDefined();
       expect(originalUser?.roles.includes(Role.BOT)).toBe(false);
@@ -353,7 +364,7 @@ describe('api/admin', () => {
             },
             body: {
               command: AdminCommand.ToggleApprovedBot,
-              targetId: TestId.USER_B,
+              targetId: toggleUserId.toString(),
             },
             headers: {
               'content-type': 'application/json',
@@ -372,7 +383,7 @@ describe('api/admin', () => {
           expect(response.resp.isApprovedBot).toBe(true);
           expect(res.status).toBe(200);
 
-          const updatedUser = await UserModel.findById(TestId.USER_B);
+          const updatedUser = await UserModel.findById(toggleUserId);
 
           expect(updatedUser?.roles.includes(Role.BOT)).toBe(true);
         },
@@ -387,7 +398,7 @@ describe('api/admin', () => {
             },
             body: {
               command: AdminCommand.ToggleApprovedBot,
-              targetId: TestId.USER_B,
+              targetId: toggleUserId.toString(),
             },
             headers: {
               'content-type': 'application/json',
@@ -406,7 +417,7 @@ describe('api/admin', () => {
           expect(response.resp.isApprovedBot).toBe(false);
           expect(res.status).toBe(200);
 
-          const revertedUser = await UserModel.findById(TestId.USER_B);
+          const revertedUser = await UserModel.findById(toggleUserId);
 
           expect(revertedUser?.roles.includes(Role.BOT)).toBe(false);
         },
