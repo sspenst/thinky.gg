@@ -58,6 +58,20 @@
   }
 }
 
+/* Fallbacks matching theme-modern, in case no theme class is applied
+   (e.g. pre-hydration, or if next-themes fails). Theme classes override. */
+:root {
+  --bg-color: rgb(38, 38, 38);
+  --bg-color-2: rgb(50, 50, 50);
+  --bg-color-3: rgb(80, 80, 80);
+  --bg-color-4: rgb(130, 130, 130);
+  --color: rgb(255, 255, 255);
+  --color-complete: rgb(0, 200, 0);
+  --color-error: rgb(255, 50, 50);
+  --color-gray: rgb(180, 180, 180);
+  --color-incomplete: rgb(230, 200, 20);
+}
+
 body {
   margin: 0;
   -webkit-font-smoothing: antialiased;

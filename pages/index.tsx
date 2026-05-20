@@ -41,14 +41,16 @@ export default function ThinkyHomeRouter({ user }: ThinkyHomeRouterProps) {
   const [showBg, setShowBg] = useState(false);
 
   useEffect(() => {
-    if (!user) {
+    if (!user && showBg) {
       document.body.classList.add('mathematical-background-active');
+    } else {
+      document.body.classList.remove('mathematical-background-active');
     }
 
     return () => {
       document.body.classList.remove('mathematical-background-active');
     };
-  }, [user]);
+  }, [user, showBg]);
 
   useEffect(() => {
     if (user) return;

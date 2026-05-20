@@ -94,16 +94,22 @@ class MyDocument extends Document<DocumentProps> {
             dangerouslySetInnerHTML={{
               __html: `
 !function() {
-  const theme = localStorage.getItem('theme');
-
-  // set data-theme-dark for Tailwind dark classes
-  document.documentElement.setAttribute('data-theme-dark', theme === 'theme-light' ? 'false' : 'true');
+  const validThemes = ${JSON.stringify(Object.values(Theme))};
+  let theme = localStorage.getItem('theme');
 
   // check for an invalid theme and default to theme-modern
   // ThemeProvider doesn't handle this case with defaultTheme so we have to do it manually here
-  if (!${JSON.stringify(Object.values(Theme))}.includes(theme)) {
-    localStorage.setItem('theme', 'theme-modern');
+  if (!validThemes.includes(theme)) {
+    theme = 'theme-modern';
+    localStorage.setItem('theme', theme);
   }
+
+  // apply the theme class to <html> before paint so --bg-color and --color
+  // are defined immediately (otherwise body bg is transparent until next-themes hydrates)
+  document.documentElement.classList.add(theme);
+
+  // set data-theme-dark for Tailwind dark classes
+  document.documentElement.setAttribute('data-theme-dark', theme === 'theme-light' ? 'false' : 'true');
 }();
               `,
             }}
