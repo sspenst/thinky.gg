@@ -43,13 +43,14 @@ export default function ProfileInsightsSolveTimeComparison({ user, timeFilter }:
   const [percentile, setPercentile] = useState(0.01);
   const { game } = useContext(AppContext);
 
-  if (!difficultyComparisonData?.[ProStatsUserType.DifficultyLevelsComparisons]) {
-    return <span>Loading...</span>;
-  }
-
   // draw a scatter plot with a difficulty bucket on the x axis and the two dots on the y axis for the difficulty and average duration
   const data = useMemo(() => {
-    const comparisons = difficultyComparisonData[ProStatsUserType.DifficultyLevelsComparisons] as DifficultyLevelComparison[];
+    const comparisons = difficultyComparisonData?.[ProStatsUserType.DifficultyLevelsComparisons] as DifficultyLevelComparison[] | undefined;
+
+    if (!comparisons) {
+      return [];
+    }
+
     const normalizedData = comparisons
       .filter(d => d.otherPlayattemptsAverageDuration && d.myPlayattemptsSumDuration)
       .map(d => ({
@@ -67,6 +68,10 @@ export default function ProfileInsightsSolveTimeComparison({ user, timeFilter }:
 
     return sorted.slice(top1Percent, bottom1Percent);
   }, [difficultyComparisonData, hideAnomalies, percentile]);
+
+  if (!difficultyComparisonData?.[ProStatsUserType.DifficultyLevelsComparisons]) {
+    return <span>Loading...</span>;
+  }
 
   if (!data.length) {
     return <span>No comparison data available for this time range.</span>;
