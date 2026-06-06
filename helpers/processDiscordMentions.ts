@@ -2,6 +2,7 @@ import { Types } from 'mongoose';
 import User from '../models/db/user';
 import { AuthProvider } from '../models/db/userAuth';
 import { UserAuthModel, UserModel } from '../models/mongoose';
+import { logger } from './logger';
 
 /**
  * Get Discord user ID mappings for given user IDs
@@ -21,6 +22,50 @@ async function getDiscordUserIdMappings(userIds: (Types.ObjectId | string)[]): P
     userId: auth.userId,
     discordId: auth.providerId
   }));
+}
+
+/**
+ * Check whether a Discord user is a member of the Thinky guild.
+ * A linked account that has since left the server renders as "@unknown-user"
+ * when mentioned, so we only emit a mention for users we can confirm are members.
+ * @param discordProviderId Discord user ID (snowflake)
+ * @returns true if the user is a guild member, false if not. When the bot is not
+ * configured we cannot check, so we assume membership to preserve mention behavior.
+ */
+async function isDiscordGuildMember(discordProviderId: string): Promise<boolean> {
+  const botToken = process.env.DISCORD_ROLES_BOT_TOKEN;
+  const guildId = process.env.DISCORD_GUILD_ID;
+
+  // Discord integration not configured - can't verify, assume member
+  if (!botToken || !guildId) {
+    return true;
+  }
+
+  try {
+    const response = await fetch(
+      `https://discord.com/api/guilds/${guildId}/members/${discordProviderId}`,
+      { headers: { Authorization: `Bot ${botToken}` } }
+    );
+
+    // 404 means the user is not in the server -> mention would show "@unknown-user"
+    if (response.status === 404) {
+      return false;
+    }
+
+    if (!response.ok) {
+      // On unexpected errors (rate limits, outages) assume member so we don't
+      // strip valid mentions because of a transient failure
+      logger.error(`Failed to check Discord guild membership for ${discordProviderId}: ${response.status}`);
+
+      return true;
+    }
+
+    return true;
+  } catch (error) {
+    logger.error('Error checking Discord guild membership:', error);
+
+    return true;
+  }
 }
 
 /**
@@ -49,18 +94,20 @@ export async function processDiscordMentions(content: string, mentionUsernames: 
     const userIds = users.map(user => user._id);
     const discordUserMappings = await getDiscordUserIdMappings(userIds);
 
-    // Create a map of username -> Discord user ID (for users with Discord connected)
+    // Create a map of username -> Discord user ID (for users with Discord connected
+    // who are still members of the server - a mention for someone who has left
+    // renders as "@unknown-user", so we fall back to their Thinky profile instead)
     const usernameToDiscordId: Record<string, string> = {};
     const usersWithDiscord = new Set<string>();
 
-    users.forEach(user => {
+    await Promise.all(users.map(async user => {
       const mapping = discordUserMappings.find(m => m.userId.toString() === user._id.toString());
 
-      if (mapping) {
+      if (mapping && await isDiscordGuildMember(mapping.discordId)) {
         usernameToDiscordId[user.name] = mapping.discordId;
         usersWithDiscord.add(user.name);
       }
-    });
+    }));
 
     // Replace usernames with Discord mentions or profile links
     let processedContent = content;

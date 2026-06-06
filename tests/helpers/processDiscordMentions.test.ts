@@ -22,7 +22,22 @@ afterEach(async () => {
 });
 
 describe('helpers/processDiscordMentions.ts', () => {
+  const originalBotToken = process.env.DISCORD_ROLES_BOT_TOKEN;
+  const originalGuildId = process.env.DISCORD_GUILD_ID;
+
+  afterEach(() => {
+    // Restore any env / fetch overrides set by individual tests
+    process.env.DISCORD_ROLES_BOT_TOKEN = originalBotToken;
+    process.env.DISCORD_GUILD_ID = originalGuildId;
+    jest.restoreAllMocks();
+  });
+
   beforeEach(async () => {
+    // Default: Discord bot not configured, so guild membership is assumed and
+    // mentions are emitted for any linked user (preserves prior behavior)
+    delete process.env.DISCORD_ROLES_BOT_TOKEN;
+    delete process.env.DISCORD_GUILD_ID;
+
     const now = Date.now();
 
     // Set up test Discord connections for USER_B and USER_C
@@ -123,5 +138,37 @@ describe('helpers/processDiscordMentions.ts', () => {
     const result = await processDiscordMentions(content, ['test']);
 
     expect(result).toBe('[test](https://thinky.gg/profile/test) made a level, thanks test!');
+  });
+
+  test('Should link to Thinky profile when a linked user has left the Discord server', async () => {
+    // Bot configured -> guild membership is verified
+    process.env.DISCORD_ROLES_BOT_TOKEN = 'bot-token';
+    process.env.DISCORD_GUILD_ID = 'guild-id';
+
+    // BBB (discord123) is no longer in the server (404), Curator (discord456) still is
+    jest.spyOn(global, 'fetch').mockImplementation((input: RequestInfo | URL) => {
+      const url = input.toString();
+      const status = url.includes('discord123') ? 404 : 200;
+
+      return Promise.resolve({ ok: status === 200, status } as Response);
+    });
+
+    const content = 'Great job BBB and Curator!';
+    const result = await processDiscordMentions(content, ['BBB', 'Curator']);
+
+    expect(result).toBe('Great job [BBB](https://thinky.gg/profile/BBB) and <@discord456>!');
+  });
+
+  test('Should still mention linked users when membership check fails transiently', async () => {
+    process.env.DISCORD_ROLES_BOT_TOKEN = 'bot-token';
+    process.env.DISCORD_GUILD_ID = 'guild-id';
+
+    // A 5xx / rate-limit response should not strip a valid mention
+    jest.spyOn(global, 'fetch').mockResolvedValue({ ok: false, status: 500 } as Response);
+
+    const content = 'Great job BBB!';
+    const result = await processDiscordMentions(content, ['BBB']);
+
+    expect(result).toBe('Great job <@discord123>!');
   });
 });
