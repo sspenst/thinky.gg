@@ -1,10 +1,11 @@
 import Link from 'next/link';
 import { useContext } from 'react';
-import { AppContext } from '../../contexts/appContext';
+import { AppContext, MultiplayerSocketContext } from '../../contexts/appContext';
 import StyledTooltip from '../page/styledTooltip';
 
 export default function HeaderMultiplayer() {
-  const { multiplayerSocket, user } = useContext(AppContext);
+  const { user } = useContext(AppContext);
+  const multiplayerSocket = useContext(MultiplayerSocketContext);
   const { connectedPlayersCount, matches, socket } = multiplayerSocket;
 
   if (!user) {

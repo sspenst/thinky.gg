@@ -1,10 +1,10 @@
 import classNames from 'classnames';
 import Link from 'next/link';
 import { useContext } from 'react';
-import { AppContext } from '../../contexts/appContext';
+import { MultiplayerSocketContext } from '../../contexts/appContext';
 
 export default function OnlineUsers() {
-  const { multiplayerSocket } = useContext(AppContext);
+  const multiplayerSocket = useContext(MultiplayerSocketContext);
   const { connectedPlayersCount, socket } = multiplayerSocket;
   const isConnected = !!socket?.connected;
 

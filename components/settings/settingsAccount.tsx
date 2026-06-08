@@ -1,4 +1,4 @@
-import { AppContext } from '@root/contexts/appContext';
+import { AppContext, MultiplayerSocketContext } from '@root/contexts/appContext';
 import User from '@root/models/db/user';
 import { AuthProvider } from '@root/models/db/userAuth';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
@@ -103,7 +103,8 @@ export default function SettingsAccount({ user }: SettingsAccountProps) {
   const [authProviders, setAuthProviders] = useState<AuthProviderData[]>([]);
   const [authProvidersLoading, setAuthProvidersLoading] = useState<boolean>(true);
   const [email, setEmail] = useState<string>(user.email);
-  const { multiplayerSocket, mutateUser } = useContext(AppContext);
+  const { mutateUser } = useContext(AppContext);
+  const multiplayerSocket = useContext(MultiplayerSocketContext);
   const [showConfetti, setShowConfetti] = useState(!user.disableConfetti);
   const [hideAfterLevelPopup, setHideAfterLevelPopup] = useState(user.disableAfterLevelPopup || false);
   const [hideStreakPopup, setHideStreakPopup] = useState(user.disableStreakPopup || false);

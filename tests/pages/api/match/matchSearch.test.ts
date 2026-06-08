@@ -15,8 +15,12 @@ afterEach(() => {
 });
 beforeAll(async () => {
   await dbConnect();
+  // NB: search sorts by endTime desc. Set explicit, distinct endTimes so the expected
+  // order (RushBullet first) is deterministic. Real FINISHED matches always have an
+  // endTime; without one the tie order depended on which index the planner chose.
   await MultiplayerMatchModel.create({
     createdBy: TestId.USER,
+    endTime: new Date('2023-12-02T00:00:00Z'),
     gameId: DEFAULT_GAME_ID,
     matchId: 'abc',
     players: [new Types.ObjectId(TestId.USER), new Types.ObjectId(TestId.USER_B)],
@@ -28,6 +32,7 @@ beforeAll(async () => {
   });
   await MultiplayerMatchModel.create({
     createdBy: TestId.USER_B,
+    endTime: new Date('2023-12-01T00:00:00Z'),
     gameId: DEFAULT_GAME_ID,
     matchId: 'def',
     players: [TestId.USER_B, TestId.USER_C],

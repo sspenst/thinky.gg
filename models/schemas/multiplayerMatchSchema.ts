@@ -283,3 +283,5 @@ export default MultiplayerMatchSchema;
 MultiplayerMatchSchema.index({ matchId: 1 }, { unique: true });
 MultiplayerMatchSchema.index({ state: 1 });
 MultiplayerMatchSchema.index({ type: 1 });
+// Backs the match-finalization sweep: find({ state: ACTIVE, endTime: { $lte: now } })
+MultiplayerMatchSchema.index({ state: 1, endTime: 1 });

@@ -15,7 +15,8 @@ import { MultiplayerMatchModel } from '../../models/mongoose';
 import { enrichMultiplayerMatch } from '../../models/schemas/multiplayerMatchSchema';
 import { isGameStateRateLimited } from './gameStateRateLimiter';
 import { isRateLimited } from './rateLimiter';
-import { broadcastConnectedPlayers, broadcastCountOfUsersInRoom, broadcastMatches, broadcastMatchGameState, broadcastNotifications, broadcastPrivateAndInvitedMatches, scheduleBroadcastMatch } from './socketFunctions';
+import { checkForFinishedMatches } from '../../pages/api/match';
+import { broadcastConnectedPlayersDebounced, broadcastCountOfUsersInRoom, broadcastMatchesDebounced, broadcastMatchGameState, broadcastNotifications, broadcastPrivateAndInvitedMatches, scheduleBroadcastMatch } from './socketFunctions';
 
 'use strict';
 
@@ -188,6 +189,14 @@ export default async function startSocketIOServer(server: Server) {
     await scheduleBroadcastMatch(match.gameId, mongoEmitter, match.matchId.toString());
   });
 
+  // Safety sweep for match finalization. The authoritative path is the per-match end
+  // timer scheduled in scheduleBroadcastMatch (restored above on startup). Finalization
+  // is intentionally NOT done on the read path (getAllMatches) anymore; this low-frequency
+  // sweep is the backstop that catches any match whose in-memory timer was lost.
+  setInterval(() => {
+    checkForFinishedMatches().catch((e) => logger.error('checkForFinishedMatches sweep failed', e));
+  }, 30000);
+
   // eslint-disable-next-line react-hooks/rules-of-hooks
   GlobalSocketIO.use(authenticateSocket);
 
@@ -197,10 +206,8 @@ export default async function startSocketIOServer(server: Server) {
     const gameId = getGameIdFromReq(socket.request);
 
     socket.on('refresh', async () => {
-      await Promise.all([
-        broadcastConnectedPlayers(gameId, adapted),
-        broadcastMatches(gameId, mongoEmitter),
-      ]);
+      broadcastConnectedPlayersDebounced(gameId, adapted);
+      broadcastMatchesDebounced(gameId, mongoEmitter);
     });
 
     socket.on('matchGameState', async (data) => {
@@ -214,7 +221,9 @@ export default async function startSocketIOServer(server: Server) {
         }
 
         await broadcastMatchGameState(mongoEmitter, userId, matchId, matchGameState);
-        await broadcastCountOfUsersInRoom(gameId, adapted, matchId); // TODO: probably worth finding a better place to put this
+        // NB: room membership cannot change as a result of a gameplay update, so we do
+        // not recompute/emit the connected-players count here (it was firing up to 10x/sec
+        // per user). Counts are emitted on actual join (below) and disconnect instead.
       }
     });
 
@@ -245,12 +254,13 @@ export default async function startSocketIOServer(server: Server) {
       // Use the rooms we stored during 'disconnecting' event
       const rooms = socket.data.roomsOnDisconnect || [];
 
-      await Promise.all([
-        broadcastConnectedPlayers(gameId, adapted),
-        broadcastMatches(gameId, mongoEmitter),
+      // NB: leaving the lobby does not change the match list, so we do NOT re-run
+      // broadcastMatches here. Only the connected-players list and per-room counts change.
+      broadcastConnectedPlayersDebounced(gameId, adapted);
+      await Promise.all(
         // Broadcast updated counts for any match rooms the user was in
-        ...rooms.map((matchId: string) => broadcastCountOfUsersInRoom(gameId, adapted, matchId))
-      ]);
+        rooms.map((matchId: string) => broadcastCountOfUsersInRoom(gameId, adapted, matchId))
+      );
     });
 
     // TODO can't find anywhere in docs what socket type is... so using any for now
@@ -279,13 +289,13 @@ export default async function startSocketIOServer(server: Server) {
       }
     } else {
       socket.join('LOBBY-' + gameId);
-      await Promise.all([
-        broadcastMatches(gameId, mongoEmitter),
-        broadcastPrivateAndInvitedMatches(gameId, mongoEmitter, reqUser._id),
-      ]);
+      // Private/invited matches are user-specific (emitted to this user's room) and low
+      // volume, so send immediately; the shared lobby list is coalesced via debounce.
+      broadcastMatchesDebounced(gameId, mongoEmitter);
+      await broadcastPrivateAndInvitedMatches(gameId, mongoEmitter, reqUser._id);
     }
 
-    await broadcastConnectedPlayers(gameId, adapted);
+    broadcastConnectedPlayersDebounced(gameId, adapted);
   });
 }
 

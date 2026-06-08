@@ -108,13 +108,17 @@ export function useMultiplayerSocket(
       notificationHandlerRef.current(notifications);
     });
     socketConn.on('reloadPage', () => {
+      // Spread the deploy reconnect storm: each client waits a randomized 15-30s before
+      // reloading so all tabs don't reconnect simultaneously and stampede the socket server.
+      const reloadDelayMs = 15000 + Math.floor(Math.random() * 15000);
+
       toast.dismiss();
-      toast.loading('There is a new version of the site! Reloading page in 15 seconds...', {
-        duration: 15000,
+      toast.loading('There is a new version of the site! Reloading shortly...', {
+        duration: reloadDelayMs,
       });
       setTimeout(() => {
         window.location.reload();
-      }, 15000);
+      }, reloadDelayMs);
     } );
     socketConn.on('killSocket', () => {
       console.log('killSocket');

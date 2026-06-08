@@ -13,7 +13,6 @@ interface AppContextInterface {
   deviceInfo: DeviceInfo;
   game: Game;
   host: string | undefined;
-  multiplayerSocket: MultiplayerSocket;
   mutatePlayLater: () => void;
   mutateUser: KeyedMutator<ReqUser>;
   notifications: Notification[];
@@ -44,13 +43,6 @@ export const AppContext = createContext<AppContextInterface>({
   },
   game: Games[GameId.THINKY],
   host: undefined,
-  multiplayerSocket: {
-    connectedPlayers: [],
-    connectedPlayersCount: 0,
-    matches: [],
-    privateAndInvitedMatches: [],
-    socket: undefined,
-  },
   mutatePlayLater: () => {},
   mutateUser: {} as KeyedMutator<ReqUser>,
   notifications: [],
@@ -66,4 +58,16 @@ export const AppContext = createContext<AppContextInterface>({
   tempCollection: undefined,
   user: undefined,
   userConfig: undefined,
+});
+
+// Kept in its own context (separate from AppContext) because the multiplayer socket state
+// (connectedPlayers / matches) updates continuously while anyone is online. Co-locating it
+// in AppContext re-rendered every AppContext consumer (incl. Grid/Game during play) on each
+// broadcast. Only components that actually read live multiplayer state subscribe here.
+export const MultiplayerSocketContext = createContext<MultiplayerSocket>({
+  connectedPlayers: [],
+  connectedPlayersCount: 0,
+  matches: [],
+  privateAndInvitedMatches: [],
+  socket: undefined,
 });

@@ -8,7 +8,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useContext, useEffect, useState } from 'react';
 import TimeRange from '../../constants/timeRange';
-import { AppContext } from '../../contexts/appContext';
+import { AppContext, MultiplayerSocketContext } from '../../contexts/appContext';
 import useTour from '../../hooks/useTour';
 import { EnrichedLevel } from '../../models/db/level';
 import Review from '../../models/db/review';
@@ -46,7 +46,8 @@ export default function Home({
   topLevelsThisMonth,
   user,
 }: HomeProps) {
-  const { deviceInfo, game, userConfig, multiplayerSocket } = useContext(AppContext);
+  const { deviceInfo, game, userConfig } = useContext(AppContext);
+  const multiplayerSocket = useContext(MultiplayerSocketContext);
   const router = useRouter();
   const [search, setSearch] = useState('');
   const [levelSearch, setLevelSearch] = useState('');

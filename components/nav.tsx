@@ -1,6 +1,6 @@
 import GameLogo from '@root/components/gameLogo';
 import { Game, Games } from '@root/constants/Games';
-import { AppContext } from '@root/contexts/appContext';
+import { AppContext, MultiplayerSocketContext } from '@root/contexts/appContext';
 import getProfileSlug from '@root/helpers/getProfileSlug';
 import isPro from '@root/helpers/isPro';
 import useUrl from '@root/hooks/useUrl';
@@ -138,7 +138,8 @@ interface NavProps {
 }
 
 export default function Nav({ isDropdown, onGameChange }: NavProps) {
-  const { game, multiplayerSocket, playLater, user } = useContext(AppContext);
+  const { game, playLater, user } = useContext(AppContext);
+  const multiplayerSocket = useContext(MultiplayerSocketContext);
   const { connectedPlayersCount, matches, socket } = multiplayerSocket;
 
   const proNavLink = <NavLink

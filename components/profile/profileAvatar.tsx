@@ -1,7 +1,7 @@
 import classNames from 'classnames';
 import { useContext } from 'react';
 import Dimensions from '../../constants/dimensions';
-import { AppContext } from '../../contexts/appContext';
+import { MultiplayerSocketContext } from '../../contexts/appContext';
 import isOnline from '../../helpers/isOnline';
 import User from '../../models/db/user';
 
@@ -12,7 +12,7 @@ interface ProfileAvatarProps {
 }
 
 export default function ProfileAvatar({ hideStatusCircle, size = Dimensions.AvatarSize, user }: ProfileAvatarProps) {
-  const { multiplayerSocket } = useContext(AppContext);
+  const multiplayerSocket = useContext(MultiplayerSocketContext);
   const connectedUser = multiplayerSocket.connectedPlayers.find(u => u._id === user._id);
   const borderWidth = Math.round(size / 40) || 1;
 

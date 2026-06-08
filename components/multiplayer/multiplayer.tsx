@@ -2,7 +2,7 @@ import FormattedUser from '@root/components/formatted/formattedUser';
 import CreateMatchModal from '@root/components/modal/createMatchModal';
 import MatchStatus from '@root/components/multiplayer/matchStatus';
 import SpaceBackground from '@root/components/page/SpaceBackground';
-import { AppContext } from '@root/contexts/appContext';
+import { AppContext, MultiplayerSocketContext } from '@root/contexts/appContext';
 import sortByRating from '@root/helpers/sortByRating';
 import useSWRHelper from '@root/hooks/useSWRHelper';
 import { MultiplayerMatchState, MultiplayerMatchType } from '@root/models/constants/multiplayer';
@@ -16,7 +16,8 @@ import OnlineUsers from './onlineUsers';
 
 export default function Multiplayer() {
   const [isCreateMatchModalOpen, setIsCreateMatchModalOpen] = useState(false);
-  const { game, multiplayerSocket, user } = useContext(AppContext);
+  const { game, user } = useContext(AppContext);
+  const multiplayerSocket = useContext(MultiplayerSocketContext);
   const router = useRouter();
   const { connectedPlayers, matches, privateAndInvitedMatches } = multiplayerSocket;
   const isCreatingMatch = useRef(false);

@@ -43,7 +43,5 @@ export function isChatRateLimited(userId: string): boolean {
   userAttempts.timestamps.push(now);
   chatAttempts.set(userId, userAttempts);
 
-  logger.info(`Chat message allowed for user ${userId}: ${userAttempts.timestamps.length}/${MAX_MESSAGES_PER_WINDOW} messages in window`);
-
   return false;
 }

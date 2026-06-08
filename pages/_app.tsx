@@ -7,11 +7,11 @@ import { Confetti } from '@root/components/page/confetti';
 import { DEFAULT_GAME_ID } from '@root/constants/GameId';
 import { Game, Games } from '@root/constants/Games';
 import MusicContextProvider from '@root/contexts/musicContext';
+import MultiplayerSocketProvider from '@root/contexts/multiplayerSocketProvider';
 import getFontFromGameId from '@root/helpers/getFont';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { useAppInitialization } from '@root/hooks/useAppInitialization';
 import useDeviceCheck from '@root/hooks/useDeviceCheck';
-import { useMultiplayerSocket } from '@root/hooks/useMultiplayerSocket';
 import { useNotifications } from '@root/hooks/useNotifications';
 import { usePostHogAnalytics } from '@root/hooks/usePostHogAnalytics';
 import Notification from '@root/models/db/notification';
@@ -23,7 +23,7 @@ import { DefaultSeo } from 'next-seo';
 import { ThemeProvider } from 'next-themes';
 import posthog from 'posthog-js';
 import { PostHogProvider } from 'posthog-js/react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Toaster } from 'react-hot-toast';
 import Theme from '../constants/theme';
 import { AppContext } from '../contexts/appContext';
@@ -66,7 +66,34 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
     mutatePlayLater,
   } = useAppInitialization(user, initGame);
   const notificationActions = useNotifications({ notifications, setNotifications });
-  const multiplayerSocket = useMultiplayerSocket(user, selectedGame, notifications, notificationActions);
+
+  const resolvedUser = isLoading ? undefined : !user ? null : user;
+  const resolvedUserConfig = isLoading ? undefined : !user?.config ? null : user.config;
+
+  // Memoized so the AppContext value identity only changes when one of these fields actually
+  // changes. The high-frequency multiplayer socket state is intentionally NOT here (it lives
+  // in MultiplayerSocketProvider below) so socket broadcasts don't re-render AppContext
+  // consumers like Grid/Game.
+  const appContextValue = useMemo(() => ({
+    deviceInfo,
+    game: selectedGame,
+    host,
+    mutatePlayLater,
+    mutateUser,
+    notifications,
+    playLater,
+    protocol,
+    setNotifications,
+    setShouldAttemptAuth,
+    setShowNav,
+    setTempCollection,
+    shouldAttemptAuth,
+    showNav,
+    sounds,
+    tempCollection,
+    user: resolvedUser,
+    userConfig: resolvedUserConfig,
+  }), [deviceInfo, selectedGame, host, mutatePlayLater, mutateUser, notifications, playLater, protocol, setNotifications, setShouldAttemptAuth, setShowNav, setTempCollection, shouldAttemptAuth, showNav, sounds, tempCollection, resolvedUser, resolvedUserConfig]);
 
   return (
     <>
@@ -100,39 +127,26 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
               cardType: 'summary_large_image'
             }}
           />
-          <AppContext.Provider value={{
-            deviceInfo: deviceInfo,
-            game: selectedGame,
-            host: host,
-            multiplayerSocket: multiplayerSocket,
-            mutatePlayLater: mutatePlayLater,
-            mutateUser: mutateUser,
-            notifications: notifications,
-            playLater: playLater,
-            protocol: protocol,
-            setNotifications: setNotifications,
-            setShouldAttemptAuth: setShouldAttemptAuth,
-            setShowNav: setShowNav,
-            setTempCollection: setTempCollection,
-            shouldAttemptAuth: shouldAttemptAuth,
-            showNav: showNav,
-            sounds: sounds,
-            tempCollection,
-            user: isLoading ? undefined : !user ? null : user,
-            userConfig: isLoading ? undefined : !user?.config ? null : user.config,
-          }}>
+          <AppContext.Provider value={appContextValue}>
             <Toaster toastOptions={{ duration: 1500 }} />
             <Confetti />
             <OpenReplay />
-            <div className={getFontFromGameId(selectedGame.id)} style={{
-              backgroundColor: router.pathname === '/' && !user ? 'transparent' : 'var(--bg-color)',
-              color: 'var(--color)',
-            }}>
-              <MusicContextProvider>
-                <Component {...pageProps} />
-                <CookieConsentBanner />
-              </MusicContextProvider>
-            </div>
+            <MultiplayerSocketProvider
+              notificationActions={notificationActions}
+              notifications={notifications}
+              selectedGame={selectedGame}
+              user={user}
+            >
+              <div className={getFontFromGameId(selectedGame.id)} style={{
+                backgroundColor: router.pathname === '/' && !user ? 'transparent' : 'var(--bg-color)',
+                color: 'var(--color)',
+              }}>
+                <MusicContextProvider>
+                  <Component {...pageProps} />
+                  <CookieConsentBanner />
+                </MusicContextProvider>
+              </div>
+            </MultiplayerSocketProvider>
           </AppContext.Provider>
         </ThemeProvider>
       </PostHogProvider>

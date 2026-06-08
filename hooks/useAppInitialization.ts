@@ -163,14 +163,20 @@ export function useAppInitialization(user: ReqUser | null | undefined, initGame:
       nProgress.done();
     };
 
-    router.events.on('routeChangeStart', () => nProgress.start());
-    router.events.on('routeChangeError', () => nProgress.done());
+    // NB: use named handlers so the cleanup below actually removes them. Passing a fresh
+    // arrow to off() (as before) never matches the registered listener, leaking a handler
+    // (and its closure) on every effect re-run.
+    const handleRouteChangeStart = () => nProgress.start();
+    const handleRouteChangeError = () => nProgress.done();
+
+    router.events.on('routeChangeStart', handleRouteChangeStart);
+    router.events.on('routeChangeError', handleRouteChangeError);
     router.events.on('routeChangeComplete', handleRouteChange);
 
     return () => {
       router.events.off('routeChangeComplete', handleRouteChange);
-      router.events.off('routeChangeStart', () => nProgress.start());
-      router.events.off('routeChangeError', () => nProgress.done());
+      router.events.off('routeChangeStart', handleRouteChangeStart);
+      router.events.off('routeChangeError', handleRouteChangeError);
     };
   }, [router.events, router.pathname, user]);
 

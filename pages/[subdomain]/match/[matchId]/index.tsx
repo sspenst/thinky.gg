@@ -27,7 +27,7 @@ import { useRouter } from 'next/router';
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { throttle } from 'throttle-debounce';
-import { AppContext } from '../../../../contexts/appContext';
+import { AppContext, MultiplayerSocketContext } from '../../../../contexts/appContext';
 import { getGameIdFromReq } from '../../../../helpers/getGameIdFromReq';
 import { getMatch } from '../../../../helpers/match/getMatch';
 import dbConnect from '../../../../lib/dbConnect';
@@ -94,7 +94,8 @@ export default function Match({ initialMatch }: MatchProps) {
   const [countDown, setCountDown] = useState<number>(-1);
   const [showInvitePanel, setShowInvitePanel] = useState<boolean>(false);
   const [isInviting, setIsInviting] = useState<boolean>(false);
-  const { multiplayerSocket, sounds, user } = useContext(AppContext);
+  const { sounds, user } = useContext(AppContext);
+  const multiplayerSocket = useContext(MultiplayerSocketContext);
   const readyMark = useRef(false);
   const router = useRouter();
   const startSoundPlayed = useRef(false);

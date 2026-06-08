@@ -21,11 +21,8 @@ export function isRateLimited(identifier: string): boolean {
   const now = Date.now();
   const data = connectionAttempts.get(identifier);
 
-  logger.info(`Rate limit check for ${identifier}: existing data = ${JSON.stringify(data)}`);
-
   if (!data) {
     connectionAttempts.set(identifier, { count: 1, lastAttempt: now });
-    logger.info(`First connection from ${identifier}, allowing`);
 
     return false;
   }
@@ -42,7 +39,6 @@ export function isRateLimited(identifier: string): boolean {
     data.count = 1;
     data.lastAttempt = now;
     delete data.blockedUntil;
-    logger.info(`Resetting count for ${identifier} after timeout`);
 
     return false;
   }
@@ -50,7 +46,6 @@ export function isRateLimited(identifier: string): boolean {
   // Increment count
   data.count++;
   data.lastAttempt = now;
-  logger.info(`Connection attempt ${data.count} from ${identifier}`);
 
   // Block if exceeded limit
   if (data.count > MAX_CONNECTIONS_PER_MINUTE) {

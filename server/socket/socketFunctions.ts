@@ -22,6 +22,39 @@ const GlobalMatchTimers = {} as Record<string, {
   end: NodeJS.Timeout;
 }>;
 
+// Trailing-edge debounce for lobby broadcasts. A burst of socket connect/disconnect
+// events (e.g. a deploy reconnect storm) would otherwise run one full getAllMatches
+// aggregation + fetchSockets round-trip per event. Coalescing per key collapses the
+// burst into a single aggregation + emit.
+const BROADCAST_DEBOUNCE_MS = 300;
+const broadcastDebounceTimers = new Map<string, NodeJS.Timeout>();
+
+function debounceBroadcast(key: string, fn: () => void) {
+  const existing = broadcastDebounceTimers.get(key);
+
+  if (existing) {
+    clearTimeout(existing);
+  }
+
+  broadcastDebounceTimers.set(key, setTimeout(() => {
+    broadcastDebounceTimers.delete(key);
+
+    try {
+      fn();
+    } catch (e) {
+      logger.error('debounced broadcast failed', e);
+    }
+  }, BROADCAST_DEBOUNCE_MS));
+}
+
+export function broadcastMatchesDebounced(gameId: GameId, emitter: Emitter) {
+  debounceBroadcast('matches-' + gameId, () => { void broadcastMatches(gameId, emitter); });
+}
+
+export function broadcastConnectedPlayersDebounced(gameId: GameId, emitter: Server) {
+  debounceBroadcast('connectedPlayers-' + gameId, () => { void broadcastConnectedPlayers(gameId, emitter); });
+}
+
 export async function broadcastPrivateAndInvitedMatches(gameId: GameId, emitter: Emitter, userId: Types.ObjectId) {
   const matches = await getAllMatches(gameId, userId as unknown as User,
     {
@@ -50,7 +83,6 @@ export async function broadcastPrivateAndInvitedMatches(gameId: GameId, emitter:
 }
 
 export async function broadcastMatches(gameId: GameId, emitter: Emitter) {
-  console.log('BROADCASTING???');
   const matches = await getAllMatches(gameId);
 
   matches.forEach(match => {

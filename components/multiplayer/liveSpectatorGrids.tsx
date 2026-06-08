@@ -14,6 +14,48 @@ interface LiveSpectatorGridsProps {
   getLevelIndexByPlayerId: (playerId: string) => number;
 }
 
+interface SpectatorPlayerGridProps {
+  player: MultiplayerMatch['players'][number];
+  level: Level;
+  matchGameState: MatchGameState | undefined;
+}
+
+// Memoized per-player board: when one player moves, only their own matchGameState prop
+// changes identity, so the other player's grid bails out of re-rendering (the Grid render
+// is the expensive part). Without this, every incoming move frame re-rendered both boards.
+const SpectatorPlayerGrid = React.memo(function SpectatorPlayerGrid({ player, level, matchGameState }: SpectatorPlayerGridProps) {
+  return (
+    <div className='relative'>
+      <div className='absolute -inset-2 bg-linear-to-r from-green-600/15 to-blue-600/15 blur-lg opacity-40' />
+      <div className='relative bg-white/8 backdrop-blur-xl rounded-xl p-4 shadow-lg border border-white/20'>
+        <div className='flex flex-col items-center gap-3'>
+          <div className='flex items-center gap-2'>
+            <span className='text-lg'>🎮</span>
+            <FormattedUser id='match-recap' size={Dimensions.AvatarSizeSmall} user={player} />
+          </div>
+          <div className='flex flex-col justify-center text-center w-full bg-white/5 rounded-lg p-4' style={{
+            height: '50vh',
+          }}>
+            {matchGameState ?
+              <Grid
+                gameState={matchGameState}
+                id={level._id.toString()}
+                leastMoves={matchGameState.leastMoves || 0}
+                optimizeDom
+              />
+              :
+              <span className='italic text-white/60'>Waiting for move...</span>
+            }
+          </div>
+          <Link className='font-medium text-blue-400 hover:text-blue-300 underline truncate max-w-full transition-colors duration-200' href={`/level/${level?.slug || '#'}`}>
+            {level?.name || 'Unknown Level'}
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+});
+
 export default function LiveSpectatorGrids({ match, matchGameStateMap, getLevelIndexByPlayerId }: LiveSpectatorGridsProps) {
   if (match.state === MultiplayerMatchState.FINISHED || match.state === MultiplayerMatchState.ABORTED) {
     return null;
@@ -48,34 +90,12 @@ export default function LiveSpectatorGrids({ match, matchGameStateMap, getLevelI
           }
 
           return (
-            <div className='relative' key={`match-game-state-${player._id.toString()}-${level._id.toString()}`}>
-              <div className='absolute -inset-2 bg-linear-to-r from-green-600/15 to-blue-600/15 blur-lg opacity-40' />
-              <div className='relative bg-white/8 backdrop-blur-xl rounded-xl p-4 shadow-lg border border-white/20'>
-                <div className='flex flex-col items-center gap-3'>
-                  <div className='flex items-center gap-2'>
-                    <span className='text-lg'>🎮</span>
-                    <FormattedUser id='match-recap' size={Dimensions.AvatarSizeSmall} user={player} />
-                  </div>
-                  <div className='flex flex-col justify-center text-center w-full bg-white/5 rounded-lg p-4' style={{
-                    height: '50vh',
-                  }}>
-                    {matchGameState ?
-                      <Grid
-                        gameState={matchGameState}
-                        id={level._id.toString()}
-                        leastMoves={matchGameState.leastMoves || 0}
-                        optimizeDom
-                      />
-                      :
-                      <span className='italic text-white/60'>Waiting for move...</span>
-                    }
-                  </div>
-                  <Link className='font-medium text-blue-400 hover:text-blue-300 underline truncate max-w-full transition-colors duration-200' href={`/level/${level?.slug || '#'}`}>
-                    {level?.name || 'Unknown Level'}
-                  </Link>
-                </div>
-              </div>
-            </div>
+            <SpectatorPlayerGrid
+              key={`match-game-state-${playerId}-${level._id.toString()}`}
+              level={level}
+              matchGameState={matchGameState}
+              player={player}
+            />
           );
         })}
       </div>

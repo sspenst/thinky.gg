@@ -439,8 +439,12 @@ export async function getAllMatches(gameId: GameId, reqUser?: User, matchFilters
   matchFilters.gameId = gameId;
   const lookupPipelineUser: PipelineStage[] = getEnrichLevelsPipelineSteps(reqUser);
 
-  const [matches] = await Promise.all([
-    MultiplayerMatchModel.aggregate<MultiplayerMatch>([
+  // NB: match finalization (checkForFinishedMatches) is intentionally NOT run here.
+  // This is a read/broadcast path that fires on every socket connect/disconnect and every
+  // lobby GET; running a collection scan + finishMatch transactions here amplified DB load
+  // N-fold during connection storms. Finalization is handled by the per-match end timer and
+  // the periodic safety sweep in the socket server instead.
+  const matches = await MultiplayerMatchModel.aggregate<MultiplayerMatch>([
       {
         $match: matchFilters,
       },
@@ -608,9 +612,7 @@ export async function getAllMatches(gameId: GameId, reqUser?: User, matchFilters
           ],
         }
       },
-    ]),
-    checkForFinishedMatches(),
-  ]);
+    ]);
 
   if (reqUser) {
     for (const match of matches) {

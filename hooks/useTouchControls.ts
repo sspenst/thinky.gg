@@ -36,6 +36,7 @@ export default function useTouchControls({
   const lastTapY = useRef<number>(0);
   const longPressActive = useRef<boolean>(false);
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const swipeResetTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const swipeHandled = useRef<boolean>(false);
 
   const LONG_PRESS_MS = 250;
@@ -57,8 +58,13 @@ export default function useTouchControls({
   }, []);
 
   const scheduleSwipeReset = useCallback(() => {
-    setTimeout(() => {
+    if (swipeResetTimer.current) {
+      clearTimeout(swipeResetTimer.current);
+    }
+
+    swipeResetTimer.current = setTimeout(() => {
       isSwiping.current = false;
+      swipeResetTimer.current = null;
     }, SWIPE_SUPPRESS_MS);
   }, []);
 
@@ -277,6 +283,11 @@ export default function useTouchControls({
       lastTouchX.current = 0;
       lastTouchY.current = 0;
       clearLongPressTimer();
+
+      if (swipeResetTimer.current) {
+        clearTimeout(swipeResetTimer.current);
+        swipeResetTimer.current = null;
+      }
     };
   }, [clearDoubleTapState, clearLongPressTimer]);
 
