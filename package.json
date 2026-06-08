@@ -30,7 +30,7 @@
     "micro": "^10.0.1",
     "module-alias": "^2.2.3",
     "mongodb-memory-server": "^11.0.1",
-    "mongoose": "^8.9.6",
+    "mongoose": "^8.21.0",
     "motion": "^12.24.10",
     "newrelic": "^13.8.1",
     "next": "^16.1.1",
