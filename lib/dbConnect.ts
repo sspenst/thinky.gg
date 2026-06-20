@@ -103,7 +103,14 @@ export default async function dbConnect({ ignoreInitializeLocalDb }: DBConnectPr
     });
   }
 
-  cached.conn = await cached.promise;
+  try {
+    cached.conn = await cached.promise;
+  } catch (e) {
+    cached.conn = null;
+    cached.promise = null;
+    throw e;
+  }
+
   cached.promise = null;
 
   /* istanbul ignore next */
