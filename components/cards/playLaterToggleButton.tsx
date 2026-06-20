@@ -21,7 +21,7 @@ export function PlayLaterToggleButton({ className, id, level }: PlayLaterToggleB
     return null;
   }
 
-  const boldedLevelName = <span className='font-bold'>{level.name}</span>;
+  const boldedLevelName = <span className='font-bold break-words'>{level.name}</span>;
   const fetchFunc = async (remove: boolean) => {
     setIsLoading(true);
     toast.dismiss();
@@ -43,8 +43,13 @@ export function PlayLaterToggleButton({ className, id, level }: PlayLaterToggleB
 
     if (res.ok) {
       const message = (
-        <div className='flex flex-col items-center w-92 max-w-full text-center'>
-          <span>{remove ? ['Removed ', boldedLevelName, ' from'] : ['Added ', boldedLevelName, ' to']} <Link className='underline' href={`/collection/${user.name}/play-later`}>Play Later</Link></span>
+        <div className='flex min-w-0 w-[min(20rem,calc(100vw_-_5rem))] flex-col items-center text-center'>
+          <span className='block max-w-full whitespace-normal break-words leading-snug'>
+            {remove ? 'Removed ' : 'Added '}
+            {boldedLevelName}
+            {remove ? ' from ' : ' to '}
+            <Link className='underline whitespace-nowrap' href={`/collection/${user.name}/play-later`}>Play Later</Link>
+          </span>
           <button className='text-sm underline' onClick={() => fetchFunc(!remove)}>Undo</button>
         </div>
       );
@@ -53,6 +58,7 @@ export function PlayLaterToggleButton({ className, id, level }: PlayLaterToggleB
         duration: 5000,
         position: 'bottom-center',
         icon: remove ? '➖' : '➕',
+        style: { maxWidth: 'calc(100vw - 1rem)' },
       });
       mutatePlayLater();
     } else {

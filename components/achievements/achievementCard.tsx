@@ -7,6 +7,7 @@ import Achievement from '@root/models/db/achievement';
 import classNames from 'classnames';
 import Image from 'next/image';
 import Link from 'next/link';
+import type { CSSProperties } from 'react';
 import FormattedDate from '../formatted/formattedDate';
 import StyledTooltip from '../page/styledTooltip';
 
@@ -103,6 +104,10 @@ export default function AchievementCard({
   const rarityText = rarity ? getRarityText(rarity) : 'Unknown';
   const rarityColor = rarity ? getRarityColor(rarity) : 'text-gray-500';
   const rarityTooltip = rarity ? getRarityTooltip(rarity, stats?.count, totalActiveUsers) : 'Rarity unknown';
+  const achievementTooltipStyle: CSSProperties = {
+    maxWidth: 'min(16rem, calc(100vw - 0.7rem))',
+    whiteSpace: 'normal',
+  };
 
   // Render game logos for earned achievements (only if showing all games and not social category)
   const renderGameLogos = () => {
@@ -217,7 +222,7 @@ export default function AchievementCard({
     <Link
       href={`/achievement/${achievementType}`}
       className={classNames(
-        'group block rounded-xl border border-color-4 hover:border-color-5 transition-all transform hover:scale-105 overflow-hidden',
+        'group block rounded-xl border border-color-4 hover:border-color-5 transition-colors',
         {
           'opacity-60': !isUnlocked,
           'bg-3 hover:bg-4': !isUnlocked,
@@ -255,18 +260,18 @@ export default function AchievementCard({
         </div>
         {/* Title and Description */}
         <div>
-          <h3 className='font-bold text-lg mb-1 group-hover:text-blue-500 transition-colors'>
+          <h3 className='font-bold text-lg mb-1 group-hover:text-blue-500 transition-colors line-clamp-2 break-words'>
             {achievementInfo.name}
           </h3>
           <p
-            className='text-sm opacity-75 line-clamp-2'
+            className='text-sm opacity-75 line-clamp-2 break-words'
             data-tooltip-content={achievementInfo.tooltip}
             data-tooltip-id={`achievement-tooltip-${achievementType}`}
           >
             {achievementInfo.getDescription(game)}
           </p>
           {achievementInfo.tooltip && (
-            <StyledTooltip id={`achievement-tooltip-${achievementType}`} />
+            <StyledTooltip id={`achievement-tooltip-${achievementType}`} style={achievementTooltipStyle} />
           )}
         </div>
         {/* Footer */}

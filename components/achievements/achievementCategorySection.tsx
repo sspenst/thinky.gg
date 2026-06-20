@@ -42,12 +42,12 @@ export default function AchievementCategorySection({
   const progressPercentage = Math.round((unlockedCount / totalCount) * 100);
 
   return (
-    <div className='bg-2 rounded-xl border border-color-3 overflow-hidden'>
+    <div className='bg-2 rounded-xl border border-color-3'>
       {/* Category Header */}
       <button
         id={sectionId}
         onClick={() => setIsExpanded(!isExpanded)}
-        className='w-full px-6 py-4 bg-3 hover:bg-4 transition-colors flex items-center justify-between'
+        className={`w-full px-6 py-4 bg-3 hover:bg-4 transition-colors flex items-center justify-between ${isExpanded ? 'rounded-t-xl' : 'rounded-xl'}`}
       >
         <div className='flex items-center gap-4'>
           <div className='flex items-center gap-2'>
