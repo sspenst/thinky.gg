@@ -4,7 +4,7 @@ import { AppContext } from '@root/contexts/appContext';
 import TileTypeHelper from '@root/helpers/tileTypeHelper';
 import { LucideCode, LucideFlipHorizontal2, LucidePencil, LucidePlay, LucideRepeat2, LucideSave, LucideShare } from 'lucide-react';
 import { useRouter } from 'next/router';
-import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import TileType from '../../constants/tileType';
 import { PageContext } from '../../contexts/pageContext';
@@ -31,6 +31,27 @@ interface EditorProps {
   setAllowNavigation?: (allow: boolean) => void;
 }
 
+type LevelDataSnapshot = Pick<Level, 'data' | 'height' | 'width'>;
+
+function getLevelDataSnapshot(level: Level): LevelDataSnapshot {
+  return {
+    data: level.data,
+    height: level.height,
+    width: level.width,
+  };
+}
+
+function isLevelDataSnapshotForLevel(snapshot: LevelDataSnapshot | null, level: Level) {
+  return !!snapshot &&
+    snapshot.data === level.data &&
+    snapshot.width === level.width &&
+    snapshot.height === level.height;
+}
+
+function getImprovedLeastMoves(currentLeastMoves: number, moveCount: number) {
+  return currentLeastMoves === 0 || moveCount < currentLeastMoves ? moveCount : currentLeastMoves;
+}
+
 export default function Editor({ isDirty, level, setIsDirty, setLevel, originalLevel, setAllowNavigation }: EditorProps) {
   const { game, deviceInfo } = useContext(AppContext);
   const [isTestMode, setIsTestMode] = useState(false);
@@ -50,6 +71,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, originalL
   const [tileType, setTileType] = useState<TileType>(TileType.Default);
   const [validateLevelResponse, setValidateLevelResponse] = useState<ValidateLevelResponse>();
   const { id } = router.query;
+  const [savedLevelId, setSavedLevelId] = useState<string | null>(id ? String(id) : null);
 
   // Track the server level data (what's actually saved on the server)
   const [serverLevelData, setServerLevelData] = useState({
@@ -59,8 +81,8 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, originalL
     leastMoves: (originalLevel || level).leastMoves,
   });
 
-  // For unsaved levels, track the level state when a solution was found
-  const [solutionLevelData, setSolutionLevelData] = useState<{data: string, width: number, height: number} | null>(null);
+  // Track the level state when a solution was found.
+  const [solutionLevelData, setSolutionLevelData] = useState<LevelDataSnapshot | null>(null);
 
   // Check if current level data differs from server
   const hasLevelDataChanged = useCallback(() => {
@@ -75,11 +97,23 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, originalL
   const clearBestSolution = useCallback(() => {
     setBestSolution(null);
     bestSolutionRef.current = null;
+    setSolutionLevelData(null);
   }, []);
 
-  // Update dirty state and leastMoves when level data changes
+  const currentBestSolutionMoves = useMemo(() => {
+    return bestSolution && isLevelDataSnapshotForLevel(solutionLevelData, level) ? bestSolution.length : null;
+  }, [bestSolution, level, solutionLevelData]);
+
+  // Clear a pending best solution as soon as the level data no longer matches it.
   useEffect(() => {
-    if (id) {
+    if (solutionLevelData && !isLevelDataSnapshotForLevel(solutionLevelData, level)) {
+      clearBestSolution();
+    }
+  }, [clearBestSolution, level, solutionLevelData]);
+
+  // Update dirty state and leastMoves when level data or pending solution state changes
+  useEffect(() => {
+    if (id || savedLevelId) {
       // For saved levels, compare against server state
       const hasChanged = hasLevelDataChanged();
 
@@ -87,9 +121,9 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, originalL
         setIsDirty(hasChanged);
       }
 
-      // Update leastMoves based on whether level matches server version
+      // Prefer a solution found against the current data; otherwise reflect the saved server baseline.
       setLevel(prevLevel => {
-        const newLeastMoves = hasChanged ? 0 : serverLevelData.leastMoves;
+        const newLeastMoves = currentBestSolutionMoves ?? (hasChanged ? 0 : serverLevelData.leastMoves);
 
         if (prevLevel.leastMoves !== newLeastMoves) {
           return {
@@ -100,27 +134,22 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, originalL
 
         return prevLevel;
       });
-    } else if (!id && solutionLevelData) {
-      // For unsaved levels, check if level changed after a solution was found
-      const levelChangedSinceSolution = (
-        solutionLevelData.data !== level.data ||
-        solutionLevelData.width !== level.width ||
-        solutionLevelData.height !== level.height
-      );
+    } else {
+      // For unsaved levels, display the best solution for the current data or 0 if none exists.
+      setLevel(prevLevel => {
+        const newLeastMoves = currentBestSolutionMoves ?? 0;
 
-      if (levelChangedSinceSolution && level.leastMoves > 0) {
-        // Reset leastMoves to 0 when level is modified after finding a solution
-        setLevel(prevLevel => ({
-          ...prevLevel,
-          leastMoves: 0
-        }));
-        // Clear the solution data and best solution since the level changed
-        setSolutionLevelData(null);
-        clearBestSolution();
-      }
+        if (prevLevel.leastMoves !== newLeastMoves) {
+          return {
+            ...prevLevel,
+            leastMoves: newLeastMoves
+          };
+        }
+
+        return prevLevel;
+      });
     }
-  }, [level.data, level.width, level.height, hasLevelDataChanged, isDirty, setIsDirty, id, serverLevelData.leastMoves, solutionLevelData, clearBestSolution, setLevel, level.leastMoves]);
-  const [savedLevelId, setSavedLevelId] = useState<string | null>(id ? String(id) : null);
+  }, [currentBestSolutionMoves, hasLevelDataChanged, id, isDirty, savedLevelId, serverLevelData.leastMoves, setIsDirty, setLevel]);
 
   // Reset painting session on pointer release
   useEffect(() => {
@@ -616,7 +645,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, originalL
             data: prevLevel.data,
             width: prevLevel.width,
             height: prevLevel.height,
-            leastMoves: prevLevel.leastMoves,
+            leastMoves: 0,
           });
 
           return { ...prevLevel };
@@ -625,15 +654,17 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, originalL
         toast.success('Saved');
 
         // If we have a best solution, submit it now
-        if (bestSolution && bestSolution.length > 0 && typeof id === 'string') {
+        const solutionToSubmit = bestSolutionRef.current;
+
+        if (solutionToSubmit && solutionToSubmit.length > 0 && typeof id === 'string') {
           // Validate the solution against the current level data first
           const validateSolution = game.validateSolution;
 
-          if (validateSolution && !validateSolution(bestSolution, level)) {
+          if (validateSolution && !validateSolution(solutionToSubmit, level)) {
             toast.error('Your solution is no longer valid due to level changes.');
             clearBestSolution();
           } else {
-            submitBestSolution(id, bestSolution);
+            submitBestSolution(id, solutionToSubmit);
           }
         }
       } else {
@@ -644,6 +675,17 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, originalL
       toast.dismiss();
       toast.error('Error fetching level');
     });
+  }
+
+  function applySubmittedLeastMoves(moveCount: number) {
+    setServerLevelData(prevServerLevelData => ({
+      ...prevServerLevelData,
+      leastMoves: getImprovedLeastMoves(prevServerLevelData.leastMoves, moveCount),
+    }));
+    setLevel(prevLevel => ({
+      ...prevLevel,
+      leastMoves: getImprovedLeastMoves(prevLevel.leastMoves, moveCount),
+    }));
   }
 
   function submitBestSolution(levelId: string, moves: Direction[]) {
@@ -660,6 +702,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, originalL
       },
     }).then(async res => {
       if (res.status === 200) {
+        applySubmittedLeastMoves(moves.length);
         toast.success(`Your best solution (${moves.length} moves) has been submitted!`, {
           duration: 3000,
         });
@@ -798,38 +841,32 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, originalL
             if (game.isComplete(gameState)) {
               // Store the complete solution path as Direction array
               const moves = gameState.moves.map(move => move.direction);
+              const solvedLevelData = getLevelDataSnapshot(level);
 
               // Defer state updates to avoid the React warning
               setTimeout(() => {
+                const currentBestSolution = isLevelDataSnapshotForLevel(solutionLevelData, level) ? bestSolutionRef.current : null;
+                const storeBestSolution = () => {
+                  bestSolutionRef.current = moves; // Set ref immediately for synchronous access
+                  setBestSolution(moves);
+                  setSolutionLevelData(solvedLevelData);
+                  setLevel(prevLevel => ({
+                    ...prevLevel,
+                    leastMoves: moves.length
+                  }));
+                };
+
                 if (isUnsaved) {
                   // For truly unsaved levels, track the best solution locally for later submission
-                  if (!bestSolution || moves.length < bestSolution.length) {
-                    bestSolutionRef.current = moves; // Set ref immediately for synchronous access
-                    setBestSolution(moves);
-                    // Update the level's leastMoves for display
-                    setLevel(prevLevel => ({
-                      ...prevLevel,
-                      leastMoves: moves.length
-                    }));
-                    // Track the level state when this solution was found
-                    setSolutionLevelData({
-                      data: level.data,
-                      width: level.width,
-                      height: level.height
-                    });
+                  if (!currentBestSolution || moves.length < currentBestSolution.length) {
+                    storeBestSolution();
                     toast.success(`New best solution: ${moves.length} moves!`);
                   }
                   // Don't show anything if it's not an improvement
                 } else if (isDirty) {
                   // For saved but modified levels (leastMoves should already be 0 from useEffect)
-                  if (!bestSolution || moves.length < bestSolution.length) {
-                    bestSolutionRef.current = moves; // Set ref immediately for synchronous access
-                    setBestSolution(moves);
-                    // Update leastMoves only if it's better than 0 (which is the expected value for modified levels)
-                    setLevel(prevLevel => ({
-                      ...prevLevel,
-                      leastMoves: moves.length
-                    }));
+                  if (!currentBestSolution || moves.length < currentBestSolution.length) {
+                    storeBestSolution();
                     toast.success(`New best solution: ${moves.length} moves!`);
                   }
                 } else {
@@ -837,11 +874,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, originalL
                   const isNewRecord = moves.length < level.leastMoves || level.leastMoves === 0;
 
                   if (isNewRecord) {
-                    // Update the level's leastMoves for display
-                    setLevel(prevLevel => ({
-                      ...prevLevel,
-                      leastMoves: moves.length
-                    }));
+                    storeBestSolution();
                     // Submit immediately for new records
                     submitBestSolution(String(id || savedLevelId), moves);
                   }
@@ -966,6 +999,10 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, originalL
 
         // Update the saved level ID so we know it's no longer unsaved
         setSavedLevelId(levelId);
+        setServerLevelData({
+          ...getLevelDataSnapshot(level),
+          leastMoves: 0,
+        });
         // If we have a best solution, submit it now (use ref for immediate access)
         const solutionToSubmit = bestSolutionRef.current;
 
