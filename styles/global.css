@@ -693,10 +693,22 @@ textarea {
   background-color: var(--bg-color);
   border: 1px solid var(--bg-color-3);
   border-radius: 0.25rem;
+  color: var(--color);
   padding: 0.5rem 0.75rem;
   transition-duration: 150ms;
   transition-property: border-color;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+input.compact-number-input {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+input.compact-number-input::-webkit-inner-spin-button,
+input.compact-number-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 input::placeholder,
@@ -843,4 +855,3 @@ textarea:focus {
 .animate-fade-in {
   animation: fade-in 0.5s ease-out forwards;
 }
-

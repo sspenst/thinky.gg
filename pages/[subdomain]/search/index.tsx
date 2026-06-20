@@ -92,6 +92,8 @@ const DefaultQuery = {
   timeRange: TimeRange[TimeRange.Month],
 } as SearchQuery;
 
+const dimensionInputClassName = 'compact-number-input w-14 sm:w-16 px-2 py-1 border border-gray-300 rounded-sm text-center tabular-nums';
+
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   await dbConnect();
 
@@ -865,9 +867,11 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
                       Dimensions
                       <Image alt='pro' src='/pro.svg' width='16' height='16' />
                     </label>
-                    <div className='flex items-center gap-2 text-sm'>
+                    <div className='flex flex-wrap items-center gap-2 text-sm'>
                       <input
-                        className='w-12 px-2 py-1 border border-gray-300 rounded-sm text-center'
+                        aria-label='Minimum width'
+                        className={dimensionInputClassName}
+                        inputMode='numeric'
                         placeholder='Min W'
                         max='40'
                         min='1'
@@ -878,7 +882,9 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
                       />
                       <span>×</span>
                       <input
-                        className='w-12 px-2 py-1 border border-gray-300 rounded-sm text-center'
+                        aria-label='Minimum height'
+                        className={dimensionInputClassName}
+                        inputMode='numeric'
                         placeholder='Min H'
                         max='40'
                         min='1'
@@ -889,7 +895,9 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
                       />
                       <span className='text-gray-500'>to</span>
                       <input
-                        className='w-12 px-2 py-1 border border-gray-300 rounded-sm text-center'
+                        aria-label='Maximum width'
+                        className={dimensionInputClassName}
+                        inputMode='numeric'
                         placeholder='Max W'
                         max='40'
                         min='1'
@@ -900,7 +908,9 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
                       />
                       <span>×</span>
                       <input
-                        className='w-12 px-2 py-1 border border-gray-300 rounded-sm text-center'
+                        aria-label='Maximum height'
+                        className={dimensionInputClassName}
+                        inputMode='numeric'
                         placeholder='Max H'
                         max='40'
                         min='1'
