@@ -60,7 +60,6 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
     selectedGame,
     shouldAttemptAuth,
     setShouldAttemptAuth,
-    sounds,
     tempCollection,
     setTempCollection,
     mutatePlayLater,
@@ -89,11 +88,10 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
     setTempCollection,
     shouldAttemptAuth,
     showNav,
-    sounds,
     tempCollection,
     user: resolvedUser,
     userConfig: resolvedUserConfig,
-  }), [deviceInfo, selectedGame, host, mutatePlayLater, mutateUser, notifications, playLater, protocol, setNotifications, setShouldAttemptAuth, setShowNav, setTempCollection, shouldAttemptAuth, showNav, sounds, tempCollection, resolvedUser, resolvedUserConfig]);
+  }), [deviceInfo, selectedGame, host, mutatePlayLater, mutateUser, notifications, playLater, protocol, setNotifications, setShouldAttemptAuth, setShowNav, setTempCollection, shouldAttemptAuth, showNav, tempCollection, resolvedUser, resolvedUserConfig]);
 
   return (
     <>

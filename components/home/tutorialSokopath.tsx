@@ -1,9 +1,9 @@
 /* istanbul ignore file */
 
 import { createPopper, Instance, Placement } from '@popperjs/core';
+import createTemporaryObjectId from '@root/helpers/createTemporaryObjectId';
 import { GameState } from '@root/helpers/gameStateHelpers';
 import classNames from 'classnames';
-import { Types } from 'mongoose';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { JSX, useCallback, useContext, useEffect, useRef, useState } from 'react';
@@ -50,7 +50,7 @@ export default function TutorialSokopath({ recaptchaPublicKey }: TutorialSokopat
     const width = sp[0].length;
 
     return {
-      _id: new Types.ObjectId(),
+      _id: createTemporaryObjectId(),
       authorNote: 'test level 1 author note',
       data: data,
       height: sp.length,

@@ -1,6 +1,6 @@
 import { LevelWithRecordHistory } from '@root/helpers/getRecordsByUserId';
-import { TimeFilter } from '../components/profile/profileInsights';
 import { DifficultyLevelComparison } from '../components/profile/profileInsightsSolveTimeComparison';
+import { TimeFilter } from '../constants/timeFilter';
 import { DateAndSum, UserAndSum, UserLevelAndStatTs } from '../contexts/levelContext';
 import User from '../models/db/user';
 import useSWRHelper from './useSWRHelper';

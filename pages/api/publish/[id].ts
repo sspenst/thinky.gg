@@ -140,7 +140,7 @@ export async function publishLevel(level: Level, userId: Types.ObjectId, options
         // invalidate cache
         CacheModel.deleteMany({
           tag: CacheTag.SEARCH_API,
-          gameId: level.gameId,
+          gameId: { $in: [level.gameId, GameId.THINKY] },
         }, { session: session }),
       ]);
 

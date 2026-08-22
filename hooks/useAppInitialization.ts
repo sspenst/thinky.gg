@@ -6,7 +6,7 @@ import { parseHostname } from '@root/helpers/parseUrl';
 import Collection from '@root/models/db/collection';
 import { useRouter } from 'next/router';
 import nProgress from 'nprogress';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { ReqUser } from '../models/db/user';
 
@@ -18,7 +18,6 @@ export function useAppInitialization(user: ReqUser | null | undefined, initGame:
   const [selectedGame, setSelectedGame] = useState<Game>(initGame);
   const [shouldAttemptAuth, setShouldAttemptAuth] = useState(true);
   const [tempCollection, setTempCollection] = useState<Collection>();
-  const soundsRef = useRef<Record<string, HTMLAudioElement>>({});
 
   const mutatePlayLater = useCallback(() => {
     if (!isPro(user)) {
@@ -58,14 +57,6 @@ export function useAppInitialization(user: ReqUser | null | undefined, initGame:
   useEffect(() => {
     mutatePlayLater();
   }, [mutatePlayLater]);
-
-  // Preload sounds
-  useEffect(() => {
-    soundsRef.current = {
-      'start': new Audio('/sounds/start.wav'),
-      'warning': new Audio('/sounds/warning.wav'),
-    };
-  }, []);
 
   // Set protocol
   useEffect(() => {
@@ -206,7 +197,6 @@ export function useAppInitialization(user: ReqUser | null | undefined, initGame:
     selectedGame,
     shouldAttemptAuth,
     setShouldAttemptAuth,
-    sounds: soundsRef.current,
     tempCollection,
     setTempCollection,
     mutatePlayLater,

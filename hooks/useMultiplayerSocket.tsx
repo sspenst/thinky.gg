@@ -20,6 +20,80 @@ export interface MultiplayerSocket {
   socket: Socket<DefaultEventsMap, DefaultEventsMap> | undefined;
 }
 
+type TerminalMatchIds = Set<string>;
+
+function isTerminalMatch(match: Pick<MultiplayerMatch, 'matchId' | 'state'>) {
+  return match.state === MultiplayerMatchState.ABORTED ||
+    match.state === MultiplayerMatchState.FINISHED;
+}
+
+export function rememberTerminalMatch(
+  terminalMatchIds: TerminalMatchIds,
+  match: Pick<MultiplayerMatch, 'matchId' | 'state'>,
+) {
+  if (!isTerminalMatch(match)) {
+    return false;
+  }
+
+  terminalMatchIds.add(match.matchId);
+
+  return true;
+}
+
+export function filterTerminalMatches(
+  matches: MultiplayerMatch[],
+  terminalMatchIds: TerminalMatchIds,
+) {
+  if (terminalMatchIds.size === 0) {
+    return matches;
+  }
+
+  return matches.filter(match => !terminalMatchIds.has(match.matchId));
+}
+
+function removeMatchFromList(
+  matches: MultiplayerMatch[],
+  updatedMatch: Pick<MultiplayerMatch, 'matchId'>,
+) {
+  const existingIndex = matches.findIndex(match => match.matchId === updatedMatch.matchId);
+
+  return existingIndex === -1
+    ? matches
+    : matches.filter(match => match.matchId !== updatedMatch.matchId);
+}
+
+export function reconcileMatchBroadcast(
+  multiplayerSocket: MultiplayerSocket,
+  updatedMatch: Pick<MultiplayerMatch, 'matchId' | 'state'>,
+): MultiplayerSocket {
+  // Lobby list events already carry OPEN/ACTIVE updates. Ignore those here so
+  // normal match activity does not make the app-wide socket rerender every time
+  // a move, ready state, or chat message broadcasts the full match.
+  if (!isTerminalMatch(updatedMatch)) {
+    return multiplayerSocket;
+  }
+
+  const matches = removeMatchFromList(
+    multiplayerSocket.matches,
+    updatedMatch,
+  );
+  const privateAndInvitedMatches = removeMatchFromList(
+    multiplayerSocket.privateAndInvitedMatches,
+    updatedMatch,
+  );
+
+  if (matches === multiplayerSocket.matches &&
+    privateAndInvitedMatches === multiplayerSocket.privateAndInvitedMatches) {
+    return multiplayerSocket;
+  }
+
+  return {
+    ...multiplayerSocket,
+    matches,
+    privateAndInvitedMatches,
+  };
+}
+
 export function useMultiplayerSocket(
   user: User | null | undefined,
   selectedGame: Game,
@@ -37,6 +111,7 @@ export function useMultiplayerSocket(
 
   // Use ref to store notification handler to avoid socket reconnections
   const notificationHandlerRef = useRef(notificationActions.handleSocketNotifications);
+  const terminalMatchIdsRef = useRef<TerminalMatchIds>(new Set());
 
   // Update ref when handler changes but don't recreate socket
   useEffect(() => {
@@ -45,14 +120,23 @@ export function useMultiplayerSocket(
 
   // Socket connection management
   useEffect(() => {
+    // Match IDs have a unique database index, so a terminal ID cannot represent
+    // another live match. Retain it for this socket lifecycle, including transport
+    // reconnects, then replace the Set when a new socket is intentionally created.
+    const terminalMatchIds = new Set<string>();
+
+    terminalMatchIdsRef.current = terminalMatchIds;
+
     if (!user?._id) {
       setMultiplayerSocket(prevMultiplayerSocket => {
         if (prevMultiplayerSocket.socket) {
           const socketConn = prevMultiplayerSocket.socket;
 
           socketConn.off('connectedPlayers');
+          socketConn.off('match');
           socketConn.off('matches');
           socketConn.off('privateAndInvitedMatches');
+          socketConn.off('terminalMatch');
           socketConn.off('notifications');
           socketConn.off('reloadPage');
           socketConn.off('killSocket');
@@ -145,24 +229,52 @@ export function useMultiplayerSocket(
     });
 
     socketConn.on('matches', (matches: MultiplayerMatch[]) => {
+      if (terminalMatchIdsRef.current !== terminalMatchIds) {
+        return;
+      }
+
+      const filteredMatches = filterTerminalMatches(matches, terminalMatchIds);
+
       setMultiplayerSocket(prevMultiplayerSocket => {
         return {
           connectedPlayers: prevMultiplayerSocket.connectedPlayers,
           connectedPlayersCount: prevMultiplayerSocket.connectedPlayersCount,
-          matches: matches,
+          matches: filteredMatches,
           privateAndInvitedMatches: prevMultiplayerSocket.privateAndInvitedMatches,
           socket: prevMultiplayerSocket.socket,
         };
       });
     });
 
+    const handleTerminalMatch = (match: Pick<MultiplayerMatch, 'matchId' | 'state'>) => {
+      if (terminalMatchIdsRef.current !== terminalMatchIds ||
+        !rememberTerminalMatch(terminalMatchIds, match)) {
+        return;
+      }
+
+      setMultiplayerSocket(prevMultiplayerSocket =>
+        reconcileMatchBroadcast(prevMultiplayerSocket, match)
+      );
+    };
+
+    // Full per-match broadcasts update players. The minimal lobby-wide terminal
+    // event also reaches invitees without disclosing a private match payload.
+    socketConn.on('match', handleTerminalMatch);
+    socketConn.on('terminalMatch', handleTerminalMatch);
+
     socketConn.on('privateAndInvitedMatches', (privateAndInvitedMatches: MultiplayerMatch[]) => {
+      if (terminalMatchIdsRef.current !== terminalMatchIds) {
+        return;
+      }
+
+      const filteredMatches = filterTerminalMatches(privateAndInvitedMatches, terminalMatchIds);
+
       setMultiplayerSocket(prevMultiplayerSocket => {
         return {
           connectedPlayers: prevMultiplayerSocket.connectedPlayers,
           connectedPlayersCount: prevMultiplayerSocket.connectedPlayersCount,
           matches: prevMultiplayerSocket.matches,
-          privateAndInvitedMatches: privateAndInvitedMatches,
+          privateAndInvitedMatches: filteredMatches,
           socket: prevMultiplayerSocket.socket,
         };
       });
@@ -180,12 +292,18 @@ export function useMultiplayerSocket(
 
     return () => {
       socketConn.off('connectedPlayers');
+      socketConn.off('match', handleTerminalMatch);
       socketConn.off('matches');
       socketConn.off('privateAndInvitedMatches');
+      socketConn.off('terminalMatch', handleTerminalMatch);
       socketConn.off('notifications');
       socketConn.off('reloadPage');
       socketConn.off('killSocket');
       socketConn.disconnect();
+
+      if (terminalMatchIdsRef.current === terminalMatchIds) {
+        terminalMatchIdsRef.current = new Set();
+      }
     };
   }, [selectedGame.id, user?._id, user?.disableStreakPopup]);
 

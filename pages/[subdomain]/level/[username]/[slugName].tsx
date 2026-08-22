@@ -1,11 +1,12 @@
 /* istanbul ignore file */
 import { AppContext } from '@root/contexts/appContext';
+import createTemporaryObjectId from '@root/helpers/createTemporaryObjectId';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import isBot from '@root/helpers/isBot';
 import { CollectionType } from '@root/models/constants/collection';
 import Collection, { EnrichedCollection } from '@root/models/db/collection';
 import { getCollection } from '@root/pages/api/collection-by-id/[id]';
-import { Types } from 'mongoose';
+import type { Types } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -42,14 +43,16 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
   const gameId = getGameIdFromReq(context.req);
   const cid = context.query?.cid as string | undefined;
-  const cObjectId = cid && Types.ObjectId.isValid(cid) ? new Types.ObjectId(cid) : null;
+  const collectionId = cid && /^[a-f\d]{24}$/i.test(cid)
+    ? new (await import('mongoose')).Types.ObjectId(cid)
+    : null;
 
   // TODO: technically we could get the level from the collection instead of separately querying for it
   // If cid doesn't exist then we can just call getLevelsByUrlPath...
   const [level, collection] = await Promise.all([
     getLevelByUrlPath(gameId, username, slugName, reqUser),
-    cObjectId ? getCollection({
-      matchQuery: { _id: cObjectId, gameId: gameId },
+    collectionId ? getCollection({
+      matchQuery: { _id: collectionId, gameId: gameId },
       populateAroundSlug: username + '/' + slugName,
       populateLevelDirection: 'around',
       reqUser,
@@ -127,7 +130,7 @@ export default function LevelPage({ _collection, _level, reqUser }: LevelProps) 
           slug: searchQuery,
           type: CollectionType.InMemory,
           updatedAt: ts,
-          userId: { _id: new Types.ObjectId() } as Types.ObjectId & User,
+          userId: { _id: createTemporaryObjectId() } as Types.ObjectId & User,
         } as EnrichedCollection;
 
         sessionStorage.setItem('tempCollection', JSON.stringify(collectionTemp));

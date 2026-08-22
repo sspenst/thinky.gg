@@ -1,5 +1,8 @@
 import { GameId } from '@root/constants/GameId';
-import { requestBroadcastNotifications } from '@root/lib/appSocketToClient';
+import {
+  requestBroadcastNotifications,
+  requestBroadcastPrivateAndInvitedMatches,
+} from '@root/lib/appSocketToClient';
 import Level from '@root/models/db/level';
 import Notification from '@root/models/db/notification';
 import User from '@root/models/db/user';
@@ -374,7 +377,12 @@ export async function createMultiplayerInviteNotification(gameId: GameId, invite
     queuePushNotification(notificationId),
   ]);
 
-  await requestBroadcastNotifications(gameId, new Types.ObjectId(invitedUserId));
+  const invitedUserObjectId = new Types.ObjectId(invitedUserId);
+
+  await Promise.all([
+    requestBroadcastNotifications(gameId, invitedUserObjectId),
+    requestBroadcastPrivateAndInvitedMatches(gameId, invitedUserObjectId),
+  ]);
 
   return notification[0];
 }

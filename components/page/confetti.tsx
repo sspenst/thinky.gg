@@ -1,12 +1,40 @@
 import { AppContext } from '@root/contexts/appContext';
-import confetti from 'canvas-confetti';
 import { useContext, useRef } from 'react';
 
-let confettiInstance: () => void;
+let confettiInstance: () => void | Promise<void>;
+let confettiModulePromise: Promise<{ default: typeof import('canvas-confetti') }> | undefined;
+
+function loadConfetti() {
+  if (confettiModulePromise) {
+    return confettiModulePromise;
+  }
+
+  const loadPromise = import('canvas-confetti').catch(error => {
+    confettiModulePromise = undefined;
+
+    throw error;
+  });
+
+  confettiModulePromise = loadPromise;
+
+  return loadPromise;
+}
 
 export const dropConfetti = () => {
-  if (confettiInstance) {
-    confettiInstance();
+  if (!confettiInstance) {
+    return;
+  }
+
+  try {
+    const result = confettiInstance();
+
+    if (result) {
+      void result.catch(error => {
+        console.error('Failed to load confetti:', error);
+      });
+    }
+  } catch (error) {
+    console.error('Failed to show confetti:', error);
   }
 };
 
@@ -14,7 +42,8 @@ export function Confetti() {
   const canvasRef = useRef(null);
   const { user } = useContext(AppContext);
 
-  confettiInstance = user?.disableConfetti ? () => {} : () => {
+  confettiInstance = user?.disableConfetti ? () => {} : async () => {
+    const { default: confetti } = await loadConfetti();
     const duration = 800;
     const end = Date.now() + duration;
 

@@ -1,5 +1,6 @@
 import Direction from '@root/constants/direction';
-import { DEFAULT_GAME_ID } from '@root/constants/GameId';
+import { DEFAULT_GAME_ID, GameId } from '@root/constants/GameId';
+import { CacheTag } from '@root/models/db/cache';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
@@ -12,7 +13,7 @@ import { initCollection, initLevel } from '../../../../lib/initializeLocalDb';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import Collection from '../../../../models/db/collection';
 import Level from '../../../../models/db/level';
-import { CollectionModel, LevelModel, StatModel, UserConfigModel } from '../../../../models/mongoose';
+import { CacheModel, CollectionModel, LevelModel, StatModel, UserConfigModel } from '../../../../models/mongoose';
 import updateCollectionHandler from '../../../../pages/api/collection/[id]';
 import { processQueueMessages } from '../../../../pages/api/internal-jobs/worker';
 import updateLevelHandler from '../../../../pages/api/level/[id]';
@@ -178,6 +179,19 @@ describe('Testing unpublish', () => {
     });
   });
   test('Unpublishing one of the levels should keep it in the level owners collection but remove it from the other users collection', async () => {
+    const unaffectedGameId = DEFAULT_GAME_ID === GameId.PATHOLOGY ? GameId.SOKOPATH : GameId.PATHOLOGY;
+    const cacheKeys = {
+      aggregate: `unpublish-aggregate-${userALevel1._id}`,
+      game: `unpublish-game-${userALevel1._id}`,
+      unaffected: `unpublish-unaffected-${userALevel1._id}`,
+    };
+
+    await CacheModel.insertMany([
+      { key: cacheKeys.aggregate, value: {}, tag: CacheTag.SEARCH_API, gameId: GameId.THINKY, expireAt: new Date(Date.now() + 60000) },
+      { key: cacheKeys.game, value: {}, tag: CacheTag.SEARCH_API, gameId: DEFAULT_GAME_ID, expireAt: new Date(Date.now() + 60000) },
+      { key: cacheKeys.unaffected, value: {}, tag: CacheTag.SEARCH_API, gameId: unaffectedGameId, expireAt: new Date(Date.now() + 60000) },
+    ]);
+
     await testApiHandler({
       pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -232,6 +246,13 @@ describe('Testing unpublish', () => {
         expect(levelClone.calc_reviews_count).toBe(0);
         expect(levelClone.calc_reviews_score_laplace.toFixed(2)).toBe('0.67');
         expect(levelClone.leastMoves).toBe(0);
+
+        const remainingCacheKeys = await CacheModel.find({
+          key: { $in: Object.values(cacheKeys) },
+        }).distinct('key');
+
+        expect(remainingCacheKeys).toEqual([cacheKeys.unaffected]);
+        await CacheModel.deleteOne({ key: cacheKeys.unaffected });
       },
     });
   });

@@ -1,4 +1,4 @@
-import { Types } from 'mongoose';
+import type { Types } from 'mongoose';
 import { useCallback, useEffect, useRef } from 'react';
 
 interface UseTouchControlsProps {

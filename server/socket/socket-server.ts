@@ -13,10 +13,10 @@ import { getUserFromToken } from '../../lib/withAuth';
 import { MultiplayerMatchState } from '../../models/constants/multiplayer';
 import { MultiplayerMatchModel } from '../../models/mongoose';
 import { enrichMultiplayerMatch } from '../../models/schemas/multiplayerMatchSchema';
+import { checkForFinishedMatches } from '../../pages/api/match';
 import { isGameStateRateLimited } from './gameStateRateLimiter';
 import { isRateLimited } from './rateLimiter';
-import { checkForFinishedMatches } from '../../pages/api/match';
-import { broadcastConnectedPlayersDebounced, broadcastCountOfUsersInRoom, broadcastMatchesDebounced, broadcastMatchGameState, broadcastNotifications, broadcastPrivateAndInvitedMatches, scheduleBroadcastMatch } from './socketFunctions';
+import { broadcastConnectedPlayersDebounced, broadcastCountOfUsersInRoom, broadcastMatch, broadcastMatches, broadcastMatchesDebounced, broadcastMatchGameState, broadcastNotifications, broadcastPrivateAndInvitedMatches, scheduleBroadcastMatch } from './socketFunctions';
 
 'use strict';
 
@@ -194,7 +194,24 @@ export default async function startSocketIOServer(server: Server) {
   // is intentionally NOT done on the read path (getAllMatches) anymore; this low-frequency
   // sweep is the backstop that catches any match whose in-memory timer was lost.
   setInterval(() => {
-    checkForFinishedMatches().catch((e) => logger.error('checkForFinishedMatches sweep failed', e));
+    checkForFinishedMatches().then(async finishedMatches => {
+      if (finishedMatches.length === 0) {
+        return;
+      }
+
+      // Players receive the authoritative full match, while broadcastMatch also
+      // sends the privacy-safe terminal ID to lobby clients (including invitees).
+      await Promise.all(finishedMatches.map(match =>
+        broadcastMatch(match.gameId, mongoEmitter, match.matchId)
+      ));
+
+      // A single public-list refresh per affected game removes every swept match.
+      const affectedGameIds = new Set(finishedMatches.map(match => match.gameId));
+
+      await Promise.all(Array.from(affectedGameIds).map(gameId =>
+        broadcastMatches(gameId, mongoEmitter)
+      ));
+    }).catch((e) => logger.error('checkForFinishedMatches sweep failed', e));
   }, 30000);
 
   // eslint-disable-next-line react-hooks/rules-of-hooks

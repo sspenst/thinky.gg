@@ -1,7 +1,9 @@
+import { GameId } from '@root/constants/GameId';
 import TestId from '@root/constants/testId';
 import { logger } from '@root/helpers/logger';
 import dbConnect, { dbDisconnect } from '@root/lib/dbConnect';
 import { getTokenCookieValue } from '@root/lib/getTokenCookie';
+import { UserConfigModel } from '@root/models/mongoose';
 import { GetServerSidePropsContext } from 'next';
 import { Logger } from 'winston';
 import { getServerSideProps } from '../../../pages/[subdomain]/leaderboards/index';
@@ -180,6 +182,42 @@ describe('pages/[subdomain]/leaderboards', () => {
 
       if ((result as any).props.rankedLeaderboard) {
         expect(Array.isArray((result as any).props.rankedLeaderboard)).toBe(true);
+      }
+    });
+
+    test('ranked solve ties are ordered by name', async () => {
+      const tiedUserIds = [TestId.USER_B, TestId.USER_C];
+
+      await UserConfigModel.updateMany({
+        gameId: GameId.PATHOLOGY,
+        userId: { $in: tiedUserIds },
+      }, {
+        $set: { calcRankedSolves: 99 },
+      });
+
+      try {
+        const result = await getServerSideProps({
+          req: mockReq,
+          resolvedUrl: '/leaderboards',
+        } as unknown as GetServerSidePropsContext);
+        const rankedLeaderboard = (result as unknown as {
+          props: {
+            rankedLeaderboard: Array<{
+              config: { calcRankedSolves: number };
+              name: string;
+            }>;
+          };
+        }).props.rankedLeaderboard;
+
+        expect(rankedLeaderboard.slice(0, 2).map(user => user.name)).toEqual(['BBB', 'Curator']);
+        expect(rankedLeaderboard.slice(0, 2).map(user => user.config.calcRankedSolves)).toEqual([99, 99]);
+      } finally {
+        await UserConfigModel.updateMany({
+          gameId: GameId.PATHOLOGY,
+          userId: { $in: tiedUserIds },
+        }, {
+          $set: { calcRankedSolves: 0 },
+        });
       }
     });
 

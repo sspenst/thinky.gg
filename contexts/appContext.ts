@@ -24,7 +24,6 @@ interface AppContextInterface {
   setTempCollection: React.Dispatch<React.SetStateAction<Collection | undefined>>;
   shouldAttemptAuth: boolean;
   showNav: boolean;
-  sounds: Record<string, HTMLAudioElement>;
   tempCollection?: Collection;
   user: ReqUser | undefined | null;
   userConfig: UserConfig | undefined | null;
@@ -54,7 +53,6 @@ export const AppContext = createContext<AppContextInterface>({
   setTempCollection: () => {},
   shouldAttemptAuth: true,
   showNav: true,
-  sounds: {},
   tempCollection: undefined,
   user: undefined,
   userConfig: undefined,

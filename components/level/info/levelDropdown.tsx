@@ -147,7 +147,14 @@ export default function LevelDropdown({ level }: LevelDropdownProps) {
         leaveFrom='transform opacity-100 scale-100'
         leaveTo='transform opacity-0 scale-95'
       >
-        <MenuItems className='absolute right-0 m-1 w-fit origin-top-right rounded-[10px] shadow-lg border z-20 bg-1 border-color-3'>
+        <MenuItems
+          anchor={{
+            gap: 4,
+            padding: 8,
+            to: 'bottom end',
+          }}
+          className='w-fit origin-top-right rounded-[10px] shadow-lg border z-50 bg-1 border-color-3'
+        >
           <div className='px-1 py-1'>
             {user && <>
               <MenuItem>

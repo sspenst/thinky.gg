@@ -1,5 +1,5 @@
 import Direction from '@root/constants/direction';
-import { Types } from 'mongoose';
+import type { Types } from 'mongoose';
 import useSWRHelper from './useSWRHelper';
 
 export const BEST_CHECKPOINT_INDEX = 10;

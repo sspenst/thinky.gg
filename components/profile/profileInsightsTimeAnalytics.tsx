@@ -8,10 +8,10 @@ import utc from 'dayjs/plugin/utc';
 import { Moon, Star, Sun, Sunrise, Sunset } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { TimeFilter } from '../../constants/timeFilter';
 import User from '../../models/db/user';
 import { difficultyList, getDifficultyColor, getDifficultyFromEstimate } from '../formatted/formattedDifficulty';
 import FormattedLevelLink from '../formatted/formattedLevelLink';
-import { TimeFilter } from './profileInsights';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);

@@ -6,10 +6,10 @@ import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
 import { useMemo, useState } from 'react';
 import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { TimeFilter } from '../../constants/timeFilter';
 import User from '../../models/db/user';
 import { difficultyList, getDifficultyColor, getDifficultyFromEstimate } from '../formatted/formattedDifficulty';
 import FormattedLevelLink from '../formatted/formattedLevelLink';
-import { TimeFilter } from './profileInsights';
 import ProfileInsightsRecords from './profileInsightsRecords';
 import ProfileInsightsScoreChart from './profileInsightsScoreChart';
 

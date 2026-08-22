@@ -7,9 +7,9 @@ import utc from 'dayjs/plugin/utc';
 import { useMemo } from 'react';
 import { Area, AreaChart, Bar, BarChart, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import TileType from '../../constants/tileType';
+import { TimeFilter } from '../../constants/timeFilter';
 import User from '../../models/db/user';
 import { difficultyList, getDifficultyFromEstimate } from '../formatted/formattedDifficulty';
-import { TimeFilter } from './profileInsights';
 import ProfileInsightsLevelPlayLog from './profileInsightsLevelPlayLog';
 import ProfileInsightsMostSolves from './profileInsightsMostSolves';
 

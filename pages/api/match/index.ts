@@ -33,9 +33,17 @@ export async function checkForFinishedMatches() {
     },
   ).lean<MultiplayerMatch[]>();
 
+  const finishedMatches: MultiplayerMatch[] = [];
+
   for (const match of matches) {
-    await finishMatch(match);
+    const finishedMatch = await finishMatch(match);
+
+    if (finishedMatch) {
+      finishedMatches.push(finishedMatch);
+    }
   }
+
+  return finishedMatches;
 }
 
 /**

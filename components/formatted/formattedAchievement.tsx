@@ -50,6 +50,8 @@ export default function FormattedAchievement({ achievementType, createdAt, game,
               className='text-xs px-2 py-1 bg-orange-500 text-white rounded-full shrink-0'
               data-tooltip-content='Secret achievement - rare and special!'
               data-tooltip-id={`secret-tooltip-${achievementType}`}
+              data-tooltip-place='bottom'
+              data-tooltip-position-strategy='fixed'
             >
               SECRET
               <StyledTooltip id={`secret-tooltip-${achievementType}`} />
@@ -60,6 +62,8 @@ export default function FormattedAchievement({ achievementType, createdAt, game,
               className='text-xs px-2 py-1 bg-green-500 text-white rounded-full shrink-0'
               data-tooltip-content='You unlocked this achievement'
               data-tooltip-id={`unlocked-tooltip-${achievementType}`}
+              data-tooltip-place='bottom'
+              data-tooltip-position-strategy='fixed'
             >
               ✓ UNLOCKED
               <StyledTooltip id={`unlocked-tooltip-${achievementType}`} />
@@ -75,6 +79,8 @@ export default function FormattedAchievement({ achievementType, createdAt, game,
           className='text-sm line-clamp-2 break-words'
           data-tooltip-content={achievement.tooltip}
           data-tooltip-id={`achievement-description-${achievementType}`}
+          data-tooltip-place='bottom'
+          data-tooltip-position-strategy='fixed'
         >
           {achievement.getDescription(game)}
         </span>

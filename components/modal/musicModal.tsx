@@ -32,57 +32,12 @@ export default function MusicModal({ closeModal, isOpen }: MusicModalProps) {
 
   const togglePlay = () => {
     setIsPlaying(p => !p);
-
-    if (!songMetadata) {
-      return;
-    }
-
-    if (isPlaying) {
-      songMetadata.original?.pause();
-      songMetadata.ambient?.pause();
-      songMetadata.thud?.pause();
-      songMetadata.originalMp3?.pause();
-    } else {
-      songMetadata.original?.play();
-      songMetadata.ambient?.play();
-      songMetadata.originalMp3?.play();
-    }
   };
 
   const onVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newVolume = parseFloat(e.target.value);
 
     setVolume(newVolume);
-
-    if (!songMetadata) {
-      return;
-    }
-
-    if (isHot) {
-      if (songMetadata.original) {
-        songMetadata.original.volume = newVolume;
-      }
-
-      if (songMetadata.ambient) {
-        songMetadata.ambient.volume = 0;
-      }
-    } else {
-      if (songMetadata.ambient) {
-        songMetadata.ambient.volume = newVolume;
-      }
-
-      if (songMetadata.original) {
-        songMetadata.original.volume = 0;
-      }
-    }
-
-    if (songMetadata.thud) {
-      songMetadata.thud.volume = newVolume;
-    }
-
-    if (songMetadata.originalMp3) {
-      songMetadata.originalMp3.volume = newVolume;
-    }
   };
 
   const { deviceInfo } = useContext(AppContext);
@@ -166,8 +121,7 @@ export default function MusicModal({ closeModal, isOpen }: MusicModalProps) {
             ⏮
           </button>
           <button
-            className='px-3 py-1 audio-bar-button disabled:opacity-50'
-            disabled={isSeeking}
+            className='px-3 py-1 audio-bar-button'
             id='btn-audio-player-play'
             onClick={togglePlay}
           >

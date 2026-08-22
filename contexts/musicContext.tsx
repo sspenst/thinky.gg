@@ -48,9 +48,85 @@ interface InitialSongMetadata extends BaseSongMetadata {
 
 interface SongMetadata extends BaseSongMetadata {
   ambient?: HTMLAudioElement;
+  ambientReady?: boolean;
   original?: HTMLAudioElement;
+  originalReady?: boolean;
   originalMp3?: HTMLAudioElement;
   thud?: HTMLAudioElement;
+}
+
+type AudioReadiness = 'failed' | 'ready' | 'timeout';
+type AudioLayer = 'ambient' | 'original' | 'originalMp3' | 'thud';
+type LateAudioReadiness = Exclude<AudioReadiness, 'timeout'>;
+
+export function waitUntilPlayable(
+  audio: HTMLAudioElement,
+  onLateReadiness?: (readiness: LateAudioReadiness) => void,
+) {
+  return new Promise<AudioReadiness>(resolve => {
+    let resolved = false;
+    let listening = true;
+
+    function cleanup() {
+      if (!listening) {
+        return;
+      }
+
+      listening = false;
+      audio.removeEventListener('canplay', handleCanPlay);
+      audio.removeEventListener('error', handleLoadFailure);
+      audio.removeEventListener('abort', handleLoadFailure);
+      clearTimeout(timeout);
+    }
+
+    function finish(readiness: AudioReadiness) {
+      if (!listening) {
+        return;
+      }
+
+      if (readiness === 'timeout') {
+        if (resolved) {
+          return;
+        }
+
+        resolved = true;
+        resolve(readiness);
+
+        return;
+      }
+
+      cleanup();
+
+      if (!resolved) {
+        resolved = true;
+        resolve(readiness);
+
+        return;
+      }
+
+      onLateReadiness?.(readiness);
+    }
+
+    function handleCanPlay() {
+      finish('ready');
+    }
+
+    function handleLoadFailure() {
+      finish('failed');
+    }
+
+    // Release loading controls after 15 seconds, but keep listening so a slow
+    // response can repair readiness (or a late failure can remove the layer).
+    const timeout = setTimeout(() => finish('timeout'), 15000);
+
+    audio.addEventListener('canplay', handleCanPlay);
+    audio.addEventListener('error', handleLoadFailure);
+    audio.addEventListener('abort', handleLoadFailure);
+
+    if (audio.readyState >= HTMLMediaElement.HAVE_FUTURE_DATA) {
+      finish('ready');
+    }
+  });
 }
 
 export const songs = [
@@ -146,20 +222,160 @@ export const songs = [
   },
 ] as InitialSongMetadata[];
 
+function createSongMetadata(index: number): SongMetadata {
+  const song = songs[index];
+
+  return {
+    artist: song.artist,
+    artistHref: song.artistHref,
+    title: song.title,
+  };
+}
+
+function forEachAudio(songMetadata: SongMetadata | undefined, callback: (audio: HTMLAudioElement) => void) {
+  if (!songMetadata) {
+    return;
+  }
+
+  [
+    songMetadata.original,
+    songMetadata.ambient,
+    songMetadata.thud,
+    songMetadata.originalMp3,
+  ].forEach(audio => {
+    if (audio) {
+      callback(audio);
+    }
+  });
+}
+
+function pauseSong(songMetadata: SongMetadata | undefined) {
+  forEachAudio(songMetadata, audio => audio.pause());
+}
+
+function setSongVolumes(songMetadata: SongMetadata | undefined, playOriginal: boolean, volume: number) {
+  if (!songMetadata) {
+    return;
+  }
+
+  const onlyAmbientIsReady = songMetadata.ambientReady === true && songMetadata.originalReady === false;
+  const onlyOriginalIsReady = songMetadata.originalReady === true && songMetadata.ambientReady === false;
+
+  if (songMetadata.original) {
+    songMetadata.original.volume = onlyOriginalIsReady || (!onlyAmbientIsReady && (!songMetadata.ambient || playOriginal))
+      ? volume
+      : 0;
+  }
+
+  if (songMetadata.ambient) {
+    songMetadata.ambient.volume = onlyAmbientIsReady || (!onlyOriginalIsReady && (!songMetadata.original || !playOriginal))
+      ? volume
+      : 0;
+  }
+
+  if (songMetadata.thud) {
+    songMetadata.thud.volume = volume;
+  }
+
+  if (songMetadata.originalMp3) {
+    songMetadata.originalMp3.volume = volume;
+  }
+}
+
+async function playAudio(audio: HTMLAudioElement | undefined) {
+  if (!audio) {
+    return false;
+  }
+
+  try {
+    await audio.play();
+
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function playSong(songMetadata: SongMetadata | undefined) {
+  const playbackResults = await Promise.all([
+    playAudio(songMetadata?.original),
+    playAudio(songMetadata?.ambient),
+    playAudio(songMetadata?.originalMp3),
+  ]);
+
+  return playbackResults.some(Boolean);
+}
+
+function removeAudio(audio: HTMLAudioElement) {
+  audio.pause();
+  audio.removeAttribute('src');
+  audio.load();
+  audio.remove();
+}
+
+function removeSong(songMetadata: SongMetadata | undefined) {
+  forEachAudio(songMetadata, removeAudio);
+}
+
+function hasPlayableAudio(songMetadata: SongMetadata | undefined) {
+  return Boolean(
+    songMetadata?.original ||
+    songMetadata?.ambient ||
+    songMetadata?.originalMp3
+  );
+}
+
+export interface PlaylistEndSources {
+  ambient?: HTMLAudioElement;
+  ambientReady?: boolean;
+  original?: HTMLAudioElement;
+  originalMp3?: HTMLAudioElement;
+  originalReady?: boolean;
+}
+
+export function getPlaylistEndSources(songMetadata: PlaylistEndSources | undefined) {
+  if (!songMetadata) {
+    return [];
+  }
+
+  if (songMetadata.originalMp3) {
+    return [songMetadata.originalMp3];
+  }
+
+  const readySources = [
+    songMetadata.originalReady === true ? songMetadata.original : undefined,
+    songMetadata.ambientReady === true ? songMetadata.ambient : undefined,
+  ].filter((audio): audio is HTMLAudioElement => Boolean(audio));
+
+  if (readySources.length > 0) {
+    return readySources;
+  }
+
+  return [songMetadata.original, songMetadata.ambient]
+    .filter((audio): audio is HTMLAudioElement => Boolean(audio));
+}
+
 export default function MusicContextProvider({ children }: { children: React.ReactNode }) {
+  const activeLoadRef = useRef(0);
+  const activeSongRef = useRef<SongMetadata | undefined>(undefined);
+  const endedLoadRef = useRef<number | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const playbackAttemptRef = useRef(0);
+  const readyLoadRef = useRef<number | null>(null);
   const [isDynamic, setIsDynamic] = useState(true);
   // dynamic audio uses 3 ogg audio layers
   // non-dynamic only uses mp3 originals (safari/ios)
   const [isDynamicSupported, setIsDynamicSupported] = useState(false);
-  const [isHot, setIsHot] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [isHot, setIsHotState] = useState(false);
+  const isHotRef = useRef(false);
+  const [isPlaying, setIsPlayingState] = useState(false);
+  const isPlayingRef = useRef(false);
   const [isSeeking, setIsSeeking] = useState(false);
   const [isToggling, setIsToggling] = useState(false);
-  const [mounted, setMounted] = useState(false);
   const [songIndex, setSongIndex] = useState(0);
-  const [songMetadata, setSongMetdata] = useState<SongMetadata>();
-  const [volume, setVolume] = useState(0.66);
+  const [songMetadata, setSongMetadata] = useState<SongMetadata>(() => createSongMetadata(0));
+  const [volume, setVolumeState] = useState(0.66);
+  const volumeRef = useRef(0.66);
 
   useEffect(() => {
     const audio = new Audio();
@@ -195,17 +411,26 @@ export default function MusicContextProvider({ children }: { children: React.Rea
       hot = true;
     }
 
-    setIsHot(hot);
+    isHotRef.current = hot;
+    setIsHotState(hot);
 
     if (lsIndex !== null) {
-      setSongIndex(parseInt(lsIndex));
+      const storedIndex = Number.parseInt(lsIndex, 10);
+
+      if (storedIndex >= 0 && storedIndex < songs.length) {
+        setSongIndex(storedIndex);
+        setSongMetadata(createSongMetadata(storedIndex));
+      }
     }
 
     if (lsVolume !== null) {
-      setVolume(parseFloat(lsVolume));
-    }
+      const storedVolume = Number.parseFloat(lsVolume);
 
-    setMounted(true);
+      if (Number.isFinite(storedVolume)) {
+        volumeRef.current = storedVolume;
+        setVolumeState(storedVolume);
+      }
+    }
   }, []);
 
   useEffect(() => {
@@ -224,136 +449,248 @@ export default function MusicContextProvider({ children }: { children: React.Rea
     localStorage.setItem('musicVolume', volume.toString());
   }, [volume]);
 
-  const seekByIndex = useCallback((index: number, playOriginal = isHot) => {
+  const setVolume = useCallback<React.Dispatch<React.SetStateAction<number>>>((value) => {
+    const newVolume = typeof value === 'function' ? value(volumeRef.current) : value;
+
+    volumeRef.current = newVolume;
+    setVolumeState(newVolume);
+    setSongVolumes(activeSongRef.current, isHotRef.current, newVolume);
+  }, []);
+
+  const playSongAndRecover = useCallback((metadata: SongMetadata | undefined) => {
+    const playbackAttempt = playbackAttemptRef.current + 1;
+
+    playbackAttemptRef.current = playbackAttempt;
+
+    void playSong(metadata).then(didPlay => {
+      if (
+        didPlay ||
+        playbackAttemptRef.current !== playbackAttempt ||
+        !isPlayingRef.current
+      ) {
+        return;
+      }
+
+      isPlayingRef.current = false;
+      setIsPlayingState(false);
+      pauseSong(metadata);
+    });
+  }, []);
+
+  const seekByIndex = useCallback((index: number, playOriginal = isHotRef.current, shouldPlay = isPlayingRef.current) => {
     // must be a valid index
     if (index < 0 || index >= songs.length) {
       index = 0;
     }
 
+    const loadId = activeLoadRef.current + 1;
+
+    activeLoadRef.current = loadId;
+    endedLoadRef.current = null;
+    readyLoadRef.current = null;
     setIsSeeking(true);
+    setSongIndex(index);
+
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+
+    setIsToggling(false);
+
+    removeSong(activeSongRef.current);
+    activeSongRef.current = undefined;
 
     const loadAudioFiles = async () => {
-      function canPlayThrough(audio: HTMLAudioElement) {
-        return new Promise(resolve => {
-          function handleCanPlayThrough() {
-            audio.removeEventListener('error', handleError);
-            resolve(true);
-          }
-
-          function handleError() {
-            audio.removeEventListener('canplaythrough', handleCanPlayThrough);
-            resolve(false);
-          }
-
-          audio.addEventListener('canplaythrough', handleCanPlayThrough, { once: true });
-          audio.addEventListener('error', handleError, { once: true });
-        });
-      }
-
-      setSongIndex(index);
-
       const song = songs[index];
-      const newSongMetadata: SongMetadata = {
-        artist: song.artist,
-        artistHref: song.artistHref,
-        title: song.title,
+      const newSongMetadata = createSongMetadata(index);
+      let versionReady = false;
+
+      const handleLateReadiness = (
+        layer: AudioLayer,
+        audio: HTMLAudioElement,
+        readiness: LateAudioReadiness,
+      ) => {
+        if (
+          activeLoadRef.current !== loadId ||
+          activeSongRef.current !== newSongMetadata ||
+          newSongMetadata[layer] !== audio
+        ) {
+          return;
+        }
+
+        if (layer === 'ambient') {
+          newSongMetadata.ambientReady = readiness === 'ready';
+        } else if (layer === 'original') {
+          newSongMetadata.originalReady = readiness === 'ready';
+        }
+
+        if (readiness === 'failed') {
+          newSongMetadata[layer] = undefined;
+          removeAudio(audio);
+        }
+
+        setSongVolumes(newSongMetadata, isHotRef.current, volumeRef.current);
+        readyLoadRef.current = newSongMetadata.ambientReady && newSongMetadata.originalReady
+          ? loadId
+          : null;
+        setSongMetadata({ ...newSongMetadata });
+
+        if (isPlayingRef.current && !hasPlayableAudio(newSongMetadata)) {
+          playbackAttemptRef.current += 1;
+          isPlayingRef.current = false;
+          setIsPlayingState(false);
+        }
       };
 
       if (isDynamicSupported) {
-        const ambient = new Audio(song.ambient);
-        const original = new Audio(song.original);
-        const thud = new Audio(song.thud);
+        const ambient = new Audio();
+        const original = new Audio();
+        const thud = new Audio();
 
         ambient.preload = 'auto';
         original.preload = 'auto';
         thud.preload = 'auto';
 
+        ambient.src = song.ambient;
+        original.src = song.original;
+        thud.src = song.thud;
+
+        newSongMetadata.ambient = ambient;
+        newSongMetadata.original = original;
+        newSongMetadata.thud = thud;
+        setSongVolumes(newSongMetadata, playOriginal, volumeRef.current);
+
+        activeSongRef.current = newSongMetadata;
+        setSongMetadata(newSongMetadata);
+
+        const readiness = [
+          waitUntilPlayable(ambient, result => handleLateReadiness('ambient', ambient, result)),
+          waitUntilPlayable(original, result => handleLateReadiness('original', original, result)),
+          waitUntilPlayable(thud, result => handleLateReadiness('thud', thud, result)),
+        ];
+
         ambient.load();
         original.load();
         thud.load();
 
-        const [canPlayAmbient, canPlayOriginal, canPlayThud] = await Promise.all([
-          canPlayThrough(ambient),
-          canPlayThrough(original),
-          canPlayThrough(thud),
-        ]);
-
-        if (canPlayAmbient) {
-          newSongMetadata.ambient = ambient;
+        if (shouldPlay) {
+          playSongAndRecover(newSongMetadata);
         }
 
-        if (canPlayOriginal) {
-          newSongMetadata.original = original;
+        const [ambientReadiness, originalReadiness, thudReadiness] = await Promise.all(readiness);
+
+        newSongMetadata.ambientReady = ambientReadiness === 'ready';
+        newSongMetadata.originalReady = originalReadiness === 'ready';
+
+        if (ambientReadiness === 'failed') {
+          newSongMetadata.ambient = undefined;
+          removeAudio(ambient);
         }
 
-        if (canPlayThud) {
-          newSongMetadata.thud = thud;
+        if (originalReadiness === 'failed') {
+          newSongMetadata.original = undefined;
+          removeAudio(original);
         }
+
+        if (thudReadiness === 'failed') {
+          newSongMetadata.thud = undefined;
+          removeAudio(thud);
+        }
+
+        versionReady = ambientReadiness === 'ready' && originalReadiness === 'ready';
+        setSongVolumes(newSongMetadata, isHotRef.current, volumeRef.current);
       } else {
-        const originalMp3 = new Audio(song.originalMp3);
+        const originalMp3 = new Audio();
 
         originalMp3.preload = 'auto';
+        originalMp3.src = song.originalMp3;
+        originalMp3.volume = volumeRef.current;
+
+        newSongMetadata.originalMp3 = originalMp3;
+        activeSongRef.current = newSongMetadata;
+        setSongMetadata(newSongMetadata);
+
+        const readiness = waitUntilPlayable(
+          originalMp3,
+          result => handleLateReadiness('originalMp3', originalMp3, result),
+        );
+
         originalMp3.load();
 
-        const canPlayOriginalMp3 = await canPlayThrough(originalMp3);
+        if (shouldPlay) {
+          playSongAndRecover(newSongMetadata);
+        }
 
-        if (canPlayOriginalMp3) {
-          newSongMetadata.originalMp3 = originalMp3;
+        if (await readiness === 'failed') {
+          newSongMetadata.originalMp3 = undefined;
+          removeAudio(originalMp3);
         }
       }
 
-      return newSongMetadata;
+      return { newSongMetadata, versionReady };
     };
 
-    // call the async load function and set the state after all audio files are loaded
-    loadAudioFiles().then(newSongMetadata => {
-      setSongMetdata(prevSongMetadata => {
-        // ensure existing song is cleaned up
-        if (prevSongMetadata) {
-          prevSongMetadata.original?.pause();
-          prevSongMetadata.original?.remove();
+    // Loading only starts after an explicit playback or seek action.
+    loadAudioFiles().then(({ newSongMetadata, versionReady }) => {
+      if (activeLoadRef.current !== loadId) {
+        removeSong(newSongMetadata);
 
-          prevSongMetadata.ambient?.pause();
-          prevSongMetadata.ambient?.remove();
+        return;
+      }
 
-          prevSongMetadata.thud?.pause();
-          prevSongMetadata.thud?.remove();
+      activeSongRef.current = newSongMetadata;
+      readyLoadRef.current = versionReady ? loadId : null;
+      setSongMetadata({ ...newSongMetadata });
+      setIsSeeking(false);
 
-          prevSongMetadata.originalMp3?.pause();
-          prevSongMetadata.originalMp3?.remove();
-        }
+      if (isPlayingRef.current && !hasPlayableAudio(newSongMetadata)) {
+        playbackAttemptRef.current += 1;
+        isPlayingRef.current = false;
+        setIsPlayingState(false);
+      }
+    }).catch(error => {
+      if (activeLoadRef.current !== loadId) {
+        return;
+      }
 
-        // set volume for new audio
-        if (newSongMetadata.original) {
-          newSongMetadata.original.volume = playOriginal ? volume : 0;
-        }
-
-        if (newSongMetadata.ambient) {
-          newSongMetadata.ambient.volume = playOriginal ? 0 : volume;
-        }
-
-        if (newSongMetadata.thud) {
-          newSongMetadata.thud.volume = volume;
-        }
-
-        if (newSongMetadata.originalMp3) {
-          newSongMetadata.originalMp3.volume = volume;
-        }
-
-        if (isPlaying) {
-          newSongMetadata.original?.play();
-          newSongMetadata.ambient?.play();
-          newSongMetadata.originalMp3?.play();
-        }
-
-        setIsSeeking(false);
-
-        return newSongMetadata;
-      });
+      playbackAttemptRef.current += 1;
+      readyLoadRef.current = null;
+      removeSong(activeSongRef.current);
+      activeSongRef.current = undefined;
+      isPlayingRef.current = false;
+      setIsPlayingState(false);
+      setIsSeeking(false);
+      setSongMetadata(createSongMetadata(index));
+      console.error('Failed to load music:', error);
     });
-  }, [isDynamicSupported, isHot, isPlaying, volume]);
+  }, [isDynamicSupported, playSongAndRecover]);
 
-  const seek = useCallback((offset: number, playOriginal = isHot) => {
+  const setIsPlaying = useCallback<React.Dispatch<React.SetStateAction<boolean>>>((value) => {
+    const nextIsPlaying = typeof value === 'function' ? value(isPlayingRef.current) : value;
+
+    if (nextIsPlaying === isPlayingRef.current) {
+      return;
+    }
+
+    isPlayingRef.current = nextIsPlaying;
+    setIsPlayingState(nextIsPlaying);
+
+    if (!nextIsPlaying) {
+      playbackAttemptRef.current += 1;
+      pauseSong(activeSongRef.current);
+
+      return;
+    }
+
+    if (hasPlayableAudio(activeSongRef.current)) {
+      playSongAndRecover(activeSongRef.current);
+    } else {
+      seekByIndex(songIndex, isHotRef.current, true);
+    }
+  }, [playSongAndRecover, seekByIndex, songIndex]);
+
+  const seek = useCallback((offset: number, playOriginal = isHotRef.current) => {
     // add songs.length to account for negative offset
     let positiveOffset = offset + songs.length;
 
@@ -364,15 +701,23 @@ export default function MusicContextProvider({ children }: { children: React.Rea
     const newSongIndex = (songIndex + positiveOffset) % songs.length;
 
     seekByIndex(newSongIndex, playOriginal);
-  }, [isHot, seekByIndex, songIndex]);
+  }, [seekByIndex, songIndex]);
 
-  // after loading data from localStorage we can initialize the starting song
   useEffect(() => {
-    if (mounted) {
-      seekByIndex(songIndex);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mounted]);
+    return () => {
+      activeLoadRef.current += 1;
+      playbackAttemptRef.current += 1;
+      readyLoadRef.current = null;
+      const activeSong = activeSongRef.current;
+
+      activeSongRef.current = undefined;
+      removeSong(activeSong);
+
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, []);
 
   // NB: separate useEffect for next because seek needs to be called outside of the seek function
   useEffect(() => {
@@ -380,7 +725,16 @@ export default function MusicContextProvider({ children }: { children: React.Rea
       return;
     }
 
+    const loadId = activeLoadRef.current;
+    const endSources = getPlaylistEndSources(songMetadata);
+
     const next = () => {
+      if (activeLoadRef.current !== loadId || endedLoadRef.current === loadId) {
+        return;
+      }
+
+      endedLoadRef.current = loadId;
+
       if (isDynamic) {
         seek(1, false);
       } else {
@@ -388,25 +742,23 @@ export default function MusicContextProvider({ children }: { children: React.Rea
       }
     };
 
-    songMetadata.original?.addEventListener('ended', next);
-    songMetadata.originalMp3?.addEventListener('ended', next);
+    endSources.forEach(endSource => endSource.addEventListener('ended', next));
 
     return () => {
-      songMetadata.original?.removeEventListener('ended', next);
-      songMetadata.originalMp3?.removeEventListener('ended', next);
+      endSources.forEach(endSource => endSource.removeEventListener('ended', next));
     };
   }, [isDynamic, seek, songMetadata]);
 
   const toggleVersion = useCallback((command: 'hot' | 'cold' | 'switch' = 'switch') => {
-    if (command === 'hot' && isHot) {
+    if (command === 'hot' && isHotRef.current) {
       return;
     }
 
-    if (command === 'cold' && !isHot) {
+    if (command === 'cold' && !isHotRef.current) {
       return;
     }
 
-    if (intervalRef.current) {
+    if (intervalRef.current || isToggling) {
       return;
     }
 
@@ -414,70 +766,121 @@ export default function MusicContextProvider({ children }: { children: React.Rea
       return;
     }
 
-    const transitionToOriginal = !isHot;
+    const transitionToOriginal = !isHotRef.current;
+    const activeMetadata = activeSongRef.current;
+    const loadId = activeLoadRef.current;
 
-    setIsHot(transitionToOriginal);
+    // Hot/cold is a durable preference, even when the current media cannot
+    // crossfade. A later readiness update or seek applies the latest choice.
+    isHotRef.current = transitionToOriginal;
+    setIsHotState(transitionToOriginal);
 
-    if (!isPlaying || !songMetadata?.original || !songMetadata.ambient) {
+    if (!isPlayingRef.current) {
+      setSongVolumes(activeMetadata, transitionToOriginal, volumeRef.current);
+
       return;
     }
 
-    setIsToggling(true);
+    if (
+      isSeeking ||
+      readyLoadRef.current !== loadId ||
+      !activeMetadata?.original ||
+      !activeMetadata.ambient
+    ) {
+      setSongVolumes(activeMetadata, transitionToOriginal, volumeRef.current);
 
-    // play thud sound when changing to original
-    if (transitionToOriginal) {
-      songMetadata.original.currentTime = songMetadata.ambient.currentTime;
-      songMetadata.original.play();
-
-      if (songMetadata.thud) {
-        songMetadata.thud.currentTime = 0;
-        songMetadata.thud.play();
-      }
-    } else {
-      songMetadata.ambient.currentTime = songMetadata.original.currentTime;
-      songMetadata.ambient.play();
+      return;
     }
 
-    const duration = 1000; // crossfade duration in ms
-    const interval = 100; // interval in ms
-    const startOriginalVol = songMetadata.original.volume;
-    const startAmbientVol = songMetadata.ambient.volume;
-    let progress = 0;
+    const original = activeMetadata.original;
+    const ambient = activeMetadata.ambient;
+    const target = transitionToOriginal ? original : ambient;
 
-    intervalRef.current = setInterval(() => {
-      progress += interval / duration;
+    target.currentTime = transitionToOriginal ? ambient.currentTime : original.currentTime;
+    setIsToggling(true);
 
-      if (!songMetadata.original || !songMetadata.ambient) {
+    void playAudio(target).then(didPlay => {
+      if (activeLoadRef.current !== loadId || activeSongRef.current !== activeMetadata) {
         return;
       }
 
-      if (!transitionToOriginal) {
-        // Crossfade to ambient version
-        songMetadata.original.volume = Math.max(0, startOriginalVol * (1 - progress));
-        songMetadata.ambient.volume = Math.min(volume, startAmbientVol + (1 - startAmbientVol) * progress);
-      } else {
-        // Crossfade to original version
-        songMetadata.original.volume = Math.min(volume, startOriginalVol + (1 - startOriginalVol) * progress);
-        songMetadata.ambient.volume = Math.max(0, startAmbientVol * (1 - progress));
+      if (!isPlayingRef.current) {
+        target.pause();
+        setIsToggling(false);
+
+        return;
       }
 
-      if (progress >= 1) {
-        clearInterval(intervalRef.current!);
-        // set volumes to exact values
-        songMetadata.original.volume = !transitionToOriginal ? 0 : volume;
-        songMetadata.ambient.volume = !transitionToOriginal ? volume : 0;
+      if (!didPlay) {
+        setIsToggling(false);
 
-        if (transitionToOriginal) {
-          songMetadata.ambient.pause();
-        } else {
-          songMetadata.original.pause();
+        return;
+      }
+
+      if (transitionToOriginal && activeMetadata.thud) {
+        activeMetadata.thud.currentTime = 0;
+        void playAudio(activeMetadata.thud);
+      }
+
+      const duration = 1000; // crossfade duration in ms
+      const interval = 100; // interval in ms
+      const startOriginalVol = original.volume;
+      const startAmbientVol = ambient.volume;
+      let progress = 0;
+
+      const intervalId = setInterval(() => {
+        progress += interval / duration;
+
+        if (
+          activeLoadRef.current !== loadId ||
+          activeSongRef.current !== activeMetadata ||
+          !activeMetadata.original ||
+          !activeMetadata.ambient
+        ) {
+          clearInterval(intervalId);
+
+          if (intervalRef.current === intervalId) {
+            intervalRef.current = null;
+          }
+
+          setIsToggling(false);
+
+          return;
         }
 
-        intervalRef.current = null;
-        setIsToggling(false);
-      }
-    }, interval);
-  }, [isDynamicSupported, isHot, isPlaying, setIsHot, songMetadata, volume]);
+        if (!transitionToOriginal) {
+          // Crossfade to ambient version
+          original.volume = Math.max(0, startOriginalVol * (1 - progress));
+          ambient.volume = Math.min(volumeRef.current, startAmbientVol + (1 - startAmbientVol) * progress);
+        } else {
+          // Crossfade to original version
+          original.volume = Math.min(volumeRef.current, startOriginalVol + (1 - startOriginalVol) * progress);
+          ambient.volume = Math.max(0, startAmbientVol * (1 - progress));
+        }
+
+        if (progress >= 1) {
+          clearInterval(intervalId);
+          // set volumes to exact values
+          original.volume = !transitionToOriginal ? 0 : volumeRef.current;
+          ambient.volume = !transitionToOriginal ? volumeRef.current : 0;
+
+          if (transitionToOriginal) {
+            ambient.pause();
+          } else {
+            original.pause();
+          }
+
+          if (intervalRef.current === intervalId) {
+            intervalRef.current = null;
+          }
+
+          setIsToggling(false);
+        }
+      }, interval);
+
+      intervalRef.current = intervalId;
+    });
+  }, [isDynamicSupported, isSeeking, isToggling]);
 
   return (
     <MusicContext.Provider value={{

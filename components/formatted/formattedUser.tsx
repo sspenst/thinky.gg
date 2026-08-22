@@ -35,6 +35,11 @@ interface CacheEntry {
   timestamp: number;
 }
 
+interface UserExtendedDataState {
+  cacheKey: string;
+  data: UserExtendedData;
+}
+
 const cache = {} as Record<string, CacheEntry>;
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 const MAX_CACHE_SIZE = 100;
@@ -60,26 +65,36 @@ const cleanupCache = () => {
 export default function FormattedUser({ className, hideAvatar, id, noLinks, noTooltip, onClick, size = Dimensions.AvatarSize, user }: FormattedUserProps) {
   const { game } = useContext(AppContext);
   const [showTooltip, setShowTooltip] = useState(false);
-  const [userExtendedData, setUserExtendedData] = useState<UserExtendedData>();
+  const [userExtendedDataState, setUserExtendedDataState] = useState<UserExtendedDataState>();
   const setTimer = useRef<NodeJS.Timeout | null>(null);
+  const userId = user?._id?.toString();
+  const cacheKey = userId ? `${game.id}:${userId}` : undefined;
+  const userExtendedData = userExtendedDataState && userExtendedDataState.cacheKey === cacheKey
+    ? userExtendedDataState.data
+    : undefined;
 
   useEffect(() => {
-    if (!showTooltip || !user || userExtendedData) {
+    if (!showTooltip || !user || !userId || !cacheKey || userExtendedData) {
       return;
     }
 
-    const userId = user._id.toString();
-    const cacheEntry = cache[userId];
+    const cacheEntry = cache[cacheKey];
 
     if (cacheEntry && Date.now() - cacheEntry.timestamp < CACHE_TTL) {
-      setUserExtendedData(cacheEntry.data);
+      setUserExtendedDataState({ cacheKey, data: cacheEntry.data });
 
       return;
     }
 
     const fetchUserData = async () => {
       try {
-        const res = await fetch(`/api/user/${userId}?type=${Object.values(ProfileQueryType).join(',')}`);
+        const profileQueryTypes: ProfileQueryType[] = [ProfileQueryType.User];
+
+        if (!game.isNotAGame) {
+          profileQueryTypes.push(ProfileQueryType.LevelsSolvedByDifficulty);
+        }
+
+        const res = await fetch(`/api/user/${userId}?type=${profileQueryTypes.join(',')}`);
 
         if (!res.ok) {
           console.error(`Failed to fetch user data: ${res.status} ${res.statusText}`);
@@ -89,8 +104,8 @@ export default function FormattedUser({ className, hideAvatar, id, noLinks, noTo
 
         const data = await res.json() as UserExtendedData;
 
-        setUserExtendedData(data);
-        cache[userId] = { data, timestamp: Date.now() };
+        setUserExtendedDataState({ cacheKey, data });
+        cache[cacheKey] = { data, timestamp: Date.now() };
 
         cleanupCache();
       } catch (error) {
@@ -99,7 +114,7 @@ export default function FormattedUser({ className, hideAvatar, id, noLinks, noTo
     };
 
     fetchUserData();
-  }, [showTooltip, user, userExtendedData]);
+  }, [cacheKey, game.isNotAGame, showTooltip, user, userExtendedData, userId]);
 
   const handleMouseOut = useCallback(() => {
     if (setTimer.current) {

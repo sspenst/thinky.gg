@@ -28,16 +28,18 @@ const saveSessionHashToStorage = (sessionHash: string): void => {
   }
 };
 
-const OpenReplayWrapper = () => {
+export interface OpenReplayWrapperProps {
+  isEligible: boolean;
+}
+
+const OpenReplayWrapper = ({ isEligible }: OpenReplayWrapperProps) => {
   const { user } = useContext(AppContext);
   const router = useRouter();
   const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const shouldReplaySession = window.localStorage.getItem('utm_source') !== null;
-
-      if (shouldReplaySession && !globalTracker && !isInitialized) {
+    if (isEligible) {
+      if (!globalTracker && !isInitialized) {
         let isMounted = true; // Prevent race conditions
 
         try {
@@ -103,7 +105,7 @@ const OpenReplayWrapper = () => {
         setIsInitialized(true);
       }
     }
-  }, [isInitialized]);
+  }, [isEligible, isInitialized]);
 
   // Handle Next.js router events to ensure continuous tracking
   useEffect(() => {

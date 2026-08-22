@@ -6,6 +6,7 @@ import { getGameFromId, getGameIdFromReq } from '@root/helpers/getGameIdFromReq'
 import isPro from '@root/helpers/isPro';
 import { LEVEL_SEARCH_DEFAULT_PROJECTION, USER_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import { CacheTag } from '@root/models/db/cache';
+import { createHash } from 'crypto';
 import { Aggregate, FilterQuery, PipelineStage, Types } from 'mongoose';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getDifficultyRangeFromName } from '../../../components/formatted/formattedDifficulty';
@@ -113,21 +114,45 @@ export interface SearchResult {
   totalRows: number;
 }
 
-function generateCacheKey(gameId: GameId, query: SearchQuery): string {
+function canonicalizeCacheValue(value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return value.map(canonicalizeCacheValue);
+  }
+
+  if (value !== null && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value as Record<string, unknown>)
+        .sort(([keyA], [keyB]) => keyA.localeCompare(keyB))
+        .map(([key, nestedValue]) => [key, canonicalizeCacheValue(nestedValue)])
+    );
+  }
+
+  return value;
+}
+
+export function generateSearchCacheKey(
+  gameId: GameId,
+  query: SearchQuery,
+  projection: Record<string, unknown>,
+  requesterId?: string,
+  requesterIsPro = false,
+): string {
   // Clone query and remove fields that shouldn't affect caching
   const queryForCache = { ...query };
 
-  delete queryForCache.userId; // Remove userId since we pass it separately
-  delete queryForCache.subdomain; // Remove token since it's used to derive userId
+  delete queryForCache.userId;
+  delete queryForCache.subdomain;
 
   const cacheParams = {
-    gameId,
     ...queryForCache,
-    // userId is NOT included because user-specific enrichment happens in a separate query
-    // searchObj, sortObj, skip, limit, byStat are all derived from gameId and query
+    gameId,
+    projection,
+    requester: requesterId ? { id: requesterId, isPro: requesterIsPro } : null,
   };
 
-  return JSON.stringify(cacheParams);
+  const canonicalCacheParams = JSON.stringify(canonicalizeCacheValue(cacheParams));
+
+  return createHash('sha256').update(canonicalCacheParams).digest('hex');
 }
 
 /**
@@ -517,15 +542,25 @@ export async function doQuery(gameId: GameId | undefined, query: SearchQuery, re
   ] : [];
 
   try {
-    // Determine if we should skip cache for user-specific queries or if explicitly requested
-    const shouldSkipCache = skipCache || (query.statFilter && query.statFilter !== StatFilter.All);
+    // Authenticated results depend on the requester's mutable block graph, while
+    // stat-filtered and by-stat results depend on frequently changing stats.
+    const shouldSkipCache = Boolean(
+      skipCache || reqUser || byStat || (query.statFilter && query.statFilter !== StatFilter.All)
+    );
 
     // Create a cache key based on the search parameters
     const cacheGameId = gameId ?? GameId.THINKY;
-    const cacheKey = generateCacheKey(cacheGameId, query);
+    const cacheKey = generateSearchCacheKey(
+      cacheGameId,
+      query,
+      projection,
+      userId?.toString(),
+      isPro(reqUser),
+    );
+    const cacheFilter = { key: cacheKey, gameId: cacheGameId };
 
     // Try to get from cache first (unless we should skip cache)
-    const cachedResult = !shouldSkipCache ? await CacheModel.findOne({ key: cacheKey, gameId: cacheGameId }) : null;
+    const cachedResult = !shouldSkipCache ? await CacheModel.findOne(cacheFilter) : null;
     let res;
 
     if (cachedResult) {
@@ -690,17 +725,17 @@ export async function doQuery(gameId: GameId | undefined, query: SearchQuery, re
 
       res = (await agg)[0];
 
-      // Cache the result with 5 second expiration (unless we should skip cache)
+      // Cache the result with a 5 minute expiration (unless we should skip cache)
       if (!shouldSkipCache) {
         const now = new Date();
 
         await CacheModel.findOneAndUpdate(
-          { key: cacheKey },
+          cacheFilter,
           {
             key: cacheKey,
             value: res,
             tag: CacheTag.SEARCH_API,
-            ...(parseThinkyGameId(gameId) ? { gameId: gameId } : {}),
+            gameId: cacheGameId,
             createdAt: now,
             expireAt: new Date(now.getTime() + 5 * 60 * 1000), // 5 minutes
           },

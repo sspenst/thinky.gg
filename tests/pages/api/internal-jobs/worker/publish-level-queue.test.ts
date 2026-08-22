@@ -1,8 +1,9 @@
-import { DEFAULT_GAME_ID } from '@root/constants/GameId';
+import { DEFAULT_GAME_ID, GameId } from '@root/constants/GameId';
 import TestId from '@root/constants/testId';
 import { TimerUtil } from '@root/helpers/getTs';
 import dbConnect, { dbDisconnect } from '@root/lib/dbConnect';
-import { LevelModel, QueueMessageModel, RecordModel, StatModel, UserConfigModel } from '@root/models/mongoose';
+import { CacheTag } from '@root/models/db/cache';
+import { CacheModel, LevelModel, QueueMessageModel, RecordModel, StatModel, UserConfigModel } from '@root/models/mongoose';
 import { QueueMessageState, QueueMessageType } from '@root/models/schemas/queueMessageSchema';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import MockDate from 'mockdate';
@@ -29,6 +30,18 @@ describe('PUBLISH_LEVEL queue worker', () => {
     const testLevelId = new Types.ObjectId();
     const queueMessageId = new Types.ObjectId();
     const testUserId = new Types.ObjectId(TestId.USER_PRO);
+    const unaffectedGameId = DEFAULT_GAME_ID === GameId.PATHOLOGY ? GameId.SOKOPATH : GameId.PATHOLOGY;
+    const cacheKeys = {
+      aggregate: `publish-aggregate-${testLevelId}`,
+      game: `publish-game-${testLevelId}`,
+      unaffected: `publish-unaffected-${testLevelId}`,
+    };
+
+    await CacheModel.insertMany([
+      { key: cacheKeys.aggregate, value: {}, tag: CacheTag.SEARCH_API, gameId: GameId.THINKY, expireAt: new Date(Date.now() + 60000) },
+      { key: cacheKeys.game, value: {}, tag: CacheTag.SEARCH_API, gameId: DEFAULT_GAME_ID, expireAt: new Date(Date.now() + 60000) },
+      { key: cacheKeys.unaffected, value: {}, tag: CacheTag.SEARCH_API, gameId: unaffectedGameId, expireAt: new Date(Date.now() + 60000) },
+    ]);
 
     // Create a draft level
     await LevelModel.create({
@@ -94,6 +107,13 @@ describe('PUBLISH_LEVEL queue worker', () => {
     expect(userStat).toBeTruthy();
     expect(userStat.moves).toBe(10);
     expect(userStat.complete).toBe(true);
+
+    const remainingCacheKeys = await CacheModel.find({
+      key: { $in: Object.values(cacheKeys) },
+    }).distinct('key');
+
+    expect(remainingCacheKeys).toEqual([cacheKeys.unaffected]);
+    await CacheModel.deleteOne({ key: cacheKeys.unaffected });
   });
 
   test('should fail to publish level that does not exist', async () => {

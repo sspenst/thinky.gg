@@ -1,7 +1,7 @@
 import { skillRequirements } from '@root/constants/achievements/AchievementRulesSkill';
+import { ProfileTab } from '@root/constants/profileTab';
 import { getDifficultyRollingSum } from '@root/helpers/playerRankHelper';
 import User from '@root/models/db/user';
-import { ProfileTab } from '@root/pages/[subdomain]/profile/[name]/[[...tab]]';
 import Link from 'next/link';
 import FormattedDifficulty, { difficultyList } from '../formatted/formattedDifficulty';
 

@@ -3,6 +3,7 @@ import { Types } from 'mongoose';
 import { GetServerSidePropsContext } from 'next';
 import { Logger } from 'winston';
 import GraphType from '../../../constants/graphType';
+import { ProfileTab } from '../../../constants/profileTab';
 import TestId from '../../../constants/testId';
 import TimeRange from '../../../constants/timeRange';
 import { getReviewsByUserId, getReviewsByUserIdCount } from '../../../helpers/getReviewsByUserId';
@@ -12,7 +13,7 @@ import { createNewReviewOnYourLevelNotification } from '../../../helpers/notific
 import dbConnect, { dbDisconnect } from '../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../lib/getTokenCookie';
 import { GraphModel, UserModel } from '../../../models/mongoose';
-import { getServerSideProps, ProfileTab } from '../../../pages/[subdomain]/profile/[name]/[[...tab]]/index';
+import { getServerSideProps } from '../../../pages/[subdomain]/profile/[name]/[[...tab]]/index';
 import { doQuery } from '../../../pages/api/search';
 
 beforeAll(async () => {

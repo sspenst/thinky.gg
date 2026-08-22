@@ -145,7 +145,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       },
       {
         $sort: {
-          'config.calcRankedSolves': -1
+          'config.calcRankedSolves': -1,
+          name: 1,
         }
       },
       {

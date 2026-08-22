@@ -1,4 +1,5 @@
 import Role from '@root/constants/role';
+import { TimeFilter } from '@root/constants/timeFilter';
 import { AppContext } from '@root/contexts/appContext';
 import { DEMO_USERNAME, hasProAccessForProfile, isDemoProProfile } from '@root/helpers/isDemoProAccess';
 import isPro from '@root/helpers/isPro';
@@ -37,13 +38,6 @@ const URL_TAB_MAPPING = Object.entries(TAB_URL_MAPPING).reduce((acc, [key, value
 
   return acc;
 }, {} as Record<string, InsightsTab>);
-
-export enum TimeFilter {
-  WEEK = '7d',
-  MONTH = '30d',
-  YEAR = '1y',
-  ALL = 'all',
-}
 
 interface TabConfig {
   id: InsightsTab;

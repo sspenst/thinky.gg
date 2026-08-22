@@ -1,20 +1,22 @@
 import { EnrichedLevel } from '@root/models/db/level';
 import User, { ReqUser } from '@root/models/db/user';
-import mongoose from 'mongoose';
+import type { Types } from 'mongoose';
 import isPro from './isPro';
 
 export const DEMO_USERNAME = 'k2xl';
 const DEMO_LEVEL_SLUG = 'k2xl/touchdown';
 const DEMO_LEVEL_ID = '62d4cac704b23000689c3d16';
 
-export function isDemoProLevel(level: EnrichedLevel | mongoose.Types.ObjectId | null): boolean {
+export function isDemoProLevel(level: EnrichedLevel | Types.ObjectId | null): boolean {
   if (!level) return false;
 
-  if (level instanceof mongoose.Types.ObjectId) {
-    return level.equals(DEMO_LEVEL_ID);
+  if (level.toString() === DEMO_LEVEL_ID) {
+    return true;
   }
 
-  return level.userId?.name === DEMO_USERNAME && level.slug === DEMO_LEVEL_SLUG;
+  const enrichedLevel = level as EnrichedLevel;
+
+  return enrichedLevel.userId?.name === DEMO_USERNAME && enrichedLevel.slug === DEMO_LEVEL_SLUG;
 }
 
 export function isDemoProProfile(user: User | null): boolean {
@@ -23,7 +25,7 @@ export function isDemoProProfile(user: User | null): boolean {
   return user.name === DEMO_USERNAME;
 }
 
-export function hasProAccessForLevel(user: ReqUser | User | null | undefined, level: EnrichedLevel | mongoose.Types.ObjectId | null): boolean {
+export function hasProAccessForLevel(user: ReqUser | User | null | undefined, level: EnrichedLevel | Types.ObjectId | null): boolean {
   // Regular Pro users always have access
   if (isPro(user)) return true;
 

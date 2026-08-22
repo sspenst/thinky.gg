@@ -7,7 +7,7 @@ import useUrl from '@root/hooks/useUrl';
 import { EnrichedLevel } from '@root/models/db/level';
 import User from '@root/models/db/user';
 import classNames from 'classnames';
-import { Types } from 'mongoose';
+import type { Types } from 'mongoose';
 import Link from 'next/link';
 import { useContext, useMemo } from 'react';
 import Dimensions from '../../constants/dimensions';

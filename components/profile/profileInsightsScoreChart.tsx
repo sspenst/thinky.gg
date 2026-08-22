@@ -2,10 +2,10 @@ import useProStatsUser, { ProStatsUserType } from '@root/hooks/useProStatsUser';
 import dayjs from 'dayjs';
 import { useMemo, useState } from 'react';
 import { Bar, CartesianGrid, ComposedChart, Legend, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { TimeFilter } from '../../constants/timeFilter';
 import { DateAndSum } from '../../contexts/levelContext';
 import User from '../../models/db/user';
 import MultiSelectUser from '../page/multiSelectUser';
-import { TimeFilter } from './profileInsights';
 
 const getCumulativeScores = (scores: DateAndSum[]): DateAndSum[] => {
   let cumulativeSum = 0;

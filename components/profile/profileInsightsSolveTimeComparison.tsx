@@ -5,10 +5,10 @@ import dayjs from 'dayjs';
 import { useRouter } from 'next/router';
 import { useContext, useMemo, useState } from 'react';
 import { Brush, ReferenceArea, ReferenceLine, ResponsiveContainer, Scatter, ScatterChart, Symbols, Tooltip, XAxis, YAxis } from 'recharts';
+import { TimeFilter } from '../../constants/timeFilter';
 import User from '../../models/db/user';
 import { difficultyList, getDifficultyColor, getDifficultyFromEstimate } from '../formatted/formattedDifficulty';
 import StyledTooltip from '../page/styledTooltip';
-import { TimeFilter } from './profileInsights';
 
 export interface DifficultyLevelComparison {
   _id: string;

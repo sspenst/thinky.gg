@@ -1,5 +1,6 @@
 import { useContext } from 'react';
 import Dimensions from '../../constants/dimensions';
+import { TimeFilter } from '../../constants/timeFilter';
 import { AppContext } from '../../contexts/appContext';
 import useProStatsUser, { ProStatsUserType } from '../../hooks/useProStatsUser';
 import User from '../../models/db/user';
@@ -7,7 +8,6 @@ import FormattedDate from '../formatted/formattedDate';
 import FormattedLevelLink from '../formatted/formattedLevelLink';
 import FormattedUser from '../formatted/formattedUser';
 import { DataTableOffline } from '../tables/dataTable';
-import { TimeFilter } from './profileInsights';
 
 export default function ProfileInsightsLevelPlayLog({ user, timeFilter }: { user: User; timeFilter?: TimeFilter }) {
   const { proStatsUser } = useProStatsUser(user, ProStatsUserType.PlayLogForUserCreatedLevels, timeFilter);

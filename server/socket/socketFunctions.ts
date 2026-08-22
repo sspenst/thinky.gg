@@ -1,5 +1,6 @@
 import AlertType from '@root/constants/alertType';
 import { GameId } from '@root/constants/GameId';
+import NotificationType from '@root/constants/notificationType';
 import { getEnrichNotificationPipelineStages } from '@root/helpers/enrich';
 import { MatchGameState } from '@root/helpers/gameStateHelpers';
 import { getUsersWithMultiplayerProfileFromIds } from '@root/helpers/getUsersWithMultiplayerProfile';
@@ -12,8 +13,9 @@ import { Server } from 'socket.io';
 import { logger } from '../../helpers/logger';
 import sortByRating from '../../helpers/sortByRating';
 import { MultiplayerMatchState, MultiplayerMatchType } from '../../models/constants/multiplayer';
+import MultiplayerMatch from '../../models/db/multiplayerMatch';
 import User from '../../models/db/user';
-import { MultiplayerMatchModel, NotificationModel } from '../../models/mongoose';
+import { MultiplayerMatchModel, NotificationModel, UserModel } from '../../models/mongoose';
 import { enrichMultiplayerMatch } from '../../models/schemas/multiplayerMatchSchema';
 import { checkForFinishedMatch, checkForUnreadyAboutToStartMatch, getAllMatches } from '../../pages/api/match';
 
@@ -56,27 +58,31 @@ export function broadcastConnectedPlayersDebounced(gameId: GameId, emitter: Serv
 }
 
 export async function broadcastPrivateAndInvitedMatches(gameId: GameId, emitter: Emitter, userId: Types.ObjectId) {
-  const matches = await getAllMatches(gameId, userId as unknown as User,
-    {
-      $or: [
-        {
-          private: true,
-          state: {
-            $in: [MultiplayerMatchState.ACTIVE, MultiplayerMatchState.OPEN],
-          }
-        },
-        {
-          private: true,
-          players: userId,
-          state: {
-            $in: [MultiplayerMatchState.ACTIVE, MultiplayerMatchState.OPEN],
-          }
-        }]
-      ,
-    });
+  const [reqUser, invitedMatchIds] = await Promise.all([
+    UserModel.findById(userId).lean<User>(),
+    NotificationModel.distinct('message', {
+      gameId,
+      type: NotificationType.MULTIPLAYER_INVITE,
+      userId,
+    }),
+  ]);
 
-  matches.forEach(match => {
-    enrichMultiplayerMatch(match);
+  if (!reqUser) {
+    emitter?.to(userId.toString()).emit('privateAndInvitedMatches', []);
+
+    return;
+  }
+
+  const matches = await getAllMatches(gameId, reqUser, {
+    private: true,
+    state: {
+      $in: [MultiplayerMatchState.ACTIVE, MultiplayerMatchState.OPEN],
+    },
+    $or: [
+      { players: userId },
+      { createdBy: userId },
+      { matchId: { $in: invitedMatchIds } },
+    ],
   });
 
   emitter?.to(userId.toString()).emit('privateAndInvitedMatches', matches);
@@ -89,6 +95,56 @@ export async function broadcastMatches(gameId: GameId, emitter: Emitter) {
     enrichMultiplayerMatch(match);
   });
   emitter?.to('LOBBY-' + gameId).emit('matches', matches);
+}
+
+export async function broadcastTerminalMatch(
+  gameId: GameId,
+  emitter: Emitter,
+  match: Pick<MultiplayerMatch, 'matchId' | 'players' | 'private' | 'state'>,
+) {
+  if (match.state !== MultiplayerMatchState.ABORTED &&
+    match.state !== MultiplayerMatchState.FINISHED) {
+    return false;
+  }
+
+  const terminalMatch = {
+    matchId: match.matchId,
+    state: match.state,
+  };
+
+  if (!match.private) {
+    emitter?.to('LOBBY-' + gameId).emit('terminalMatch', terminalMatch);
+
+    return true;
+  }
+
+  try {
+    // Players already receive the full match through their personal rooms. Find
+    // every non-player invitee, including read invites, without exposing the
+    // private match capability ID to the rest of the lobby.
+    const invitedUserIds = await NotificationModel.distinct('userId', {
+      gameId,
+      message: match.matchId,
+      type: NotificationType.MULTIPLAYER_INVITE,
+    });
+    const playerIds = new Set(match.players.map(player => player._id.toString()));
+
+    for (const invitedUserId of invitedUserIds) {
+      const userId = invitedUserId.toString();
+
+      if (!playerIds.has(userId)) {
+        emitter?.to(userId).emit('terminalMatch', terminalMatch);
+      }
+    }
+  } catch (e) {
+    // Player delivery already happened, so a failed invitee lookup must not stop
+    // the scheduled/sweep public-list refresh or other terminal broadcasts.
+    logger.error(`Could not broadcast private terminal match ${match.matchId} to invitees`, e);
+
+    return false;
+  }
+
+  return true;
 }
 
 /**
@@ -122,14 +178,24 @@ export async function scheduleBroadcastMatch(gameId: GameId, emitter: Emitter, m
 
   const timeoutStart = setTimeout(async () => {
     logger.info(`Match ${matchId} start timeout triggered`);
-    await checkForUnreadyAboutToStartMatch(matchId);
+    const didAbort = await checkForUnreadyAboutToStartMatch(matchId);
+
     await broadcastMatch(gameId, emitter, matchId);
+
+    if (didAbort) {
+      await broadcastMatches(gameId, emitter);
+    }
   }, timeUntilStart);
 
   const timeoutEnd = setTimeout(async () => {
     logger.info(`Match ${matchId} end timeout triggered`);
-    await checkForFinishedMatch(matchId);
+    const finishedMatch = await checkForFinishedMatch(matchId);
+
     await broadcastMatch(gameId, emitter, matchId);
+
+    if (finishedMatch) {
+      await broadcastMatches(gameId, emitter);
+    }
   }, timeUntilEnd);
 
   GlobalMatchTimers[matchId] = {
@@ -272,6 +338,7 @@ export async function broadcastMatch(gameId: GameId, emitter: Emitter, matchId: 
   enrichMultiplayerMatch(match);
   // emit to everyone in the room except the players in the match since we already emitted to them
   emitter?.to(matchId).except(match.players.map((player: User) => player._id.toString())).emit('match', match);
+  await broadcastTerminalMatch(gameId, emitter, match);
 }
 
 export async function broadcastKillSocket(emitter: Emitter, userId: Types.ObjectId) {

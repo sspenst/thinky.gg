@@ -8,6 +8,7 @@ import Dimensions from '@root/constants/dimensions';
 import { Game, GameType } from '@root/constants/Games';
 import StatFilter from '@root/constants/statFilter';
 import { AppContext } from '@root/contexts/appContext';
+import createTemporaryObjectId from '@root/helpers/createTemporaryObjectId';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import isPro from '@root/helpers/isPro';
 import useRouterQuery from '@root/hooks/useRouterQuery';
@@ -15,7 +16,7 @@ import { CollectionType } from '@root/models/constants/collection';
 import { EnrichedCollection } from '@root/models/db/collection';
 import classNames from 'classnames';
 import { Search as SearchIcon } from 'lucide-react';
-import { Types } from 'mongoose';
+import type { Types } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -466,12 +467,12 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
             const collectionTemp = {
               createdAt: ts,
               isPrivate: true,
-              levels: data, _id: new Types.ObjectId(),
+              levels: data, _id: createTemporaryObjectId(),
               name: 'Search',
               slug: `/search${queryString.length > 0 ? `?${queryString}` : ''}`,
               type: CollectionType.InMemory,
               updatedAt: ts,
-              userId: { _id: new Types.ObjectId() } as Types.ObjectId & User,
+              userId: { _id: createTemporaryObjectId() } as Types.ObjectId & User,
             } as EnrichedCollection;
 
             sessionStorage.setItem('tempCollection', JSON.stringify(collectionTemp));

@@ -2,7 +2,7 @@ import Direction from '@root/constants/direction';
 import { directionsToGameState, isValidDirections } from '@root/helpers/checkpointHelpers';
 import { areEqualGameStates, cloneGameState, GameState } from '@root/helpers/gameStateHelpers';
 import { BEST_CHECKPOINT_INDEX } from '@root/hooks/useCheckpoints';
-import { Types } from 'mongoose';
+import type { Types } from 'mongoose';
 import React, { useCallback } from 'react';
 import toast from 'react-hot-toast';
 

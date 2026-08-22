@@ -2,12 +2,12 @@ import { GameType } from '@root/constants/Games';
 import { UserAndSum } from '@root/contexts/levelContext';
 import { useContext } from 'react';
 import Dimensions from '../../constants/dimensions';
+import { TimeFilter } from '../../constants/timeFilter';
 import { AppContext } from '../../contexts/appContext';
 import useProStatsUser, { ProStatsUserType } from '../../hooks/useProStatsUser';
 import User from '../../models/db/user';
 import FormattedUser from '../formatted/formattedUser';
 import { DataTableOffline } from '../tables/dataTable';
-import { TimeFilter } from './profileInsights';
 
 export default function ProfileInsightsMostSolves({ user, timeFilter }: { user: User; timeFilter?: TimeFilter }) {
   const { proStatsUser } = useProStatsUser(user, ProStatsUserType.MostSolvesForUserLevels, timeFilter);

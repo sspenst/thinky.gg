@@ -1,4 +1,4 @@
-import { Types } from 'mongoose';
+import type { Types } from 'mongoose';
 import { CommentQuery } from '../pages/api/comment/[id]';
 import useSWRHelper from './useSWRHelper';
 

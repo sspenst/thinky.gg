@@ -4,10 +4,10 @@ import useProStatsUser, { ProStatsUserType } from '@root/hooks/useProStatsUser';
 import dayjs from 'dayjs';
 import React, { useMemo, useState } from 'react';
 import { Bar, Cell, ComposedChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { TimeFilter } from '../../constants/timeFilter';
 import User from '../../models/db/user';
 import { difficultyList, getDifficultyColor, getDifficultyFromEstimate } from '../formatted/formattedDifficulty';
 import FormattedLevelLink from '../formatted/formattedLevelLink';
-import { TimeFilter } from './profileInsights';
 import ProfileInsightsSolveTimeComparison from './profileInsightsSolveTimeComparison';
 
 interface ProfileInsightsPeerComparisonsProps {

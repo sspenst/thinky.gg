@@ -15,9 +15,39 @@ import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { initLevel } from '../../../../lib/initializeLocalDb';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
-import { LevelModel, StatModel, UserModel } from '../../../../models/mongoose';
+import { CacheModel, LevelModel, StatModel, UserModel } from '../../../../models/mongoose';
 import { BlockFilterMask } from '../../../../pages/[subdomain]/search';
-import handler from '../../../../pages/api/search';
+import handler, { generateSearchCacheKey } from '../../../../pages/api/search';
+
+describe('Search cache identity', () => {
+  const query = {
+    sortBy: 'name',
+    sortDir: 'asc' as const,
+    timeRange: TimeRange[TimeRange.All],
+  };
+
+  test('separates projection shapes while normalizing property order', () => {
+    const compactProjection = { _id: 1, name: 1 };
+    const reorderedCompactProjection = { name: 1, _id: 1 };
+    const searchProjection = { _id: 1, name: 1, ts: 1 };
+
+    const compactKey = generateSearchCacheKey(DEFAULT_GAME_ID, query, compactProjection);
+
+    expect(generateSearchCacheKey(DEFAULT_GAME_ID, query, reorderedCompactProjection)).toBe(compactKey);
+    expect(generateSearchCacheKey(DEFAULT_GAME_ID, query, searchProjection)).not.toBe(compactKey);
+  });
+
+  test('shares anonymous keys but scopes authenticated keys by requester and access level', () => {
+    const projection = { _id: 1, name: 1 };
+    const anonymousKey = generateSearchCacheKey(DEFAULT_GAME_ID, query, projection);
+    const userKey = generateSearchCacheKey(DEFAULT_GAME_ID, query, projection, TestId.USER, false);
+
+    expect(generateSearchCacheKey(DEFAULT_GAME_ID, { ...query }, { ...projection })).toBe(anonymousKey);
+    expect(generateSearchCacheKey(DEFAULT_GAME_ID, query, projection, TestId.USER_B, false)).not.toBe(userKey);
+    expect(generateSearchCacheKey(DEFAULT_GAME_ID, query, projection, TestId.USER, true)).not.toBe(userKey);
+    expect(userKey).not.toBe(anonymousKey);
+  });
+});
 
 afterEach(() => {
   jest.restoreAllMocks();
@@ -593,5 +623,42 @@ describe('Testing search endpoint for various inputs', () => {
     expect(result).not.toBeNull();
     expect(result?.levels).toBeDefined();
     expect(result?.totalRows).toBeGreaterThan(0);
+  });
+
+  it('should bypass cache reads and writes for authenticated searches', async () => {
+    const { doQuery } = await import('../../../../pages/api/search');
+    const { getUserFromToken } = await import('../../../../lib/withAuth');
+    const reqUser = await getUserFromToken(getTokenCookieValue(TestId.USER_C), {} as any);
+    const cacheReadSpy = jest.spyOn(CacheModel, 'findOne');
+    const cacheWriteSpy = jest.spyOn(CacheModel, 'findOneAndUpdate');
+
+    const result = await doQuery(DEFAULT_GAME_ID, {
+      sortBy: 'name',
+      sortDir: 'asc',
+      timeRange: TimeRange[TimeRange.All],
+    }, reqUser);
+
+    expect(result).not.toBeNull();
+    expect(cacheReadSpy).not.toHaveBeenCalled();
+    expect(cacheWriteSpy).not.toHaveBeenCalled();
+  });
+
+  it('should bypass cache reads and writes for completed sorts with the all-stats filter', async () => {
+    const { doQuery } = await import('../../../../pages/api/search');
+    const { getUserFromToken } = await import('../../../../lib/withAuth');
+    const reqUser = await getUserFromToken(getTokenCookieValue(TestId.USER), {} as any);
+    const cacheReadSpy = jest.spyOn(CacheModel, 'findOne');
+    const cacheWriteSpy = jest.spyOn(CacheModel, 'findOneAndUpdate');
+
+    const result = await doQuery(DEFAULT_GAME_ID, {
+      sortBy: 'completed',
+      sortDir: 'desc',
+      statFilter: StatFilter.All,
+      timeRange: TimeRange[TimeRange.All],
+    }, reqUser);
+
+    expect(result).not.toBeNull();
+    expect(cacheReadSpy).not.toHaveBeenCalled();
+    expect(cacheWriteSpy).not.toHaveBeenCalled();
   });
 });

@@ -4,10 +4,10 @@ import { createPopper, Instance, Placement } from '@popperjs/core';
 import styles from '@root/components/level/Controls.module.css';
 import { directionToVector } from '@root/constants/direction';
 import TileType from '@root/constants/tileType';
+import createTemporaryObjectId from '@root/helpers/createTemporaryObjectId';
 import { GameState } from '@root/helpers/gameStateHelpers';
 import classNames from 'classnames';
 import { ArrowBigDown, Trophy } from 'lucide-react';
-import { Types } from 'mongoose';
 import Link from 'next/link';
 import { JSX, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import ReCAPTCHA from 'react-google-recaptcha';
@@ -57,7 +57,7 @@ export default function TutorialPathology({ recaptchaPublicKey }: TutorialPathol
     const width = sp[0].length;
 
     return {
-      _id: new Types.ObjectId(),
+      _id: createTemporaryObjectId(),
       authorNote: 'test level 1 author note',
       data: data,
       height: sp.length,

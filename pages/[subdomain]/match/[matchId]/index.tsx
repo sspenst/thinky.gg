@@ -35,6 +35,7 @@ import { getUserFromToken } from '../../../../lib/withAuth';
 import { MatchAction, MatchLogDataGameRecap, MultiplayerMatchState } from '../../../../models/constants/multiplayer';
 import Level from '../../../../models/db/level';
 import MultiplayerMatch from '../../../../models/db/multiplayerMatch';
+import User from '../../../../models/db/user';
 import { enrichMultiplayerMatch } from '../../../../models/schemas/multiplayerMatchSchema';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
@@ -94,10 +95,13 @@ export default function Match({ initialMatch }: MatchProps) {
   const [countDown, setCountDown] = useState<number>(-1);
   const [showInvitePanel, setShowInvitePanel] = useState<boolean>(false);
   const [isInviting, setIsInviting] = useState<boolean>(false);
-  const { sounds, user } = useContext(AppContext);
+  const { user } = useContext(AppContext);
   const multiplayerSocket = useContext(MultiplayerSocketContext);
   const readyMark = useRef(false);
   const router = useRouter();
+  const startSound = useRef<HTMLAudioElement | null>(null);
+  const startSoundPlayAttempts = useRef(0);
+  const startSoundPlayPending = useRef(false);
   const startSoundPlayed = useRef(false);
   const latestMatchGameStateRef = useRef<MatchGameState | null>(null);
   const { matchId } = router.query as { matchId: string };
@@ -241,7 +245,7 @@ export default function Match({ initialMatch }: MatchProps) {
     }
   }, [matchId]);
 
-  const handleInviteUser = useCallback(async(selectedUser: any) => {
+  const handleInviteUser = useCallback(async(selectedUser: User | null) => {
     if (!selectedUser || isInviting) {
       return;
     }
@@ -281,6 +285,35 @@ export default function Match({ initialMatch }: MatchProps) {
   }, [matchId, isInviting]);
 
   useEffect(() => {
+    if (!matchId) {
+      return;
+    }
+
+    const audio = new Audio();
+
+    audio.preload = 'auto';
+    audio.src = '/sounds/start.wav';
+    audio.load();
+
+    startSound.current = audio;
+    startSoundPlayAttempts.current = 0;
+    startSoundPlayPending.current = false;
+    startSoundPlayed.current = false;
+
+    return () => {
+      if (startSound.current === audio) {
+        startSound.current = null;
+      }
+
+      startSoundPlayPending.current = false;
+      audio.pause();
+      audio.removeAttribute('src');
+      audio.load();
+      audio.remove();
+    };
+  }, [matchId]);
+
+  useEffect(() => {
     if (!currentMatch) {
       return;
     }
@@ -297,9 +330,43 @@ export default function Match({ initialMatch }: MatchProps) {
         if (ncd > 0) {
           document.title = `Starting in ${ncd >> 0} seconds!`;
 
-          if (!startSoundPlayed.current) {
-            sounds.start?.play();
-            startSoundPlayed.current = true;
+          if (
+            !startSoundPlayed.current &&
+            !startSoundPlayPending.current &&
+            startSoundPlayAttempts.current < 3
+          ) {
+            const audio = startSound.current;
+
+            if (audio) {
+              startSoundPlayAttempts.current += 1;
+              startSoundPlayPending.current = true;
+              audio.currentTime = 0;
+
+              const handlePlaybackFailure = (error: unknown) => {
+                if (startSound.current !== audio) {
+                  return;
+                }
+
+                startSoundPlayPending.current = false;
+
+                if (startSoundPlayAttempts.current >= 3) {
+                  console.error('Failed to play the match start sound:', error);
+                }
+              };
+
+              try {
+                void audio.play().then(() => {
+                  if (startSound.current !== audio) {
+                    return;
+                  }
+
+                  startSoundPlayPending.current = false;
+                  startSoundPlayed.current = true;
+                }).catch(handlePlaybackFailure);
+              } catch (error) {
+                handlePlaybackFailure(error);
+              }
+            }
           }
         } else {
           const cdEnd = new Date(currentMatch.endTime).getTime() - Date.now();
@@ -319,7 +386,7 @@ export default function Match({ initialMatch }: MatchProps) {
     }, 250);
 
     return () => clearInterval(iv);
-  }, [currentMatch, sounds]);
+  }, [currentMatch]);
 
   useEffect(() => {
     if (!currentMatch) {

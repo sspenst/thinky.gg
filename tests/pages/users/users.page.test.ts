@@ -1,9 +1,11 @@
+import { GameId } from '@root/constants/GameId';
+import TestId from '@root/constants/testId';
 import { Aggregate } from 'mongoose';
 import { GetServerSidePropsContext } from 'next';
 import { Logger } from 'winston';
 import { logger } from '../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../lib/dbConnect';
-import { UserModel } from '../../../models/mongoose';
+import { UserConfigModel, UserModel } from '../../../models/mongoose';
 import { DEFAULT_QUERY, getServerSideProps } from '../../../pages/[subdomain]/users/index';
 
 beforeAll(async () => {
@@ -11,6 +13,10 @@ beforeAll(async () => {
 });
 afterAll(async () => {
   await dbDisconnect();
+});
+
+afterEach(() => {
+  jest.restoreAllMocks();
 });
 
 describe('pages/users page', () => {
@@ -32,4 +38,37 @@ describe('pages/users page', () => {
     await expect(() => getServerSideProps({} as GetServerSidePropsContext)).rejects.toThrow('Error querying users');
   }
   );
+
+  test('Ranked Solves ties are ordered by name', async () => {
+    const tiedUserIds = [TestId.USER_B, TestId.USER_C];
+
+    await UserConfigModel.updateMany({
+      gameId: GameId.PATHOLOGY,
+      userId: { $in: tiedUserIds },
+    }, {
+      $set: { calcRankedSolves: 99 },
+    });
+
+    try {
+      const ret = await getServerSideProps({
+        req: {
+          headers: { host: 'pathology.localhost:3000' },
+        },
+        query: {
+          sortBy: 'calcRankedSolves',
+          sortDir: 'desc',
+        },
+      } as unknown as GetServerSidePropsContext);
+
+      expect(ret.props.users.slice(0, 2).map(user => user.name)).toEqual(['BBB', 'Curator']);
+      expect(ret.props.users.slice(0, 2).map(user => user.calcRankedSolves)).toEqual([99, 99]);
+    } finally {
+      await UserConfigModel.updateMany({
+        gameId: GameId.PATHOLOGY,
+        userId: { $in: tiedUserIds },
+      }, {
+        $set: { calcRankedSolves: 0 },
+      });
+    }
+  });
 });

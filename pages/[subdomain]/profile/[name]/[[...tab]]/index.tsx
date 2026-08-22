@@ -16,6 +16,7 @@ import ProfileMultiplayer from '@root/components/profile/profileMultiplayer';
 import AchievementType from '@root/constants/achievements/achievementType';
 import { GameId } from '@root/constants/GameId';
 import { Games, GameType } from '@root/constants/Games';
+import { ProfileTab } from '@root/constants/profileTab';
 import StatFilter from '@root/constants/statFilter';
 import { AppContext } from '@root/contexts/appContext';
 import { countUsersWhoCompletedOneLevel } from '@root/helpers/countUsersWhoCompletedOneLevel';
@@ -63,15 +64,6 @@ import SelectOptionStats from '../../../../../models/selectOptionStats';
 import { getFollowData } from '../../../../api/follow';
 import { doQuery } from '../../../../api/search';
 import { SearchQuery } from '../../../search';
-
-export const enum ProfileTab {
-  Achievements = 'achievements',
-  Collections = 'collections',
-  Insights = 'insights',
-  Profile = '',
-  Levels = 'levels',
-  Multiplayer = 'multiplayer',
-}
 
 export interface ProfileParams extends ParsedUrlQuery {
   name: string;

@@ -152,7 +152,7 @@ export default withAuth({ POST: {
         // invalidate cache
         CacheModel.deleteMany({
           tag: CacheTag.SEARCH_API,
-          gameId: level.gameId,
+          gameId: { $in: [level.gameId, GameId.THINKY] },
         }, { session: session }),
       ]);
     });
